@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Effects of Forces — Turning, Pressure, Centre of Mass — InteractiveLecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --border: #334155;
+    --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
+    --accent: #22d3ee; --accent-glow: rgba(34,211,238,0.12);
+    --green: #34d399; --rose: #fb7185; --violet: #a78bfa; --amber: #fbbf24;
+  }
+  .light {
+    --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
+    --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
+    --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
+    --green: #047857; --rose: #be123c; --violet: #6d28d9; --amber: #b45309;
+  }
+  @page { size: A4; margin: 20mm 18mm; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif;
+    transition: background 0.3s, color 0.3s;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ─── Top Bar ─── */
+  .top-bar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .top-bar h1 {
+    font-size: 1.1rem; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .top-bar h1 .accent { color: var(--accent); }
+  .top-bar .meta {
+    font-size: 0.65rem; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+  }
+  .theme-btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 5px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 0.7rem; font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+  }
+  .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Section Selector ─── */
+  .section-selector {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 24px;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    position: sticky; top: 50px; z-index: 99;
+  }
+  .sec-btn {
+    padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px;
+    background: transparent; color: var(--text-dim);
+    font-size: 0.6rem; font-family: 'JetBrains Mono', monospace;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .sec-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .sec-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Main Content ─── */
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+
+  .lecture-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .lecture-header h1 {
+    font-size: 2rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .lecture-header .lecture-meta {
+    margin-top: 8px; font-size: 0.8rem; color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .lecture-header .lecture-meta span { margin-right: 16px; }
+
+  /* ─── Sections ─── */
+  .lecture-section {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+  .lecture-section:hover { border-color: var(--accent); }
+  .lecture-section.hidden { display: none; }
+
+  .section-heading {
+    font-size: 1.3rem; font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .section-body {
+    font-size: 0.9rem; line-height: 1.7;
+    color: var(--text-dim);
+  }
+
+  /* ─── Typography ─── */
+  .section-body p { margin-bottom: 12px; }
+  .section-body strong { color: var(--text); font-weight: 600; }
+  .section-body em { color: var(--accent); }
+  .section-body ul, .section-body ol { margin: 8px 0 12px 20px; }
+  .section-body li { margin-bottom: 4px; }
+  .section-body a { color: var(--accent); text-decoration: none; }
+  .section-body a:hover { text-decoration: underline; }
+  .section-body hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .section-body pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; line-height: 1.5;
+    overflow-x: auto; margin: 12px 0;
+  }
+  .section-body code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--accent-glow);
+    color: var(--accent);
+    padding: 1px 4px; border-radius: 3px;
+  }
+  .section-body pre code {
+    background: none; color: inherit; padding: 0;
+  }
+
+  /* ─── Equations ─── */
+  .equation.block-eq {
+    text-align: center;
+    margin: 16px 0;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  .equation.inline-eq {
+    display: inline;
+  }
+  .katex { font-size: 1.05em; }
+
+  /* ─── Graph Embeds ─── */
+  .graph-embed {
+    margin: 16px 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .graph-iframe {
+    width: 100%;
+    height: 520px;
+    display: block;
+  }
+
+  /* ─── PDF Export Button ─── */
+  .toolbar {
+    margin-bottom: 20px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .toolbar-btn {
+    padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--card); color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .toolbar-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toolbar-btn.primary {
+    background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600;
+  }
+
+  /* ─── Footer ─── */
+  .lecture-footer {
+    text-align: center;
+    padding: 20px 0;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  /* ─── Print Styles (PDF) ─── */
+  @media print {
+    body { background: white; color: black; }
+    .top-bar, .section-selector, .toolbar, .theme-btn { display: none; }
+    .container { max-width: 100%; padding: 0; }
+    .lecture-section {
+      background: white; border: 1px solid #ccc;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .section-heading { border-bottom-color: #ccc; }
+    .section-body { color: #333; }
+    .section-body strong { color: #000; }
+    .section-body pre { background: #f5f5f5; border-color: #ddd; }
+    .graph-iframe { height: 400px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <h1>📐 <span class="accent">Effects of Forces — Turning, Pressure, Centre of Mass</span></h1>
+  <div class="meta">
+    <span>IGCSE Physics 0625 — Extended</span>
+    <span>• 1.6 Effects of Forces</span>
+    <span>• v1</span>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+</div>
+
+<!-- SECTION SELECTOR -->
+<div class="section-selector">
+  <button class="sec-btn active" data-section="all" onclick="filterSection('all')">📋 All</button>
+  
+    
+    <button class="sec-btn" data-section="history" onclick="filterSection('history')">
+      📜 📜 History
+    </button>
+  
+    
+    <button class="sec-btn" data-section="nature" onclick="filterSection('nature')">
+      🌍 🌍 Nature & Applicati
+    </button>
+  
+    
+    <button class="sec-btn" data-section="theory" onclick="filterSection('theory')">
+      ⚛️ ⚛️ Theory
+    </button>
+  
+    
+    <button class="sec-btn" data-section="examples" onclick="filterSection('examples')">
+      ✍️ ✍️ Worked Examples
+    </button>
+  
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="toolbar-btn" onclick="toggleTheme()">🌓 Toggle Theme</button>
+    <button class="toolbar-btn" onclick="window.print()">🖨️ Print / PDF</button>
+  </div>
+
+  <!-- HEADER -->
+  <div class="lecture-header">
+    <h1>Effects of Forces — Turning, Pressure, Centre of Mass</h1>
+    <div class="lecture-meta">
+      <span>📂 1.6 Effects of Forces</span>
+      <span>🎯 IGCSE Physics 0625 — Extended</span>
+      <span>📝 Version 1</span>
+      <span>📅 2026-06-30</span>
+    </div>
+  </div>
+
+  <!-- SECTIONS -->
+  
+  <section class="lecture-section section-history" data-section-type="history">
+    
+    <h2 class="section-heading">📜 📜 History</h2>
+    <div class="section-body">
+      <p>The study of <strong>turning effects</strong> (moments) began with <strong>Archimedes</strong>, who famously said: <em>"Give me a lever long enough and a place to stand, and I shall move the Earth."</em></p>
+<p><strong>Levers</strong> have been used since prehistoric times, but Archimedes was the first to mathematically describe how they work — the ratio of the lengths of the lever arms determines the mechanical advantage.</p>
+<p><strong>Pressure</strong> was studied by <strong>Blaise Pascal (1623–1662)</strong>, a French mathematician and physicist. Pascal's Principle states that pressure applied to an enclosed fluid is transmitted equally in all directions — the foundation of hydraulic systems.</p>
+<p><strong>Centre of mass</strong> was formalised by <strong>Archimedes</strong> and later expanded by Newton to describe how objects balance and rotate.</p>
+<blockquote>
+<p><strong>Did you know?</strong> The Leaning Tower of Pisa leans because the centre of mass of the tower has shifted past its base of support. Engineers have been working for centuries to prevent it from toppling! The current angle is about 4°, and recent stabilisation work should keep it standing for another 200 years.</p>
+</blockquote>
+
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-nature" data-section-type="nature">
+    
+    <h2 class="section-heading">🌍 🌍 Nature & Applications</h2>
+    <div class="section-body">
+      <ul>
+<li><strong>🔧 Levers everywhere</strong>: Scissors, pliers, bottle openers, seesaws, crowbars</li>
+<li><strong>🚲 Bicycle brakes</strong>: A small force on the brake lever creates a much larger force on the brake pads</li>
+<li><strong>🔪 Sharp knives</strong>: Smaller area = larger pressure = easier cutting</li>
+<li><strong>❄️ Snowshoes</strong>: Large area = small pressure = don't sink into snow</li>
+<li><strong>🚗 Hydraulic brakes</strong>: Pascal's Principle amplifies the driver's foot force</li>
+<li><strong>🪂 Centre of mass</strong>: Skydivers adjust their body position to control rotation</li>
+<li><strong>🏗️ Stability</strong>: Wide-base objects (e.g., a tall lamp with a heavy base) are more stable</li>
+</ul>
+
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-theory" data-section-type="theory">
+    
+    <h2 class="section-heading">⚛️ ⚛️ Theory</h2>
+    <div class="section-body">
+      <h3>Turning Effect (Moment of a Force)</h3>
+<p>The turning effect of a force is called a <strong>moment</strong> (or torque).</p>
+<p>Where:<br />
+-  = moment (Nm)<br />
+-  = force (N)<br />
+-  = perpendicular distance from the pivot to the line of action of the force (m)</p>
+<p><strong>Principle of Moments</strong>: For an object in equilibrium (balanced):</p>
+<h3>Levers</h3>
+<p>A lever is a rigid bar that rotates around a <strong>pivot</strong> (fulcrum). There are three classes:</p>
+<p>| Class | Arrangement | Example |<br />
+|-------|------------|---------|<br />
+| 1st | Fulcrum between effort and load | Seesaw, crowbar |<br />
+| 2nd | Load between fulcrum and effort | Wheelbarrow, nutcracker |<br />
+| 3rd | Effort between fulcrum and load | Tweezers, fishing rod |</p>
+<p><strong>Mechanical advantage</strong>:</p>
+<h3>Pressure</h3>
+<p>Pressure is the <strong>force per unit area</strong>.</p>
+<p>Where:<br />
+-  = pressure (Pa or N/m²)<br />
+-  = force (N)<br />
+-  = area (m²)</p>
+<p><strong>Pascal (Pa)</strong>: </p>
+<h3>Pressure in Liquids</h3>
+<p>Where:<br />
+-  = pressure (Pa)<br />
+-  = depth (m)<br />
+-  = density of the liquid (kg/m³)<br />
+-  = gravitational field strength (N/kg)</p>
+<p><strong>Key properties of liquid pressure:</strong><br />
+- Increases with <strong>depth</strong><br />
+- Acts <strong>equally in all directions</strong> at a given depth<br />
+- Depends on <strong>density</strong> of the liquid<br />
+- Does NOT depend on the shape of the container</p>
+<h3>Centre of Mass</h3>
+<ul>
+<li><strong>Centre of mass</strong> is the point where the entire mass of an object can be considered to act</li>
+<li>For a <strong>regular, uniform</strong> object, the centre of mass is at its <strong>geometric centre</strong></li>
+<li>For an <strong>irregular</strong> object, find it by <strong>suspension method</strong> (plumb line)</li>
+</ul>
+<p><strong>Stability and centre of mass:</strong><br />
+- An object is <strong>stable</strong> if its centre of mass lies above its <strong>base of support</strong><br />
+- To topple an object, the centre of mass must move <strong>outside</strong> the base<br />
+- <strong>Wide base + low centre of mass</strong> = most stable</p>
+
+      
+      <div class="section-equations">
+        
+          
+            <div class="equation block-eq">$$M = F \times d$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\text{Sum of clockwise moments} = \text{Sum of anticlockwise moments}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\Sigma M_{\text{clockwise}} = \Sigma M_{\text{anticlockwise}}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\text{MA} = \frac{\text{load}}{\text{effort}} = \frac{\text{effort distance}}{\text{load distance}}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$P = \frac{F}{A}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$P = h \rho g$$</div>
+          
+        
+          
+            <span class="equation inline-eq">$M$</span>
+          
+        
+          
+            <span class="equation inline-eq">$F$</span>
+          
+        
+          
+            <span class="equation inline-eq">$d$</span>
+          
+        
+          
+            <span class="equation inline-eq">$P$</span>
+          
+        
+          
+            <span class="equation inline-eq">$F$</span>
+          
+        
+          
+            <span class="equation inline-eq">$A$</span>
+          
+        
+          
+            <span class="equation inline-eq">$1 \text{ Pa} = 1 \text{ N/m}^2$</span>
+          
+        
+          
+            <span class="equation inline-eq">$P$</span>
+          
+        
+          
+            <span class="equation inline-eq">$h$</span>
+          
+        
+          
+            <span class="equation inline-eq">$\rho$</span>
+          
+        
+          
+            <span class="equation inline-eq">$g$</span>
+          
+        
+      </div>
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-examples" data-section-type="examples">
+    
+    <h2 class="section-heading">✍️ ✍️ Worked Examples</h2>
+    <div class="section-body">
+      <h3>Example 1: Moment of a Force</h3>
+<p>A force of 20 N is applied perpendicularly to a spanner at a distance of 0.3 m from the nut. What is the moment?</p>
+<p><strong>Solution:</strong></p>
+<hr />
+<h3>Example 2: Principle of Moments</h3>
+<p>A 2.0 m long seesaw has a pivot at its centre. A child of mass 30 kg sits 0.8 m from the pivot on the left. Where must a child of mass 40 kg sit on the right to balance?</p>
+<p><strong>Solution:</strong><br />
+Weight of left child:  N<br />
+Weight of right child:  N</p>
+<p>Clockwise moment (right child) = Anticlockwise moment (left child)</p>
+<p>The 40 kg child must sit <strong>0.6 m</strong> from the pivot.</p>
+<hr />
+<h3>Example 3: Pressure</h3>
+<p>A box weighing 600 N rests on the floor. The base of the box measures 0.5 m × 0.4 m. What pressure does it exert?</p>
+<p><strong>Solution:</strong></p>
+<hr />
+<h3>Example 4: Pressure in Water</h3>
+<p>A submarine is at a depth of 50 m in seawater ( kg/m³). What is the water pressure? ( N/kg)</p>
+<p><strong>Solution:</strong></p>
+<p>Total pressure on the hull includes atmospheric pressure ( Pa) on top:</p>
+
+      
+      <div class="section-equations">
+        
+          
+            <div class="equation block-eq">$$M = Fd = 20 \times 0.3 = 6.0 \text{ Nm}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$294 \times 0.8 = 392 \times d$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$d = \frac{294 \times 0.8}{392} = 0.6 \text{ m}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$A = 0.5 \times 0.4 = 0.2 \text{ m}^2$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$P = \frac{F}{A} = \frac{600}{0.2} = 3000 \text{ Pa}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$P = h\rho g = 50 \times 1025 \times 9.8$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$P = 502\,250 \text{ Pa} \approx 5.02 \times 10^5 \text{ Pa}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$P_{\text{total}} = 5.02 \times 10^5 + 1.01 \times 10^5 = 6.03 \times 10^5 \text{ Pa}$$</div>
+          
+        
+          
+            <span class="equation inline-eq">$W_1 = 30 \times 9.8 = 294$</span>
+          
+        
+          
+            <span class="equation inline-eq">$W_2 = 40 \times 9.8 = 392$</span>
+          
+        
+          
+            <span class="equation inline-eq">$\rho = 1025$</span>
+          
+        
+          
+            <span class="equation inline-eq">$g = 9.8$</span>
+          
+        
+          
+            <span class="equation inline-eq">$\approx 1.01 \times 10^5$</span>
+          
+        
+      </div>
+      
+
+      
+    </div>
+  </section>
+  
+
+  <!-- FOOTER -->
+  <div class="lecture-footer">
+    Generated by InteractiveLecture Build System — 2026-06-30
+  </div>
+
+</div>
+
+<script>
+// ─── Theme ───
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  localStorage.setItem('lecture-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+// Restore saved theme
+const savedTheme = localStorage.getItem('lecture-theme');
+if (savedTheme === 'light') document.body.classList.add('light');
+
+// ─── Section Filter ───
+function filterSection(type) {
+  document.querySelectorAll('.sec-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.sec-btn[data-section="${type}"]`);
+  if (btn) btn.classList.add('active');
+
+  if (type === 'all') {
+    document.querySelectorAll('.lecture-section').forEach(s => s.classList.remove('hidden'));
+    return;
+  }
+  document.querySelectorAll('.lecture-section').forEach(s => {
+    s.classList.toggle('hidden', s.dataset.sectionType !== type);
+  });
+}
+
+// ─── Auto-resize iframes on load ───
+document.querySelectorAll('.graph-iframe').forEach(iframe => {
+  iframe.addEventListener('load', function() {
+    try {
+      // Try to resize iframe to its content height
+      const body = this.contentWindow.document.body;
+      const height = body.scrollHeight;
+      if (height > 100) this.style.height = height + 'px';
+    } catch(e) {
+      // Cross-origin restriction — use default height
+    }
+  });
+});
+</script>
+
+</body>
+</html>

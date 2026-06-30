@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Energy Resources — InteractiveLecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --border: #334155;
+    --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
+    --accent: #22d3ee; --accent-glow: rgba(34,211,238,0.12);
+    --green: #34d399; --rose: #fb7185; --violet: #a78bfa; --amber: #fbbf24;
+  }
+  .light {
+    --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
+    --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
+    --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
+    --green: #047857; --rose: #be123c; --violet: #6d28d9; --amber: #b45309;
+  }
+  @page { size: A4; margin: 20mm 18mm; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif;
+    transition: background 0.3s, color 0.3s;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ─── Top Bar ─── */
+  .top-bar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .top-bar h1 {
+    font-size: 1.1rem; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .top-bar h1 .accent { color: var(--accent); }
+  .top-bar .meta {
+    font-size: 0.65rem; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+  }
+  .theme-btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 5px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 0.7rem; font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+  }
+  .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Section Selector ─── */
+  .section-selector {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 24px;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    position: sticky; top: 50px; z-index: 99;
+  }
+  .sec-btn {
+    padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px;
+    background: transparent; color: var(--text-dim);
+    font-size: 0.6rem; font-family: 'JetBrains Mono', monospace;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .sec-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .sec-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Main Content ─── */
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+
+  .lecture-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .lecture-header h1 {
+    font-size: 2rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .lecture-header .lecture-meta {
+    margin-top: 8px; font-size: 0.8rem; color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .lecture-header .lecture-meta span { margin-right: 16px; }
+
+  /* ─── Sections ─── */
+  .lecture-section {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+  .lecture-section:hover { border-color: var(--accent); }
+  .lecture-section.hidden { display: none; }
+
+  .section-heading {
+    font-size: 1.3rem; font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .section-body {
+    font-size: 0.9rem; line-height: 1.7;
+    color: var(--text-dim);
+  }
+
+  /* ─── Typography ─── */
+  .section-body p { margin-bottom: 12px; }
+  .section-body strong { color: var(--text); font-weight: 600; }
+  .section-body em { color: var(--accent); }
+  .section-body ul, .section-body ol { margin: 8px 0 12px 20px; }
+  .section-body li { margin-bottom: 4px; }
+  .section-body a { color: var(--accent); text-decoration: none; }
+  .section-body a:hover { text-decoration: underline; }
+  .section-body hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .section-body pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; line-height: 1.5;
+    overflow-x: auto; margin: 12px 0;
+  }
+  .section-body code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--accent-glow);
+    color: var(--accent);
+    padding: 1px 4px; border-radius: 3px;
+  }
+  .section-body pre code {
+    background: none; color: inherit; padding: 0;
+  }
+
+  /* ─── Equations ─── */
+  .equation.block-eq {
+    text-align: center;
+    margin: 16px 0;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  .equation.inline-eq {
+    display: inline;
+  }
+  .katex { font-size: 1.05em; }
+
+  /* ─── Graph Embeds ─── */
+  .graph-embed {
+    margin: 16px 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .graph-iframe {
+    width: 100%;
+    height: 520px;
+    display: block;
+  }
+
+  /* ─── PDF Export Button ─── */
+  .toolbar {
+    margin-bottom: 20px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .toolbar-btn {
+    padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--card); color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .toolbar-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toolbar-btn.primary {
+    background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600;
+  }
+
+  /* ─── Footer ─── */
+  .lecture-footer {
+    text-align: center;
+    padding: 20px 0;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  /* ─── Print Styles (PDF) ─── */
+  @media print {
+    body { background: white; color: black; }
+    .top-bar, .section-selector, .toolbar, .theme-btn { display: none; }
+    .container { max-width: 100%; padding: 0; }
+    .lecture-section {
+      background: white; border: 1px solid #ccc;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .section-heading { border-bottom-color: #ccc; }
+    .section-body { color: #333; }
+    .section-body strong { color: #000; }
+    .section-body pre { background: #f5f5f5; border-color: #ddd; }
+    .graph-iframe { height: 400px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <h1>📐 <span class="accent">Energy Resources</span></h1>
+  <div class="meta">
+    <span>IGCSE Physics 0625 — Extended</span>
+    <span>• 1.8 Energy Resources</span>
+    <span>• v1</span>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+</div>
+
+<!-- SECTION SELECTOR -->
+<div class="section-selector">
+  <button class="sec-btn active" data-section="all" onclick="filterSection('all')">📋 All</button>
+  
+    
+    <button class="sec-btn" data-section="history" onclick="filterSection('history')">
+      📜 📜 History
+    </button>
+  
+    
+    <button class="sec-btn" data-section="nature" onclick="filterSection('nature')">
+      🌍 🌍 Nature & Applicati
+    </button>
+  
+    
+    <button class="sec-btn" data-section="theory" onclick="filterSection('theory')">
+      ⚛️ ⚛️ Theory
+    </button>
+  
+    
+    <button class="sec-btn" data-section="examples" onclick="filterSection('examples')">
+      ✍️ ✍️ Worked Examples
+    </button>
+  
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="toolbar-btn" onclick="toggleTheme()">🌓 Toggle Theme</button>
+    <button class="toolbar-btn" onclick="window.print()">🖨️ Print / PDF</button>
+  </div>
+
+  <!-- HEADER -->
+  <div class="lecture-header">
+    <h1>Energy Resources</h1>
+    <div class="lecture-meta">
+      <span>📂 1.8 Energy Resources</span>
+      <span>🎯 IGCSE Physics 0625 — Extended</span>
+      <span>📝 Version 1</span>
+      <span>📅 2026-06-30</span>
+    </div>
+  </div>
+
+  <!-- SECTIONS -->
+  
+  <section class="lecture-section section-history" data-section-type="history">
+    
+    <h2 class="section-heading">📜 📜 History</h2>
+    <div class="section-body">
+      <p>Human civilisation has been shaped by the energy resources available to each era.</p>
+<p><strong>The Pre-Industrial Era (before 1760)</strong>: Humans relied on <strong>biomass</strong> (wood for heating, food for muscle power), <strong>wind</strong> (sails, windmills), and <strong>water</strong> (water wheels). Energy was limited and local.</p>
+<p><strong>The Industrial Revolution (1760–1840)</strong>: The invention of the steam engine by <strong>James Watt</strong> (1736–1819) enabled widespread use of <strong>coal</strong>. This was the first time humans could access the stored chemical energy of fossilised plants from millions of years ago. This energy surplus drove factories, railways, and steamships.</p>
+<p><strong>The Oil Era (1900–present)</strong>: The discovery and extraction of <strong>petroleum</strong> provided an even more energy-dense fuel. It powered automobiles, aircraft, plastics, and the modern chemical industry.</p>
+<p><strong>The Renewable Transition (2000–present)</strong>: Growing awareness of climate change and finite fossil fuel reserves has driven a global shift toward renewable energy sources.</p>
+<blockquote>
+<p><strong>Did you know?</strong> All fossil fuels (coal, oil, natural gas) are the remains of ancient organisms — coal from trees and plants that died 300 million years ago, oil from tiny marine organisms. This is why they're called "fossil" fuels — they are literally buried sunlight from the Carboniferous period.</p>
+</blockquote>
+
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-nature" data-section-type="nature">
+    
+    <h2 class="section-heading">🌍 🌍 Nature & Applications</h2>
+    <div class="section-body">
+      <ul>
+<li><strong>⛽ Petrol/Diesel</strong> power most of the world's cars and trucks</li>
+<li><strong>💡 Electricity</strong> is generated from a mix of coal, gas, nuclear, hydro, wind, and solar</li>
+<li><strong>☀️ Solar power</strong> is the fastest-growing energy source globally</li>
+<li><strong>🌊 Tidal and wave power</strong> harness the Moon's gravitational pull</li>
+<li><strong>🌡️ Geothermal</strong> uses heat from inside the Earth (radioactive decay in the core)</li>
+<li><strong>🪵 Biomass</strong> (wood, crop waste) is still the primary energy source for ~2 billion people</li>
+</ul>
+
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-theory" data-section-type="theory">
+    
+    <h2 class="section-heading">⚛️ ⚛️ Theory</h2>
+    <div class="section-body">
+      <h3>Non-Renewable Energy Resources</h3>
+<p>These are resources that are <strong>limited</strong> and will eventually run out.</p>
+<p>| Resource | How it works | Advantages | Disadvantages |<br />
+|----------|-------------|------------|--------------|<br />
+| <strong>Coal</strong> | Burned to heat water → steam → turbine → electricity | Cheap, abundant, established infrastructure | CO₂ emissions, acid rain, mining damage |<br />
+| <strong>Oil</strong> | Refined into petrol/diesel, burned in engines or power plants | High energy density, versatile (plastics, chemicals) | CO₂ emissions, oil spills, finite |<br />
+| <strong>Natural gas</strong> | Burned for heating, cooking, electricity | Cleaner than coal/oil (less CO₂ per kWh) | Still produces CO₂, leaks methane (worse GHG) |<br />
+| <strong>Nuclear</strong> | Uranium fission → heat → steam → turbine → electricity | No CO₂ emissions, huge energy from small fuel | Radioactive waste, disaster risk (Chernobyl, Fukushima) |</p>
+<h3>Renewable Energy Resources</h3>
+<p>These resources are <strong>replenished naturally</strong> and will not run out.</p>
+<p>| Resource | How it works | Advantages | Disadvantages |<br />
+|----------|-------------|------------|--------------|<br />
+| <strong>Solar</strong> | Photovoltaic cells convert sunlight directly to electricity | Free fuel, no emissions, works at small scale | Intermittent (night/clouds), low efficiency (~20%) |<br />
+| <strong>Wind</strong> | Wind turns blades → generator → electricity | Free fuel, no emissions, cheap in windy locations | Intermittent (wind varies), visual noise, bird strikes |<br />
+| <strong>Hydroelectric</strong> | Water flows through dam → turbine → electricity | Reliable (can be turned on/off), long lifespan | Habitat destruction, high upfront cost, drought risk |<br />
+| <strong>Tidal</strong> | Tidal flows turn underwater turbines | Predictable (tides are regular), no fuel cost | Expensive, limited suitable locations, marine ecosystem impact |<br />
+| <strong>Wave</strong> | Wave motion drives generators | Huge potential, continuous resource | Technology still developing, harsh marine environment |<br />
+| <strong>Geothermal</strong> | Heat from underground → steam → turbine | Constant (not intermittent), small land footprint | Only works in geologically active areas, can trigger earthquakes |<br />
+| <strong>Biomass</strong> | Burn organic matter (wood, crops, waste) | Uses waste materials, carbon-neutral if regrown | Still produces CO₂ and particulates, land competition with food |</p>
+<h3>Comparing Energy Resources</h3>
+<p><strong>Environmental impact:</strong><br />
+- Fossil fuels produce CO₂ (greenhouse gas) and other pollutants<br />
+- Nuclear produces radioactive waste<br />
+- Renewables produce no direct emissions during operation (but have manufacturing impacts)</p>
+<p><strong>Reliability:</strong><br />
+- Fossil fuels and nuclear are <strong>reliable</strong> (can generate 24/7)<br />
+- Solar and wind are <strong>intermittent</strong> (dependent on weather and time of day)<br />
+- Hydro, tidal, and geothermal can provide <strong>base load</strong> or be turned on/off as needed</p>
+<p><strong>Energy density:</strong><br />
+- Nuclear has the highest energy density (1 kg uranium ≈ 20 000 kg coal)<br />
+- Fossil fuels have high energy density<br />
+- Renewables generally have low energy density (need large areas)</p>
+<h3>The Energy Mix</h3>
+<p>Different countries use different mixes of energy resources depending on:<br />
+- <strong>Geography</strong> (sunny? windy? mountains for hydro? geothermal?)<br />
+- <strong>Economics</strong> (what's cheapest available?)<br />
+- <strong>Politics</strong> (energy security, climate targets)<br />
+- <strong>Technology</strong> (grid capacity, storage solutions)</p>
+<h3>Energy Efficiency in Context</h3>
+<p>The most environmentally friendly energy is the energy we <strong>don't use</strong>:</p>
+<p>Energy conservation methods:<br />
+- <strong>Insulation</strong> — reduce heating/cooling needs in buildings<br />
+- <strong>LED lighting</strong> — uses ~80% less energy than incandescent bulbs<br />
+- <strong>Energy-efficient appliances</strong> — A+++ rated refrigerators, washing machines<br />
+- <strong>Public transport</strong> — reduces energy per person per km compared to cars</p>
+
+      
+      <div class="section-equations">
+        
+          
+            <div class="equation block-eq">$$\text{Sustainable energy} = \text{available} + \text{affordable} + \text{environmentally acceptable}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\text{Energy saved} = \text{energy not generated}$$</div>
+          
+        
+      </div>
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-examples" data-section-type="examples">
+    
+    <h2 class="section-heading">✍️ ✍️ Worked Examples</h2>
+    <div class="section-body">
+      <h3>Example 1: Comparing CO₂ Emissions</h3>
+<p>A coal power station produces 1.0 kg of CO₂ per kWh of electricity. A gas power station produces 0.4 kg of CO₂ per kWh.</p>
+<p>How much CO₂ does each produce in a day, if they both generate 500 MW (500 000 kW)?</p>
+<p><strong>Solution (Coal):</strong></p>
+<p><strong>Solution (Gas):</strong></p>
+<p>Gas produces less than half the CO₂ of coal for the same electricity output.</p>
+<hr />
+<h3>Example 2: Solar Panel Efficiency</h3>
+<p>A solar panel with area 2 m² receives 1000 W/m² of sunlight. It produces 320 W of electrical power. What is its efficiency?</p>
+<p><strong>Solution:</strong></p>
+<hr />
+<h3>Example 3: Wind Farm Output</h3>
+<p>A wind turbine has a rated power of 2 MW. It operates at 30% capacity factor (due to varying wind). How much energy does it produce in one year?</p>
+<p><strong>Solution:</strong></p>
+<hr />
+<h3>Example 4: Comparison Table</h3>
+<p>A household uses 4000 kWh of electricity per year. Compare the CO₂ emissions if this comes from coal vs solar (solar has zero operational emissions, but manufacturing emits ~50 g CO₂ per kWh).</p>
+<p><strong>Solution (Coal):</strong></p>
+<p><strong>Solution (Solar):</strong></p>
+<p>Solar produces <strong>20 times less</strong> CO₂ over its lifetime.</p>
+
+      
+      <div class="section-equations">
+        
+          
+            <div class="equation block-eq">$$\text{Energy per day} = 500\,000 \times 24 = 12\,000\,000 \text{ kWh}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\text{CO}_2 = 12\,000\,000 \times 1.0 = 12\,000\,000 \text{ kg} = 12\,000 \text{ tonnes}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\text{CO}_2 = 12\,000\,000 \times 0.4 = 4\,800\,000 \text{ kg} = 4\,800 \text{ tonnes}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\text{Input power} = 1000 \times 2 = 2000 \text{ W}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\text{Efficiency} = \frac{320}{2000} \times 100\% = 16\%$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\text{Actual average power} = 2 \times 0.30 = 0.6 \text{ MW} = 600 \text{ kW}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\text{Hours per year} = 365 \times 24 = 8760 \text{ h}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\text{Energy} = 600 \times 8760 = 5\,256\,000 \text{ kWh} = 5.26 \text{ GWh}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\text{CO}_2 = 4000 \times 1.0 = 4000 \text{ kg} = 4 \text{ tonnes}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\text{CO}_2 = 4000 \times 0.05 = 200 \text{ kg} = 0.2 \text{ tonnes}$$</div>
+          
+        
+      </div>
+      
+
+      
+    </div>
+  </section>
+  
+
+  <!-- FOOTER -->
+  <div class="lecture-footer">
+    Generated by InteractiveLecture Build System — 2026-06-30
+  </div>
+
+</div>
+
+<script>
+// ─── Theme ───
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  localStorage.setItem('lecture-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+// Restore saved theme
+const savedTheme = localStorage.getItem('lecture-theme');
+if (savedTheme === 'light') document.body.classList.add('light');
+
+// ─── Section Filter ───
+function filterSection(type) {
+  document.querySelectorAll('.sec-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.sec-btn[data-section="${type}"]`);
+  if (btn) btn.classList.add('active');
+
+  if (type === 'all') {
+    document.querySelectorAll('.lecture-section').forEach(s => s.classList.remove('hidden'));
+    return;
+  }
+  document.querySelectorAll('.lecture-section').forEach(s => {
+    s.classList.toggle('hidden', s.dataset.sectionType !== type);
+  });
+}
+
+// ─── Auto-resize iframes on load ───
+document.querySelectorAll('.graph-iframe').forEach(iframe => {
+  iframe.addEventListener('load', function() {
+    try {
+      // Try to resize iframe to its content height
+      const body = this.contentWindow.document.body;
+      const height = body.scrollHeight;
+      if (height > 100) this.style.height = height + 'px';
+    } catch(e) {
+      // Cross-origin restriction — use default height
+    }
+  });
+});
+</script>
+
+</body>
+</html>

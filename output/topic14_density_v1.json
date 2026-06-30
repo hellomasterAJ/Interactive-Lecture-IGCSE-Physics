@@ -1,0 +1,126 @@
+{
+  "title": "Density",
+  "topic": "1.4 Density",
+  "level": "IGCSE Physics 0625 — Extended",
+  "version": 1,
+  "sections": [
+    {
+      "heading": "📜 History",
+      "type": "history",
+      "content_md": "The concept of density dates back to **Archimedes of Syracuse** (c. 287–212 BCE), one of the greatest mathematicians and inventors of the ancient world.\n\n**The Golden Crown Problem**: King Hiero II suspected a goldsmith had replaced some gold with silver in his crown. He asked Archimedes to determine whether the crown was pure gold without destroying it.\n\nWhile taking a bath, Archimedes noticed that his body displaced water — and realised he could measure the crown's volume by water displacement. He was so excited that he ran through the streets naked shouting **\"Eureka!\"** (Greek: \"I have found it!\").\n\nBy comparing the crown's density to that of pure gold, he proved the goldsmith had cheated.\n\n> **Myth vs Fact:** The \"Eureka!\" story may be embellished, but Archimedes definitely used the principle of buoyancy (now called **Archimedes' Principle**) to solve the problem. The principle states that the buoyant force on an object equals the weight of the fluid it displaces.",
+      "equations": [],
+      "graph_directives": []
+    },
+    {
+      "heading": "🌍 Nature & Applications",
+      "type": "nature",
+      "content_md": "- **🚢 Ships float** because their average density is less than water (they are mostly hollow — filled with air)\n- **🎈 Hot air balloons rise** because hot air is less dense than cool air\n- **🧊 Ice floats on water** because ice is less dense than liquid water — this is unusual (most solids are denser than their liquid form)\n- **🌊 Ocean currents** are driven by differences in water density (temperature and salinity)\n- **⚗️ Immiscible liquids separate** by density — oil floats on water\n- **🪨 Prospectors** use density to identify minerals and ores",
+      "equations": [],
+      "graph_directives": []
+    },
+    {
+      "heading": "⚛️ Theory",
+      "type": "theory",
+      "content_md": "### Definition\n\nDensity is the **mass per unit volume** of a substance. It tells you how \"tightly packed\" the matter is.\n\n<!-- EQ_BLOCK_0 -->\n\nWhere:\n- <!-- EQ_INLINE_2 --> (rho) = density (kg/m³ or g/cm³)\n- <!-- EQ_INLINE_3 --> = mass (kg or g)\n- <!-- EQ_INLINE_4 --> = volume (m³ or cm³)\n\n### Units\n\n| Unit System | Mass | Volume | Density |\n|------------|------|--------|---------|\n| SI | kg | m³ | **kg/m³** |\n| Practical | g | cm³ | **g/cm³** |\n\n**Conversion**: <!-- EQ_INLINE_5 -->\n\nThe density of water: <!-- EQ_INLINE_6 -->\n\n### Densities of Common Substances\n\n| Substance | Density (g/cm³) | Density (kg/m³) |\n|-----------|----------------|-----------------|\n| Air (at sea level) | 0.0012 | 1.2 |\n| Wood (oak) | ~0.75 | ~750 |\n| Water | 1.0 | 1000 |\n| Ice | 0.92 | 920 |\n| Aluminium | 2.7 | 2700 |\n| Iron / Steel | 7.8 | 7800 |\n| Mercury | 13.6 | 13600 |\n| Gold | 19.3 | 19300 |\n\n### Measuring Density of a Regular Solid\n\n1. Measure mass with a balance\n2. Measure dimensions with a ruler (length, width, height)\n3. Calculate volume: <!-- EQ_INLINE_7 --> (or <!-- EQ_INLINE_8 --> for a cylinder)\n4. Calculate density: <!-- EQ_INLINE_9 -->\n\n### Measuring Density of an Irregular Solid\n\n1. Measure mass with a balance\n2. Measure volume by **displacement** (submerge in water in a measuring cylinder)\n3. <!-- EQ_INLINE_10 -->\n4. Calculate density: <!-- EQ_INLINE_11 -->\n\n### Measuring Density of a Liquid\n\n1. Measure mass of an **empty** measuring cylinder\n2. Add a known volume of liquid\n3. Measure mass of the **filled** measuring cylinder\n4. Mass of liquid = filled mass - empty mass\n5. <!-- EQ_INLINE_12 -->\n\n### Floating and Sinking\n\n- An object **floats** if its density is **less than** the fluid it's in\n- An object **sinks** if its density is **greater than** the fluid it's in\n- An object **hovers** (is neutrally buoyant) if its density **equals** the fluid's density\n\n<!-- EQ_BLOCK_1 -->",
+      "equations": [
+        {
+          "latex": "\\rho = \\frac{m}{V}",
+          "inline": false
+        },
+        {
+          "latex": "\\text{Density of object} \\begin{cases}\n< \\rho_{\\text{fluid}} & \\Rightarrow \\text{floats} \\\\\n= \\rho_{\\text{fluid}} & \\Rightarrow \\text{neutrally buoyant} \\\\\n> \\rho_{\\text{fluid}} & \\Rightarrow \\text{sinks}\n\\end{cases}",
+          "inline": false
+        },
+        {
+          "latex": "\\rho",
+          "inline": true
+        },
+        {
+          "latex": "m",
+          "inline": true
+        },
+        {
+          "latex": "V",
+          "inline": true
+        },
+        {
+          "latex": "1 \\text{ g/cm}^3 = 1000 \\text{ kg/m}^3",
+          "inline": true
+        },
+        {
+          "latex": "1.0 \\text{ g/cm}^3 = 1000 \\text{ kg/m}^3",
+          "inline": true
+        },
+        {
+          "latex": "V = l \\times w \\times h",
+          "inline": true
+        },
+        {
+          "latex": "\\pi r^2 h",
+          "inline": true
+        },
+        {
+          "latex": "\\rho = \\frac{m}{V}",
+          "inline": true
+        },
+        {
+          "latex": "V = V_{\\text{final}} - V_{\\text{initial}}",
+          "inline": true
+        },
+        {
+          "latex": "\\rho = \\frac{m}{V}",
+          "inline": true
+        },
+        {
+          "latex": "\\rho = \\frac{m}{V}",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    },
+    {
+      "heading": "✍️ Worked Examples",
+      "type": "examples",
+      "content_md": "### Example 1: Basic Density Calculation\n\nA block of aluminium has a mass of 135 g and a volume of 50 cm³. What is its density?\n\n**Solution:**\n<!-- EQ_BLOCK_0 -->\n\nIn SI units:\n<!-- EQ_BLOCK_1 -->\n\n---\n\n### Example 2: Finding Mass from Density\n\nA swimming pool has dimensions 25 m × 10 m × 2 m. What is the mass of water in the pool?\n\n**Solution:**\n<!-- EQ_BLOCK_2 -->\n<!-- EQ_BLOCK_3 -->\nMass of water = <!-- EQ_INLINE_8 --> kg = 500 tonnes\n\n---\n\n### Example 3: Irregular Solid (Displacement)\n\nA stone has a mass of 64 g. When placed in a measuring cylinder containing 30 mL of water, the water level rises to 54 mL. What is the density of the stone?\n\n**Solution:**\n<!-- EQ_BLOCK_4 -->\n<!-- EQ_BLOCK_5 -->\n\n---\n\n### Example 4: Will It Float?\n\nA cube of material has side 5 cm and mass 150 g. Will it float in water?\n\n**Solution:**\n<!-- EQ_BLOCK_6 -->\n<!-- EQ_BLOCK_7 -->\n\nDensity of the cube (1.2 g/cm³) > density of water (1.0 g/cm³), so the cube will **sink**.",
+      "equations": [
+        {
+          "latex": "\\rho = \\frac{m}{V} = \\frac{135}{50} = 2.7 \\text{ g/cm}^3",
+          "inline": false
+        },
+        {
+          "latex": "\\rho = 2.7 \\times 1000 = 2700 \\text{ kg/m}^3",
+          "inline": false
+        },
+        {
+          "latex": "V = 25 \\times 10 \\times 2 = 500 \\text{ m}^3",
+          "inline": false
+        },
+        {
+          "latex": "m = \\rho V = 1000 \\times 500 = 500\\,000 \\text{ kg}",
+          "inline": false
+        },
+        {
+          "latex": "V = 54 - 30 = 24 \\text{ cm}^3",
+          "inline": false
+        },
+        {
+          "latex": "\\rho = \\frac{64}{24} = 2.67 \\text{ g/cm}^3",
+          "inline": false
+        },
+        {
+          "latex": "V = 5^3 = 125 \\text{ cm}^3",
+          "inline": false
+        },
+        {
+          "latex": "\\rho = \\frac{150}{125} = 1.2 \\text{ g/cm}^3",
+          "inline": false
+        },
+        {
+          "latex": "5.0 \\times 10^5",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    }
+  ]
+}

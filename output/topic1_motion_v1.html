@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Motion — Kinematics — InteractiveLecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --border: #334155;
+    --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
+    --accent: #22d3ee; --accent-glow: rgba(34,211,238,0.12);
+    --green: #34d399; --rose: #fb7185; --violet: #a78bfa; --amber: #fbbf24;
+  }
+  .light {
+    --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
+    --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
+    --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
+    --green: #047857; --rose: #be123c; --violet: #6d28d9; --amber: #b45309;
+  }
+  @page { size: A4; margin: 20mm 18mm; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif;
+    transition: background 0.3s, color 0.3s;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ─── Top Bar ─── */
+  .top-bar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .top-bar h1 {
+    font-size: 1.1rem; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .top-bar h1 .accent { color: var(--accent); }
+  .top-bar .meta {
+    font-size: 0.65rem; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+  }
+  .theme-btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 5px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 0.7rem; font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+  }
+  .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Section Selector ─── */
+  .section-selector {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 24px;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    position: sticky; top: 50px; z-index: 99;
+  }
+  .sec-btn {
+    padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px;
+    background: transparent; color: var(--text-dim);
+    font-size: 0.6rem; font-family: 'JetBrains Mono', monospace;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .sec-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .sec-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Main Content ─── */
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+
+  .lecture-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .lecture-header h1 {
+    font-size: 2rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .lecture-header .lecture-meta {
+    margin-top: 8px; font-size: 0.8rem; color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .lecture-header .lecture-meta span { margin-right: 16px; }
+
+  /* ─── Sections ─── */
+  .lecture-section {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+  .lecture-section:hover { border-color: var(--accent); }
+  .lecture-section.hidden { display: none; }
+
+  .section-heading {
+    font-size: 1.3rem; font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .section-body {
+    font-size: 0.9rem; line-height: 1.7;
+    color: var(--text-dim);
+  }
+
+  /* ─── Typography ─── */
+  .section-body p { margin-bottom: 12px; }
+  .section-body strong { color: var(--text); font-weight: 600; }
+  .section-body em { color: var(--accent); }
+  .section-body ul, .section-body ol { margin: 8px 0 12px 20px; }
+  .section-body li { margin-bottom: 4px; }
+  .section-body a { color: var(--accent); text-decoration: none; }
+  .section-body a:hover { text-decoration: underline; }
+  .section-body hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .section-body pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; line-height: 1.5;
+    overflow-x: auto; margin: 12px 0;
+  }
+  .section-body code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--accent-glow);
+    color: var(--accent);
+    padding: 1px 4px; border-radius: 3px;
+  }
+  .section-body pre code {
+    background: none; color: inherit; padding: 0;
+  }
+
+  /* ─── Equations ─── */
+  .equation.block-eq {
+    text-align: center;
+    margin: 16px 0;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  .equation.inline-eq {
+    display: inline;
+  }
+  .katex { font-size: 1.05em; }
+
+  /* ─── Graph Embeds ─── */
+  .graph-embed {
+    margin: 16px 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .graph-iframe {
+    width: 100%;
+    height: 520px;
+    display: block;
+  }
+
+  /* ─── PDF Export Button ─── */
+  .toolbar {
+    margin-bottom: 20px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .toolbar-btn {
+    padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--card); color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .toolbar-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toolbar-btn.primary {
+    background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600;
+  }
+
+  /* ─── Footer ─── */
+  .lecture-footer {
+    text-align: center;
+    padding: 20px 0;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  /* ─── Print Styles (PDF) ─── */
+  @media print {
+    body { background: white; color: black; }
+    .top-bar, .section-selector, .toolbar, .theme-btn { display: none; }
+    .container { max-width: 100%; padding: 0; }
+    .lecture-section {
+      background: white; border: 1px solid #ccc;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .section-heading { border-bottom-color: #ccc; }
+    .section-body { color: #333; }
+    .section-body strong { color: #000; }
+    .section-body pre { background: #f5f5f5; border-color: #ddd; }
+    .graph-iframe { height: 400px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <h1>📐 <span class="accent">Motion — Kinematics</span></h1>
+  <div class="meta">
+    <span>IGCSE Physics 0625 — Extended</span>
+    <span>• 1.2 Motion</span>
+    <span>• v1</span>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+</div>
+
+<!-- SECTION SELECTOR -->
+<div class="section-selector">
+  <button class="sec-btn active" data-section="all" onclick="filterSection('all')">📋 All</button>
+  
+    
+    <button class="sec-btn" data-section="history" onclick="filterSection('history')">
+      📜 📜 History
+    </button>
+  
+    
+    <button class="sec-btn" data-section="nature" onclick="filterSection('nature')">
+      🌍 🌍 Nature & Applicati
+    </button>
+  
+    
+    <button class="sec-btn" data-section="theory" onclick="filterSection('theory')">
+      ⚛️ ⚛️ Theory
+    </button>
+  
+    
+    <button class="sec-btn" data-section="graphs" onclick="filterSection('graphs')">
+      📊 📊 Interactive Graphs
+    </button>
+  
+    
+    <button class="sec-btn" data-section="examples" onclick="filterSection('examples')">
+      ✍️ ✍️ Worked Examples
+    </button>
+  
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="toolbar-btn" onclick="toggleTheme()">🌓 Toggle Theme</button>
+    <button class="toolbar-btn" onclick="window.print()">🖨️ Print / PDF</button>
+  </div>
+
+  <!-- HEADER -->
+  <div class="lecture-header">
+    <h1>Motion — Kinematics</h1>
+    <div class="lecture-meta">
+      <span>📂 1.2 Motion</span>
+      <span>🎯 IGCSE Physics 0625 — Extended</span>
+      <span>📝 Version 1</span>
+      <span>📅 2026-06-30</span>
+    </div>
+  </div>
+
+  <!-- SECTIONS -->
+  
+  <section class="lecture-section section-history" data-section-type="history">
+    
+    <h2 class="section-heading">📜 📜 History</h2>
+    <div class="section-body">
+      <p>The study of motion, known as <strong>kinematics</strong>, began with ancient Greek philosophers.</p>
+<p><strong>Aristotle (384–322 BCE)</strong> believed that objects fell at speeds proportional to their weight — a heavier object falls faster than a lighter one. This idea was accepted for nearly 2,000 years because it seemed intuitive.</p>
+<p><strong>Galileo Galilei (1564–1642)</strong> challenged Aristotle's view. Through careful experiments using inclined planes and water clocks, he demonstrated that in the absence of air resistance, <strong>all objects fall at the same rate regardless of mass</strong>. Galileo's work laid the foundation for modern kinematics.</p>
+<blockquote>
+<p><strong>Myth vs Fact:</strong> The story of Galileo dropping balls from the Leaning Tower of Pisa is a popular myth. In reality, he used inclined planes to slow down the motion so he could measure it more accurately with the primitive timing tools available.</p>
+</blockquote>
+<p><strong>Sir Isaac Newton (1643–1727)</strong> later formalised the laws of motion in his work <em>Philosophiæ Naturalis Principia Mathematica</em>, unifying terrestrial and celestial motion under the same mathematical framework.</p>
+
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-nature" data-section-type="nature">
+    
+    <h2 class="section-heading">🌍 🌍 Nature & Applications</h2>
+    <div class="section-body">
+      <p>Kinematics — the description of motion — is everywhere in our daily lives:</p>
+<ul>
+<li><strong>🚗 Cars &amp; Transport</strong>: Speedometers measure instantaneous speed. Sat-navs calculate average speed and time of arrival.</li>
+<li><strong>🏃 Sports</strong>: Athletes analyse split times, acceleration off the starting block, and peak speed.</li>
+<li><strong>🛰️ Space Exploration</strong>: Rocket launches require precise calculations of velocity and acceleration to reach orbit.</li>
+<li><strong>🚦 Safety</strong>: Thinking distance and braking distance determine stopping distances for road safety.</li>
+</ul>
+<p><strong>Key idea</strong>: Motion is <strong>relative</strong> — we describe it from a chosen reference point (the observer's position).</p>
+
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-theory" data-section-type="theory">
+    
+    <h2 class="section-heading">⚛️ ⚛️ Theory</h2>
+    <div class="section-body">
+      <h3>Key Quantities</h3>
+<ul>
+<li><strong>Distance (s)</strong> — total path length travelled (scalar, SI unit: metre, m)</li>
+<li><strong>Displacement (s)</strong> — straight-line distance from start to finish in a given direction (vector, m)</li>
+<li><strong>Speed (v)</strong> — rate of change of distance:  (scalar, m/s)</li>
+<li><strong>Velocity (v)</strong> — rate of change of displacement:  (vector, m/s)</li>
+<li><strong>Acceleration (a)</strong> — rate of change of velocity:  (vector, m/s²)</li>
+</ul>
+<h3>Equations for Uniform Acceleration (SUVAT)</h3>
+<p>These equations apply only when acceleration is <strong>constant</strong>:</p>
+<p>Where:<br />
+-  = initial velocity (m/s)<br />
+-  = final velocity (m/s)<br />
+-  = acceleration (m/s²)<br />
+-  = time (s)<br />
+-  = displacement (m)</p>
+<h3>Free Fall</h3>
+<p>When an object falls freely under gravity, <strong>air resistance is negligible</strong>, and the acceleration is constant at:</p>
+<p>The equations of motion become:</p>
+<p><strong>For a freely falling object dropped from rest</strong> ():</p>
+<h3>Graphs of Motion</h3>
+<p>| Graph Type | Y-axis | Gradient | Area Under |<br />
+|-----------|--------|----------|------------|<br />
+| Distance–Time | distance (m) | speed (m/s) | — |<br />
+| Speed–Time | speed (m/s) | acceleration (m/s²) | distance (m) |<br />
+| Acceleration–Time | acceleration (m/s²) | — | change in velocity (m/s) |</p>
+
+      
+      <div class="section-equations">
+        
+          
+            <div class="equation block-eq">$$v = u + at$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$s = ut + \frac{1}{2}at^2$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$v^2 = u^2 + 2as$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$g = 9.8 \, \text{m/s}^2 \, (\text{downward on Earth})$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$v = u + gt$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$s = ut + \frac{1}{2}gt^2$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$v = gt$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$s = \frac{1}{2}gt^2$$</div>
+          
+        
+          
+            <span class="equation inline-eq">$v = \frac{\Delta s}{\Delta t}$</span>
+          
+        
+          
+            <span class="equation inline-eq">$v = \frac{\Delta s}{\Delta t}$</span>
+          
+        
+          
+            <span class="equation inline-eq">$a = \frac{\Delta v}{\Delta t}$</span>
+          
+        
+          
+            <span class="equation inline-eq">$u$</span>
+          
+        
+          
+            <span class="equation inline-eq">$v$</span>
+          
+        
+          
+            <span class="equation inline-eq">$a$</span>
+          
+        
+          
+            <span class="equation inline-eq">$t$</span>
+          
+        
+          
+            <span class="equation inline-eq">$s$</span>
+          
+        
+          
+            <span class="equation inline-eq">$u = 0$</span>
+          
+        
+      </div>
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-graphs" data-section-type="graphs">
+    
+    <h2 class="section-heading">📊 📊 Interactive Graphs</h2>
+    <div class="section-body">
+      <h3>Horizontal Motion</h3>
+<p>Experiment with different modes of motion — from rest, constant speed, acceleration, and deceleration.</p>
+<h3>Free Fall (Vertical Motion)</h3>
+<p>Observe the motion of a freely falling apple under different gravitational fields.</p>
+
+      
+
+      
+      <div class="section-graphs">
+        
+        <div class="graph-embed" data-graph-type="horizontal-motion">
+          <iframe src="../graphs/kinematics_graphs_v1.html?embedded=true&mode=constant-speed&speed=8" frameborder="0" loading="lazy"
+            title="horizontal-motion graph" class="graph-iframe"></iframe>
+        </div>
+        
+        <div class="graph-embed" data-graph-type="horizontal-motion">
+          <iframe src="../graphs/kinematics_graphs_v1.html?embedded=true&mode=increasing-speed&speed=5" frameborder="0" loading="lazy"
+            title="horizontal-motion graph" class="graph-iframe"></iframe>
+        </div>
+        
+        <div class="graph-embed" data-graph-type="freefall">
+          <iframe src="../graphs/kinematics_freefall_v1.html?embedded=true&scenario=earth" frameborder="0" loading="lazy"
+            title="freefall graph" class="graph-iframe"></iframe>
+        </div>
+        
+        <div class="graph-embed" data-graph-type="freefall">
+          <iframe src="../graphs/kinematics_freefall_v1.html?embedded=true&scenario=moon" frameborder="0" loading="lazy"
+            title="freefall graph" class="graph-iframe"></iframe>
+        </div>
+        
+      </div>
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-examples" data-section-type="examples">
+    
+    <h2 class="section-heading">✍️ ✍️ Worked Examples</h2>
+    <div class="section-body">
+      <h3>Example 1: Constant Acceleration</h3>
+<p>A car starts from rest and accelerates uniformly at  for 10 seconds.</p>
+<p><strong>(a)</strong> What is its final velocity?<br />
+<strong>(b)</strong> How far does it travel?</p>
+<p><strong>Solution (a):</strong></p>
+<p><strong>Solution (b):</strong></p>
+<hr />
+<h3>Example 2: Free Fall</h3>
+<p>A ball is dropped from a height of 45 m. How long does it take to reach the ground? (Take )</p>
+<p><strong>Solution:</strong></p>
+<hr />
+<h3>Example 3: Thinking and Braking Distance</h3>
+<p>A car travels at . The driver's reaction time is . The braking deceleration is .</p>
+<p><strong>(a)</strong> What is the thinking distance?<br />
+<strong>(b)</strong> What is the braking distance?<br />
+<strong>(c)</strong> What is the total stopping distance?</p>
+<p><strong>Solution (a):</strong><br />
+Thinking distance = speed × reaction time</p>
+<p><strong>Solution (b):</strong><br />
+Braking distance:</p>
+<p><strong>Solution (c):</strong><br />
+Total stopping distance = </p>
+
+      
+      <div class="section-equations">
+        
+          
+            <div class="equation block-eq">$$v = u + at = 0 + (2.0)(10) = 20 \, \text{m/s}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$s = ut + \frac{1}{2}at^2 = 0 + \frac{1}{2}(2.0)(10)^2 = 100 \, \text{m}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$s = \frac{1}{2}gt^2$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$45 = \frac{1}{2}(10)t^2$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$t^2 = 9$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$t = 3.0 \, \text{s}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$= (20)(0.5) = 10 \, \text{m}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$v^2 = u^2 + 2as$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$0 = (20)^2 + 2(-4.0)s$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$s = \frac{400}{8} = 50 \, \text{m}$$</div>
+          
+        
+          
+            <span class="equation inline-eq">$2.0 \, \text{m/s}^2$</span>
+          
+        
+          
+            <span class="equation inline-eq">$g = 10 \, \text{m/s}^2$</span>
+          
+        
+          
+            <span class="equation inline-eq">$20 \, \text{m/s}$</span>
+          
+        
+          
+            <span class="equation inline-eq">$0.5 \, \text{s}$</span>
+          
+        
+          
+            <span class="equation inline-eq">$4.0 \, \text{m/s}^2$</span>
+          
+        
+          
+            <span class="equation inline-eq">$10 + 50 = 60 \, \text{m}$</span>
+          
+        
+      </div>
+      
+
+      
+    </div>
+  </section>
+  
+
+  <!-- FOOTER -->
+  <div class="lecture-footer">
+    Generated by InteractiveLecture Build System — 2026-06-30
+  </div>
+
+</div>
+
+<script>
+// ─── Theme ───
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  localStorage.setItem('lecture-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+// Restore saved theme
+const savedTheme = localStorage.getItem('lecture-theme');
+if (savedTheme === 'light') document.body.classList.add('light');
+
+// ─── Section Filter ───
+function filterSection(type) {
+  document.querySelectorAll('.sec-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.sec-btn[data-section="${type}"]`);
+  if (btn) btn.classList.add('active');
+
+  if (type === 'all') {
+    document.querySelectorAll('.lecture-section').forEach(s => s.classList.remove('hidden'));
+    return;
+  }
+  document.querySelectorAll('.lecture-section').forEach(s => {
+    s.classList.toggle('hidden', s.dataset.sectionType !== type);
+  });
+}
+
+// ─── Auto-resize iframes on load ───
+document.querySelectorAll('.graph-iframe').forEach(iframe => {
+  iframe.addEventListener('load', function() {
+    try {
+      // Try to resize iframe to its content height
+      const body = this.contentWindow.document.body;
+      const height = body.scrollHeight;
+      if (height > 100) this.style.height = height + 'px';
+    } catch(e) {
+      // Cross-origin restriction — use default height
+    }
+  });
+});
+</script>
+
+</body>
+</html>

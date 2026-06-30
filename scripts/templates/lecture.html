@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{{ lecture.title }} — InteractiveLecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --border: #334155;
+    --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
+    --accent: #22d3ee; --accent-glow: rgba(34,211,238,0.12);
+    --green: #34d399; --rose: #fb7185; --violet: #a78bfa; --amber: #fbbf24;
+  }
+  .light {
+    --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
+    --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
+    --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
+    --green: #047857; --rose: #be123c; --violet: #6d28d9; --amber: #b45309;
+  }
+  @page { size: A4; margin: 20mm 18mm; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif;
+    transition: background 0.3s, color 0.3s;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ─── Top Bar ─── */
+  .top-bar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .top-bar h1 {
+    font-size: 1.1rem; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .top-bar h1 .accent { color: var(--accent); }
+  .top-bar .meta {
+    font-size: 0.65rem; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+  }
+  .theme-btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 5px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 0.7rem; font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+  }
+  .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Section Selector ─── */
+  .section-selector {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 24px;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    position: sticky; top: 50px; z-index: 99;
+  }
+  .sec-btn {
+    padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px;
+    background: transparent; color: var(--text-dim);
+    font-size: 0.6rem; font-family: 'JetBrains Mono', monospace;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .sec-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .sec-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Main Content ─── */
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+
+  .lecture-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .lecture-header h1 {
+    font-size: 2rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .lecture-header .lecture-meta {
+    margin-top: 8px; font-size: 0.8rem; color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .lecture-header .lecture-meta span { margin-right: 16px; }
+
+  /* ─── Sections ─── */
+  .lecture-section {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+  .lecture-section:hover { border-color: var(--accent); }
+  .lecture-section.hidden { display: none; }
+
+  .section-heading {
+    font-size: 1.3rem; font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .section-body {
+    font-size: 0.9rem; line-height: 1.7;
+    color: var(--text-dim);
+  }
+
+  /* ─── Typography ─── */
+  .section-body p { margin-bottom: 12px; }
+  .section-body strong { color: var(--text); font-weight: 600; }
+  .section-body em { color: var(--accent); }
+  .section-body ul, .section-body ol { margin: 8px 0 12px 20px; }
+  .section-body li { margin-bottom: 4px; }
+  .section-body a { color: var(--accent); text-decoration: none; }
+  .section-body a:hover { text-decoration: underline; }
+  .section-body hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .section-body pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; line-height: 1.5;
+    overflow-x: auto; margin: 12px 0;
+  }
+  .section-body code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--accent-glow);
+    color: var(--accent);
+    padding: 1px 4px; border-radius: 3px;
+  }
+  .section-body pre code {
+    background: none; color: inherit; padding: 0;
+  }
+
+  /* ─── Equations ─── */
+  .equation.block-eq {
+    text-align: center;
+    margin: 16px 0;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  .equation.inline-eq {
+    display: inline;
+  }
+  .katex { font-size: 1.05em; }
+
+  /* ─── Graph Embeds ─── */
+  .graph-embed {
+    margin: 16px 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .graph-iframe {
+    width: 100%;
+    height: 520px;
+    display: block;
+  }
+
+  /* ─── PDF Export Button ─── */
+  .toolbar {
+    margin-bottom: 20px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .toolbar-btn {
+    padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--card); color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .toolbar-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toolbar-btn.primary {
+    background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600;
+  }
+
+  /* ─── Footer ─── */
+  .lecture-footer {
+    text-align: center;
+    padding: 20px 0;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  /* ─── Print Styles (PDF) ─── */
+  @media print {
+    body { background: white; color: black; }
+    .top-bar, .section-selector, .toolbar, .theme-btn { display: none; }
+    .container { max-width: 100%; padding: 0; }
+    .lecture-section {
+      background: white; border: 1px solid #ccc;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .section-heading { border-bottom-color: #ccc; }
+    .section-body { color: #333; }
+    .section-body strong { color: #000; }
+    .section-body pre { background: #f5f5f5; border-color: #ddd; }
+    .graph-iframe { height: 400px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <h1>📐 <span class="accent">{{ lecture.title }}</span></h1>
+  <div class="meta">
+    <span>{{ lecture.level }}</span>
+    {% if lecture.topic %}<span>• {{ lecture.topic }}</span>{% endif %}
+    <span>• v{{ lecture.version }}</span>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+</div>
+
+<!-- SECTION SELECTOR -->
+<div class="section-selector">
+  <button class="sec-btn active" data-section="all" onclick="filterSection('all')">📋 All</button>
+  {% for section in lecture.sections %}
+    {% set type_icons = {'history': '📜', 'nature': '🌍', 'theory': '⚛️', 'graphs': '📊', 'examples': '✍️', 'other': '📌'} %}
+    <button class="sec-btn" data-section="{{ section.type }}" onclick="filterSection('{{ section.type }}')">
+      {{ type_icons.get(section.type, '📌') }} {{ section.heading.split('—')[0].strip()[:20] }}
+    </button>
+  {% endfor %}
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="toolbar-btn" onclick="toggleTheme()">🌓 Toggle Theme</button>
+    <button class="toolbar-btn" onclick="window.print()">🖨️ Print / PDF</button>
+  </div>
+
+  <!-- HEADER -->
+  <div class="lecture-header">
+    <h1>{{ lecture.title }}</h1>
+    <div class="lecture-meta">
+      {% if lecture.topic %}<span>📂 {{ lecture.topic }}</span>{% endif %}
+      <span>🎯 {{ lecture.level }}</span>
+      <span>📝 Version {{ lecture.version }}</span>
+      <span>📅 {{ generation_date }}</span>
+    </div>
+  </div>
+
+  <!-- SECTIONS -->
+  {% for section in lecture.sections %}
+  <section class="lecture-section section-{{ section.type }}" data-section-type="{{ section.type }}">
+    {% set type_icons = {'history': '📜', 'nature': '🌍', 'theory': '⚛️', 'graphs': '📊', 'examples': '✍️', 'other': '📌'} %}
+    <h2 class="section-heading">{{ type_icons.get(section.type, '📌') }} {{ section.heading }}</h2>
+    <div class="section-body">
+      {{ section.content_html|safe }}
+
+      {% if section.equations %}
+      <div class="section-equations">
+        {% for eq in section.equations %}
+          {% if eq.inline %}
+            <span class="equation inline-eq">${{ eq.latex }}$</span>
+          {% else %}
+            <div class="equation block-eq">$${{ eq.latex }}$$</div>
+          {% endif %}
+        {% endfor %}
+      </div>
+      {% endif %}
+
+      {% if section.graph_directives %}
+      <div class="section-graphs">
+        {% for g in section.graph_directives %}
+        <div class="graph-embed" data-graph-type="{{ g.graph_type }}">
+          <iframe src="{{ g.graph_src }}" frameborder="0" loading="lazy"
+            title="{{ g.graph_type }} graph" class="graph-iframe"></iframe>
+        </div>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </section>
+  {% endfor %}
+
+  <!-- FOOTER -->
+  <div class="lecture-footer">
+    Generated by InteractiveLecture Build System — {{ generation_date }}
+  </div>
+
+</div>
+
+<script>
+// ─── Theme ───
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  localStorage.setItem('lecture-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+// Restore saved theme
+const savedTheme = localStorage.getItem('lecture-theme');
+if (savedTheme === 'light') document.body.classList.add('light');
+
+// ─── Section Filter ───
+function filterSection(type) {
+  document.querySelectorAll('.sec-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.sec-btn[data-section="${type}"]`);
+  if (btn) btn.classList.add('active');
+
+  if (type === 'all') {
+    document.querySelectorAll('.lecture-section').forEach(s => s.classList.remove('hidden'));
+    return;
+  }
+  document.querySelectorAll('.lecture-section').forEach(s => {
+    s.classList.toggle('hidden', s.dataset.sectionType !== type);
+  });
+}
+
+// ─── Auto-resize iframes on load ───
+document.querySelectorAll('.graph-iframe').forEach(iframe => {
+  iframe.addEventListener('load', function() {
+    try {
+      // Try to resize iframe to its content height
+      const body = this.contentWindow.document.body;
+      const height = body.scrollHeight;
+      if (height > 100) this.style.height = height + 'px';
+    } catch(e) {
+      // Cross-origin restriction — use default height
+    }
+  });
+});
+</script>
+
+</body>
+</html>

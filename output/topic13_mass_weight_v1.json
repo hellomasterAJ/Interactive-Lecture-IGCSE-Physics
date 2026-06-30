@@ -1,0 +1,124 @@
+{
+  "title": "Mass and Weight",
+  "topic": "1.3 Mass and Weight",
+  "level": "IGCSE Physics 0625 — Extended",
+  "version": 1,
+  "sections": [
+    {
+      "heading": "📜 History",
+      "type": "history",
+      "content_md": "The concepts of mass and weight were revolutionised by **Sir Isaac Newton** in the 17th century.\n\nBefore Newton, people used the terms \"mass\" and \"weight\" interchangeably. In everyday life, this still happens — we say \"this weighs 5 kg\" when we really mean \"its mass is 5 kg\".\n\n**Newton's Second Law** (<!-- EQ_INLINE_0 -->) provided the first clear distinction:\n- **Mass** is a measure of the amount of matter in an object — it resists changes in motion (inertia)\n- **Weight** is the gravitational force acting on that mass\n\n**The kilogram** was originally defined (1795) as the mass of one litre of water. In 1889, it was replaced by a platinum-iridium cylinder — \"Le Grand K\". In **2019**, the kilogram was redefined in terms of Planck's constant (<!-- EQ_INLINE_1 -->), linking it to fundamental physics instead of a physical object.\n\n> **Myth vs Fact:** An astronaut in space is NOT \"weightless\" because they have no mass. They still have mass — they are weightless because they are in **free fall** around Earth. The ISS and everything inside it is falling towards Earth constantly, but moving sideways so fast they keep missing it!",
+      "equations": [
+        {
+          "latex": "F = ma",
+          "inline": true
+        },
+        {
+          "latex": "h",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    },
+    {
+      "heading": "🌍 Nature & Applications",
+      "type": "nature",
+      "content_md": "- **🪐 Why does the Moon orbit Earth?** Gravity provides the centripetal force\n- **⚖️ Spring balances** measure weight (force), not mass\n- **📱 Digital scales** typically measure the force and divide by <!-- EQ_INLINE_0 --> to display mass\n- **🚀 Rocket launches** must account for the changing weight as fuel burns and gravity decreases with height\n- **🏋️ On different planets**, your mass stays the same but your weight changes dramatically",
+      "equations": [
+        {
+          "latex": "g",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    },
+    {
+      "heading": "⚛️ Theory",
+      "type": "theory",
+      "content_md": "### Mass\n\n- **Definition**: The amount of matter in an object\n- **SI unit**: kilogram (kg)\n- **Scalar** quantity (has magnitude only, no direction)\n- **Does NOT change** with location — your mass is the same on Earth, the Moon, or in deep space\n- **Measured with**: a top-pan balance or a beam balance (comparison against known masses)\n\n### Weight\n\n- **Definition**: The gravitational force exerted on an object\n- **SI unit**: newton (N)\n- **Vector** quantity (direction: towards the centre of the gravitating body)\n- **DOES change** with location — your weight on the Moon is about <!-- EQ_INLINE_3 --> of your weight on Earth\n- **Measured with**: a spring balance (or newton-meter / force meter)\n\n### The Equation\n\n<!-- EQ_BLOCK_0 -->\n\nWhere:\n- <!-- EQ_INLINE_4 --> = weight (N)\n- <!-- EQ_INLINE_5 --> = mass (kg)\n- <!-- EQ_INLINE_6 --> = gravitational field strength (N/kg)\n\nOn Earth, <!-- EQ_INLINE_7 --> N/kg. **This is the same number** as the acceleration due to gravity (<!-- EQ_INLINE_8 --> m/s²) — because:\n<!-- EQ_BLOCK_1 -->\n\n### Gravitational Field Strength\n\n| Celestial Body | <!-- EQ_INLINE_9 --> (N/kg) |\n|---------------|-----------|\n| Earth | 9.8 |\n| Moon | 1.6 |\n| Mars | 3.7 |\n| Jupiter | 24.8 |\n| Sun | 274 |\n| Deep space | 0 (weightless) |\n\n### Difference Between Mass and Weight\n\n| Property | Mass | Weight |\n|----------|------|--------|\n| Definition | Amount of matter | Gravitational force |\n| SI unit | kilogram (kg) | newton (N) |\n| Quantity type | Scalar | Vector |\n| Changes with location? | No | Yes |\n| Measured by | Balance | Spring balance |\n| Symbol | <!-- EQ_INLINE_10 --> | <!-- EQ_INLINE_11 --> |\n\n### Inertia\n\n**Inertia** is the tendency of an object to resist changes in its motion. It is directly proportional to mass:\n- A heavy truck has **more inertia** — harder to start moving, harder to stop\n- A tennis ball has **less inertia** — easy to throw, easy to catch\n\n<!-- EQ_BLOCK_2 -->",
+      "equations": [
+        {
+          "latex": "W = mg",
+          "inline": false
+        },
+        {
+          "latex": "1 \\text{ N/kg} = 1 \\text{ m/s}^2",
+          "inline": false
+        },
+        {
+          "latex": "F = ma \\quad \\text{(more mass → more force needed to accelerate)}",
+          "inline": false
+        },
+        {
+          "latex": "\\frac{1}{6}",
+          "inline": true
+        },
+        {
+          "latex": "W",
+          "inline": true
+        },
+        {
+          "latex": "m",
+          "inline": true
+        },
+        {
+          "latex": "g",
+          "inline": true
+        },
+        {
+          "latex": "g \\approx 9.8",
+          "inline": true
+        },
+        {
+          "latex": "9.8",
+          "inline": true
+        },
+        {
+          "latex": "g",
+          "inline": true
+        },
+        {
+          "latex": "m",
+          "inline": true
+        },
+        {
+          "latex": "W",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    },
+    {
+      "heading": "✍️ Worked Examples",
+      "type": "examples",
+      "content_md": "### Example 1: Weight on Different Planets\n\nAn astronaut has a mass of 75 kg.\n\n**(a)** What is their weight on Earth (<!-- EQ_INLINE_3 --> N/kg)?\n**(b)** What is their weight on the Moon (<!-- EQ_INLINE_4 --> N/kg)?\n**(c)** What is their mass on the Moon?\n\n**Solution (a):**\n<!-- EQ_BLOCK_0 -->\n\n**Solution (b):**\n<!-- EQ_BLOCK_1 -->\n\n**Solution (c):**\nMass does not change — still **75 kg** on the Moon.\n\n---\n\n### Example 2: Finding Mass from Weight\n\nA bag of rice has a weight of 49 N on Earth. What is its mass?\n\n**Solution:**\n<!-- EQ_BLOCK_2 -->\n\n---\n\n### Example 3: Comparing Inertia\n\nTwo identical trolleys are pushed with the same force. Trolley A has a 2 kg mass on top, Trolley B has a 5 kg mass. Which accelerates more slowly? Explain.\n\n**Solution:**\nTrolley B accelerates more slowly because it has greater mass, therefore greater inertia. From <!-- EQ_INLINE_5 -->, for the same force, a larger mass gives a smaller acceleration.",
+      "equations": [
+        {
+          "latex": "W = mg = 75 \\times 9.8 = 735 \\text{ N}",
+          "inline": false
+        },
+        {
+          "latex": "W = mg = 75 \\times 1.6 = 120 \\text{ N}",
+          "inline": false
+        },
+        {
+          "latex": "m = \\frac{W}{g} = \\frac{49}{9.8} = 5.0 \\text{ kg}",
+          "inline": false
+        },
+        {
+          "latex": "g = 9.8",
+          "inline": true
+        },
+        {
+          "latex": "g = 1.6",
+          "inline": true
+        },
+        {
+          "latex": "a = \\frac{F}{m}",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    }
+  ]
+}

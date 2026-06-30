@@ -1,0 +1,172 @@
+{
+  "title": "Forces",
+  "topic": "1.5 Forces",
+  "level": "IGCSE Physics 0625 — Extended",
+  "version": 1,
+  "sections": [
+    {
+      "heading": "📜 History",
+      "type": "history",
+      "content_md": "The scientific study of forces began with **Galileo Galilei (1564–1642)** and was revolutionised by **Sir Isaac Newton (1643–1727)**.\n\n**Aristotle** believed that a force was needed to keep an object moving — if you stop pushing, it stops moving. This seems intuitive, but it's wrong (it ignores friction).\n\n**Galileo's thought experiment**: Imagine a ball rolling down one inclined plane and up another. The smoother the surfaces, the closer it gets to its original height. If there's no friction at all, the ball would roll forever. This led to the concept of **inertia**.\n\n**Newton** synthesised these ideas into his **Three Laws of Motion**, published in 1687 in *Principia Mathematica*:\n1. An object at rest stays at rest, and an object in motion stays in motion, unless acted on by a net external force\n2. <!-- EQ_INLINE_0 --> — force equals mass times acceleration\n3. For every action, there is an equal and opposite reaction\n\n**Robert Hooke (1635–1703)** discovered the relationship between force and extension in elastic materials — **Hooke's Law** — during his work as Curator of Experiments for the Royal Society.\n\n> **Myth vs Fact:** Newton didn't discover gravity when an apple hit his head. The apple story is a metaphor — he saw an apple fall and wondered whether the same force that pulls apples to Earth could extend to the Moon.",
+      "equations": [
+        {
+          "latex": "F = ma",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    },
+    {
+      "heading": "🌍 Nature & Applications",
+      "type": "nature",
+      "content_md": "- **🚗 Seatbelts**: Use Newton's First Law — without a seatbelt, your body continues moving forward when the car stops suddenly\n- **🏋️ Weightlifting**: <!-- EQ_INLINE_0 --> — the force needed to lift a barbell depends on its mass and acceleration\n- **🎱 Billiards/Pool**: Action-reaction pairs — the cue ball exerts a force on the object ball, which exerts an equal force back\n- **🔧 Springs**: Hooke's Law governs suspension systems, mattresses, trampolines, and weighing scales\n- **🪂 Parachutes**: Air resistance (drag force) opposes weight, creating terminal velocity\n- **🚀 Rocket propulsion**: Action-reaction — exhaust gases push down, rocket pushes up",
+      "equations": [
+        {
+          "latex": "F = ma",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    },
+    {
+      "heading": "⚛️ Theory",
+      "type": "theory",
+      "content_md": "### What is a Force?\n\nA force is a **push, pull, or twist** that can change the motion or shape of an object.\n\n- **SI unit**: newton (N)\n- **Vector** quantity (has magnitude and direction)\n- Measured with a **spring balance** (force meter / newton-meter)\n\n### Types of Forces\n\n| Force | Description | Direction |\n|-------|------------|-----------|\n| Weight (<!-- EQ_INLINE_7 -->) | Gravitational pull | Downward (towards Earth's centre) |\n| Normal reaction (<!-- EQ_INLINE_8 --> or <!-- EQ_INLINE_9 -->) | Support force from a surface | Perpendicular to the surface |\n| Friction (<!-- EQ_INLINE_10 -->) | Resistance to motion | Opposite to motion |\n| Air resistance / Drag (<!-- EQ_INLINE_11 -->) | Resistance through air/fluid | Opposite to motion |\n| Tension (<!-- EQ_INLINE_12 -->) | Pull in a string, rope, or cable | Along the string away from object |\n| Thrust/Driving force | Push from engine/muscles | In the direction of intended motion |\n| Upthrust (<!-- EQ_INLINE_13 -->) | Buoyant force in fluid | Upward |\n| Elastic/Spring force (<!-- EQ_INLINE_14 -->) | Return force from stretched material | Opposite to deformation |\n\n### Newton's Laws\n\n**First Law (Law of Inertia):**\n\nAn object remains at **rest** or in **uniform motion** (constant velocity) unless acted on by a **net external force**.\n\n<!-- EQ_BLOCK_0 -->\n\n**Second Law (<!-- EQ_INLINE_15 -->):**\n\nThe acceleration of an object is directly proportional to the net force and inversely proportional to its mass.\n\n<!-- EQ_BLOCK_1 -->\n\nWhere:\n- <!-- EQ_INLINE_16 --> = net force (N)\n- <!-- EQ_INLINE_17 --> = mass (kg)\n- <!-- EQ_INLINE_18 --> = acceleration (m/s²)\n\n**Alternative form** — when mass is constant:\n\n<!-- EQ_BLOCK_2 -->\n\n**Third Law (Action-Reaction):**\n\nWhen object A exerts a force on object B, object B exerts an **equal and opposite** force on object A.\n\n<!-- EQ_BLOCK_3 -->\n\n> Note: The two forces act on **different objects**, so they don't \"cancel out\".\n\n### Hooke's Law\n\nFor an elastic material (like a spring), the extension is **directly proportional** to the applied force, up to the **limit of proportionality** (elastic limit).\n\n<!-- EQ_BLOCK_4 -->\n\nWhere:\n- <!-- EQ_INLINE_19 --> = applied force (N)\n- <!-- EQ_INLINE_20 --> = spring constant (N/m) — a measure of stiffness\n- <!-- EQ_INLINE_21 --> = extension or compression (m)\n\n<!-- EQ_BLOCK_5 -->\n\n**Stiffer** springs have a **larger** <!-- EQ_INLINE_22 --> value.\n\n**Elastic limit**: If stretched beyond this point, the material becomes **permanently deformed** (does not return to its original shape).\n\n### Force-Extension Graph\n\n```\nForce / N\n    |\n    |   /‾‾‾‾‾ limit of proportionality\n    |  /\n    | /  gradient = k (spring constant)\n    |/\n    +----------------→ Extension / m\n```\n\n- **Straight line region**: Hooke's Law obeyed (<!-- EQ_INLINE_23 -->)\n- **Area under the graph**: Work done / elastic potential energy stored\n- **Beyond elastic limit**: Graph curves, material deforms permanently\n\n### Elastic Potential Energy\n\n<!-- EQ_BLOCK_6 -->\n\nWhere <!-- EQ_INLINE_24 --> = elastic potential energy stored in the spring (Joules).",
+      "equations": [
+        {
+          "latex": "\\Sigma F = 0 \\quad \\Rightarrow \\quad \\text{constant velocity}",
+          "inline": false
+        },
+        {
+          "latex": "F = ma",
+          "inline": false
+        },
+        {
+          "latex": "F = \\frac{\\Delta p}{\\Delta t} \\quad \\text{where } p = mv \\text{ (momentum)}",
+          "inline": false
+        },
+        {
+          "latex": "F_{A \\to B} = -F_{B \\to A}",
+          "inline": false
+        },
+        {
+          "latex": "F = kx",
+          "inline": false
+        },
+        {
+          "latex": "k = \\frac{F}{x}",
+          "inline": false
+        },
+        {
+          "latex": "E_e = \\frac{1}{2} k x^2 = \\frac{1}{2} F x",
+          "inline": false
+        },
+        {
+          "latex": "W",
+          "inline": true
+        },
+        {
+          "latex": "R",
+          "inline": true
+        },
+        {
+          "latex": "N",
+          "inline": true
+        },
+        {
+          "latex": "F_f",
+          "inline": true
+        },
+        {
+          "latex": "D",
+          "inline": true
+        },
+        {
+          "latex": "T",
+          "inline": true
+        },
+        {
+          "latex": "U",
+          "inline": true
+        },
+        {
+          "latex": "F_e",
+          "inline": true
+        },
+        {
+          "latex": "F = ma",
+          "inline": true
+        },
+        {
+          "latex": "F",
+          "inline": true
+        },
+        {
+          "latex": "m",
+          "inline": true
+        },
+        {
+          "latex": "a",
+          "inline": true
+        },
+        {
+          "latex": "F",
+          "inline": true
+        },
+        {
+          "latex": "k",
+          "inline": true
+        },
+        {
+          "latex": "x",
+          "inline": true
+        },
+        {
+          "latex": "k",
+          "inline": true
+        },
+        {
+          "latex": "F \\propto x",
+          "inline": true
+        },
+        {
+          "latex": "E_e",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    },
+    {
+      "heading": "✍️ Worked Examples",
+      "type": "examples",
+      "content_md": "### Example 1: Newton's Second Law\n\nA force of 200 N acts on a mass of 50 kg. What is the acceleration?\n\n**Solution:**\n<!-- EQ_BLOCK_0 -->\n\n---\n\n### Example 2: Hooke's Law\n\nA spring stretches by 6 cm when a force of 15 N is applied. What is the spring constant?\n\n**Solution:**\n<!-- EQ_BLOCK_1 -->\n<!-- EQ_BLOCK_2 -->\n\n---\n\n### Example 3: Elastic Potential Energy\n\nA spring with <!-- EQ_INLINE_5 --> N/m is stretched by 0.1 m. How much elastic potential energy is stored?\n\n**Solution:**\n<!-- EQ_BLOCK_3 -->\n<!-- EQ_BLOCK_4 -->\n\n---\n\n### Example 4: Newton's Third Law\n\nA person pushes against a wall with a force of 50 N. Explain what happens.\n\n**Solution:**\nThe wall pushes back on the person with an **equal** force of 50 N in the **opposite** direction. The person doesn't move because the reaction force from the wall balances their push (or friction from the ground prevents them from sliding). The two forces act on **different objects**: the 50 N push acts on the wall, the 50 N reaction acts on the person.",
+      "equations": [
+        {
+          "latex": "a = \\frac{F}{m} = \\frac{200}{50} = 4.0 \\text{ m/s}^2",
+          "inline": false
+        },
+        {
+          "latex": "x = 6 \\text{ cm} = 0.06 \\text{ m}",
+          "inline": false
+        },
+        {
+          "latex": "k = \\frac{F}{x} = \\frac{15}{0.06} = 250 \\text{ N/m}",
+          "inline": false
+        },
+        {
+          "latex": "E_e = \\frac{1}{2} k x^2 = \\frac{1}{2} \\times 200 \\times (0.1)^2",
+          "inline": false
+        },
+        {
+          "latex": "E_e = \\frac{1}{2} \\times 200 \\times 0.01 = 1.0 \\text{ J}",
+          "inline": false
+        },
+        {
+          "latex": "k = 200",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    }
+  ]
+}

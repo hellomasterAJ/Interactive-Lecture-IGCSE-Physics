@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scientist Bio Library — InteractiveLecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: 'Inter', sans-serif;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .header {
+    text-align: center;
+    margin-bottom: 40px;
+    max-width: 800px;
+  }
+  .header h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #22d3ee, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .header .subtitle {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .header .meta {
+    color: #64748b;
+    font-size: 0.8rem;
+    margin-top: 4px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    width: 100%;
+  }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.25s ease;
+  }
+  .card:hover {
+    border-color: #22d3ee;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(34,211,238,0.08);
+  }
+  .card-header {
+    background: linear-gradient(135deg, rgba(34,211,238,0.08), rgba(167,139,250,0.08));
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #334155;
+  }
+  .card-header .name {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #f1f5f9;
+  }
+  .card-header .lifespan {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #22d3ee;
+    margin-top: 2px;
+  }
+  .card-header .nationality {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-top: 2px;
+  }
+  .card-body {
+    padding: 16px 24px 20px;
+  }
+  .card-body .summary {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    font-style: italic;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #64748b;
+    margin: 14px 0 6px;
+  }
+  .card-body ul {
+    list-style: none;
+  }
+  .card-body ul li {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    padding: 3px 0;
+    line-height: 1.5;
+  }
+  .card-body ul li::before {
+    content: "▸ ";
+    color: #22d3ee;
+  }
+  .card-body .quote {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: #0f172a;
+    border-left: 3px solid #a78bfa;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: #94a3b8;
+    line-height: 1.5;
+  }
+  .card-footer {
+    padding: 10px 24px 14px;
+    border-top: 1px solid #1e293b;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tag {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.65rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(34,211,238,0.1);
+    border: 1px solid rgba(34,211,238,0.2);
+    color: #67e8f9;
+  }
+  .tag-topic {
+    background: rgba(167,139,250,0.1);
+    border-color: rgba(167,139,250,0.2);
+    color: #c4b5fd;
+  }
+  /* Experiment cards */
+  .experiment-card {
+    background: #0f172a;
+    border: 1px solid #2d3748;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 8px;
+    transition: all 0.2s;
+  }
+  .experiment-card:hover {
+    border-color: #22d3ee;
+  }
+  .experiment-card .exp-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .experiment-card .exp-year {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #64748b;
+    background: #1e293b;
+    padding: 1px 8px;
+    border-radius: 12px;
+  }
+  .experiment-card .exp-desc {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    line-height: 1.5;
+    margin-top: 6px;
+  }
+  .experiment-card .exp-myth {
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: rgba(251, 191, 36, 0.06);
+    border-left: 3px solid #fbbf24;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    color: #d4a574;
+    line-height: 1.5;
+  }
+  .experiment-card .exp-myth .myth-label {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    color: #fbbf24;
+  }
+  .experiment-card .exp-myth .fact-label {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.65rem;
+    letter-spacing: 0.05em;
+    color: #34d399;
+  }
+  .show-more-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: #22d3ee;
+    background: none;
+    border: 1px solid #22d3ee;
+    border-radius: 6px;
+    padding: 4px 12px;
+    cursor: pointer;
+    margin-top: 6px;
+    transition: all 0.2s;
+  }
+  .show-more-btn:hover {
+    background: rgba(34,211,238,0.1);
+  }
+  .footer {
+    margin-top: 40px;
+    color: #475569;
+    font-size: 0.8rem;
+    text-align: center;
+  }
+  .nav-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .nav-btn {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.75rem;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid #334155;
+    background: #1e293b;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .nav-btn:hover {
+    border-color: #22d3ee;
+    color: #22d3ee;
+  }
+  .nav-btn.active {
+    background: rgba(34,211,238,0.15);
+    border-color: #22d3ee;
+    color: #22d3ee;
+  }
+  .bio-collapse {
+    max-height: 80px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bio-collapse::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: linear-gradient(transparent, #0f172a);
+    pointer-events: none;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>👨‍🔬 Scientist Bio Library</h1>
+  <div class="subtitle">CIE IGCSE Physics 0625 — Topic 1: Motion, Forces and Energy</div>
+  <div class="meta">v1.1.0 • 8 scientists • English (UK) • Includes key experiments with myth-vs-fact</div>
+  <div class="nav-bar" id="navBar">
+    <button class="nav-btn active" onclick="filterAll()">All</button>
+    <button class="nav-btn" onclick="filterEra('Ancient')">Ancient</button>
+    <button class="nav-btn" onclick="filterEra('Revolution')">Scientific Revolution</button>
+    <button class="nav-btn" onclick="filterEra('Industrial')">Industrial Revolution</button>
+  </div>
+</div>
+
+<div class="grid" id="cardGrid"></div>
+
+<div class="footer">
+  InteractiveLecture — Scientist Bio Library • Part of masterAJ/InteractiveLecture
+</div>
+
+<script>
+const scientists = [
+  {
+    "id": "aristotle",
+    "name": "Aristotle",
+    "lifespan": "384–322 BC",
+    "nationality": "Greek",
+    "era": "Ancient Greece",
+    "summary": "Laid the earliest foundations of physics with his theory of natural and violent motion.",
+    "biography": [
+      "Aristotle was born in 384 BC in Stagira, northern Greece. He studied at Plato's Academy in Athens for 20 years before founding his own school, the Lyceum.",
+      "He was one of the most influential philosophers in Western history, writing on physics, biology, ethics, politics, and metaphysics. His teachings dominated scientific thought for nearly 2,000 years.",
+      "In physics, Aristotle proposed that all motion belongs to one of two categories: natural motion (objects seeking their natural place — heavy things fall, light things rise) and violent motion (motion caused by an external force).",
+      "He argued that heavier objects fall faster than lighter ones — a claim that was later proven wrong by Galileo. He also believed that a vacuum (empty space) cannot exist and that a force is required to keep an object moving."
+    ],
+    "contributions": [
+      "First systematic classification of motion into natural and violent types",
+      "Early concept of aether as the fifth element beyond Earth",
+      "Pioneered empirical observation as a method for understanding nature",
+      "Influenced the development of logic and scientific reasoning"
+    ],
+    "legacy": [
+      "Though many of his physical theories were later superseded by Galileo and Newton, Aristotle's method of systematic observation and classification shaped how science is done.",
+      "His idea that 'motion requires a force' was the dominant paradigm until Newton's First Law of Motion replaced it with the concept of inertia.",
+      "The challenge of disproving Aristotle's theories drove much of the Scientific Revolution — Galileo, Newton, and others directly tested and improved upon his ideas."
+    ],
+    "key_experiments": [
+      {
+        "title": "Classification of Motion",
+        "year": "c. 350 BC",
+        "description": "Aristotle categorised all motion into two types: natural motion (objects seeking their proper place) and violent motion (motion requiring an external force). This classification dominated physics for nearly 2,000 years.",
+        "myth_vs_fact": "This was not a controlled experiment. Aristotle relied on everyday observation and logical reasoning. His conclusions (e.g., heavier objects fall faster) were reasonable based on casual observation, but he never tested for the role of air resistance."
+      }
+    ],
+    "quote": "We must not let ourselves be misled by the idea that a body in motion requires a force to keep it moving.",
+    "tags": [
+      "motion",
+      "force",
+      "early-physics",
+      "history-of-science"
+    ],
+    "topics": [
+      "1.2 Motion",
+      "1.5 Forces"
+    ]
+  },
+  {
+    "id": "archimedes",
+    "name": "Archimedes",
+    "lifespan": "287–212 BC",
+    "nationality": "Greek (Syracuse)",
+    "era": "Ancient Greece",
+    "summary": "Discovered the laws of buoyancy and the principle of the lever — the earliest mathematical physics.",
+    "biography": [
+      "Archimedes was born in 287 BC in the Greek city-state of Syracuse (modern-day Sicily, Italy). He was a mathematician, physicist, engineer, and inventor.",
+      "He studied in Alexandria, Egypt — the intellectual capital of the ancient world — before returning to Syracuse, where he spent most of his life.",
+      "His most famous discovery came when he stepped into a bath and noticed the water level rising. He realised he could measure the volume of an irregular object by the amount of water it displaced. Legend says he ran naked through the streets shouting 'Eureka!' (I have found it!).",
+      "He was also a brilliant engineer — he designed war machines (catapults, claw cranes) that defended Syracuse from Roman invasion for three years. When the city finally fell, a Roman soldier killed him despite orders to take him alive."
+    ],
+    "contributions": [
+      "Archimedes' Principle: the buoyant force on an object equals the weight of the fluid it displaces",
+      "Law of the Lever: the ratio of forces balances the ratio of distances from the fulcrum",
+      "Calculated the value of π with remarkable precision",
+      "Developed the concept of centre of gravity",
+      "Invented the Archimedes screw — still used today for lifting water"
+    ],
+    "legacy": [
+      "Archimedes is considered the greatest scientist of antiquity and one of the greatest mathematicians of all time.",
+      "His principle of buoyancy is a core part of the IGCSE Physics syllabus (density and floating/sinking).",
+      "The lever principle is the foundation of all simple machines — tools used everywhere from scissors to cranes.",
+      "His method of exhaustion anticipated integral calculus by nearly 2,000 years."
+    ],
+    "key_experiments": [
+      {
+        "title": "The Golden Crown — Eureka!",
+        "year": "c. 250 BC",
+        "description": "King Hiero II suspected a goldsmith had mixed silver into a golden crown. Archimedes needed to detect the impurity without damaging the crown. Stepping into a bath, he noticed water level rise and realised the volume of water displaced equals the volume of the submerged object — allowing him to measure the crown's density.",
+        "myth_vs_fact": "The core story is widely accepted. The 'running naked through the streets' detail may be embellishment by later Roman writers. The experiment itself is scientifically valid: use displacement to measure volume, then density to detect impurity."
+      },
+      {
+        "title": "The Lever — Moving a Ship",
+        "year": "c. 240 BC",
+        "description": "Archimedes reportedly single-handedly pulled a fully loaded cargo ship onto land using a compound pulley system, demonstrating the mechanical advantage of levers and pulleys. He is quoted as saying: 'Give me a place to stand, and I shall move the Earth.'",
+        "myth_vs_fact": "The ship story is recorded by contemporary historians (Plutarch) and is considered credible. A well-designed compound pulley system could indeed enable one person to move a very heavy load."
+      }
+    ],
+    "quote": "Give me a place to stand, and I shall move the Earth.",
+    "tags": [
+      "buoyancy",
+      "density",
+      "levers",
+      "forces",
+      "ancient-science"
+    ],
+    "topics": [
+      "1.4 Density",
+      "1.5 Forces (Turning effects)"
+    ]
+  },
+  {
+    "id": "galileo",
+    "name": "Galileo Galilei",
+    "lifespan": "1564–1642",
+    "nationality": "Italian",
+    "era": "Scientific Revolution",
+    "summary": "The father of modern science — used experiments to overturn 2,000 years of Aristotelian physics.",
+    "biography": [
+      "Galileo was born in Pisa, Italy, in 1564. He studied medicine at the University of Pisa but switched to mathematics and natural philosophy.",
+      "He was fascinated by motion. According to legend, he dropped two balls of different masses from the Leaning Tower of Pisa to show they fall at the same rate — although historians debate whether this actually happened.",
+      "What he definitely did was roll balls down inclined planes, timing their descent with his own pulse and later with water clocks. From these experiments, he discovered that distance travelled is proportional to time squared — the law of uniform acceleration.",
+      "He also turned his telescope toward the heavens and discovered Jupiter's moons, the phases of Venus, and mountains on the Moon. These observations supported Copernicus's heliocentric (sun-centred) model, which brought him into conflict with the Catholic Church.",
+      "In 1633, the Church put him on trial for heresy. He was forced to renounce his findings and spent the rest of his life under house arrest — but he never stopped working."
+    ],
+    "contributions": [
+      "Established the law of uniform acceleration: distance ∝ time² for objects in free fall",
+      "Demonstrated that objects of different masses fall at the same rate (ignoring air resistance)",
+      "Pioneered the experimental method — test theories with measurable experiments, not just logic",
+      "Discovered the isochronism of the pendulum (the period depends on length, not amplitude)",
+      "Developed the concept of inertia — an object in motion stays in motion unless acted upon (anticipating Newton)"
+    ],
+    "legacy": [
+      "Galileo is called the 'Father of Modern Science' because he insisted on testing ideas through measurement and experiment rather than relying on authority.",
+      "His inclined plane experiments are the direct ancestors of modern gravitational physics — from projectile motion to satellite orbits.",
+      "The pendulum equation he discovered is still used in clocks, seismometers, and even physics exam questions at IGCSE level.",
+      "His conflict with the Church became a symbol of the struggle between science and dogma. In 1992, the Vatican finally admitted he was right."
+    ],
+    "key_experiments": [
+      {
+        "title": "Leaning Tower of Pisa Experiment",
+        "year": "c. 1589–1592 (disputed)",
+        "description": "According to Galileo's student Viviani, Galileo dropped two balls of different masses from the Leaning Tower of Pisa to prove all objects fall at the same rate regardless of mass.",
+        "myth_vs_fact": "⚠️ This almost certainly DID NOT HAPPEN. No contemporary source mentions it, and Galileo never claimed to have done it. However, Galileo DID perform rigorous experiments rolling balls down inclined planes — this is the real foundation of his work on motion."
+      },
+      {
+        "title": "Inclined Plane Experiments",
+        "year": "c. 1602–1604",
+        "description": "Galileo rolled bronze balls down a long, polished inclined plane and precisely measured the time of descent using water clocks. He proved distance travelled is proportional to time squared (d ∝ t²) — the law of uniform acceleration. By using an incline, he slowed down falling motion to measure it accurately.",
+        "myth_vs_fact": "This is real and well-documented. These are the first recorded instances of systematic, quantitative experimental physics. Modern recreations confirm his results were remarkably accurate for the timing methods available."
+      },
+      {
+        "title": "Pendulum Isochronism",
+        "year": "c. 1583",
+        "description": "Galileo supposedly watched a swinging lamp in Pisa Cathedral and noticed each swing took the same time, even as the amplitude decreased. He tested this by timing against his pulse.",
+        "myth_vs_fact": "The cathedral lamp story is a popular legend. However, Galileo definitely studied pendulums and discovered isochronism, enabling Huygens to build the first pendulum clock."
+      },
+      {
+        "title": "Jupiter's Moons Discovery",
+        "year": "1610",
+        "description": "Galileo built an improved telescope and pointed it at Jupiter, discovering four moons orbiting the planet — the first direct evidence that not everything orbits Earth. Published in Sidereus Nuncius (Starry Messenger).",
+        "myth_vs_fact": "This actually happened. The discovery of Jupiter's moons was one of the strongest blows against the geocentric model."
+      }
+    ],
+    "quote": "The universe is written in the language of mathematics, and its characters are triangles, circles, and other geometric figures.",
+    "tags": [
+      "motion",
+      "acceleration",
+      "free-fall",
+      "pendulum",
+      "experimental-method",
+      "inertia"
+    ],
+    "topics": [
+      "1.2 Motion",
+      "1.5 Forces",
+      "1.6 Momentum"
+    ]
+  },
+  {
+    "id": "pascal",
+    "name": "Blaise Pascal",
+    "lifespan": "1623–1662",
+    "nationality": "French",
+    "era": "Scientific Revolution",
+    "summary": "A child prodigy who discovered the laws of pressure and fluid mechanics before the age of 30.",
+    "biography": [
+      "Blaise Pascal was born in Clermont-Ferrand, France, in 1623. He was a child prodigy — by age 12 he had figured out basic geometry on his own, and by 16 he had written a treatise on conic sections that impressed Descartes.",
+      "At 19, he invented the Pascaline, one of the first mechanical calculating machines, to help his father with tax calculations.",
+      "In physics, Pascal studied fluids and pressure. He conducted experiments with barometers and had his brother-in-law carry a barometer up a mountain (the Puy-de-Dôme) to prove that atmospheric pressure decreases with altitude.",
+      "Pascal's most important discovery — now called Pascal's Principle — states that pressure applied to an enclosed fluid is transmitted equally in all directions. This became the foundation of hydraulics.",
+      "Later in life, he turned away from science toward philosophy and religion, writing the famous 'Pensées' (Thoughts). He died in 1662 at only 39 years old."
+    ],
+    "contributions": [
+      "Pascal's Principle: pressure applied to an enclosed fluid transmits undiminished in all directions",
+      "Demonstrated that atmospheric pressure exists and decreases with altitude",
+      "Invented the hydraulic press — the basis for car brakes, lifts, and heavy machinery",
+      "Pioneered the study of vacuum and air pressure (along with Torricelli)"
+    ],
+    "legacy": [
+      "The SI unit of pressure — the Pascal (Pa) — is named after him.",
+      "Every hydraulic system — from a dentist's chair to an excavator — relies on Pascal's Principle.",
+      "His work on pressure and fluids is a core part of the IGCSE Physics syllabus (Topic 1.8 Pressure).",
+      "He also co-founded probability theory, which has applications far beyond physics."
+    ],
+    "key_experiments": [
+      {
+        "title": "Puy-de-Dôme Barometer Experiment",
+        "year": "1648",
+        "description": "Pascal asked his brother-in-law to carry a mercury barometer up the Puy-de-Dôme mountain. The mercury level dropped steadily with altitude — proving atmospheric pressure decreases with height and that a vacuum exists above the mercury column.",
+        "myth_vs_fact": "This actually happened and is well-documented. Pascal couldn't climb the mountain himself due to poor health."
+      },
+      {
+        "title": "The Pascal Barrel Experiment",
+        "year": "1647–1648",
+        "description": "Pascal fitted a long thin tube (about 10 m tall) to a sealed water-filled barrel. Pouring water into the narrow tube generated enormous pressure at the bottom, bursting the barrel — demonstrating Pascal's Principle.",
+        "myth_vs_fact": "This is described in Pascal's own writings. It dramatically proved that pressure transmits equally in all directions in an enclosed fluid."
+      }
+    ],
+    "quote": "The sole cause of man's unhappiness is that he does not know how to stay quietly in his room.",
+    "tags": [
+      "pressure",
+      "fluids",
+      "hydraulics",
+      "vacuum"
+    ],
+    "topics": [
+      "1.8 Pressure"
+    ]
+  },
+  {
+    "id": "hooke",
+    "name": "Robert Hooke",
+    "lifespan": "1635–1703",
+    "nationality": "English",
+    "era": "Scientific Revolution",
+    "summary": "The man who discovered elasticity — and one of the most versatile scientists ever, though often overlooked.",
+    "biography": [
+      "Robert Hooke was born in 1635 on the Isle of Wight, England. A frail but brilliant child, he was apprenticed to an artist but soon turned to science.",
+      "At Oxford, he worked as an assistant to Robert Boyle, helping build the air pump used in Boyle's gas experiments. In 1662, he became the first Curator of Experiments at the Royal Society — his job was to demonstrate new experiments every week.",
+      "Hooke was an extraordinary inventor and experimentalist. He built the first microscope that revealed the microscopic world, inventing the term 'cell' after seeing the honeycomb-like structure of cork.",
+      "In 1660, he discovered that for many materials, the force needed to stretch or compress a spring is proportional to the extension — now called Hooke's Law.",
+      "Despite his genius, Hooke was famously short-tempered and got into bitter priority disputes with Isaac Newton over who discovered the inverse-square law of gravity. After Hooke's death, Newton (as President of the Royal Society) reportedly removed Hooke's portrait from the Society — which is why no authenticated portrait of Hooke exists today."
+    ],
+    "contributions": [
+      "Hooke's Law: the extension of a spring is directly proportional to the applied force (F = kx)",
+      "First to state that gravity follows an inverse-square law (though he could not prove it mathematically)",
+      "Built the first Gregorian telescope and Great Fire of London survey",
+      "Pioneered microscopy and discovered that fossils are remains of ancient organisms",
+      "Designed a universal joint still used in cars today"
+    ],
+    "legacy": [
+      "Hooke's Law is one of the first equations students learn in Physics — essential for understanding springs, elasticity, and simple harmonic motion.",
+      "Every spring in every device — from car suspensions to retractable pens — obeys Hooke's Law within its elastic limit.",
+      "The concept of 'elastic limit' (where a material stops obeying Hooke's Law and deforms permanently) is a key idea in materials science.",
+      "Despite being overshadowed by Newton, Hooke's contributions rank among the most original in 17th-century science."
+    ],
+    "key_experiments": [
+      {
+        "title": "Hooke's Law — Spring Experiments",
+        "year": "1660",
+        "description": "Hooke suspended weights from springs and wires, measuring how much they stretched. He discovered the extension is directly proportional to the applied force (F = kx). He first published this as an anagram (ceiiinosssttuv) to establish priority.",
+        "myth_vs_fact": "This is real and well-documented. The anagram was a common practice to establish priority while keeping the discovery secret until publication."
+      },
+      {
+        "title": "Micrographia — Discovery of Cells",
+        "year": "1665",
+        "description": "Using his improved compound microscope, Hooke examined a thin slice of cork and saw a honeycomb-like structure of tiny compartments. He named them 'cells' because they resembled monastery cells. His book Micrographia contained stunning illustrations of over 60 microscopic specimens.",
+        "myth_vs_fact": "This actually happened. Micrographia was a bestseller and is among the most important scientific books ever published."
+      }
+    ],
+    "quote": "Nature is not governed by arbitrary laws, but by rational ones — and those laws can be discovered through experiment.",
+    "tags": [
+      "elasticity",
+      "springs",
+      "hookes-law",
+      "forces",
+      "microscopy"
+    ],
+    "topics": [
+      "1.5 Forces (Hooke's Law)"
+    ]
+  },
+  {
+    "id": "newton",
+    "name": "Isaac Newton",
+    "lifespan": "1643–1727",
+    "nationality": "English",
+    "era": "Scientific Revolution",
+    "summary": "The single most influential scientist in history — his three laws of motion and law of gravity revolutionised physics.",
+    "biography": [
+      "Isaac Newton was born in 1643 in Woolsthorpe, Lincolnshire, England. He was born prematurely and so small that his mother said he could fit inside a quart pot. His father died before he was born.",
+      "He studied at Trinity College, Cambridge, but in 1665 the Great Plague forced the university to close. Newton returned home to Woolsthorpe for what he called his 'year of wonders' — an 18-month period in which he invented calculus, discovered the law of universal gravitation, and made breakthroughs in optics.",
+      "Newton built the first reflecting telescope, which avoided the colour distortion problems of refracting telescopes. He also showed that white light is composed of all the colours of the rainbow.",
+      "His masterwork — the Principia Mathematica (1687) — laid out the three laws of motion and the law of universal gravitation. It is considered the most important scientific book ever written.",
+      "In later life, he became Master of the Royal Mint, Warden of the Mint, and President of the Royal Society. He was knighted by Queen Anne in 1705. He never married and died in 1727, buried in Westminster Abbey."
+    ],
+    "contributions": [
+      "Newton's First Law (Law of Inertia): an object at rest stays at rest, and an object in motion stays in motion at constant velocity, unless acted upon by an unbalanced force",
+      "Newton's Second Law: F = ma — the acceleration of an object is proportional to the net force and inversely proportional to the mass",
+      "Newton's Third Law: for every action, there is an equal and opposite reaction",
+      "Law of Universal Gravitation: every mass attracts every other mass with a force proportional to the product of their masses and inversely proportional to the square of the distance between them",
+      "Developed calculus (independently of Leibniz) — the mathematics of change",
+      "Discovered that white light is composed of a spectrum of colours"
+    ],
+    "legacy": [
+      "Newton's three laws of motion form the foundation of classical mechanics — everything from projectile motion to rocket launches follows them.",
+      "The equation F = ma is arguably the most famous equation in physics, taught in every IGCSE Physics classroom.",
+      "His law of gravity explained both why an apple falls and why the Moon orbits Earth — unifying terrestrial and celestial physics for the first time.",
+      "Newton's methods dominated physics for over 200 years, until Einstein's relativity modified them for extreme speeds and gravity.",
+      "The unit of force — the Newton (N) — is named after him."
+    ],
+    "key_experiments": [
+      {
+        "title": "The Apple Tree and Gravity",
+        "year": "1666",
+        "description": "During the Plague, Newton retreated to Woolsthorpe. Watching an apple fall from a tree, he wondered: if the apple is pulled toward Earth, could the same force extend to the Moon? This led to the law of universal gravitation.",
+        "myth_vs_fact": "⚠️ OFTEN MISREPRESENTED. The apple did NOT hit Newton on the head. The story was told by Newton himself to his biographers and is considered genuine. However, his gravity theory took over 20 years to develop fully — he did not discover it in a single 'Eureka!' moment."
+      },
+      {
+        "title": "Prism Experiments — Light Spectrum",
+        "year": "1665–1666",
+        "description": "Newton let a narrow beam of sunlight pass through a glass prism, spreading it into a spectrum of colours (ROYGBIV). He passed the coloured beam through a second prism and it recombined into white light — proving white light is a mixture of all colours.",
+        "myth_vs_fact": "This actually happened. Newton's experimentum crucis (crucial experiment) with the second prism was brilliant methodology — proving the prism separates, not modifies, the light."
+      },
+      {
+        "title": "Year of Wonders (Annus Mirabilis)",
+        "year": "1665–1666",
+        "description": "When Cambridge closed due to plague, Newton (age 23) spent 18 months at Woolsthorpe working alone. In this period he: (1) invented calculus, (2) discovered universal gravitation, (3) made breakthroughs on light and colour, (4) formulated the three laws of motion. Arguably the most productive 18 months in scientific history.",
+        "myth_vs_fact": "Historically accurate. However, many of these ideas continued to develop for decades — the Principia was not published until 1687."
+      }
+    ],
+    "quote": "If I have seen further, it is by standing on the shoulders of giants.",
+    "tags": [
+      "motion",
+      "forces",
+      "gravity",
+      "inertia",
+      "acceleration",
+      "action-reaction",
+      "classical-mechanics"
+    ],
+    "topics": [
+      "1.2 Motion",
+      "1.5 Forces",
+      "1.6 Momentum"
+    ]
+  },
+  {
+    "id": "james-watt",
+    "name": "James Watt",
+    "lifespan": "1736–1819",
+    "nationality": "Scottish",
+    "era": "Industrial Revolution",
+    "summary": "His improvements to the steam engine powered the Industrial Revolution — and gave us the unit of power.",
+    "biography": [
+      "James Watt was born in 1736 in Greenock, Scotland. He was a quiet, sickly child who loved mathematics and model-making.",
+      "He trained as a scientific instrument maker in London and Glasgow, and at Glasgow University he was given a broken Newcomen steam engine to repair. While fixing it, Watt realised the design was terribly inefficient because the cylinder had to be heated and cooled with every stroke.",
+      "His great breakthrough — the separate condenser (1765) — allowed the cylinder to stay hot while the steam condensed in a separate chamber. This made the steam engine about four times more efficient.",
+      "Watt went into partnership with Matthew Boulton in Birmingham, and together they manufactured hundreds of steam engines that powered factories, mines, and mills across Britain and the world.",
+      "In his honour, the SI unit of power — the Watt (W) — was named after him. A light bulb might be labelled '60W', meaning it consumes 60 joules of energy per second."
+    ],
+    "contributions": [
+      "Developed the separate condenser — the key innovation that made steam engines practical and efficient",
+      "Introduced the concept of horsepower as a way to compare engine output (1 hp ≈ 746 W)",
+      "Pioneered the measurement of power as work done per unit time",
+      "Invented the parallel motion mechanism and the centrifugal governor (automatic speed control)"
+    ],
+    "legacy": [
+      "The Watt (W) — the SI unit of power — is one of the most commonly used units in physics and everyday life.",
+      "Watt's improved steam engine launched the Industrial Revolution, transforming transportation (steam trains, steamships), manufacturing, and mining.",
+      "The formula P = E/t (power = energy / time) — and the concept that power is the rate of doing work — is directly connected to Watt's work.",
+      "His name appears on every light bulb, microwave, and electrical appliance — a permanent reminder of his contribution."
+    ],
+    "key_experiments": [
+      {
+        "title": "The Separate Condenser",
+        "year": "1763–1765",
+        "description": "Watt was asked to repair a model Newcomen steam engine. He noticed the cylinder was alternately heated and cooled with every stroke — extremely wasteful. His breakthrough: keep the cylinder hot and condense steam in a separate chamber. This made steam engines 4 times more efficient, launching the Industrial Revolution.",
+        "myth_vs_fact": "Well-documented from Watt's own notes. The popular story that he 'suddenly thought of it while watching a kettle boil' is a myth — possibly confused with a story about his father."
+      },
+      {
+        "title": "The Horsepower Definition",
+        "year": "c. 1782",
+        "description": "To sell engines to mine owners who used horses, Watt calculated that a strong brewery horse could lift 33,000 lb one foot in one minute — defining 1 horsepower (≈ 746 W). Customers could then compare his engines directly with their horses.",
+        "myth_vs_fact": "This actually happened. Watt's estimate was deliberately optimistic (real horses sustain about half that), but the unit became standard and is still used today."
+      }
+    ],
+    "quote": "I can think of nothing else but this machine.",
+    "tags": [
+      "power",
+      "energy",
+      "steam-engine",
+      "industrial-revolution",
+      "work"
+    ],
+    "topics": [
+      "1.7 Energy (Power)"
+    ]
+  },
+  {
+    "id": "joule",
+    "name": "James Prescott Joule",
+    "lifespan": "1818–1889",
+    "nationality": "English",
+    "era": "19th Century",
+    "summary": "A brewer who proved that heat is a form of energy and helped discover the law of conservation of energy.",
+    "biography": [
+      "James Prescott Joule was born in 1818 in Salford, England, to a wealthy brewing family. He was taught at home by the famous scientist John Dalton, who nurtured his love of science.",
+      "Joule ran the family brewery while conducting physics experiments in his spare time — a true 'gentleman scientist'. His most famous experiment involved a falling weight turning a paddle wheel in a container of water, raising the water's temperature.",
+      "He showed that mechanical work (the falling weight) produces an exactly equivalent amount of heat (the temperature rise). This established the principle of conservation of energy — that energy cannot be created or destroyed, only converted from one form to another.",
+      "Despite his brilliance, Joule struggled for recognition because he was an amateur, not an academic. It took years before the scientific establishment accepted his results. The famous physicist William Thomson (Lord Kelvin) became a close collaborator and ally.",
+      "The SI unit of energy — the Joule (J) — is named after him. When you eat a 200-calorie snack, that's actually about 837,000 joules of chemical energy."
+    ],
+    "contributions": [
+      "Determined the mechanical equivalent of heat — exactly how much work produces a given amount of heat",
+      "Established the First Law of Thermodynamics (conservation of energy)",
+      "Discovered Joule's Law: the heat produced in a resistor is proportional to current squared times resistance (I²Rt)",
+      "Joule–Thomson effect (with Lord Kelvin) — change in temperature of a gas when it expands without doing work"
+    ],
+    "legacy": [
+      "The Joule (J) — the SI unit of energy and work — is named after him. It is used everywhere in physics.",
+      "His experiments proved that heat is not a fluid (caloric theory) but a form of energy — a fundamental shift in understanding.",
+      "The law of conservation of energy — 'energy cannot be created or destroyed' — is one of the most important principles in all of science.",
+      "In the IGCSE syllabus, every question involving work done (W = Fd) or energy transfer uses joules as the unit."
+    ],
+    "key_experiments": [
+      {
+        "title": "Paddle Wheel Experiment — Mechanical Equivalent of Heat",
+        "year": "1843–1845",
+        "description": "Joule built an apparatus where a falling weight turned a paddle wheel in water, raising its temperature. By measuring the temperature rise from a known amount of work, he determined that 4.186 J of work = 1 calorie of heat — the mechanical equivalent of heat.",
+        "myth_vs_fact": "Joule's original apparatus is preserved at the Science Museum, London. The temperature rise from a single run was tiny (less than 1°C), requiring extremely careful thermometry. His result is remarkably close to the modern accepted value."
+      },
+      {
+        "title": "Joule's Law — Heating Effect of Current",
+        "year": "1841",
+        "description": "Joule passed known electric currents through wires submerged in water and measured temperature rise. He discovered heat ∝ I²Rt — now called Joule's Law, fundamental to understanding electrical energy transfer.",
+        "myth_vs_fact": "Russian physicist Heinrich Lenz independently discovered the same law simultaneously, so it is sometimes called the Joule-Lenz law."
+      }
+    ],
+    "quote": "I believe that the great science of the future will be based on experimental demonstration, not on abstract reasoning.",
+    "tags": [
+      "energy",
+      "work",
+      "heat",
+      "thermodynamics",
+      "conservation"
+    ],
+    "topics": [
+      "1.7 Energy (Work, Power)"
+    ]
+  }
+];
+
+function render(filterFn) {
+  const grid = document.getElementById('cardGrid');
+  const filtered = filterFn ? scientists.filter(filterFn) : scientists;
+  grid.innerHTML = filtered.map(s => {
+    const bioShort = s.biography.slice(0, 1).map(p => `<li>${p}</li>`).join('');
+    const bioRest = s.biography.slice(1).map(p => `<li>${p}</li>`).join('');
+    const hasMore = s.biography.length > 1;
+
+    const expHtml = s.key_experiments.map(e => {
+      let mythHtml = '';
+      if (e.myth_vs_fact) {
+        const isMyth = e.myth_vs_fact.includes('DID NOT') || e.myth_vs_fact.includes('MISREPRESENTED') || e.myth_vs_fact.includes('legend');
+        mythHtml = `<div class="exp-myth"><span class="${isMyth ? 'myth-label' : 'fact-label'}">${isMyth ? '⚠️ Myth vs Fact' : '📌 Note'}</span><br>${e.myth_vs_fact}</div>`;
+      }
+      return `<div class="experiment-card">
+        <div class="exp-title">🔬 ${e.title} <span class="exp-year">${e.year}</span></div>
+        <div class="exp-desc">${e.description}</div>
+        ${mythHtml}
+      </div>`;
+    }).join('');
+
+    return `
+      <div class="card">
+        <div class="card-header">
+          <div class="name">${s.name}</div>
+          <div class="lifespan">${s.lifespan}</div>
+          <div class="nationality">${s.nationality} • ${s.era}</div>
+        </div>
+        <div class="card-body">
+          <div class="summary">"${s.summary}"</div>
+
+          <div class="section-label">📜 Biography</div>
+          <ul>${bioShort}</ul>
+          ${hasMore ? `
+            <div id="bio-more-${s.id}" style="display:none;"><ul>${bioRest}</ul></div>
+            <button class="show-more-btn" onclick="toggleBio('${s.id}')" id="bio-btn-${s.id}">Show more +</button>
+          ` : ''}
+
+          <div class="section-label">🔬 Key Contributions</div>
+          <ul>${s.contributions.map(c => `<li>${c}</li>`).join('')}</ul>
+
+          ${expHtml ? `
+            <div class="section-label">🧪 Key Experiments &amp; Events</div>
+            ${expHtml}
+          ` : ''}
+
+          <div class="section-label">🏛️ Legacy</div>
+          <ul>${s.legacy.map(l => `<li>${l}</li>`).join('')}</ul>
+
+          <div class="quote">${s.quote}</div>
+        </div>
+        <div class="card-footer">
+          ${s.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+          ${s.topics.map(t => `<span class="tag tag-topic">${t}</span>`).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleBio(id) {
+  const more = document.getElementById('bio-more-' + id);
+  const btn = document.getElementById('bio-btn-' + id);
+  if (more.style.display === 'none') {
+    more.style.display = 'block';
+    btn.textContent = 'Show less -';
+  } else {
+    more.style.display = 'none';
+    btn.textContent = 'Show more +';
+  }
+}
+
+function filterAll() {
+  render();
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.nav-btn:first-child').classList.add('active');
+}
+
+function filterEra(keyword) {
+  render(s => s.era.toLowerCase().includes(keyword.toLowerCase()));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+}
+</script>
+</body>
+</html>

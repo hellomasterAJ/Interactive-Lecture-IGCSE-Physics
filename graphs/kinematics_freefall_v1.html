@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kinematics Graphs of a Freely Falling Body</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --border: #334155;
+    --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
+    --accent: #22d3ee; --accent-glow: rgba(34,211,238,0.12);
+    --grid: #1e293b; --graph-bg: #0a0f1a;
+    --line-d: #fbbf24; --line-v: #22d3ee; --line-a: #fb7185;
+    --shade: rgba(251,191,36,0.06);
+    --green: #34d399; --rose: #fb7185; --violet: #a78bfa;
+  }
+  .light {
+    --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
+    --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
+    --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
+    --grid: #c9c2b5; --graph-bg: #e8e2d7;
+    --line-d: #b45309; --line-v: #0f766e; --line-a: #be123c;
+    --shade: rgba(180,83,9,0.05);
+    --green: #047857; --rose: #be123c; --violet: #6d28d9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body {
+    background:var(--bg);color:var(--text);
+    font-family:'Inter',sans-serif;transition:background 0.3s,color 0.3s;
+    min-height:100vh;display:flex;flex-direction:column;align-items:center;
+    padding:16px 12px;
+  }
+  .container{max-width:1400px;width:100%;}
+  .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
+  .top-bar h1{font-size:1.2rem;font-weight:700;}
+  .top-bar h1 span{color:var(--accent);}
+  .badge-top{
+    font-family:'JetBrains Mono',monospace;font-size:0.55rem;padding:2px 8px;border-radius:12px;
+    background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent);margin-left:6px;
+  }
+  .theme-btn{
+    background:var(--card);border:1px solid var(--border);color:var(--text-dim);
+    padding:5px 12px;border-radius:8px;cursor:pointer;font-size:0.75rem;
+    font-family:'JetBrains Mono',monospace;transition:all 0.2s;
+  }
+  .theme-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+  .main-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;}
+  @media(max-width:1000px){.main-grid{grid-template-columns:1fr;}}
+
+  /* Graph column */
+  .graph-col{display:flex;flex-direction:column;gap:10px;}
+  .graph-card{
+    background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;
+  }
+  .graph-card .g-title{
+    font-size:0.62rem;font-weight:600;text-transform:uppercase;
+    letter-spacing:0.06em;color:var(--text-muted);margin-bottom:4px;
+    display:flex;align-items:center;gap:6px;
+  }
+  .g-dot{width:8px;height:8px;border-radius:50%;display:inline-block;}
+  .g-dot.d{background:var(--line-d);}
+  .g-dot.v{background:var(--line-v);}
+  .g-dot.a{background:var(--line-a);}
+  .graph-card canvas{width:100%;height:auto;display:block;border-radius:6px;}
+
+  /* Right panel */
+  .right-panel{display:flex;flex-direction:column;gap:10px;}
+  .anim-card{
+    background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;
+    display:flex;flex-direction:column;
+  }
+  .anim-card .a-title{
+    font-size:0.62rem;font-weight:600;text-transform:uppercase;
+    letter-spacing:0.06em;color:var(--text-muted);margin-bottom:6px;
+  }
+  .anim-scene{
+    position:relative;width:100%;flex:1;min-height:340px;
+    background:var(--graph-bg);border-radius:8px;
+    border:1px solid var(--border);overflow:hidden;
+  }
+  .sky-bg{
+    position:absolute;top:0;left:0;right:0;height:60%;
+    background:linear-gradient(180deg, var(--accent-glow) 0%, transparent 100%);
+    opacity:0.2;
+  }
+  /* Scene background switcher */
+  .scene-bg{
+    position:absolute;top:0;left:0;right:0;bottom:0;
+    z-index:0;pointer-events:none;overflow:hidden;
+    display:none;
+  }
+  .scene-bg.active{display:block;}
+  /* Earth background */
+  .earth-sky{
+    position:absolute;top:0;left:0;right:0;bottom:0;
+    background:linear-gradient(180deg, #87CEEB 0%, #B8E0F7 50%, #E8F4E0 100%);
+    opacity:0.12;
+  }
+  .cloud{
+    position:absolute;font-size:40px;opacity:0.35;
+  }
+  .cloud.c1{top:18%;left:-80px;animation:cloudDrift 24s linear infinite;}
+  .cloud.c2{top:38%;font-size:30px;left:-60px;animation:cloudDrift 32s linear infinite 8s;}
+  .bird{
+    position:absolute;font-size:16px;opacity:0.3;
+  }
+  .bird.b1{top:15%;left:-40px;animation:birdFly 14s linear infinite;}
+  .bird.b2{top:28%;left:-30px;animation:birdFly 18s linear infinite 6s;}
+  @keyframes cloudDrift{
+    0%{left:-80px;}
+    100%{left:100%;}
+  }
+  @keyframes birdFly{
+    0%{left:-50px;transform:translateY(0);}
+    20%{transform:translateY(-8px);}
+    40%{transform:translateY(5px);}
+    60%{transform:translateY(-4px);}
+    80%{transform:translateY(3px);}
+    100%{left:100%;transform:translateY(0);}
+  }
+  /* Moon (space) background */
+  .space-bg{
+    position:absolute;top:0;left:0;right:0;bottom:0;
+    z-index:0;pointer-events:none;overflow:hidden;
+  }
+  .space-bg .spaceship{
+    position:absolute;font-size:36px;opacity:0.55;
+    filter:drop-shadow(0 0 6px rgba(34,211,238,0.2));
+    animation:drift 12s ease-in-out infinite;
+  }
+  .space-bg .astro{
+    position:absolute;font-size:26px;opacity:0.6;
+  }
+  .space-bg .astro.a1{
+    animation:float1 7s ease-in-out infinite;
+  }
+  .space-bg .astro.a2{
+    animation:float2 9s ease-in-out infinite;
+  }
+  @keyframes float1{
+    0%,100%{transform:translate(0,0) rotate(0deg);}
+    25%{transform:translate(12px,-10px) rotate(5deg);}
+    50%{transform:translate(6px,-18px) rotate(2deg);}
+    75%{transform:translate(-10px,-6px) rotate(-3deg);}
+  }
+  @keyframes float2{
+    0%,100%{transform:translate(0,0) rotate(0deg);}
+    25%{transform:translate(-10px,12px) rotate(-4deg);}
+    50%{transform:translate(-18px,6px) rotate(-8deg);}
+    75%{transform:translate(-6px,-10px) rotate(3deg);}
+  }
+  @keyframes drift{
+    0%,100%{transform:translateX(0);}
+    33%{transform:translateX(8px);}
+    66%{transform:translateX(-5px);}
+  }
+  @keyframes twinkle{
+    0%,100%{opacity:0.2;}
+    50%{opacity:0.7;}
+  }
+  .star-dot{
+    position:absolute;width:2px;height:2px;border-radius:50%;
+    background:var(--accent);opacity:0.35;
+  }
+  .star-dot.bright{width:3px;height:3px;opacity:0.6;}
+  /* Mars background */
+  .mars-terrain{
+    position:absolute;top:0;left:0;right:0;bottom:0;
+    background:linear-gradient(180deg, #C1440E 0%, #E07030 30%, #F5A060 60%, #E8C8A0 100%);
+    opacity:0.08;
+  }
+  .mars-dune{
+    position:absolute;bottom:0;left:0;right:0;height:25%;
+    background:radial-gradient(ellipse at 20% 100%, #C1440E 0%, transparent 50%);
+    opacity:0.12;
+  }
+  .mars-dune.r2{
+    background:radial-gradient(ellipse at 70% 100%, #E07030 0%, transparent 40%);
+    opacity:0.1;
+  }
+  .cactus{
+    position:absolute;font-size:20px;opacity:0.25;
+  }
+  .cactus.c1{left:15%;bottom:18%;}
+  .cactus.c2{right:20%;bottom:22%;font-size:16px;}
+  /* Mars rover */
+  .rover{
+    position:absolute;bottom:20%;left:5%;opacity:0.35;
+    transform:scale(1.2);
+    animation:roverDrive 14s ease-in-out infinite;
+  }
+  @keyframes roverDrive{
+    0%{left:5%;transform:scale(1.2) translateY(0);}
+    20%{transform:scale(1.2) translateY(-1px);}
+    40%{transform:scale(1.2) translateY(2px);}
+    50%{left:55%;transform:scale(1.2) translateY(0);}
+    60%{transform:scale(1.2) translateY(-1px);}
+    80%{transform:scale(1.2) translateY(2px);}
+    100%{left:5%;transform:scale(1.2) translateY(0);}
+  }
+  .rover-body{
+    width:36px;height:14px;background:var(--text-muted);
+    border-radius:4px;position:relative;
+  }
+  .rover-head{
+    width:12px;height:10px;background:var(--accent);
+    border-radius:3px;position:absolute;top:-8px;left:20px;
+  }
+  .rover-eye{
+    width:4px;height:4px;background:var(--bg);
+    border-radius:50%;position:absolute;top:2px;left:4px;
+  }
+  .rover-antenna{
+    width:1.5px;height:8px;background:var(--text-muted);
+    position:absolute;top:-16px;left:26px;border-radius:1px;
+  }
+  .rover-antenna::after{
+    content:'';display:block;width:3px;height:3px;
+    background:var(--accent);border-radius:50%;
+    position:absolute;top:-3px;left:-1px;
+  }
+  .rover-wheel{
+    width:7px;height:7px;background:var(--text-dim);
+    border-radius:50%;position:absolute;bottom:-4px;
+  }
+  .rover-wheel.w1{left:4px;}
+  .rover-wheel.w2{left:15px;}
+  .rover-wheel.w3{left:26px;}
+  .rover-solar{
+    position:absolute;top:-2px;left:-6px;
+    width:14px;height:18px;background:var(--accent-glow);
+    border:1px solid var(--accent);opacity:0.5;border-radius:2px;
+  }
+  .heat-haze{
+    position:absolute;top:30%;left:10%;right:10%;height:4px;
+    background:rgba(255,200,150,0.08);border-radius:50%;
+    animation:haze 3s ease-in-out infinite;
+  }
+  .heat-haze.h2{top:50%;left:30%;right:20%;animation-delay:1.5s;}
+  @keyframes haze{
+    0%,100%{transform:scaleY(1);opacity:0.06;}
+    50%{transform:scaleY(3);opacity:0.12;}
+  }
+  .ground{
+    position:absolute;bottom:0;left:0;right:0;height:0;
+    border-top:2px solid var(--accent);opacity:0.3;
+  }
+  .ground-label{
+    position:absolute;bottom:0;left:32px;
+    font-size:0.65rem;font-family:'JetBrains Mono',monospace;
+    color:var(--text-muted);transform:translateY(-100%);
+  }
+  .height-scale{
+    position:absolute;top:0;bottom:0;left:6px;
+    width:2px;background:var(--border);opacity:0.15;
+  }
+  .height-tick{
+    position:absolute;left:0;width:24px;
+    font-size:10px;font-family:'JetBrains Mono',monospace;
+    color:var(--text-muted);transform:translateY(50%);
+  }
+  .apple-container{
+    position:absolute;left:50%;bottom:12%;z-index:2;
+    font-size:32px;line-height:1;
+    transform:translateX(-50%) translateY(50%);
+    transition:bottom 0.04s linear;
+    filter:drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  }
+  .apple-label{
+    position:absolute;top:-20px;left:50%;transform:translateX(-50%);
+    font-size:0.5rem;font-family:'JetBrains Mono',monospace;
+    color:var(--accent);white-space:nowrap;
+  }
+
+  .ctrl-row{
+    display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:8px;
+  }
+  .slider-group{
+    display:flex;align-items:center;gap:4px;
+    padding:3px 8px;background:var(--card);border:1px solid var(--border);border-radius:6px;
+  }
+  .slider-group label{
+    font-size:0.58rem;color:var(--text-dim);
+    font-family:'JetBrains Mono',monospace;white-space:nowrap;
+  }
+  .slider-group input[type="range"]{width:60px;accent-color:var(--accent);}
+  .slider-group .slider-val{
+    font-size:0.58rem;color:var(--accent);
+    font-family:'JetBrains Mono',monospace;font-weight:600;min-width:22px;text-align:right;
+  }
+  .ctrl-btn{
+    padding:5px 12px;border:1px solid var(--border);border-radius:6px;
+    background:var(--card);color:var(--text);
+    font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;
+    cursor:pointer;transition:all 0.2s;
+  }
+  .ctrl-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .ctrl-btn.primary{
+    background:var(--accent);color:#0f172a;border-color:var(--accent);font-weight:600;
+  }
+  .ctrl-btn.primary:hover{opacity:0.85;}
+  .ctrl-btn.random{background:rgba(167,139,250,0.12);border-color:var(--violet);color:var(--violet);}
+
+  .scenario-btn{
+    padding:3px 8px;border:1px solid var(--border);border-radius:5px;
+    background:transparent;color:var(--text-dim);
+    font-size:0.58rem;font-family:'JetBrains Mono',monospace;
+    cursor:pointer;transition:all 0.15s;
+  }
+  .scenario-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .scenario-btn.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+
+  .stats-3{
+    display:grid;grid-template-columns:1fr 1fr 1fr;gap:3px;margin-top:6px;
+  }
+  .stat-item{
+    background:var(--card);border-radius:4px;padding:3px 4px;
+    display:flex;flex-direction:column;align-items:center;
+    font-size:0.55rem;font-family:'JetBrains Mono',monospace;border:1px solid var(--border);
+    overflow:visible;
+  }
+  .stat-item .stat-label{color:var(--text-muted);font-size:0.45rem;text-transform:uppercase;white-space:nowrap;}
+  .stat-item .stat-value{color:var(--accent);font-weight:600;font-size:0.65rem;white-space:nowrap;}
+
+  .desc-box{
+    background:var(--card);border:1px solid var(--border);
+    border-radius:8px;padding:8px 12px;
+  }
+  .desc-box .d-title{
+    font-size:0.62rem;font-weight:600;color:var(--accent);margin-bottom:3px;
+  }
+  .desc-box p{
+    font-size:0.68rem;color:var(--text-dim);line-height:1.5;
+  }
+  .desc-box .formula{
+    font-family:'JetBrains Mono',monospace;color:var(--accent);
+    background:var(--accent-glow);padding:1px 6px;border-radius:3px;font-size:0.7rem;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="top-bar">
+  <h1>🍎 <span>Kinematics of a Freely Falling Body</span> <span class="badge-top">v1.0.0</span></h1>
+  <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+</div>
+
+<div class="main-grid">
+  <!-- LEFT: 3 graphs -->
+  <div class="graph-col">
+    <div class="graph-card">
+      <div class="g-title"><span class="g-dot d"></span> Displacement–Time</div>
+      <canvas id="graphD" width="500" height="210"></canvas>
+    </div>
+    <div class="graph-card">
+      <div class="g-title"><span class="g-dot v"></span> Velocity–Time</div>
+      <canvas id="graphV" width="500" height="210"></canvas>
+    </div>
+    <div class="graph-card">
+      <div class="g-title"><span class="g-dot a"></span> Acceleration–Time</div>
+      <canvas id="graphA" width="500" height="210"></canvas>
+    </div>
+  </div>
+
+  <!-- RIGHT: Animation + Controls -->
+  <div class="right-panel">
+    <div class="anim-card">
+      <div class="a-title">🎬 Vertical Motion Simulation</div>
+      <div class="anim-scene" id="scene">
+        <div class="sky-bg"></div>
+
+        <!-- Earth background -->
+        <div class="scene-bg" id="earthBg">
+          <div class="earth-sky"></div>
+          <div class="cloud c1">☁️</div>
+          <div class="cloud c2">☁️</div>
+          <div class="bird b1">🕊️</div>
+          <div class="bird b2">🕊️</div>
+        </div>
+
+        <!-- Moon (space) background -->
+        <div class="scene-bg space-bg" id="moonBg">
+          <div class="spaceship" style="right:12%;top:22%;">🚀</div>
+          <div class="astro a1" style="left:18%;top:18%;">👨‍🚀</div>
+          <div class="astro a2" style="right:28%;bottom:40%;">👩‍🚀</div>
+        </div>
+
+        <!-- Mars background -->
+        <div class="scene-bg" id="marsBg">
+          <div class="mars-terrain"></div>
+          <div class="mars-dune"></div>
+          <div class="mars-dune r2"></div>
+          <div class="rover">
+            <div class="rover-body"></div>
+            <div class="rover-head">
+              <div class="rover-eye"></div>
+            </div>
+            <div class="rover-antenna"></div>
+            <div class="rover-wheel w1"></div>
+            <div class="rover-wheel w2"></div>
+            <div class="rover-wheel w3"></div>
+            <div class="rover-solar"></div>
+          </div>
+          <div class="heat-haze"></div>
+          <div class="heat-haze h2"></div>
+        </div>
+
+        <div class="height-scale" id="heightScale"></div>
+        <div class="ground"></div>
+        <div class="ground-label">Ground</div>
+        <div class="apple-container" id="appleContainer" style="bottom:12%;">
+          <div class="apple-label" id="appleLabel">t = 0.0 s</div>
+          🍎
+        </div>
+      </div>
+      <div class="stats-3">
+        <div class="stat-item"><span class="stat-label">Time</span><span class="stat-value" id="sTime">0.0 s</span></div>
+        <div class="stat-item"><span class="stat-label">Height</span><span class="stat-value" id="sHeight">0.0 m</span></div>
+        <div class="stat-item"><span class="stat-label">Velocity</span><span class="stat-value" id="sVel">0.0 m/s</span></div>
+      </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="anim-card">
+      <div class="a-title">🎛️ Parameters</div>
+      <div class="ctrl-row">
+        <div class="slider-group">
+          <label>Init Height (y₀)</label>
+          <input type="range" id="posSlider" min="-50" max="50" value="0" step="1" oninput="updatePos(this.value)">
+          <span class="slider-val" id="posVal">0</span>
+        </div>
+        <div class="slider-group">
+          <label>Init Velocity (u)</label>
+          <input type="range" id="velSlider" min="-25" max="25" value="0" step="1" oninput="updateVel(this.value)">
+          <span class="slider-val" id="velVal">0</span>
+        </div>
+        <div class="slider-group">
+          <label>Gravity (g)</label>
+          <input type="range" id="gSlider" min="-20" max="-1" value="-9.8" step="0.1" oninput="updateG(this.value)">
+          <span class="slider-val" id="gVal">-9.8</span>
+        </div>
+      </div>
+      <div class="ctrl-row">
+        <span style="font-size:0.6rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">Gravity:</span>
+        <button class="scenario-btn active" data-s="earth" onclick="setScenario('earth')">🌍 Earth</button>
+        <button class="scenario-btn" data-s="moon" onclick="setScenario('moon')">🌙 Moon</button>
+        <button class="scenario-btn" data-s="mars" onclick="setScenario('mars')">🔴 Mars</button>
+        <button class="scenario-btn" data-s="custom" onclick="setScenario('custom')">⚙️ Custom</button>
+      </div>
+      <div class="ctrl-row">
+        <button class="ctrl-btn primary" id="playBtn" onclick="togglePlay()">▶ Play</button>
+        <button class="ctrl-btn" onclick="resetAnim()">↺ Reset</button>
+        <button class="ctrl-btn random" onclick="randomScenario()">🎲 Random</button>
+      </div>
+    </div>
+
+    <div class="desc-box">
+      <div class="d-title">📋 Conditions</div>
+      <p id="conceptText">Upward is positive and Downward is negative<br>Vertical Motion under Gravity.<br>Air resistance is negligible.<br>Acceleration due to gravity <span id="gLocation">(on Earth)</span> ≈ <span id="gDisplay" class="formula">-9.80</span> m/s²</p>
+    </div>
+    <div class="desc-box" id="motionBox">
+      <div class="d-title">📊 Describing Motion</div>
+      <p id="motionText">Set parameters and press Play to see the detailed motion description.</p>
+    </div>
+  </div>
+</div>
+
+</div>
+
+<script>
+const state={
+  y0:0, u:0, g:-9.8,
+  time:0, maxTime:10, dt:0.04,
+  playing:false, animId:null,
+  history:[], theme:'dark'
+};
+const scene=document.getElementById('scene');
+const apple=document.getElementById('appleContainer');
+
+function toggleTheme(){document.body.classList.toggle('light');state.theme=document.body.classList.contains('light')?'light':'dark';drawAll();}
+function isDark(){return state.theme==='dark';}
+
+// Physics — g is NEGATIVE (downward)
+function getY(t){return state.y0+state.u*t+0.5*state.g*t*t;}
+function getV(t){return state.u+state.g*t;}
+function getA(){return state.g;}
+
+function getMaxY(){
+  // peak of parabola where v=0: tPeak = -u/g  (since g is negative, -u/g > 0 for positive u)
+  const tPeak = state.g !== 0 ? -state.u/state.g : 0;
+  const peak=state.y0+state.u*tPeak+0.5*state.g*tPeak*tPeak;
+  // endpoints
+  const yEnd=getY(state.maxTime);
+  return Math.max(peak,state.y0,yEnd,5);
+}
+function getMinY(){
+  const yEnd=getY(state.maxTime);
+  return Math.min(0,yEnd,-2);
+}
+
+function drawOneGraph(canvasId,type){
+  const c=document.getElementById(canvasId);
+  const ctx=c.getContext('2d');
+  const W=c.width,H=c.height;
+  const pad={top:18,right:16,bottom:24,left:38};
+  const gW=W-pad.left-pad.right,gH=H-pad.top-pad.bottom;
+  const isD=isDark();
+  const bg=isD?'#0a0f1a':'#e8e2d7';
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+
+  // Grid
+  ctx.strokeStyle=isD?'#1e293b':'#c9c2b5';ctx.lineWidth=0.4;
+  for(let i=0;i<=8;i++){
+    const x=pad.left+(i/8)*gW,y=pad.top+(i/8)*gH;
+    ctx.beginPath();ctx.moveTo(x,pad.top);ctx.lineTo(x,pad.top+gH);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(pad.left+gW,y);ctx.stroke();
+  }
+
+  // Axes
+  const xMax=state.maxTime;
+  let yMax,yMin;
+  if(type==='a'){yMax=20;yMin=-20;}
+  else if(type==='v'){yMax=50;yMin=-50;}
+  else{yMax=100;yMin=-100;}
+  const yRange=yMax-yMin;
+
+  ctx.strokeStyle=isD?'#475569':'#8c8578';ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(pad.left,pad.top);ctx.lineTo(pad.left,pad.top+gH);ctx.lineTo(pad.left+gW,pad.top+gH);ctx.stroke();
+
+  // Zero line — solid, prominent like main axes
+  const zy=pad.top+gH-(0-yMin)/yRange*gH;
+  if(zy>=pad.top&&zy<=pad.top+gH){
+    ctx.strokeStyle=isD?'#475569':'#8c8578';
+    ctx.lineWidth=1.2;
+    ctx.beginPath();ctx.moveTo(pad.left,zy);ctx.lineTo(pad.left+gW,zy);ctx.stroke();
+  }
+
+  // Labels
+  ctx.fillStyle=isD?'#94a3b8':'#635d52';ctx.font='8px Inter,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  for(let i=0;i<=8;i++){
+    const xv=(i/8)*xMax;const x=pad.left+(i/8)*gW;
+    ctx.fillText(xv.toFixed(1),x,pad.top+gH+5);
+  }
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  const nt=5;
+  for(let i=0;i<=nt;i++){
+    const yv=yMin+(i/nt)*yRange;const y=pad.top+gH-(i/nt)*gH;
+    if(y>=pad.top-3&&y<=pad.top+gH+3)ctx.fillText(yv.toFixed(yv%1===0?0:1),pad.left-4,y);
+  }
+  ctx.fillStyle=isD?'#cbd5e1':'#2d2a24';ctx.font='8px Inter,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText('Time / s',pad.left+gW/2,H-4);
+  ctx.save();ctx.translate(10,pad.top+gH/2);ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center';ctx.textBaseline='bottom';
+  const labels={'d':'Displacement / m','v':'Velocity / (m/s)','a':'Acceleration / (m/s²)'};
+  ctx.fillText(labels[type],0,0);ctx.restore();
+
+  if(state.history.length<2)return;
+
+  // Data
+  const yVals=state.history.map(p=>{
+    if(type==='d')return getY(p.t);
+    if(type==='v')return getV(p.t);
+    return getA();
+  });
+  const pts=yVals.map((yv,i)=>({
+    x:pad.left+(state.history[i].t/xMax)*gW,
+    y:pad.top+gH-((yv-yMin)/yRange)*gH
+  }));
+
+  // Shade
+  ctx.fillStyle=type==='d'?'rgba(251,191,36,0.04)':type==='v'?'rgba(34,211,238,0.04)':'rgba(251,114,133,0.04)';
+  ctx.beginPath();ctx.moveTo(pts[0].x,zy);
+  pts.forEach(p=>ctx.lineTo(p.x,p.y));
+  ctx.lineTo(pts[pts.length-1].x,zy);ctx.closePath();ctx.fill();
+
+  // Line
+  const lineColors={'d':isD?'#fbbf24':'#b45309','v':isD?'#22d3ee':'#0f766e','a':isD?'#fb7185':'#be123c'};
+  ctx.strokeStyle=lineColors[type];ctx.lineWidth=2;
+  ctx.beginPath();pts.forEach((p,i)=>{if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);});ctx.stroke();
+
+  // Current point
+  if(pts.length>0){
+    const l=pts[pts.length-1];
+    ctx.beginPath();ctx.arc(l.x,l.y,4,0,Math.PI*2);
+    ctx.fillStyle=lineColors[type];ctx.fill();
+    ctx.strokeStyle=isD?'#0f172a':'#e8e2d7';ctx.lineWidth=1.5;ctx.stroke();
+  }
+}
+function drawAll(){drawOneGraph('graphD','d');drawOneGraph('graphV','v');drawOneGraph('graphA','a');}
+
+// Animation — direct mapping: y=-100 (bottom 0%) ↔ y=0 (center 50%) ↔ y=+100 (top 100%)
+function updateAnim(){
+  const t=state.time;
+  const y=getY(t),v=getV(t);
+  // Map y from [-100, +100] to bottom% [0, 100]
+  const bottomPct = ((y + 100) / 200) * 100;
+  apple.style.bottom = Math.max(2, Math.min(98, bottomPct)) + '%';
+  document.getElementById('appleLabel').textContent='t = '+t.toFixed(1)+' s';
+  document.getElementById('sTime').textContent=t.toFixed(1)+' s';
+  document.getElementById('sHeight').textContent=y.toFixed(1)+' m';
+  document.getElementById('sVel').textContent=v.toFixed(1)+' m/s';
+  // Only push history if time is advancing
+  if(t>0&&state.history.length===0)state.history.push({t:0});
+  if(t>=0&&t<=state.maxTime){
+    const lastT=state.history.length>0?state.history[state.history.length-1].t:-1;
+    if(t>lastT)state.history.push({t});
+  }
+  drawAll();
+  describeMotion(t);
+  updateConditions();
+}
+function loop(){
+  if(!state.playing)return;
+  const currentY=getY(state.time);
+  // Stop when apple goes below -100 (out of visible range) or beyond maxTime
+  if(currentY<=-100||state.time>=state.maxTime){pauseStop();return;}
+  // Advance time
+  state.time+=state.dt;
+  const y=getY(state.time);
+  const v=getV(state.time);
+  if(y<=-100||state.time>=state.maxTime){
+    state.time=state.time;
+    updateAnim();
+    pauseStop();
+    return;
+  }
+  updateAnim();
+  state.animId=requestAnimationFrame(loop);
+}
+function pauseStop(){
+  state.playing=false;
+  if(state.animId)cancelAnimationFrame(state.animId);
+  state.animId=null;
+  document.getElementById('playBtn').textContent='▶ Play';
+  document.getElementById('playBtn').className='ctrl-btn primary';
+}
+function togglePlay(){
+  if(state.playing){pauseStop();return;}
+  if(state.time>=state.maxTime||getY(state.time)<=-100||state.time===0){
+    state.time=0;state.history=[];
+    updateAnim();
+  }
+  state.playing=true;
+  document.getElementById('playBtn').textContent='⏸ Pause';
+  document.getElementById('playBtn').className='ctrl-btn';
+  state.animId=requestAnimationFrame(loop);
+}
+function resetAnim(){pauseStop();state.time=0;state.history=[];updateAnim();}
+
+function updatePos(v){state.y0=parseFloat(v);document.getElementById('posVal').textContent=v;if(!state.playing)resetAnim();}
+function updateVel(v){state.u=parseFloat(v);document.getElementById('velVal').textContent=v;if(!state.playing)resetAnim();}
+function updateG(v){state.g=parseFloat(v);document.getElementById('gVal').textContent=v;if(!state.playing)resetAnim();}
+
+function setScenario(s){
+  const scenarios={
+    'earth':{y0:0,u:0,g:-9.8,name:'Earth'},
+    'moon':{y0:0,u:0,g:-1.6,name:'Moon'},
+    'mars':{y0:0,u:0,g:-3.7,name:'Mars'},
+    'custom':{y0:0,u:0,g:null,name:'Custom'}
+  };
+  const sc=scenarios[s];
+  if(!sc)return;
+  state.y0=sc.y0;state.u=sc.u;
+  if(sc.g !== null){state.g=sc.g;}
+  document.getElementById('posSlider').value=sc.y0;document.getElementById('posVal').textContent=sc.y0;
+  document.getElementById('velSlider').value=sc.u;document.getElementById('velVal').textContent=sc.u;
+  if(sc.g !== null){
+    document.getElementById('gSlider').value=sc.g;
+    document.getElementById('gVal').textContent=sc.g.toFixed(1);
+  }
+  document.querySelectorAll('.scenario-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.scenario-btn[data-s="${s}"]`).classList.add('active');
+  switchBackground(s);
+  resetAnim();
+}
+
+function randomScenario(){
+  const y0=Math.floor(Math.random()*100-50);
+  const u=Math.floor(Math.random()*50-25);
+  const g=parseFloat((Math.random()*19+1).toFixed(1)) * -1;
+  state.y0=y0;state.u=u;state.g=g;
+  document.getElementById('posSlider').value=y0;document.getElementById('posVal').textContent=y0;
+  document.getElementById('velSlider').value=u;document.getElementById('velVal').textContent=u;
+  document.getElementById('gSlider').value=g;document.getElementById('gVal').textContent=g.toFixed(1);
+  document.querySelectorAll('.scenario-btn').forEach(b=>b.classList.remove('active'));
+  resetAnim();
+}
+
+function describeMotion(t){
+  const y=getY(t),v=getV(t);
+  // Compute peak info
+  const tPeak = state.g !== 0 ? -state.u/state.g : 0;
+  const yPeak = state.y0 + state.u*tPeak + 0.5*state.g*tPeak*tPeak;
+  // Compute ground impact (y=-100) time
+  let tGround = null, vGround = null;
+  const a = 0.5*state.g, b = state.u, c = state.y0 + 100;
+  if(a !== 0){
+    const disc = b*b - 4*a*c;
+    if(disc >= 0){
+      const t1 = (-b + Math.sqrt(disc))/(2*a);
+      const t2 = (-b - Math.sqrt(disc))/(2*a);
+      tGround = (t1 > 0 && t2 > 0) ? Math.min(t1, t2) : (t1 > 0 ? t1 : (t2 > 0 ? t2 : null));
+      if(tGround !== null) vGround = state.u + state.g*tGround;
+    }
+  }
+  const hasPeak = state.u > 0.5;
+
+  let txt = '';
+
+  if(hasPeak){
+    // Motion: up then down
+    txt += `<b>Start:</b> initial position y = ${state.y0.toFixed(0)} m. initial velocity = ${state.u.toFixed(1)} m/s.`;
+    txt += `<br>An object moving upward slows to zero velocity due to gravity.`;
+    txt += `<br>At this peak, it momentarily stops before reversing direction and accelerating downward back to Earth.`;
+    txt += `<br><b>Peak:</b> highest position y = ${yPeak.toFixed(1)} m.`;
+    if(tGround !== null && tGround > 0){
+      txt += `<br><b>Stop:</b> final position y = -100.0 m. final velocity = ${vGround.toFixed(1)} m/s.`;
+    }
+  } else {
+    // Motion: downward only
+    txt += `<b>Start:</b> initial position y = ${state.y0.toFixed(0)} m. initial velocity = ${state.u.toFixed(1)} m/s.`;
+    if(Math.abs(state.u) < 0.5){
+      txt += `<br>An object released from rest accelerates downward due to gravity.`;
+    } else {
+      txt += `<br>An object launched downward accelerates further due to gravity.`;
+    }
+    if(tGround !== null && tGround > 0){
+      txt += `<br><b>Stop:</b> final position y = -100.0 m. final velocity = ${vGround.toFixed(1)} m/s.`;
+    }
+  }
+
+  // Current status during animation
+  if(t > 0 && y > -100){
+    txt += `<br><b>Now:</b> t = ${t.toFixed(2)} s, y = ${y.toFixed(1)} m, v = ${v.toFixed(1)} m/s — `;
+    if(v > 1) txt += `<strong>rising</strong> (slowing down).`;
+    else if(v < -1) txt += `<strong>falling</strong> (speeding up).`;
+    else if(Math.abs(v) <= 1 && t > 0) txt += `at the <strong>peak</strong> (v ≈ 0).`;
+    else txt += `moving under constant acceleration.`;
+  } else if(y <= -100 && t > 0){
+    txt += `<br><b>Result:</b> The object has reached y = -100 (ground level).`;
+  }
+
+  document.getElementById('motionText').innerHTML = txt;
+}
+
+function updateConditions(){
+  const el = document.getElementById('gDisplay');
+  if(el) el.textContent = state.g.toFixed(2);
+  // Update location label
+  const loc = document.getElementById('gLocation');
+  if(loc){
+    if(state.g < -8 && state.g > -10) loc.textContent = 'on Earth';
+    else if(state.g > -2) loc.textContent = 'on Moon';
+    else if(state.g > -5) loc.textContent = 'on Mars';
+    else loc.textContent = '';
+  }
+}
+
+function switchBackground(type){
+  const ids = ['earthBg','moonBg','marsBg'];
+  ids.forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+  if(type && type !== 'custom'){
+    const el = document.getElementById(type+'Bg');
+    if(el) el.classList.add('active');
+  }
+}
+
+function init(){
+  setScenario('earth');
+  const sceneH=scene.clientHeight||340;
+  // Height ticks — -100 to +100
+  const scale=document.getElementById('heightScale');
+  if(scale){
+    for(let i=0;i<=10;i++){
+      const tick=document.createElement('div');
+      tick.className='height-tick';
+      tick.style.bottom=(i*10)+'%';
+      tick.textContent=(-100 + i*20)+'';
+      scale.appendChild(tick);
+    }
+  }
+  // Generate stars in Moon background
+  const sb=document.getElementById('moonBg');
+  if(sb){
+    for(let i=0;i<30;i++){
+      const s=document.createElement('div');
+      s.className='star-dot'+(Math.random()>0.8?' bright':'');
+      s.style.left=Math.random()*98+1+'%';
+      s.style.top=Math.random()*95+2+'%';
+      s.style.animation='twinkle '+(2+Math.random()*3)+'s ease-in-out infinite';
+      s.style.animationDelay=Math.random()*3+'s';
+      sb.appendChild(s);
+    }
+  }
+  switchBackground('earth');
+}
+init();
+</script>
+</body>
+</html>

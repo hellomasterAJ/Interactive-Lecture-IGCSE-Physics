@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Forces — InteractiveLecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --border: #334155;
+    --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
+    --accent: #22d3ee; --accent-glow: rgba(34,211,238,0.12);
+    --green: #34d399; --rose: #fb7185; --violet: #a78bfa; --amber: #fbbf24;
+  }
+  .light {
+    --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
+    --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
+    --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
+    --green: #047857; --rose: #be123c; --violet: #6d28d9; --amber: #b45309;
+  }
+  @page { size: A4; margin: 20mm 18mm; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif;
+    transition: background 0.3s, color 0.3s;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ─── Top Bar ─── */
+  .top-bar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .top-bar h1 {
+    font-size: 1.1rem; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .top-bar h1 .accent { color: var(--accent); }
+  .top-bar .meta {
+    font-size: 0.65rem; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+  }
+  .theme-btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 5px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 0.7rem; font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+  }
+  .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Section Selector ─── */
+  .section-selector {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 24px;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    position: sticky; top: 50px; z-index: 99;
+  }
+  .sec-btn {
+    padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px;
+    background: transparent; color: var(--text-dim);
+    font-size: 0.6rem; font-family: 'JetBrains Mono', monospace;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .sec-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .sec-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Main Content ─── */
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+
+  .lecture-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .lecture-header h1 {
+    font-size: 2rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .lecture-header .lecture-meta {
+    margin-top: 8px; font-size: 0.8rem; color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .lecture-header .lecture-meta span { margin-right: 16px; }
+
+  /* ─── Sections ─── */
+  .lecture-section {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+  .lecture-section:hover { border-color: var(--accent); }
+  .lecture-section.hidden { display: none; }
+
+  .section-heading {
+    font-size: 1.3rem; font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .section-body {
+    font-size: 0.9rem; line-height: 1.7;
+    color: var(--text-dim);
+  }
+
+  /* ─── Typography ─── */
+  .section-body p { margin-bottom: 12px; }
+  .section-body strong { color: var(--text); font-weight: 600; }
+  .section-body em { color: var(--accent); }
+  .section-body ul, .section-body ol { margin: 8px 0 12px 20px; }
+  .section-body li { margin-bottom: 4px; }
+  .section-body a { color: var(--accent); text-decoration: none; }
+  .section-body a:hover { text-decoration: underline; }
+  .section-body hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .section-body pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; line-height: 1.5;
+    overflow-x: auto; margin: 12px 0;
+  }
+  .section-body code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--accent-glow);
+    color: var(--accent);
+    padding: 1px 4px; border-radius: 3px;
+  }
+  .section-body pre code {
+    background: none; color: inherit; padding: 0;
+  }
+
+  /* ─── Equations ─── */
+  .equation.block-eq {
+    text-align: center;
+    margin: 16px 0;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  .equation.inline-eq {
+    display: inline;
+  }
+  .katex { font-size: 1.05em; }
+
+  /* ─── Graph Embeds ─── */
+  .graph-embed {
+    margin: 16px 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .graph-iframe {
+    width: 100%;
+    height: 520px;
+    display: block;
+  }
+
+  /* ─── PDF Export Button ─── */
+  .toolbar {
+    margin-bottom: 20px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .toolbar-btn {
+    padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--card); color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .toolbar-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toolbar-btn.primary {
+    background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600;
+  }
+
+  /* ─── Footer ─── */
+  .lecture-footer {
+    text-align: center;
+    padding: 20px 0;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  /* ─── Print Styles (PDF) ─── */
+  @media print {
+    body { background: white; color: black; }
+    .top-bar, .section-selector, .toolbar, .theme-btn { display: none; }
+    .container { max-width: 100%; padding: 0; }
+    .lecture-section {
+      background: white; border: 1px solid #ccc;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .section-heading { border-bottom-color: #ccc; }
+    .section-body { color: #333; }
+    .section-body strong { color: #000; }
+    .section-body pre { background: #f5f5f5; border-color: #ddd; }
+    .graph-iframe { height: 400px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <h1>📐 <span class="accent">Forces</span></h1>
+  <div class="meta">
+    <span>IGCSE Physics 0625 — Extended</span>
+    <span>• 1.5 Forces</span>
+    <span>• v1</span>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+</div>
+
+<!-- SECTION SELECTOR -->
+<div class="section-selector">
+  <button class="sec-btn active" data-section="all" onclick="filterSection('all')">📋 All</button>
+  
+    
+    <button class="sec-btn" data-section="history" onclick="filterSection('history')">
+      📜 📜 History
+    </button>
+  
+    
+    <button class="sec-btn" data-section="nature" onclick="filterSection('nature')">
+      🌍 🌍 Nature & Applicati
+    </button>
+  
+    
+    <button class="sec-btn" data-section="theory" onclick="filterSection('theory')">
+      ⚛️ ⚛️ Theory
+    </button>
+  
+    
+    <button class="sec-btn" data-section="examples" onclick="filterSection('examples')">
+      ✍️ ✍️ Worked Examples
+    </button>
+  
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="toolbar-btn" onclick="toggleTheme()">🌓 Toggle Theme</button>
+    <button class="toolbar-btn" onclick="window.print()">🖨️ Print / PDF</button>
+  </div>
+
+  <!-- HEADER -->
+  <div class="lecture-header">
+    <h1>Forces</h1>
+    <div class="lecture-meta">
+      <span>📂 1.5 Forces</span>
+      <span>🎯 IGCSE Physics 0625 — Extended</span>
+      <span>📝 Version 1</span>
+      <span>📅 2026-06-30</span>
+    </div>
+  </div>
+
+  <!-- SECTIONS -->
+  
+  <section class="lecture-section section-history" data-section-type="history">
+    
+    <h2 class="section-heading">📜 📜 History</h2>
+    <div class="section-body">
+      <p>The scientific study of forces began with <strong>Galileo Galilei (1564–1642)</strong> and was revolutionised by <strong>Sir Isaac Newton (1643–1727)</strong>.</p>
+<p><strong>Aristotle</strong> believed that a force was needed to keep an object moving — if you stop pushing, it stops moving. This seems intuitive, but it's wrong (it ignores friction).</p>
+<p><strong>Galileo's thought experiment</strong>: Imagine a ball rolling down one inclined plane and up another. The smoother the surfaces, the closer it gets to its original height. If there's no friction at all, the ball would roll forever. This led to the concept of <strong>inertia</strong>.</p>
+<p><strong>Newton</strong> synthesised these ideas into his <strong>Three Laws of Motion</strong>, published in 1687 in <em>Principia Mathematica</em>:<br />
+1. An object at rest stays at rest, and an object in motion stays in motion, unless acted on by a net external force<br />
+2.  — force equals mass times acceleration<br />
+3. For every action, there is an equal and opposite reaction</p>
+<p><strong>Robert Hooke (1635–1703)</strong> discovered the relationship between force and extension in elastic materials — <strong>Hooke's Law</strong> — during his work as Curator of Experiments for the Royal Society.</p>
+<blockquote>
+<p><strong>Myth vs Fact:</strong> Newton didn't discover gravity when an apple hit his head. The apple story is a metaphor — he saw an apple fall and wondered whether the same force that pulls apples to Earth could extend to the Moon.</p>
+</blockquote>
+
+      
+      <div class="section-equations">
+        
+          
+            <span class="equation inline-eq">$F = ma$</span>
+          
+        
+      </div>
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-nature" data-section-type="nature">
+    
+    <h2 class="section-heading">🌍 🌍 Nature & Applications</h2>
+    <div class="section-body">
+      <ul>
+<li><strong>🚗 Seatbelts</strong>: Use Newton's First Law — without a seatbelt, your body continues moving forward when the car stops suddenly</li>
+<li><strong>🏋️ Weightlifting</strong>:  — the force needed to lift a barbell depends on its mass and acceleration</li>
+<li><strong>🎱 Billiards/Pool</strong>: Action-reaction pairs — the cue ball exerts a force on the object ball, which exerts an equal force back</li>
+<li><strong>🔧 Springs</strong>: Hooke's Law governs suspension systems, mattresses, trampolines, and weighing scales</li>
+<li><strong>🪂 Parachutes</strong>: Air resistance (drag force) opposes weight, creating terminal velocity</li>
+<li><strong>🚀 Rocket propulsion</strong>: Action-reaction — exhaust gases push down, rocket pushes up</li>
+</ul>
+
+      
+      <div class="section-equations">
+        
+          
+            <span class="equation inline-eq">$F = ma$</span>
+          
+        
+      </div>
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-theory" data-section-type="theory">
+    
+    <h2 class="section-heading">⚛️ ⚛️ Theory</h2>
+    <div class="section-body">
+      <h3>What is a Force?</h3>
+<p>A force is a <strong>push, pull, or twist</strong> that can change the motion or shape of an object.</p>
+<ul>
+<li><strong>SI unit</strong>: newton (N)</li>
+<li><strong>Vector</strong> quantity (has magnitude and direction)</li>
+<li>Measured with a <strong>spring balance</strong> (force meter / newton-meter)</li>
+</ul>
+<h3>Types of Forces</h3>
+<p>| Force | Description | Direction |<br />
+|-------|------------|-----------|<br />
+| Weight () | Gravitational pull | Downward (towards Earth's centre) |<br />
+| Normal reaction ( or ) | Support force from a surface | Perpendicular to the surface |<br />
+| Friction () | Resistance to motion | Opposite to motion |<br />
+| Air resistance / Drag () | Resistance through air/fluid | Opposite to motion |<br />
+| Tension () | Pull in a string, rope, or cable | Along the string away from object |<br />
+| Thrust/Driving force | Push from engine/muscles | In the direction of intended motion |<br />
+| Upthrust () | Buoyant force in fluid | Upward |<br />
+| Elastic/Spring force () | Return force from stretched material | Opposite to deformation |</p>
+<h3>Newton's Laws</h3>
+<p><strong>First Law (Law of Inertia):</strong></p>
+<p>An object remains at <strong>rest</strong> or in <strong>uniform motion</strong> (constant velocity) unless acted on by a <strong>net external force</strong>.</p>
+<p><strong>Second Law ():</strong></p>
+<p>The acceleration of an object is directly proportional to the net force and inversely proportional to its mass.</p>
+<p>Where:<br />
+-  = net force (N)<br />
+-  = mass (kg)<br />
+-  = acceleration (m/s²)</p>
+<p><strong>Alternative form</strong> — when mass is constant:</p>
+<p><strong>Third Law (Action-Reaction):</strong></p>
+<p>When object A exerts a force on object B, object B exerts an <strong>equal and opposite</strong> force on object A.</p>
+<blockquote>
+<p>Note: The two forces act on <strong>different objects</strong>, so they don't "cancel out".</p>
+</blockquote>
+<h3>Hooke's Law</h3>
+<p>For an elastic material (like a spring), the extension is <strong>directly proportional</strong> to the applied force, up to the <strong>limit of proportionality</strong> (elastic limit).</p>
+<p>Where:<br />
+-  = applied force (N)<br />
+-  = spring constant (N/m) — a measure of stiffness<br />
+-  = extension or compression (m)</p>
+<p><strong>Stiffer</strong> springs have a <strong>larger</strong>  value.</p>
+<p><strong>Elastic limit</strong>: If stretched beyond this point, the material becomes <strong>permanently deformed</strong> (does not return to its original shape).</p>
+<h3>Force-Extension Graph</h3>
+<pre class="codehilite"><code>Force / N
+    |
+    |   /‾‾‾‾‾ limit of proportionality
+    |  /
+    | /  gradient = k (spring constant)
+    |/
+    +----------------→ Extension / m
+</code></pre>
+
+<ul>
+<li><strong>Straight line region</strong>: Hooke's Law obeyed ()</li>
+<li><strong>Area under the graph</strong>: Work done / elastic potential energy stored</li>
+<li><strong>Beyond elastic limit</strong>: Graph curves, material deforms permanently</li>
+</ul>
+<h3>Elastic Potential Energy</h3>
+<p>Where  = elastic potential energy stored in the spring (Joules).</p>
+
+      
+      <div class="section-equations">
+        
+          
+            <div class="equation block-eq">$$\Sigma F = 0 \quad \Rightarrow \quad \text{constant velocity}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$F = ma$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$F = \frac{\Delta p}{\Delta t} \quad \text{where } p = mv \text{ (momentum)}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$F_{A \to B} = -F_{B \to A}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$F = kx$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$k = \frac{F}{x}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$E_e = \frac{1}{2} k x^2 = \frac{1}{2} F x$$</div>
+          
+        
+          
+            <span class="equation inline-eq">$W$</span>
+          
+        
+          
+            <span class="equation inline-eq">$R$</span>
+          
+        
+          
+            <span class="equation inline-eq">$N$</span>
+          
+        
+          
+            <span class="equation inline-eq">$F_f$</span>
+          
+        
+          
+            <span class="equation inline-eq">$D$</span>
+          
+        
+          
+            <span class="equation inline-eq">$T$</span>
+          
+        
+          
+            <span class="equation inline-eq">$U$</span>
+          
+        
+          
+            <span class="equation inline-eq">$F_e$</span>
+          
+        
+          
+            <span class="equation inline-eq">$F = ma$</span>
+          
+        
+          
+            <span class="equation inline-eq">$F$</span>
+          
+        
+          
+            <span class="equation inline-eq">$m$</span>
+          
+        
+          
+            <span class="equation inline-eq">$a$</span>
+          
+        
+          
+            <span class="equation inline-eq">$F$</span>
+          
+        
+          
+            <span class="equation inline-eq">$k$</span>
+          
+        
+          
+            <span class="equation inline-eq">$x$</span>
+          
+        
+          
+            <span class="equation inline-eq">$k$</span>
+          
+        
+          
+            <span class="equation inline-eq">$F \propto x$</span>
+          
+        
+          
+            <span class="equation inline-eq">$E_e$</span>
+          
+        
+      </div>
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-examples" data-section-type="examples">
+    
+    <h2 class="section-heading">✍️ ✍️ Worked Examples</h2>
+    <div class="section-body">
+      <h3>Example 1: Newton's Second Law</h3>
+<p>A force of 200 N acts on a mass of 50 kg. What is the acceleration?</p>
+<p><strong>Solution:</strong></p>
+<hr />
+<h3>Example 2: Hooke's Law</h3>
+<p>A spring stretches by 6 cm when a force of 15 N is applied. What is the spring constant?</p>
+<p><strong>Solution:</strong></p>
+<hr />
+<h3>Example 3: Elastic Potential Energy</h3>
+<p>A spring with  N/m is stretched by 0.1 m. How much elastic potential energy is stored?</p>
+<p><strong>Solution:</strong></p>
+<hr />
+<h3>Example 4: Newton's Third Law</h3>
+<p>A person pushes against a wall with a force of 50 N. Explain what happens.</p>
+<p><strong>Solution:</strong><br />
+The wall pushes back on the person with an <strong>equal</strong> force of 50 N in the <strong>opposite</strong> direction. The person doesn't move because the reaction force from the wall balances their push (or friction from the ground prevents them from sliding). The two forces act on <strong>different objects</strong>: the 50 N push acts on the wall, the 50 N reaction acts on the person.</p>
+
+      
+      <div class="section-equations">
+        
+          
+            <div class="equation block-eq">$$a = \frac{F}{m} = \frac{200}{50} = 4.0 \text{ m/s}^2$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$x = 6 \text{ cm} = 0.06 \text{ m}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$k = \frac{F}{x} = \frac{15}{0.06} = 250 \text{ N/m}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$E_e = \frac{1}{2} k x^2 = \frac{1}{2} \times 200 \times (0.1)^2$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$E_e = \frac{1}{2} \times 200 \times 0.01 = 1.0 \text{ J}$$</div>
+          
+        
+          
+            <span class="equation inline-eq">$k = 200$</span>
+          
+        
+      </div>
+      
+
+      
+    </div>
+  </section>
+  
+
+  <!-- FOOTER -->
+  <div class="lecture-footer">
+    Generated by InteractiveLecture Build System — 2026-06-30
+  </div>
+
+</div>
+
+<script>
+// ─── Theme ───
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  localStorage.setItem('lecture-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+// Restore saved theme
+const savedTheme = localStorage.getItem('lecture-theme');
+if (savedTheme === 'light') document.body.classList.add('light');
+
+// ─── Section Filter ───
+function filterSection(type) {
+  document.querySelectorAll('.sec-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.sec-btn[data-section="${type}"]`);
+  if (btn) btn.classList.add('active');
+
+  if (type === 'all') {
+    document.querySelectorAll('.lecture-section').forEach(s => s.classList.remove('hidden'));
+    return;
+  }
+  document.querySelectorAll('.lecture-section').forEach(s => {
+    s.classList.toggle('hidden', s.dataset.sectionType !== type);
+  });
+}
+
+// ─── Auto-resize iframes on load ───
+document.querySelectorAll('.graph-iframe').forEach(iframe => {
+  iframe.addEventListener('load', function() {
+    try {
+      // Try to resize iframe to its content height
+      const body = this.contentWindow.document.body;
+      const height = body.scrollHeight;
+      if (height > 100) this.style.height = height + 'px';
+    } catch(e) {
+      // Cross-origin restriction — use default height
+    }
+  });
+});
+</script>
+
+</body>
+</html>

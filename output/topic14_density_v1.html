@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Density — InteractiveLecture</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body, {delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}]});"></script>
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --border: #334155;
+    --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
+    --accent: #22d3ee; --accent-glow: rgba(34,211,238,0.12);
+    --green: #34d399; --rose: #fb7185; --violet: #a78bfa; --amber: #fbbf24;
+  }
+  .light {
+    --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
+    --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
+    --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
+    --green: #047857; --rose: #be123c; --violet: #6d28d9; --amber: #b45309;
+  }
+  @page { size: A4; margin: 20mm 18mm; }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif;
+    transition: background 0.3s, color 0.3s;
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ─── Top Bar ─── */
+  .top-bar {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .top-bar h1 {
+    font-size: 1.1rem; font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .top-bar h1 .accent { color: var(--accent); }
+  .top-bar .meta {
+    font-size: 0.65rem; font-family: 'JetBrains Mono', monospace;
+    color: var(--text-muted);
+  }
+  .theme-btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 5px 12px; border-radius: 8px; cursor: pointer;
+    font-size: 0.7rem; font-family: 'JetBrains Mono', monospace;
+    transition: all 0.2s;
+  }
+  .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Section Selector ─── */
+  .section-selector {
+    background: var(--card);
+    border-bottom: 1px solid var(--border);
+    padding: 8px 24px;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    position: sticky; top: 50px; z-index: 99;
+  }
+  .sec-btn {
+    padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px;
+    background: transparent; color: var(--text-dim);
+    font-size: 0.6rem; font-family: 'JetBrains Mono', monospace;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .sec-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .sec-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Main Content ─── */
+  .container { max-width: 960px; margin: 0 auto; padding: 32px 24px; }
+
+  .lecture-header {
+    margin-bottom: 32px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .lecture-header h1 {
+    font-size: 2rem; font-weight: 800;
+    background: linear-gradient(135deg, var(--accent), var(--violet));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .lecture-header .lecture-meta {
+    margin-top: 8px; font-size: 0.8rem; color: var(--text-dim);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .lecture-header .lecture-meta span { margin-right: 16px; }
+
+  /* ─── Sections ─── */
+  .lecture-section {
+    margin-bottom: 32px;
+    padding: 24px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    transition: all 0.2s;
+  }
+  .lecture-section:hover { border-color: var(--accent); }
+  .lecture-section.hidden { display: none; }
+
+  .section-heading {
+    font-size: 1.3rem; font-weight: 700;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .section-body {
+    font-size: 0.9rem; line-height: 1.7;
+    color: var(--text-dim);
+  }
+
+  /* ─── Typography ─── */
+  .section-body p { margin-bottom: 12px; }
+  .section-body strong { color: var(--text); font-weight: 600; }
+  .section-body em { color: var(--accent); }
+  .section-body ul, .section-body ol { margin: 8px 0 12px 20px; }
+  .section-body li { margin-bottom: 4px; }
+  .section-body a { color: var(--accent); text-decoration: none; }
+  .section-body a:hover { text-decoration: underline; }
+  .section-body hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+  .section-body pre {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 8px; padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; line-height: 1.5;
+    overflow-x: auto; margin: 12px 0;
+  }
+  .section-body code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    background: var(--accent-glow);
+    color: var(--accent);
+    padding: 1px 4px; border-radius: 3px;
+  }
+  .section-body pre code {
+    background: none; color: inherit; padding: 0;
+  }
+
+  /* ─── Equations ─── */
+  .equation.block-eq {
+    text-align: center;
+    margin: 16px 0;
+    padding: 12px;
+    background: var(--bg);
+    border-radius: 8px;
+    overflow-x: auto;
+  }
+  .equation.inline-eq {
+    display: inline;
+  }
+  .katex { font-size: 1.05em; }
+
+  /* ─── Graph Embeds ─── */
+  .graph-embed {
+    margin: 16px 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .graph-iframe {
+    width: 100%;
+    height: 520px;
+    display: block;
+  }
+
+  /* ─── PDF Export Button ─── */
+  .toolbar {
+    margin-bottom: 20px;
+    display: flex; gap: 8px; align-items: center;
+  }
+  .toolbar-btn {
+    padding: 6px 14px; border: 1px solid var(--border); border-radius: 8px;
+    background: var(--card); color: var(--text);
+    font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 500;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .toolbar-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .toolbar-btn.primary {
+    background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600;
+  }
+
+  /* ─── Footer ─── */
+  .lecture-footer {
+    text-align: center;
+    padding: 20px 0;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+    border-top: 1px solid var(--border);
+    margin-top: 40px;
+  }
+
+  /* ─── Print Styles (PDF) ─── */
+  @media print {
+    body { background: white; color: black; }
+    .top-bar, .section-selector, .toolbar, .theme-btn { display: none; }
+    .container { max-width: 100%; padding: 0; }
+    .lecture-section {
+      background: white; border: 1px solid #ccc;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .section-heading { border-bottom-color: #ccc; }
+    .section-body { color: #333; }
+    .section-body strong { color: #000; }
+    .section-body pre { background: #f5f5f5; border-color: #ddd; }
+    .graph-iframe { height: 400px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <h1>📐 <span class="accent">Density</span></h1>
+  <div class="meta">
+    <span>IGCSE Physics 0625 — Extended</span>
+    <span>• 1.4 Density</span>
+    <span>• v1</span>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+</div>
+
+<!-- SECTION SELECTOR -->
+<div class="section-selector">
+  <button class="sec-btn active" data-section="all" onclick="filterSection('all')">📋 All</button>
+  
+    
+    <button class="sec-btn" data-section="history" onclick="filterSection('history')">
+      📜 📜 History
+    </button>
+  
+    
+    <button class="sec-btn" data-section="nature" onclick="filterSection('nature')">
+      🌍 🌍 Nature & Applicati
+    </button>
+  
+    
+    <button class="sec-btn" data-section="theory" onclick="filterSection('theory')">
+      ⚛️ ⚛️ Theory
+    </button>
+  
+    
+    <button class="sec-btn" data-section="examples" onclick="filterSection('examples')">
+      ✍️ ✍️ Worked Examples
+    </button>
+  
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="container">
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <button class="toolbar-btn" onclick="toggleTheme()">🌓 Toggle Theme</button>
+    <button class="toolbar-btn" onclick="window.print()">🖨️ Print / PDF</button>
+  </div>
+
+  <!-- HEADER -->
+  <div class="lecture-header">
+    <h1>Density</h1>
+    <div class="lecture-meta">
+      <span>📂 1.4 Density</span>
+      <span>🎯 IGCSE Physics 0625 — Extended</span>
+      <span>📝 Version 1</span>
+      <span>📅 2026-06-30</span>
+    </div>
+  </div>
+
+  <!-- SECTIONS -->
+  
+  <section class="lecture-section section-history" data-section-type="history">
+    
+    <h2 class="section-heading">📜 📜 History</h2>
+    <div class="section-body">
+      <p>The concept of density dates back to <strong>Archimedes of Syracuse</strong> (c. 287–212 BCE), one of the greatest mathematicians and inventors of the ancient world.</p>
+<p><strong>The Golden Crown Problem</strong>: King Hiero II suspected a goldsmith had replaced some gold with silver in his crown. He asked Archimedes to determine whether the crown was pure gold without destroying it.</p>
+<p>While taking a bath, Archimedes noticed that his body displaced water — and realised he could measure the crown's volume by water displacement. He was so excited that he ran through the streets naked shouting <strong>"Eureka!"</strong> (Greek: "I have found it!").</p>
+<p>By comparing the crown's density to that of pure gold, he proved the goldsmith had cheated.</p>
+<blockquote>
+<p><strong>Myth vs Fact:</strong> The "Eureka!" story may be embellished, but Archimedes definitely used the principle of buoyancy (now called <strong>Archimedes' Principle</strong>) to solve the problem. The principle states that the buoyant force on an object equals the weight of the fluid it displaces.</p>
+</blockquote>
+
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-nature" data-section-type="nature">
+    
+    <h2 class="section-heading">🌍 🌍 Nature & Applications</h2>
+    <div class="section-body">
+      <ul>
+<li><strong>🚢 Ships float</strong> because their average density is less than water (they are mostly hollow — filled with air)</li>
+<li><strong>🎈 Hot air balloons rise</strong> because hot air is less dense than cool air</li>
+<li><strong>🧊 Ice floats on water</strong> because ice is less dense than liquid water — this is unusual (most solids are denser than their liquid form)</li>
+<li><strong>🌊 Ocean currents</strong> are driven by differences in water density (temperature and salinity)</li>
+<li><strong>⚗️ Immiscible liquids separate</strong> by density — oil floats on water</li>
+<li><strong>🪨 Prospectors</strong> use density to identify minerals and ores</li>
+</ul>
+
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-theory" data-section-type="theory">
+    
+    <h2 class="section-heading">⚛️ ⚛️ Theory</h2>
+    <div class="section-body">
+      <h3>Definition</h3>
+<p>Density is the <strong>mass per unit volume</strong> of a substance. It tells you how "tightly packed" the matter is.</p>
+<p>Where:<br />
+-  (rho) = density (kg/m³ or g/cm³)<br />
+-  = mass (kg or g)<br />
+-  = volume (m³ or cm³)</p>
+<h3>Units</h3>
+<p>| Unit System | Mass | Volume | Density |<br />
+|------------|------|--------|---------|<br />
+| SI | kg | m³ | <strong>kg/m³</strong> |<br />
+| Practical | g | cm³ | <strong>g/cm³</strong> |</p>
+<p><strong>Conversion</strong>: </p>
+<p>The density of water: </p>
+<h3>Densities of Common Substances</h3>
+<p>| Substance | Density (g/cm³) | Density (kg/m³) |<br />
+|-----------|----------------|-----------------|<br />
+| Air (at sea level) | 0.0012 | 1.2 |<br />
+| Wood (oak) | ~0.75 | ~750 |<br />
+| Water | 1.0 | 1000 |<br />
+| Ice | 0.92 | 920 |<br />
+| Aluminium | 2.7 | 2700 |<br />
+| Iron / Steel | 7.8 | 7800 |<br />
+| Mercury | 13.6 | 13600 |<br />
+| Gold | 19.3 | 19300 |</p>
+<h3>Measuring Density of a Regular Solid</h3>
+<ol>
+<li>Measure mass with a balance</li>
+<li>Measure dimensions with a ruler (length, width, height)</li>
+<li>Calculate volume:  (or  for a cylinder)</li>
+<li>Calculate density: </li>
+</ol>
+<h3>Measuring Density of an Irregular Solid</h3>
+<ol>
+<li>Measure mass with a balance</li>
+<li>Measure volume by <strong>displacement</strong> (submerge in water in a measuring cylinder)</li>
+<li></li>
+<li>Calculate density: </li>
+</ol>
+<h3>Measuring Density of a Liquid</h3>
+<ol>
+<li>Measure mass of an <strong>empty</strong> measuring cylinder</li>
+<li>Add a known volume of liquid</li>
+<li>Measure mass of the <strong>filled</strong> measuring cylinder</li>
+<li>Mass of liquid = filled mass - empty mass</li>
+<li></li>
+</ol>
+<h3>Floating and Sinking</h3>
+<ul>
+<li>An object <strong>floats</strong> if its density is <strong>less than</strong> the fluid it's in</li>
+<li>An object <strong>sinks</strong> if its density is <strong>greater than</strong> the fluid it's in</li>
+<li>An object <strong>hovers</strong> (is neutrally buoyant) if its density <strong>equals</strong> the fluid's density</li>
+</ul>
+
+      
+      <div class="section-equations">
+        
+          
+            <div class="equation block-eq">$$\rho = \frac{m}{V}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\text{Density of object} \begin{cases}
+< \rho_{\text{fluid}} & \Rightarrow \text{floats} \\
+= \rho_{\text{fluid}} & \Rightarrow \text{neutrally buoyant} \\
+> \rho_{\text{fluid}} & \Rightarrow \text{sinks}
+\end{cases}$$</div>
+          
+        
+          
+            <span class="equation inline-eq">$\rho$</span>
+          
+        
+          
+            <span class="equation inline-eq">$m$</span>
+          
+        
+          
+            <span class="equation inline-eq">$V$</span>
+          
+        
+          
+            <span class="equation inline-eq">$1 \text{ g/cm}^3 = 1000 \text{ kg/m}^3$</span>
+          
+        
+          
+            <span class="equation inline-eq">$1.0 \text{ g/cm}^3 = 1000 \text{ kg/m}^3$</span>
+          
+        
+          
+            <span class="equation inline-eq">$V = l \times w \times h$</span>
+          
+        
+          
+            <span class="equation inline-eq">$\pi r^2 h$</span>
+          
+        
+          
+            <span class="equation inline-eq">$\rho = \frac{m}{V}$</span>
+          
+        
+          
+            <span class="equation inline-eq">$V = V_{\text{final}} - V_{\text{initial}}$</span>
+          
+        
+          
+            <span class="equation inline-eq">$\rho = \frac{m}{V}$</span>
+          
+        
+          
+            <span class="equation inline-eq">$\rho = \frac{m}{V}$</span>
+          
+        
+      </div>
+      
+
+      
+    </div>
+  </section>
+  
+  <section class="lecture-section section-examples" data-section-type="examples">
+    
+    <h2 class="section-heading">✍️ ✍️ Worked Examples</h2>
+    <div class="section-body">
+      <h3>Example 1: Basic Density Calculation</h3>
+<p>A block of aluminium has a mass of 135 g and a volume of 50 cm³. What is its density?</p>
+<p><strong>Solution:</strong></p>
+<p>In SI units:</p>
+<hr />
+<h3>Example 2: Finding Mass from Density</h3>
+<p>A swimming pool has dimensions 25 m × 10 m × 2 m. What is the mass of water in the pool?</p>
+<p><strong>Solution:</strong></p>
+<p>Mass of water =  kg = 500 tonnes</p>
+<hr />
+<h3>Example 3: Irregular Solid (Displacement)</h3>
+<p>A stone has a mass of 64 g. When placed in a measuring cylinder containing 30 mL of water, the water level rises to 54 mL. What is the density of the stone?</p>
+<p><strong>Solution:</strong></p>
+<hr />
+<h3>Example 4: Will It Float?</h3>
+<p>A cube of material has side 5 cm and mass 150 g. Will it float in water?</p>
+<p><strong>Solution:</strong></p>
+<p>Density of the cube (1.2 g/cm³) &gt; density of water (1.0 g/cm³), so the cube will <strong>sink</strong>.</p>
+
+      
+      <div class="section-equations">
+        
+          
+            <div class="equation block-eq">$$\rho = \frac{m}{V} = \frac{135}{50} = 2.7 \text{ g/cm}^3$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\rho = 2.7 \times 1000 = 2700 \text{ kg/m}^3$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$V = 25 \times 10 \times 2 = 500 \text{ m}^3$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$m = \rho V = 1000 \times 500 = 500\,000 \text{ kg}$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$V = 54 - 30 = 24 \text{ cm}^3$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\rho = \frac{64}{24} = 2.67 \text{ g/cm}^3$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$V = 5^3 = 125 \text{ cm}^3$$</div>
+          
+        
+          
+            <div class="equation block-eq">$$\rho = \frac{150}{125} = 1.2 \text{ g/cm}^3$$</div>
+          
+        
+          
+            <span class="equation inline-eq">$5.0 \times 10^5$</span>
+          
+        
+      </div>
+      
+
+      
+    </div>
+  </section>
+  
+
+  <!-- FOOTER -->
+  <div class="lecture-footer">
+    Generated by InteractiveLecture Build System — 2026-06-30
+  </div>
+
+</div>
+
+<script>
+// ─── Theme ───
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  localStorage.setItem('lecture-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+// Restore saved theme
+const savedTheme = localStorage.getItem('lecture-theme');
+if (savedTheme === 'light') document.body.classList.add('light');
+
+// ─── Section Filter ───
+function filterSection(type) {
+  document.querySelectorAll('.sec-btn').forEach(b => b.classList.remove('active'));
+  const btn = document.querySelector(`.sec-btn[data-section="${type}"]`);
+  if (btn) btn.classList.add('active');
+
+  if (type === 'all') {
+    document.querySelectorAll('.lecture-section').forEach(s => s.classList.remove('hidden'));
+    return;
+  }
+  document.querySelectorAll('.lecture-section').forEach(s => {
+    s.classList.toggle('hidden', s.dataset.sectionType !== type);
+  });
+}
+
+// ─── Auto-resize iframes on load ───
+document.querySelectorAll('.graph-iframe').forEach(iframe => {
+  iframe.addEventListener('load', function() {
+    try {
+      // Try to resize iframe to its content height
+      const body = this.contentWindow.document.body;
+      const height = body.scrollHeight;
+      if (height > 100) this.style.height = height + 'px';
+    } catch(e) {
+      // Cross-origin restriction — use default height
+    }
+  });
+});
+</script>
+
+</body>
+</html>

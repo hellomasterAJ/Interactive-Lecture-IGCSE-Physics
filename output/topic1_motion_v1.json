@@ -1,0 +1,204 @@
+{
+  "title": "Motion — Kinematics",
+  "topic": "1.2 Motion",
+  "level": "IGCSE Physics 0625 — Extended",
+  "version": 1,
+  "sections": [
+    {
+      "heading": "📜 History",
+      "type": "history",
+      "content_md": "The study of motion, known as **kinematics**, began with ancient Greek philosophers.\n\n**Aristotle (384–322 BCE)** believed that objects fell at speeds proportional to their weight — a heavier object falls faster than a lighter one. This idea was accepted for nearly 2,000 years because it seemed intuitive.\n\n**Galileo Galilei (1564–1642)** challenged Aristotle's view. Through careful experiments using inclined planes and water clocks, he demonstrated that in the absence of air resistance, **all objects fall at the same rate regardless of mass**. Galileo's work laid the foundation for modern kinematics.\n\n> **Myth vs Fact:** The story of Galileo dropping balls from the Leaning Tower of Pisa is a popular myth. In reality, he used inclined planes to slow down the motion so he could measure it more accurately with the primitive timing tools available.\n\n**Sir Isaac Newton (1643–1727)** later formalised the laws of motion in his work *Philosophiæ Naturalis Principia Mathematica*, unifying terrestrial and celestial motion under the same mathematical framework.",
+      "equations": [],
+      "graph_directives": []
+    },
+    {
+      "heading": "🌍 Nature & Applications",
+      "type": "nature",
+      "content_md": "Kinematics — the description of motion — is everywhere in our daily lives:\n\n- **🚗 Cars & Transport**: Speedometers measure instantaneous speed. Sat-navs calculate average speed and time of arrival.\n- **🏃 Sports**: Athletes analyse split times, acceleration off the starting block, and peak speed.\n- **🛰️ Space Exploration**: Rocket launches require precise calculations of velocity and acceleration to reach orbit.\n- **🚦 Safety**: Thinking distance and braking distance determine stopping distances for road safety.\n\n**Key idea**: Motion is **relative** — we describe it from a chosen reference point (the observer's position).",
+      "equations": [],
+      "graph_directives": []
+    },
+    {
+      "heading": "⚛️ Theory",
+      "type": "theory",
+      "content_md": "### Key Quantities\n\n- **Distance (s)** — total path length travelled (scalar, SI unit: metre, m)\n- **Displacement (s)** — straight-line distance from start to finish in a given direction (vector, m)\n- **Speed (v)** — rate of change of distance: <!-- EQ_INLINE_8 --> (scalar, m/s)\n- **Velocity (v)** — rate of change of displacement: <!-- EQ_INLINE_9 --> (vector, m/s)\n- **Acceleration (a)** — rate of change of velocity: <!-- EQ_INLINE_10 --> (vector, m/s²)\n\n### Equations for Uniform Acceleration (SUVAT)\n\nThese equations apply only when acceleration is **constant**:\n\n<!-- EQ_BLOCK_0 -->\n\n<!-- EQ_BLOCK_1 -->\n\n<!-- EQ_BLOCK_2 -->\n\nWhere:\n- <!-- EQ_INLINE_11 --> = initial velocity (m/s)\n- <!-- EQ_INLINE_12 --> = final velocity (m/s)\n- <!-- EQ_INLINE_13 --> = acceleration (m/s²)\n- <!-- EQ_INLINE_14 --> = time (s)\n- <!-- EQ_INLINE_15 --> = displacement (m)\n\n### Free Fall\n\nWhen an object falls freely under gravity, **air resistance is negligible**, and the acceleration is constant at:\n\n<!-- EQ_BLOCK_3 -->\n\nThe equations of motion become:\n\n<!-- EQ_BLOCK_4 -->\n\n<!-- EQ_BLOCK_5 -->\n\n**For a freely falling object dropped from rest** (<!-- EQ_INLINE_16 -->):\n\n<!-- EQ_BLOCK_6 -->\n\n<!-- EQ_BLOCK_7 -->\n\n### Graphs of Motion\n\n| Graph Type | Y-axis | Gradient | Area Under |\n|-----------|--------|----------|------------|\n| Distance–Time | distance (m) | speed (m/s) | — |\n| Speed–Time | speed (m/s) | acceleration (m/s²) | distance (m) |\n| Acceleration–Time | acceleration (m/s²) | — | change in velocity (m/s) |",
+      "equations": [
+        {
+          "latex": "v = u + at",
+          "inline": false
+        },
+        {
+          "latex": "s = ut + \\frac{1}{2}at^2",
+          "inline": false
+        },
+        {
+          "latex": "v^2 = u^2 + 2as",
+          "inline": false
+        },
+        {
+          "latex": "g = 9.8 \\, \\text{m/s}^2 \\, (\\text{downward on Earth})",
+          "inline": false
+        },
+        {
+          "latex": "v = u + gt",
+          "inline": false
+        },
+        {
+          "latex": "s = ut + \\frac{1}{2}gt^2",
+          "inline": false
+        },
+        {
+          "latex": "v = gt",
+          "inline": false
+        },
+        {
+          "latex": "s = \\frac{1}{2}gt^2",
+          "inline": false
+        },
+        {
+          "latex": "v = \\frac{\\Delta s}{\\Delta t}",
+          "inline": true
+        },
+        {
+          "latex": "v = \\frac{\\Delta s}{\\Delta t}",
+          "inline": true
+        },
+        {
+          "latex": "a = \\frac{\\Delta v}{\\Delta t}",
+          "inline": true
+        },
+        {
+          "latex": "u",
+          "inline": true
+        },
+        {
+          "latex": "v",
+          "inline": true
+        },
+        {
+          "latex": "a",
+          "inline": true
+        },
+        {
+          "latex": "t",
+          "inline": true
+        },
+        {
+          "latex": "s",
+          "inline": true
+        },
+        {
+          "latex": "u = 0",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    },
+    {
+      "heading": "📊 Interactive Graphs",
+      "type": "graphs",
+      "content_md": "### Horizontal Motion\n\nExperiment with different modes of motion — from rest, constant speed, acceleration, and deceleration.\n\n<!-- GRAPH_DIRECTIVE_0 -->\n\n<!-- GRAPH_DIRECTIVE_1 -->\n\n### Free Fall (Vertical Motion)\n\nObserve the motion of a freely falling apple under different gravitational fields.\n\n<!-- GRAPH_DIRECTIVE_2 -->\n\n<!-- GRAPH_DIRECTIVE_3 -->",
+      "equations": [],
+      "graph_directives": [
+        {
+          "graph_type": "horizontal-motion",
+          "params": {
+            "mode": "constant-speed",
+            "speed": 8
+          }
+        },
+        {
+          "graph_type": "horizontal-motion",
+          "params": {
+            "mode": "increasing-speed",
+            "speed": 5
+          }
+        },
+        {
+          "graph_type": "freefall",
+          "params": {
+            "scenario": "earth"
+          }
+        },
+        {
+          "graph_type": "freefall",
+          "params": {
+            "scenario": "moon"
+          }
+        }
+      ]
+    },
+    {
+      "heading": "✍️ Worked Examples",
+      "type": "examples",
+      "content_md": "### Example 1: Constant Acceleration\n\nA car starts from rest and accelerates uniformly at <!-- EQ_INLINE_10 --> for 10 seconds.\n\n**(a)** What is its final velocity?\n**(b)** How far does it travel?\n\n**Solution (a):**\n<!-- EQ_BLOCK_0 -->\n\n**Solution (b):**\n<!-- EQ_BLOCK_1 -->\n\n---\n\n### Example 2: Free Fall\n\nA ball is dropped from a height of 45 m. How long does it take to reach the ground? (Take <!-- EQ_INLINE_11 -->)\n\n**Solution:**\n<!-- EQ_BLOCK_2 -->\n<!-- EQ_BLOCK_3 -->\n<!-- EQ_BLOCK_4 -->\n<!-- EQ_BLOCK_5 -->\n\n---\n\n### Example 3: Thinking and Braking Distance\n\nA car travels at <!-- EQ_INLINE_12 -->. The driver's reaction time is <!-- EQ_INLINE_13 -->. The braking deceleration is <!-- EQ_INLINE_14 -->.\n\n**(a)** What is the thinking distance?\n**(b)** What is the braking distance?\n**(c)** What is the total stopping distance?\n\n**Solution (a):**\nThinking distance = speed × reaction time\n<!-- EQ_BLOCK_6 -->\n\n**Solution (b):**\nBraking distance:\n<!-- EQ_BLOCK_7 -->\n<!-- EQ_BLOCK_8 -->\n<!-- EQ_BLOCK_9 -->\n\n**Solution (c):**\nTotal stopping distance = <!-- EQ_INLINE_15 -->",
+      "equations": [
+        {
+          "latex": "v = u + at = 0 + (2.0)(10) = 20 \\, \\text{m/s}",
+          "inline": false
+        },
+        {
+          "latex": "s = ut + \\frac{1}{2}at^2 = 0 + \\frac{1}{2}(2.0)(10)^2 = 100 \\, \\text{m}",
+          "inline": false
+        },
+        {
+          "latex": "s = \\frac{1}{2}gt^2",
+          "inline": false
+        },
+        {
+          "latex": "45 = \\frac{1}{2}(10)t^2",
+          "inline": false
+        },
+        {
+          "latex": "t^2 = 9",
+          "inline": false
+        },
+        {
+          "latex": "t = 3.0 \\, \\text{s}",
+          "inline": false
+        },
+        {
+          "latex": "= (20)(0.5) = 10 \\, \\text{m}",
+          "inline": false
+        },
+        {
+          "latex": "v^2 = u^2 + 2as",
+          "inline": false
+        },
+        {
+          "latex": "0 = (20)^2 + 2(-4.0)s",
+          "inline": false
+        },
+        {
+          "latex": "s = \\frac{400}{8} = 50 \\, \\text{m}",
+          "inline": false
+        },
+        {
+          "latex": "2.0 \\, \\text{m/s}^2",
+          "inline": true
+        },
+        {
+          "latex": "g = 10 \\, \\text{m/s}^2",
+          "inline": true
+        },
+        {
+          "latex": "20 \\, \\text{m/s}",
+          "inline": true
+        },
+        {
+          "latex": "0.5 \\, \\text{s}",
+          "inline": true
+        },
+        {
+          "latex": "4.0 \\, \\text{m/s}^2",
+          "inline": true
+        },
+        {
+          "latex": "10 + 50 = 60 \\, \\text{m}",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    }
+  ]
+}

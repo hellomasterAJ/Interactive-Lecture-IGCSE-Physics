@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InteractiveLecture — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f172a; --card: #1e293b; --border: #334155;
+    --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
+    --accent: #22d3ee; --accent-glow: rgba(34,211,238,0.12);
+    --green: #34d399; --rose: #fb7185; --violet: #a78bfa; --amber: #fbbf24;
+  }
+  .light {
+    --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
+    --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
+    --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
+    --green: #047857; --rose: #be123c; --violet: #6d28d9; --amber: #b45309;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: 'Inter', sans-serif; transition: all 0.3s;
+    min-height: 100vh;
+  }
+
+  /* ─── Top Bar ─── */
+  .top-bar {
+    background: var(--card); border-bottom: 1px solid var(--border);
+    padding: 16px 32px; display: flex; justify-content: space-between;
+    align-items: center; position: sticky; top: 0; z-index: 100;
+  }
+  .top-bar h1 { font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+  .top-bar h1 .accent { background: linear-gradient(135deg, var(--accent), var(--violet)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .theme-btn {
+    background: var(--card); border: 1px solid var(--border); color: var(--text-dim);
+    padding: 6px 14px; border-radius: 8px; cursor: pointer;
+    font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; transition: all 0.2s;
+  }
+  .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Stats Bar ─── */
+  .stats-bar {
+    display: flex; gap: 16px; padding: 14px 32px;
+    background: var(--card); border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .stat-chip {
+    padding: 4px 14px; border-radius: 20px;
+    font-size: 0.65rem; font-family: 'JetBrains Mono', monospace;
+    border: 1px solid var(--border); display: flex; align-items: center; gap: 6px;
+  }
+  .stat-chip .num { color: var(--accent); font-weight: 600; }
+
+  /* ─── Filter Bar ─── */
+  .filter-bar {
+    padding: 10px 32px; background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  }
+  .filter-bar label { font-size: 0.6rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; margin-right: 4px; }
+  .filter-btn {
+    padding: 3px 10px; border-radius: 6px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-dim); cursor: pointer;
+    font-size: 0.6rem; font-family: 'JetBrains Mono', monospace; transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .filter-btn.active { background: var(--accent-glow); border-color: var(--accent); color: var(--accent); }
+
+  /* ─── Grid ─── */
+  .container { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
+
+  .lecture-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 14px;
+  }
+
+  /* ─── Cards ─── */
+  .lecture-card {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px; transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .lecture-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
+  .lecture-card.hidden { display: none; }
+
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .card-topic-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 0.6rem; font-weight: 600;
+    padding: 2px 8px; border-radius: 4px; white-space: nowrap;
+    background: var(--accent-glow); color: var(--accent); border: 1px solid var(--accent);
+  }
+  .card-badges { display: flex; gap: 3px; flex-wrap: wrap; }
+  .badge {
+    font-size: 0.5rem; padding: 2px 6px; border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace; font-weight: 500;
+    border: 1px solid transparent;
+  }
+  .badge-graph { background: rgba(34,211,238,0.12); color: var(--accent); border-color: var(--accent); }
+  .badge-pdf { background: rgba(251,191,36,0.12); color: var(--amber); border-color: var(--amber); }
+
+  .card-title {
+    font-size: 0.95rem; font-weight: 700; margin-top: 4px;
+    line-height: 1.3;
+  }
+  .card-topic { font-size: 0.65rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; }
+
+  .card-desc {
+    font-size: 0.72rem; color: var(--text-dim); line-height: 1.5;
+    flex: 1; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-stats {
+    display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap;
+  }
+  .card-stat {
+    font-size: 0.55rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;
+    display: flex; align-items: center; gap: 3px;
+  }
+
+  .card-actions {
+    display: flex; gap: 6px; margin-top: 8px; padding-top: 8px;
+    border-top: 1px solid var(--border);
+  }
+  .card-btn {
+    padding: 5px 10px; border-radius: 6px; border: 1px solid var(--border);
+    background: transparent; color: var(--text-dim); cursor: pointer;
+    font-size: 0.62rem; font-family: 'Inter', sans-serif; font-weight: 500;
+    transition: all 0.2s; text-decoration: none; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .card-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .card-btn.primary { background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600; }
+
+  /* ─── Empty State ─── */
+  .empty-state {
+    grid-column: 1 / -1; text-align: center; padding: 60px 20px;
+    color: var(--text-muted);
+  }
+  .empty-state .icon { font-size: 3rem; margin-bottom: 16px; }
+  .empty-state p { font-size: 0.9rem; }
+
+  /* ─── Footer ─── */
+  .footer {
+    text-align: center; padding: 20px 0; color: var(--text-muted);
+    font-size: 0.65rem; border-top: 1px solid var(--border); margin-top: 40px;
+  }
+
+  @media (max-width: 600px) {
+    .lecture-grid { grid-template-columns: 1fr; }
+    .top-bar { padding: 12px 16px; }
+    .container { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <h1>📐 <span class="accent">InteractiveLecture</span> <span style="font-size:0.7rem;color:var(--text-muted);font-weight:400;">v1.0.0</span></h1>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <span style="font-size:0.6rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">2026-06-30</span>
+    <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+  </div>
+</div>
+
+<!-- STATS BAR -->
+<div class="stats-bar">
+  <span class="stat-chip"><span class="num">8</span> Lectures</span>
+  <span class="stat-chip"><span class="num">1</span> with Interactive Graphs</span>
+  <span class="stat-chip"><span class="num">8</span> PDFs</span>
+  <span class="stat-chip">📄 164.0 KB HTML</span>
+  <span class="stat-chip">📖 3367.0 KB PDF</span>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <label>Filter:</label>
+  <button class="filter-btn active" data-filter="all" onclick="filterAll()">📋 All</button>
+  <button class="filter-btn" data-filter="graph" onclick="filterLectures('graph')">📊 With Graphs</button>
+  <button class="filter-btn" data-filter="no-graph" onclick="filterLectures('no-graph')">📝 Text Only</button>
+</div>
+
+<!-- MAIN -->
+<div class="container">
+
+  
+
+  <div class="lecture-grid" id="lecture-grid">
+    
+    <div class="lecture-card" data-has-graphs="true">
+      <div class="card-top">
+        
+        <span class="card-topic-num">Topic 1.</span>
+        
+        <div class="card-badges">
+          <span class="badge badge-graph">📊 Graph</span>
+          <span class="badge badge-pdf">📄 PDF</span>
+        </div>
+      </div>
+      <div class="card-title">Motion — Kinematics</div>
+      <div class="card-topic">1.2 Motion</div>
+      <div class="card-desc">The study of motion, known as kinematics, began with ancient Greek philosophers.
+
+Aristotle (384–322 BCE) believed that objects fell at speeds proportional to their weight — a heav...</div>
+      <div class="card-stats">
+        <span class="card-stat">📐 5 sections</span>
+        <span class="card-stat">📏 33 equations</span>
+        <span class="card-stat">📄 854.0 KB</span>
+      </div>
+      <div class="card-actions">
+        
+        <a class="card-btn primary" href="topic1_motion_v1.html" target="_blank">▶ Open Lecture</a>
+        
+        
+        <a class="card-btn" href="topic1_motion_v1.pdf" target="_blank">📄 PDF</a>
+        
+      </div>
+    </div>
+    
+    <div class="lecture-card" data-has-graphs="false">
+      <div class="card-top">
+        
+        <span class="card-topic-num">Topic 1.1</span>
+        
+        <div class="card-badges">
+          
+          <span class="badge badge-pdf">📄 PDF</span>
+        </div>
+      </div>
+      <div class="card-title">Physical Quantities and Measurement Techniques</div>
+      <div class="card-topic">1.1 Physical Quantities and Measurement Techniques</div>
+      <div class="card-desc">Measurement is fundamental to physics — without measurement, physics is just philosophy.
+
+Ancient measurements were based on human body parts: the cubit (forearm), the foot, the ha...</div>
+      <div class="card-stats">
+        <span class="card-stat">📐 4 sections</span>
+        <span class="card-stat">📏 32 equations</span>
+        <span class="card-stat">📄 332.0 KB</span>
+      </div>
+      <div class="card-actions">
+        
+        <a class="card-btn primary" href="topic11_measurement_v1.html" target="_blank">▶ Open Lecture</a>
+        
+        
+        <a class="card-btn" href="topic11_measurement_v1.pdf" target="_blank">📄 PDF</a>
+        
+      </div>
+    </div>
+    
+    <div class="lecture-card" data-has-graphs="false">
+      <div class="card-top">
+        
+        <span class="card-topic-num">Topic 1.3</span>
+        
+        <div class="card-badges">
+          
+          <span class="badge badge-pdf">📄 PDF</span>
+        </div>
+      </div>
+      <div class="card-title">Mass and Weight</div>
+      <div class="card-topic">1.3 Mass and Weight</div>
+      <div class="card-desc">The concepts of mass and weight were revolutionised by Sir Isaac Newton in the 17th century.
+
+Before Newton, people used the terms &#34;mass&#34; and &#34;weight&#34; interchangeably. In everyday ...</div>
+      <div class="card-stats">
+        <span class="card-stat">📐 4 sections</span>
+        <span class="card-stat">📏 21 equations</span>
+        <span class="card-stat">📄 336.0 KB</span>
+      </div>
+      <div class="card-actions">
+        
+        <a class="card-btn primary" href="topic13_mass_weight_v1.html" target="_blank">▶ Open Lecture</a>
+        
+        
+        <a class="card-btn" href="topic13_mass_weight_v1.pdf" target="_blank">📄 PDF</a>
+        
+      </div>
+    </div>
+    
+    <div class="lecture-card" data-has-graphs="false">
+      <div class="card-top">
+        
+        <span class="card-topic-num">Topic 1.4</span>
+        
+        <div class="card-badges">
+          
+          <span class="badge badge-pdf">📄 PDF</span>
+        </div>
+      </div>
+      <div class="card-title">Density</div>
+      <div class="card-topic">1.4 Density</div>
+      <div class="card-desc">The concept of density dates back to Archimedes of Syracuse (c. 287–212 BCE), one of the greatest mathematicians and inventors of the ancient world.
+
+The Golden Crown Problem: King...</div>
+      <div class="card-stats">
+        <span class="card-stat">📐 4 sections</span>
+        <span class="card-stat">📏 22 equations</span>
+        <span class="card-stat">📄 346.0 KB</span>
+      </div>
+      <div class="card-actions">
+        
+        <a class="card-btn primary" href="topic14_density_v1.html" target="_blank">▶ Open Lecture</a>
+        
+        
+        <a class="card-btn" href="topic14_density_v1.pdf" target="_blank">📄 PDF</a>
+        
+      </div>
+    </div>
+    
+    <div class="lecture-card" data-has-graphs="false">
+      <div class="card-top">
+        
+        <span class="card-topic-num">Topic 1.5</span>
+        
+        <div class="card-badges">
+          
+          <span class="badge badge-pdf">📄 PDF</span>
+        </div>
+      </div>
+      <div class="card-title">Forces</div>
+      <div class="card-topic">1.5 Forces</div>
+      <div class="card-desc">The scientific study of forces began with Galileo Galilei (1564–1642) and was revolutionised by Sir Isaac Newton (1643–1727).
+
+Aristotle believed that a force was needed to keep an...</div>
+      <div class="card-stats">
+        <span class="card-stat">📐 4 sections</span>
+        <span class="card-stat">📏 33 equations</span>
+        <span class="card-stat">📄 376.0 KB</span>
+      </div>
+      <div class="card-actions">
+        
+        <a class="card-btn primary" href="topic15_forces_v1.html" target="_blank">▶ Open Lecture</a>
+        
+        
+        <a class="card-btn" href="topic15_forces_v1.pdf" target="_blank">📄 PDF</a>
+        
+      </div>
+    </div>
+    
+    <div class="lecture-card" data-has-graphs="false">
+      <div class="card-top">
+        
+        <span class="card-topic-num">Topic 1.6</span>
+        
+        <div class="card-badges">
+          
+          <span class="badge badge-pdf">📄 PDF</span>
+        </div>
+      </div>
+      <div class="card-title">Effects of Forces — Turning, Pressure, Centre of Mass</div>
+      <div class="card-topic">1.6 Effects of Forces</div>
+      <div class="card-desc">The study of turning effects (moments) began with Archimedes, who famously said: *&#34;Give me a lever long enough and a place to stand, and I shall move the Earth.&#34;*
+
+Levers have been...</div>
+      <div class="card-stats">
+        <span class="card-stat">📐 4 sections</span>
+        <span class="card-stat">📏 30 equations</span>
+        <span class="card-stat">📄 368.0 KB</span>
+      </div>
+      <div class="card-actions">
+        
+        <a class="card-btn primary" href="topic16_effects_of_forces_v1.html" target="_blank">▶ Open Lecture</a>
+        
+        
+        <a class="card-btn" href="topic16_effects_of_forces_v1.pdf" target="_blank">📄 PDF</a>
+        
+      </div>
+    </div>
+    
+    <div class="lecture-card" data-has-graphs="false">
+      <div class="card-top">
+        
+        <span class="card-topic-num">Topic 1.7</span>
+        
+        <div class="card-badges">
+          
+          <span class="badge badge-pdf">📄 PDF</span>
+        </div>
+      </div>
+      <div class="card-title">Energy, Work and Power</div>
+      <div class="card-topic">1.7 Energy, Work and Power</div>
+      <div class="card-desc">The concept of energy evolved slowly through the 19th century as physicists realised that heat, motion, electricity, and chemical reactions were all different forms of the same thi...</div>
+      <div class="card-stats">
+        <span class="card-stat">📐 4 sections</span>
+        <span class="card-stat">📏 53 equations</span>
+        <span class="card-stat">📄 395.0 KB</span>
+      </div>
+      <div class="card-actions">
+        
+        <a class="card-btn primary" href="topic17_energy_v1.html" target="_blank">▶ Open Lecture</a>
+        
+        
+        <a class="card-btn" href="topic17_energy_v1.pdf" target="_blank">📄 PDF</a>
+        
+      </div>
+    </div>
+    
+    <div class="lecture-card" data-has-graphs="false">
+      <div class="card-top">
+        
+        <span class="card-topic-num">Topic 1.8</span>
+        
+        <div class="card-badges">
+          
+          <span class="badge badge-pdf">📄 PDF</span>
+        </div>
+      </div>
+      <div class="card-title">Energy Resources</div>
+      <div class="card-topic">1.8 Energy Resources</div>
+      <div class="card-desc">Human civilisation has been shaped by the energy resources available to each era.
+
+The Pre-Industrial Era (before 1760): Humans relied on biomass (wood for heating, food for muscle...</div>
+      <div class="card-stats">
+        <span class="card-stat">📐 4 sections</span>
+        <span class="card-stat">📏 12 equations</span>
+        <span class="card-stat">📄 360.0 KB</span>
+      </div>
+      <div class="card-actions">
+        
+        <a class="card-btn primary" href="topic18_energy_resources_v1.html" target="_blank">▶ Open Lecture</a>
+        
+        
+        <a class="card-btn" href="topic18_energy_resources_v1.pdf" target="_blank">📄 PDF</a>
+        
+      </div>
+    </div>
+    
+  </div>
+  
+
+  <div class="footer">
+    InteractiveLecture — CIE IGCSE Physics 0625 — Generated 2026-06-30
+  </div>
+</div>
+
+<script>
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  localStorage.setItem('il-theme', document.body.classList.contains('light') ? 'light' : 'dark');
+}
+const saved = localStorage.getItem('il-theme');
+if (saved === 'light') document.body.classList.add('light');
+
+function filterAll() {
+  document.querySelectorAll('.lecture-card').forEach(c => c.classList.remove('hidden'));
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('[data-filter="all"]').classList.add('active');
+}
+
+function filterLectures(type) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-filter="${type}"]`).classList.add('active');
+
+  document.querySelectorAll('.lecture-card').forEach(c => {
+    if (type === 'all') { c.classList.remove('hidden'); return; }
+    const hasGraphs = c.dataset.hasGraphs === 'true';
+    c.classList.toggle('hidden', type === 'graph' ? !hasGraphs : hasGraphs);
+  });
+}
+</script>
+</body>
+</html>

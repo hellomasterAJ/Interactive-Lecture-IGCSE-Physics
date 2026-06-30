@@ -1,0 +1,251 @@
+{
+  "title": "Energy, Work and Power",
+  "topic": "1.7 Energy, Work and Power",
+  "level": "IGCSE Physics 0625 — Extended",
+  "version": 1,
+  "sections": [
+    {
+      "heading": "📜 History",
+      "type": "history",
+      "content_md": "The concept of **energy** evolved slowly through the 19th century as physicists realised that heat, motion, electricity, and chemical reactions were all different forms of the same thing.\n\n**James Prescott Joule (1818–1889)**, an English brewer and physicist, conducted meticulous experiments showing that mechanical work could be converted into heat. His famous experiment involved a falling weight turning a paddle wheel in water — the friction heated the water. This established the **mechanical equivalent of heat**.\n\n**Key figures:**\n- **Galileo & Newton** — understood kinetic energy (<!-- EQ_INLINE_0 -->)\n- **Thomas Young** (1807) — first used the word \"energy\" in the modern scientific sense\n- **Joule** (1840s) — established the relationship between work and heat\n- **Hermann von Helmholtz** (1847) — formalised the **Law of Conservation of Energy**\n\n> **Myth vs Fact:** Perpetual motion machines (devices that produce more energy than they consume) are impossible. The First Law of Thermodynamics (Conservation of Energy) means energy cannot be created or destroyed — only transformed. Every proposed perpetual motion machine either stops or violates this law.",
+      "equations": [
+        {
+          "latex": "\\frac{1}{2}mv^2",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    },
+    {
+      "heading": "🌍 Nature & Applications",
+      "type": "nature",
+      "content_md": "- **🔋 Batteries**: Convert chemical energy → electrical energy\n- **☀️ Solar panels**: Convert light energy → electrical energy\n- **🧲 Generators**: Convert kinetic energy → electrical energy\n- **🍔 Food**: Chemical energy in food → thermal energy (warmth) + kinetic energy (movement)\n- **🚗 Electric cars**: Battery chemical energy → electrical → kinetic (motion)\n- **🌊 Hydroelectric dams**: Gravitational potential energy → kinetic → electrical\n- **🪁 Wind turbines**: Kinetic energy of wind → kinetic energy of blades → electrical energy",
+      "equations": [],
+      "graph_directives": []
+    },
+    {
+      "heading": "⚛️ Theory",
+      "type": "theory",
+      "content_md": "### Energy\n\n**Energy** is the capacity to do work. SI unit: **joule (J)**.\n\n**Principle of Conservation of Energy:**\n\n> Energy cannot be created or destroyed. It can only be transferred from one form to another.\n\n<!-- EQ_BLOCK_0 -->\n\n### Forms of Energy\n\n| Form | Symbol | Description | Example |\n|------|--------|-------------|---------|\n| Kinetic | <!-- EQ_INLINE_10 --> | Energy of motion | Moving car, wind |\n| Gravitational potential | <!-- EQ_INLINE_11 --> or <!-- EQ_INLINE_12 --> | Energy due to height | Raised weight, water behind a dam |\n| Elastic potential | <!-- EQ_INLINE_13 --> | Energy stored in stretched/compressed material | Drawn bow, compressed spring |\n| Chemical | <!-- EQ_INLINE_14 --> | Energy stored in chemical bonds | Food, fuel, battery |\n| Thermal | <!-- EQ_INLINE_15 --> or <!-- EQ_INLINE_16 --> | Energy due to temperature | Hot objects |\n| Electrical | <!-- EQ_INLINE_17 --> | Energy of moving charges | Current in a wire |\n| Nuclear | <!-- EQ_INLINE_18 --> | Energy stored in the nucleus | Fission, fusion |\n| Sound | <!-- EQ_INLINE_19 --> | Energy of vibrating air | Music, speech |\n| Light | <!-- EQ_INLINE_20 --> | Radiant energy | Sun, light bulbs |\n\n### Kinetic Energy\n\n<!-- EQ_BLOCK_1 -->\n\nWhere:\n- <!-- EQ_INLINE_21 --> = kinetic energy (J)\n- <!-- EQ_INLINE_22 --> = mass (kg)\n- <!-- EQ_INLINE_23 --> = velocity (m/s)\n\n### Gravitational Potential Energy\n\n<!-- EQ_BLOCK_2 -->\n\nWhere:\n- <!-- EQ_INLINE_24 --> = gravitational potential energy (J)\n- <!-- EQ_INLINE_25 --> = mass (kg)\n- <!-- EQ_INLINE_26 --> = gravitational field strength (N/kg)\n- <!-- EQ_INLINE_27 --> = height above a reference point (m)\n\n### Work\n\n**Work** is done when a force causes an object to move in the direction of the force.\n\n<!-- EQ_BLOCK_3 -->\n\nWhere:\n- <!-- EQ_INLINE_28 --> = work done (J)\n- <!-- EQ_INLINE_29 --> = force (N)\n- <!-- EQ_INLINE_30 --> = distance moved in the direction of the force (m)\n\n**Key idea**: <!-- EQ_INLINE_31 --> of work is done when a force of <!-- EQ_INLINE_32 --> moves an object <!-- EQ_INLINE_33 -->.\n\n<!-- EQ_BLOCK_4 -->\n\n### Power\n\n**Power** is the rate at which work is done (or energy is transferred).\n\n<!-- EQ_BLOCK_5 -->\n\nWhere:\n- <!-- EQ_INLINE_34 --> = power (W)\n- <!-- EQ_INLINE_35 --> = work done (J)\n- <!-- EQ_INLINE_36 --> = energy transferred (J)\n- <!-- EQ_INLINE_37 --> = time taken (s)\n\n<!-- EQ_BLOCK_6 -->\n\nAlternative formula for power (using force and velocity):\n\n<!-- EQ_BLOCK_7 -->\n\nWhere <!-- EQ_INLINE_38 --> = constant velocity (m/s) — useful for vehicles climbing hills or overcoming drag.\n\n### Energy Transfers (Sankey Diagrams)\n\nA **Sankey diagram** shows the flow of energy through a system — the width of each arrow is proportional to the amount of energy.\n\n```\n        ┌──────────┐\n        │           │──→ Useful energy (e.g., kinetic)\nInput ──→  Device   │\n        │           │──→ Wasted energy (e.g., heat from friction)\n        └──────────┘\n```\n\n**Efficiency**:\n\n<!-- EQ_BLOCK_8 -->\n\nEfficiency can also be calculated using power:\n\n<!-- EQ_BLOCK_9 -->",
+      "equations": [
+        {
+          "latex": "E_{\\text{total before}} = E_{\\text{total after}}",
+          "inline": false
+        },
+        {
+          "latex": "E_k = \\frac{1}{2} m v^2",
+          "inline": false
+        },
+        {
+          "latex": "E_p = mgh",
+          "inline": false
+        },
+        {
+          "latex": "W = Fd",
+          "inline": false
+        },
+        {
+          "latex": "1 \\text{ J} = 1 \\text{ Nm}",
+          "inline": false
+        },
+        {
+          "latex": "P = \\frac{W}{t} = \\frac{E}{t}",
+          "inline": false
+        },
+        {
+          "latex": "1 \\text{ W} = 1 \\text{ J/s}",
+          "inline": false
+        },
+        {
+          "latex": "P = Fv",
+          "inline": false
+        },
+        {
+          "latex": "\\text{Efficiency} = \\frac{\\text{useful output energy}}{\\text{total input energy}} \\times 100\\%",
+          "inline": false
+        },
+        {
+          "latex": "\\text{Efficiency} = \\frac{\\text{useful power output}}{\\text{total power input}} \\times 100\\%",
+          "inline": false
+        },
+        {
+          "latex": "E_k",
+          "inline": true
+        },
+        {
+          "latex": "E_p",
+          "inline": true
+        },
+        {
+          "latex": "E_g",
+          "inline": true
+        },
+        {
+          "latex": "E_e",
+          "inline": true
+        },
+        {
+          "latex": "E_c",
+          "inline": true
+        },
+        {
+          "latex": "Q",
+          "inline": true
+        },
+        {
+          "latex": "E_{th}",
+          "inline": true
+        },
+        {
+          "latex": "E_e",
+          "inline": true
+        },
+        {
+          "latex": "E_n",
+          "inline": true
+        },
+        {
+          "latex": "E_s",
+          "inline": true
+        },
+        {
+          "latex": "E_l",
+          "inline": true
+        },
+        {
+          "latex": "E_k",
+          "inline": true
+        },
+        {
+          "latex": "m",
+          "inline": true
+        },
+        {
+          "latex": "v",
+          "inline": true
+        },
+        {
+          "latex": "E_p",
+          "inline": true
+        },
+        {
+          "latex": "m",
+          "inline": true
+        },
+        {
+          "latex": "g",
+          "inline": true
+        },
+        {
+          "latex": "h",
+          "inline": true
+        },
+        {
+          "latex": "W",
+          "inline": true
+        },
+        {
+          "latex": "F",
+          "inline": true
+        },
+        {
+          "latex": "d",
+          "inline": true
+        },
+        {
+          "latex": "1 \\text{ J}",
+          "inline": true
+        },
+        {
+          "latex": "1 \\text{ N}",
+          "inline": true
+        },
+        {
+          "latex": "1 \\text{ m}",
+          "inline": true
+        },
+        {
+          "latex": "P",
+          "inline": true
+        },
+        {
+          "latex": "W",
+          "inline": true
+        },
+        {
+          "latex": "E",
+          "inline": true
+        },
+        {
+          "latex": "t",
+          "inline": true
+        },
+        {
+          "latex": "v",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    },
+    {
+      "heading": "✍️ Worked Examples",
+      "type": "examples",
+      "content_md": "### Example 1: Kinetic Energy\n\nA car of mass 1200 kg travels at 20 m/s. What is its kinetic energy?\n\n**Solution:**\n<!-- EQ_BLOCK_0 -->\n<!-- EQ_BLOCK_1 -->\n\n---\n\n### Example 2: Gravitational Potential Energy\n\nA 5 kg book is lifted from the floor to a shelf 2 m high. How much GPE does it gain? (<!-- EQ_INLINE_12 --> N/kg)\n\n**Solution:**\n<!-- EQ_BLOCK_2 -->\n\n---\n\n### Example 3: Work Done\n\nA person pushes a box with a force of 50 N over a distance of 6 m. How much work is done?\n\n**Solution:**\n<!-- EQ_BLOCK_3 -->\n\n---\n\n### Example 4: Power\n\nA motor does 2400 J of work in 60 seconds. What is its power?\n\n**Solution:**\n<!-- EQ_BLOCK_4 -->\n\n---\n\n### Example 5: Efficiency\n\nA light bulb receives 100 J of electrical energy. It produces 10 J of light energy and 90 J of thermal energy.\n\n**(a)** What is the efficiency?\n**(b)** What is the percentage efficiency?\n\n**Solution (a):**\n<!-- EQ_BLOCK_5 -->\n\n**Solution (b):**\n<!-- EQ_BLOCK_6 -->\n\n---\n\n### Example 6: Conservation of Energy (Roller Coaster)\n\nA roller coaster car of mass 500 kg is at the top of a 30 m high hill. It rolls down (ignore friction).\n\n**(a)** What is its GPE at the top?\n**(b)** What is its speed at the bottom?\n\n**Solution (a):**\n<!-- EQ_BLOCK_7 -->\n\n**Solution (b):**\nAt the bottom, all GPE has been converted to KE:\n<!-- EQ_BLOCK_8 -->\n<!-- EQ_BLOCK_9 -->\n<!-- EQ_BLOCK_10 -->\n<!-- EQ_BLOCK_11 -->",
+      "equations": [
+        {
+          "latex": "E_k = \\frac{1}{2} mv^2 = \\frac{1}{2} \\times 1200 \\times 20^2",
+          "inline": false
+        },
+        {
+          "latex": "= 600 \\times 400 = 240\\,000 \\text{ J} = 240 \\text{ kJ}",
+          "inline": false
+        },
+        {
+          "latex": "E_p = mgh = 5 \\times 9.8 \\times 2 = 98 \\text{ J}",
+          "inline": false
+        },
+        {
+          "latex": "W = Fd = 50 \\times 6 = 300 \\text{ J}",
+          "inline": false
+        },
+        {
+          "latex": "P = \\frac{W}{t} = \\frac{2400}{60} = 40 \\text{ W}",
+          "inline": false
+        },
+        {
+          "latex": "\\text{Efficiency} = \\frac{10}{100} = 0.1",
+          "inline": false
+        },
+        {
+          "latex": "\\text{Efficiency} = 0.1 \\times 100\\% = 10\\%",
+          "inline": false
+        },
+        {
+          "latex": "E_p = mgh = 500 \\times 9.8 \\times 30 = 147\\,000 \\text{ J}",
+          "inline": false
+        },
+        {
+          "latex": "\\frac{1}{2} mv^2 = mgh",
+          "inline": false
+        },
+        {
+          "latex": "\\frac{1}{2} v^2 = gh",
+          "inline": false
+        },
+        {
+          "latex": "v = \\sqrt{2gh} = \\sqrt{2 \\times 9.8 \\times 30}",
+          "inline": false
+        },
+        {
+          "latex": "v = \\sqrt{588} \\approx 24.2 \\text{ m/s}",
+          "inline": false
+        },
+        {
+          "latex": "g = 9.8",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "title": "Physical Quantities and Measurement Techniques",
+  "topic": "1.1 Physical Quantities and Measurement Techniques",
+  "level": "IGCSE Physics 0625 — Extended",
+  "version": 1,
+  "sections": [
+    {
+      "heading": "📜 History",
+      "type": "history",
+      "content_md": "Measurement is fundamental to physics — without measurement, physics is just philosophy.\n\n**Ancient measurements** were based on human body parts: the cubit (forearm), the foot, the hand. These varied from person to person, causing confusion in trade and construction.\n\n**The Metric System** was born during the French Revolution (1790s). Scientists defined the **metre** as one ten-millionth of the distance from the North Pole to the Equator. This was the first standardised system based on natural constants.\n\n**Modern definitions** are even more precise:\n- The **metre** is now defined by the speed of light in a vacuum (<!-- EQ_INLINE_0 --> m/s)\n- The **second** is defined by the vibration of caesium-133 atoms (<!-- EQ_INLINE_1 --> oscillations)\n- The **kilogram** was redefined in 2019 using Planck's constant (<!-- EQ_INLINE_2 -->)\n\n> **Did you know?** The original \"kilogram\" prototype — a cylinder of platinum-iridium alloy kept in France — was the last physical artefact used to define an SI unit until 2019. It was affectionately called \"Le Grand K\".",
+      "equations": [
+        {
+          "latex": "c = 299\\,792\\,458",
+          "inline": true
+        },
+        {
+          "latex": "9\\,192\\,631\\,770",
+          "inline": true
+        },
+        {
+          "latex": "h",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    },
+    {
+      "heading": "🌍 Nature & Applications",
+      "type": "nature",
+      "content_md": "Measurement is everywhere:\n\n- **📏 Length**: Measuring height, distance, width of a hair (<!-- EQ_INLINE_0 --> mm)\n- **⏱️ Time**: Stopwatches for races, atomic clocks for GPS satellites\n- **⚖️ Mass**: Kitchen scales, laboratory balances, weighing trucks\n- **🌡️ Temperature**: Thermometers in medicine, weather, cooking\n- **📊 Volume**: Measuring cylinders for liquids, displacement method for irregular solids\n\n**Why standard units matter**: If a doctor says \"take 5 mL of medicine\" or an engineer says \"this bolt is 10 mm\", everyone in the world knows exactly what that means.",
+      "equations": [
+        {
+          "latex": "\\approx 0.1",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    },
+    {
+      "heading": "⚛️ Theory",
+      "type": "theory",
+      "content_md": "### Base SI Quantities\n\n| Base Quantity | SI Unit | Symbol |\n|--------------|---------|--------|\n| Length | metre | m |\n| Mass | kilogram | kg |\n| Time | second | s |\n| Temperature | kelvin | K |\n| Electric current | ampere | A |\n| Amount of substance | mole | mol |\n| Luminous intensity | candela | cd |\n\nFor IGCSE Physics, the most important are: **length (m), mass (kg), time (s), and temperature (°C or K)**.\n\n### Prefixes\n\n| Prefix | Symbol | Factor | Example |\n|--------|--------|--------|---------|\n| kilo- | k | <!-- EQ_INLINE_4 --> | 1 km = 1000 m |\n| centi- | c | <!-- EQ_INLINE_5 --> | 1 cm = 0.01 m |\n| milli- | m | <!-- EQ_INLINE_6 --> | 1 mm = 0.001 m |\n| micro- | <!-- EQ_INLINE_7 --> | <!-- EQ_INLINE_8 --> | 1 <!-- EQ_INLINE_9 -->m = 0.000 001 m |\n| nano- | n | <!-- EQ_INLINE_10 --> | 1 nm = 0.000 000 001 m |\n\n<!-- EQ_BLOCK_0 -->\n\n### Measuring Instruments\n\n| Instrument | Measures | Precision | How |\n|-----------|----------|-----------|-----|\n| Metre ruler | Length | <!-- EQ_INLINE_11 --> mm | Read at eye level to avoid parallax |\n| Measuring tape | Length | <!-- EQ_INLINE_12 --> mm | For curves / long distances |\n| Vernier callipers | Small lengths | <!-- EQ_INLINE_13 --> mm | Internal/external/depth measurements |\n| Micrometer screw gauge | Very small lengths | <!-- EQ_INLINE_14 --> mm | Thickness of wire/sheet |\n| Measuring cylinder | Volume | <!-- EQ_INLINE_15 --> mL | Read bottom of meniscus |\n| Stopwatch | Time | <!-- EQ_INLINE_16 --> s | Digital or analogue |\n| Top-pan balance | Mass | <!-- EQ_INLINE_17 --> g | Zero before use |\n| Thermometer | Temperature | <!-- EQ_INLINE_18 --> °C | Bulb fully immersed |\n\n### Measuring Volume of Irregular Solids\n\nUse the **displacement method**:\n\n<!-- EQ_BLOCK_1 -->\n\n1. Fill a measuring cylinder with a known volume of water\n2. Submerge the object completely\n3. Read the new water level\n4. Subtract: <!-- EQ_INLINE_19 -->\n\n### Accuracy vs Precision\n\n- **Accuracy**: How close a measurement is to the true value\n- **Precision**: How consistent repeated measurements are\n\nA measurement can be precise but inaccurate (e.g., a ruler that's slightly stretched).\n\n<!-- EQ_BLOCK_2 -->\n\nAlways take **repeat readings** and calculate the average to reduce random errors.\n\n### Uncertainty\n\n<!-- EQ_BLOCK_3 -->\n\nFor a ruler with <!-- EQ_INLINE_20 --> mm markings, the uncertainty is <!-- EQ_INLINE_21 --> mm.",
+      "equations": [
+        {
+          "latex": "\\text{Value} = \\text{number} \\times 10^{\\text{power}}",
+          "inline": false
+        },
+        {
+          "latex": "V_{\\text{object}} = V_{\\text{final}} - V_{\\text{initial}}",
+          "inline": false
+        },
+        {
+          "latex": "\\text{Average} = \\frac{\\text{sum of measurements}}{\\text{number of measurements}}",
+          "inline": false
+        },
+        {
+          "latex": "\\text{Uncertainty} = \\frac{\\text{range}}{2} = \\frac{\\text{max} - \\text{min}}{2}",
+          "inline": false
+        },
+        {
+          "latex": "10^3",
+          "inline": true
+        },
+        {
+          "latex": "10^{-2}",
+          "inline": true
+        },
+        {
+          "latex": "10^{-3}",
+          "inline": true
+        },
+        {
+          "latex": "\\mu",
+          "inline": true
+        },
+        {
+          "latex": "10^{-6}",
+          "inline": true
+        },
+        {
+          "latex": "\\mu",
+          "inline": true
+        },
+        {
+          "latex": "10^{-9}",
+          "inline": true
+        },
+        {
+          "latex": "\\pm 1",
+          "inline": true
+        },
+        {
+          "latex": "\\pm 1",
+          "inline": true
+        },
+        {
+          "latex": "\\pm 0.1",
+          "inline": true
+        },
+        {
+          "latex": "\\pm 0.01",
+          "inline": true
+        },
+        {
+          "latex": "\\pm 0.5",
+          "inline": true
+        },
+        {
+          "latex": "\\pm 0.1",
+          "inline": true
+        },
+        {
+          "latex": "\\pm 0.1",
+          "inline": true
+        },
+        {
+          "latex": "\\pm 0.5",
+          "inline": true
+        },
+        {
+          "latex": "V_{\\text{object}} = V_{\\text{final}} - V_{\\text{initial}}",
+          "inline": true
+        },
+        {
+          "latex": "\\pm 1",
+          "inline": true
+        },
+        {
+          "latex": "\\pm 0.5",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    },
+    {
+      "heading": "✍️ Worked Examples",
+      "type": "examples",
+      "content_md": "### Example 1: Unit Conversion\n\nConvert 2500 mm into metres.\n\n**Solution:**\n<!-- EQ_BLOCK_0 -->\n<!-- EQ_BLOCK_1 -->\n\n---\n\n### Example 2: Measuring Volume by Displacement\n\nA stone is placed in a measuring cylinder containing 40 mL of water. The water level rises to 55 mL. What is the volume of the stone?\n\n**Solution:**\n<!-- EQ_BLOCK_2 -->\n\n---\n\n### Example 3: Calculating Uncertainty\n\nA student measures the length of a table five times: 152 cm, 151 cm, 153 cm, 152 cm, 152 cm.\n\n**(a)** What is the average length?\n**(b)** What is the uncertainty?\n\n**Solution (a):**\n<!-- EQ_BLOCK_3 -->\n\n**Solution (b):**\n<!-- EQ_BLOCK_4 -->\n\nResult: <!-- EQ_INLINE_5 --> cm",
+      "equations": [
+        {
+          "latex": "1 \\text{ m} = 1000 \\text{ mm}",
+          "inline": false
+        },
+        {
+          "latex": "2500 \\text{ mm} = \\frac{2500}{1000} = 2.5 \\text{ m}",
+          "inline": false
+        },
+        {
+          "latex": "V_{\\text{stone}} = 55 - 40 = 15 \\text{ cm}^3",
+          "inline": false
+        },
+        {
+          "latex": "\\text{Average} = \\frac{152 + 151 + 153 + 152 + 152}{5} = \\frac{760}{5} = 152 \\text{ cm}",
+          "inline": false
+        },
+        {
+          "latex": "\\text{Uncertainty} = \\frac{153 - 151}{2} = \\pm 1 \\text{ cm}",
+          "inline": false
+        },
+        {
+          "latex": "152 \\pm 1",
+          "inline": true
+        }
+      ],
+      "graph_directives": []
+    }
+  ]
+}

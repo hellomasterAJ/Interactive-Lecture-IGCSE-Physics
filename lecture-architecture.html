@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InteractiveLecture — Architecture Overview</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #0f172a;
+    color: #e2e8f0;
+    font-family: 'Inter', sans-serif;
+    padding: 40px 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #22d3ee, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    color: #94a3b8;
+    font-size: 1rem;
+    margin-bottom: 40px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ===== PIPELINE ===== */
+  .pipeline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 50px;
+  }
+  .pipe-box {
+    background: #1e293b;
+    border: 2px solid #334155;
+    border-radius: 16px;
+    padding: 20px 24px;
+    min-width: 150px;
+    text-align: center;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .pipe-box:hover { border-color: #22d3ee; }
+  .pipe-box .emoji { font-size: 2rem; margin-bottom: 6px; display: block; }
+  .pipe-box .label { font-weight: 600; font-size: 1rem; }
+  .pipe-box .sublabel { font-size: 0.75rem; color: #94a3b8; margin-top: 4px; font-family: 'JetBrains Mono', monospace; }
+  .pipe-box .lang-tag {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-top: 6px;
+  }
+  .lang-py { background: #1e3a5f; color: #60a5fa; border: 1px solid #3b82f6; }
+  .lang-js { background: #5f3a1e; color: #fbbf24; border: 1px solid #f59e0b; }
+  .lang-md { background: #2d1b69; color: #a78bfa; border: 1px solid #8b5cf6; }
+  .pipe-arrow {
+    font-size: 1.5rem;
+    color: #475569;
+    flex-shrink: 0;
+  }
+
+  /* ===== DETAIL CARDS ===== */
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 20px;
+    max-width: 1100px;
+    width: 100%;
+    margin-bottom: 50px;
+  }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    padding: 24px;
+    transition: all 0.2s;
+  }
+  .card:hover { border-color: #22d3ee; }
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+  .card-dot {
+    width: 12px; height: 12px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-cyan { background: #22d3ee; }
+  .dot-emerald { background: #34d399; }
+  .dot-amber { background: #fbbf24; }
+  .dot-violet { background: #a78bfa; }
+  .card h3 { font-size: 1.1rem; font-weight: 600; }
+  .card pre {
+    background: #0f172a;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    color: #e2e8f0;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin-top: 10px;
+  }
+  .card ul { list-style: none; margin-top: 8px; }
+  .card ul li {
+    padding: 4px 0;
+    font-size: 0.9rem;
+    color: #cbd5e1;
+  }
+  .card ul li::before { content: "• "; color: #22d3ee; }
+  .highlight {
+    background: linear-gradient(135deg, rgba(34,211,238,0.1), rgba(167,139,250,0.1));
+    border: 1px solid rgba(34,211,238,0.3);
+  }
+
+  /* ===== COMPARISON TABLE ===== */
+  .section-title {
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 40px 0 20px;
+    max-width: 1100px;
+    width: 100%;
+  }
+  .comparison {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    max-width: 1100px;
+    width: 100%;
+  }
+  .comp-col {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 20px;
+  }
+  .comp-col h4 { font-size: 0.9rem; color: #94a3b8; margin-bottom: 12px; }
+  .comp-col .analogy {
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 10px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem;
+    line-height: 1.6;
+  }
+  .comp-col .analogy .comment { color: #6b7280; }
+  .comp-col .analogy .keyword { color: #60a5fa; }
+  .comp-col .analogy .string { color: #34d399; }
+  .comp-col .analogy .func { color: #fbbf24; }
+  .code-block {
+    background: #0f172a;
+    border-radius: 8px;
+    padding: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    margin-top: 8px;
+  }
+  .code-block .comment { color: #6b7280; }
+  .code-block .keyword { color: #60a5fa; }
+  .code-block .string { color: #34d399; }
+  .code-block .func { color: #fbbf24; }
+  .code-block .type { color: #a78bfa; }
+  .code-block .num { color: #f472b6; }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    max-width: 1100px;
+    width: 100%;
+    text-align: center;
+    color: #475569;
+    font-size: 0.8rem;
+    padding: 30px 0 10px;
+    border-top: 1px solid #1e293b;
+  }
+</style>
+</head>
+<body>
+
+<h1>📐 InteractiveLecture</h1>
+<div class="subtitle">Markdown → Interactive Web → PDF</div>
+
+<!-- PIPELINE -->
+<div class="pipeline">
+  <div class="pipe-box">
+    <span class="emoji">✍️</span>
+    <div class="label">Lecture.md</div>
+    <div class="sublabel">เขียนด้วยมือ</div>
+    <span class="lang-tag lang-md">Markdown + LaTeX</span>
+  </div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-box">
+    <span class="emoji">⚙️</span>
+    <div class="label">Parser</div>
+    <div class="sublabel">แยกส่วนเนื้อหา</div>
+    <span class="lang-tag lang-py">Python</span>
+  </div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-box" style="border-color:#22d3ee;">
+    <span class="emoji">🌐</span>
+    <div class="label">Web Renderer</div>
+    <div class="sublabel">Interactive + กราฟ + อนิเมชั่น</div>
+    <span class="lang-tag lang-js">JavaScript</span>
+  </div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-box">
+    <span class="emoji">📄</span>
+    <div class="label">PDF Export</div>
+    <div class="sublabel">พิมพ์ / แจกนักเรียน</div>
+    <span class="lang-tag lang-py">Python</span>
+  </div>
+</div>
+
+<!-- DETAIL CARDS -->
+<div class="cards-grid">
+  <div class="card highlight">
+    <div class="card-header">
+      <div class="card-dot dot-cyan"></div>
+      <h3>🌐 Web Renderer (JavaScript)</h3>
+    </div>
+    <p style="font-size:0.9rem;color:#94a3b8;margin-bottom:12px;">
+      <strong style="color:#e2e8f0;">ทำอะไร:</strong> เปลี่ยน Markdown + LaTeX + Data เป็นหน้าเว็บที่ Interactive ได้
+    </p>
+    <ul>
+      <li><strong>React + MDX</strong> — Markdown + Component ฝังในหน้ากันได้</li>
+      <li><strong>Plotly.js</strong> — กราฟ Physics ซูม/คลิกดูค่าได้</li>
+      <li><strong>Three.js / p5.js</strong> — 2D/3D อนิเมชั่นฟิสิกส์</li>
+      <li><strong>KaTeX</strong> — สมการคณิตศาสตร์สวยงาม</li>
+    </ul>
+    <div class="code-block">
+<span class="comment">// JavaScript — ตัวอย่าง: กราฟ + อนิเมชั่น projectile</span>
+<span class="keyword">import</span> { Graph } from <span class="string">'./components/Graph.jsx'</span>;
+<span class="keyword">import</span> { Simulation } from <span class="string">'./components/Simulation.jsx'</span>;
+
+<span class="keyword">function</span> <span class="func">ProjectileLecture</span>() {
+  <span class="keyword">const</span> data = { angle: <span class="num">45</span>, speed: <span class="num">20</span> };
+
+  <span class="keyword">return</span> (
+    <span class="type">&lt;div&gt;</span>
+      <span class="type">&lt;Graph</span> data={data} <span class="type">/&gt;</span>       <span class="comment">{/* กราฟพาราโบลา */}</span>
+      <span class="type">&lt;Simulation</span> data={data} <span class="type">/&gt;</span>  <span class="comment">{/* ภาพลูกบอลลอย */}</span>
+    <span class="type">&lt;/div&gt;</span>
+  );
+}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-dot dot-emerald"></div>
+      <h3>⚙️ Parser (Python)</h3>
+    </div>
+    <p style="font-size:0.9rem;color:#94a3b8;margin-bottom:12px;">
+      <strong style="color:#e2e8f0;">ทำอะไร:</strong> อ่าน Lecture.md → ดึงเนื้อหา, สมการ, และข้อมูลกราฟออกมา
+    </p>
+    <ul>
+      <li>แยกส่วน <strong>ทฤษฎี</strong> กับ <strong>โจทย์</strong> โดยใช้ metadata</li>
+      <li>ดึง <strong>สมการ LaTeX</strong> ออกมา render</li>
+      <li>สร้าง <strong>JSON data</strong> ให้ JS ฝั่งเว็บใช้</li>
+    </ul>
+    <div class="code-block">
+<span class="comment"># Python — ตัวอย่าง: อ่าน Lecture.md แล้วแยกส่วน</span>
+<span class="keyword">import</span> re
+<span class="keyword">from</span> dataclasses <span class="keyword">import</span> dataclass
+
+<span class="keyword">@dataclass</span>
+<span class="keyword">class</span> <span class="func">LectureSection</span>:
+    title: str
+    theory: str        <span class="comment"># เนื้อหาทฤษฎี</span>
+    equations: list    <span class="comment"># สมการ LaTeX</span>
+    graph_data: dict   <span class="comment"># ข้อมูลสำหรับสร้างกราฟ</span>
+
+<span class="keyword">def</span> <span class="func">parse_lecture</span>(md_text: str) <span class="type">-></span> list[LectureSection]:
+    sections = []
+    <span class="comment"># ค้นหา ## หัวข้อ → ดึงเนื้อหา + สมการ $$...$$</span>
+    <span class="keyword">for</span> block <span class="keyword">in</span> re.split(<span class="string">r'^## '</span>, md_text, flags=re.MULTILINE):
+        sections.append(extract_section(block))
+    <span class="keyword">return</span> sections
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-dot dot-amber"></div>
+      <h3>📄 PDF Export (Python)</h3>
+    </div>
+    <p style="font-size:0.9rem;color:#94a3b8;margin-bottom:12px;">
+      <strong style="color:#e2e8f0;">ทำอะไร:</strong> เปิดหน้าเว็บใน Headless Browser → จับภาพเป็น PDF
+    </p>
+    <ul>
+      <li>ใช้ <strong>Playwright</strong> เปิดเว็บแบบไม่มีหน้าจอ</li>
+      <li>อนิเมชั่น → ภาพนิ่ง <strong>frame สุดท้าย</strong></li>
+      <li>ได้ PDF ที่ใช้ <strong>HTML/CSS เดียวกัน</strong> กับเว็บ</li>
+    </ul>
+    <div class="code-block">
+<span class="comment"># Python — ตัวอย่าง: MD → PDF ด้วย Playwright</span>
+<span class="keyword">from</span> playwright.sync_api <span class="keyword">import</span> sync_playwright
+
+<span class="keyword">def</span> <span class="func">md_to_pdf</span>(lecture_md: str, output: str):
+    html = render_to_html(lecture_md)
+    <span class="keyword">with</span> sync_playwright() <span class="keyword">as</span> p:
+        browser = p.chromium.launch()
+        page = browser.new_page()
+        page.set_content(html)
+        page.pdf(path=output, format=<span class="string">"A4"</span>)
+        browser.close()
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <div class="card-dot dot-violet"></div>
+      <h3>✍️ Lecture.md (Markdown + LaTeX)</h3>
+    </div>
+    <p style="font-size:0.9rem;color:#94a3b8;margin-bottom:12px;">
+      <strong style="color:#e2e8f0;">ทำอะไร:</strong> ต้นทาง — คุณเขียน lecture ด้วยมือใน Markdown ธรรมดา
+    </p>
+    <ul>
+      <li>ใช้ <strong>Markdown</strong> ปกติที่คุ้นเคย</li>
+      <li>สมการด้วย <strong>$$...$$</strong> (LaTeX)</li>
+      <li>ใส่ metadata พิเศษ เช่น <code>```graph</code> สำหรับบอกว่าให้สร้างกราฟ</li>
+    </ul>
+    <div class="code-block">
+<span class="comment"># lecture.md — ตัวอย่างเนื้อหาต้นทาง</span>
+<span class="comment">---
+title: Projectile Motion
+level: IGCSE
+---</span>
+
+<span class="keyword">## 1. การเคลื่อนที่แบบโพรเจกไทล์</span>
+
+เมื่อวัตถุถูกโยนด้วยความเร็วต้น $u$ ที่มุม $\theta$...
+
+$$ x = u\cos\theta \cdot t $$
+$$ y = u\sin\theta \cdot t - \frac{1}{2}gt^2 $$
+
+<span class="func">```graph</span>
+type: <span class="string">projectile</span>
+angle: <span class="num">45</span>
+speed: <span class="num">20</span>
+<span class="func">```</span>
+    </div>
+  </div>
+</div>
+
+<!-- COMPARISON: C++ Analogies -->
+<h2 class="section-title">🧠 เทียบกับสิ่งที่คุณรู้ — C/C++ มาเป็น Python/JS</h2>
+
+<div class="comparison">
+  <div class="comp-col">
+    <h4>C / C++ (ที่คุณถนัด)</h4>
+    <div class="analogy">
+<span class="comment">// struct = กลุ่มข้อมูล</span>
+<span class="keyword">struct</span> Projectile {<br>
+&nbsp;&nbsp;<span class="keyword">double</span> angle;<br>
+&nbsp;&nbsp;<span class="keyword">double</span> speed;<br>
+};<br><br>
+<span class="comment">// ฟังก์ชันคำนวณ</span>
+<span class="keyword">double</span> <span class="func">calcHeight</span>(<span class="keyword">double</span> t, <span class="keyword">double</span> u, <span class="keyword">double</span> theta) {<br>
+&nbsp;&nbsp;<span class="keyword">return</span> u*sin(theta)*t - <span class="num">0.5</span>*g*t*t;<br>
+}<br><br>
+<span class="comment">// for loop = ทำซ้ำ</span>
+<span class="keyword">for</span> (<span class="keyword">int</span> i=<span class="num">0</span>; i&lt;<span class="num">100</span>; i++) {<br>
+&nbsp;&nbsp;arr[i] = calcHeight(i*dt, u, theta);<br>
+}<br><br>
+<span class="comment">// Pointer เปลี่ยนค่าผ่านที่อยู่</span>
+<span class="func">plotPoints</span>(&amp;arr[<span class="num">0</span>], <span class="num">100</span>);
+    </div>
+  </div>
+  <div class="comp-col">
+    <h4>Python / JavaScript (กำลังเรียนรู้)</h4>
+    <div class="analogy">
+<span class="comment"># Python class = struct + method ในตัว</span>
+<span class="keyword">class</span> <span class="func">Projectile</span>:<br>
+&nbsp;&nbsp;<span class="keyword">def</span> <span class="func">__init__</span>(self, angle, speed):<br>
+&nbsp;&nbsp;&nbsp;&nbsp;self.angle = angle<br>
+&nbsp;&nbsp;&nbsp;&nbsp;self.speed = speed<br><br>
+<span class="comment"># List comprehension = for loop แบบสั้น</span>
+heights = [calcHeight(t, u, theta)<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span class="keyword">for</span> t <span class="keyword">in</span> times]<br><br>
+<span class="comment"># JS — callback = ส่งฟังก์ชันไปให้ตัวอื่นเรียก</span>
+button.onClick = <span class="func">() =></span> {<br>
+&nbsp;&nbsp;playAnimation();<br>
+}<br><br>
+<span class="comment"># Python — ใช้ไลบรารี = ไม่ต้องเขียนเอง</span>
+<span class="keyword">import</span> matplotlib.pyplot <span class="keyword">as</span> plt<br>
+plt.plot(times, heights)  <span class="comment"># แค่บรรทัดเดียว!</span>
+    </div>
+  </div>
+</div>
+
+<!-- KEY INSIGHT -->
+<h2 class="section-title" style="margin-top: 30px;">💡 หลักการสำคัญที่คุณต้องรู้</h2>
+
+<div class="cards-grid" style="margin-bottom: 30px;">
+  <div class="card">
+    <div class="card-header">
+      <div class="card-dot dot-cyan"></div>
+      <h3>ที่มาของโค้ดสองภาษา</h3>
+    </div>
+    <p style="font-size:0.9rem;color:#cbd5e1;line-height:1.7;">
+      โปรเจกต์นี้ <strong style="color:#22d3ee;">Python</strong> ดูแลฝั่งที่เกี่ยวกับ <strong>ข้อมูลและการจัดการไฟล์</strong> 
+      (อ่าน MD, สร้าง JSON, export PDF) — ซึ่งเป็นสิ่งที่ Python ถนัด และคุณจะรู้สึกคล้ายกับเขียน C++
+      <br><br>
+      ส่วน <strong style="color:#fbbf24;">JavaScript</strong> ดูแลฝั่ง <strong>แสดงผลในเว็บ</strong> 
+      (กราฟ, อนิเมชั่น, interaction) — เพราะเว็บ browser ไม่สามารถรัน Python ได้โดยตรง
+      JS จึงเป็นภาษาหลักของโลกเว็บ และคุณไม่จำเป็นต้องเขียนเองทั้งหมด มี library สำเร็จรูปมากมาย
+    </p>
+  </div>
+  <div class="card">
+    <div class="card-header">
+      <div class="card-dot dot-emerald"></div>
+      <h3>คุณจะได้เรียนรู้อะไรบ้าง?</h3>
+    </div>
+    <ul>
+      <li><strong>Python:</strong> File I/O, Regex parsing, Data classes, Playwright automation, JSON</li>
+      <li><strong>JavaScript:</strong> React components, JSX syntax, Event handling, State management</li>
+      <li><strong>DevOps:</strong> Git, npm/pip, project structure, automation build pipeline</li>
+    </ul>
+    <p style="font-size:0.85rem;color:#94a3b8;margin-top:12px;">
+      ทุกอย่างที่อธิบายจะมีการเทียบกับ C++ ทุกครั้งที่เจอ concept ใหม่!
+    </p>
+  </div>
+</div>
+
+<div class="footer">
+  InteractiveLecture — Project kickoff<br>
+  <span style="font-family:'JetBrains Mono',monospace;">~/InteractiveLecture/</span>
+</div>
+
+</body>
+</html>
