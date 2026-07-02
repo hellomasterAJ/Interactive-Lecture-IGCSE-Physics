@@ -64,7 +64,9 @@ python3 -m playwright install chromium
 ## 🎯 Features
 
 - **5-part lecture structure**: 📜 History → 🌍 Nature → ⚛️ Theory → 📊 Graphs → ✍️ Examples
-- **Interactive graphs**: Real-time animation with Canvas + SVG (horizontal motion 🚗, free fall 🍎)
+- **Interactive graphs**: Real-time animation with Canvas + SVG (horizontal motion 🚗, free fall 🍎, stopping distance 🚘, advanced VT graph 📈)
+- **SUVAT proofs**: 5 visual area proofs (v=u+at, s=ut+½at², s=vt-½at², s=½(u+v)t, v²=u²+2as)
+- **Non-uniform scenarios**: Terminal Velocity 🪂, Rocket Launch 🚀, Harmonic Motion 〰️ with gradient & trapezoidal analysis
 - **Dark/Light theme**: Warm taupe light mode (not harsh white)
 - **KaTeX equations**: Beautiful LaTeX rendering
 - **PDF export**: A4 format via Playwright headless browser
