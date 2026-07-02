@@ -524,9 +524,9 @@ function switchMode(mode) {
   document.getElementById('nonuniformControls').style.display = mode === 'nonuniform' ? 'block' : 'none';
   document.getElementById('valGridUniform').style.display = mode === 'uniform' ? 'grid' : 'none';
   document.getElementById('valGridNonuniform').style.display = mode === 'nonuniform' ? 'grid' : 'none';
-  document.getElementById('eqCard').style.display = mode === 'uniform' ? 'block' : 'none';
+  document.getElementById('eqCard').style.display = 'block';
   document.getElementById('proofTabs').style.display = mode === 'uniform' ? 'flex' : 'none';
-  document.getElementById('graphSubLabel').textContent = mode === 'uniform' ? 'Uniform Acceleration' : 'Non-uniform acceleration';
+  document.getElementById('graphSubLabel').textContent = mode === 'uniform' ? 'Uniform Acceleration' : 'Non-uniform Acceleration';
   document.getElementById('legendProof').style.display = mode === 'uniform' && state.proof > 0 && state.proof < 4 ? 'inline' : 'none';
   if(mode === 'nonuniform') document.getElementById('legendProof').style.display = 'none';
   if(mode === 'uniform') { updateUniform(); }
@@ -709,37 +709,60 @@ function refreshNu() {
 
 function renderNuInfo() {
   const sc = getNuSc();
-  const tMax = getNuTMax();
   const el = document.getElementById('eqDisplay');
+  const tMax = getNuTMax();
   
+  // Scenario-specific physics equations (as plain display)
+  let eqTex = '';
+  const s = state.nuScenario;
+  if(s === 'terminal') {
+    eqTex = `\\displaystyle
+      a(t)=\\frac{V_t}{\\tau}e^{-t/\\tau}\\qquad
+      v(t)=V_t(1-e^{-t/\\tau})\\qquad
+      s(t)=V_t\\bigl(t+\\tau(e^{-t/\\tau}-1)\\bigr)`;
+  } else if(s === 'rocket') {
+    eqTex = `\\displaystyle
+      a(t)=\\frac{v_{ex}}{\\tau+t}\\qquad
+      v(t)=v_{ex}\\ln\\bigl(1+\\frac{t}{\\tau}\\bigr)\\qquad
+      s(t)=v_{ex}\\bigl((\\tau+t)\\ln(1+\\frac{t}{\\tau})-t\\bigr)`;
+  } else if(s === 'shm') {
+    eqTex = `\\displaystyle
+      x(t)=A\\cos(\\omega t)\\qquad
+      v(t)=-A\\omega\\sin(\\omega t)\\qquad
+      a(t)=-A\\omega^2\\cos(\\omega t)`;
+  } else if(s === 'jerk') {
+    eqTex = `\\displaystyle
+      a(t)=k\\,t\\qquad
+      v(t)=\\tfrac12 k\\,t^2\\qquad
+      s(t)=\\tfrac16 k\\,t^3`;
+  }
+  
+  // Analysis info
+  let analysisTex = '';
   if(state.nuAnalysis === 'gradient') {
     const tPt = state.nuGradT;
     const vPt = getNuV(tPt);
     const aPt = getNuDV(tPt);
-    const tex = `\\begin{aligned}
-      v(${tPt.toFixed(1)}) &= ${fmtNum(vPt)} \\\\;
-      a = \\left.\\frac{dv}{dt}\\right|_{t=${tPt.toFixed(1)}} &= ${fmtNum(aPt)} \\; \\text{m/s}^2
-    \\end{aligned}`;
-    try { katex.render(tex, el, {displayMode:true, throwOnError:false}); }
-    catch(e) { el.innerHTML = `<span style="color:var(--text-dim);">v=${vPt.toFixed(2)}, a=${aPt.toFixed(2)}</span>`; }
+    analysisTex = `\\displaystyle
+      v(${tPt.toFixed(1)}) = ${fmtNum(vPt)}\\qquad
+      a = \\left.\\frac{dv}{dt}\\right|_{t=${tPt.toFixed(1)}} = ${fmtNum(aPt)} \\; \\text{m/s}^2`;
   } else {
     const n = state.nuStrips;
     const h = tMax / n;
     let trapSum = 0;
-    for(let i = 0; i < n; i++) {
-      const t1 = i * h, t2 = (i+1) * h;
-      trapSum += (getNuV(t1) + getNuV(t2)) * h / 2;
-    }
+    for(let i = 0; i < n; i++) { const t1=i*h,t2=(i+1)*h; trapSum += (getNuV(t1)+getNuV(t2))*h/2; }
     const exact = getNuInt(0, tMax);
     const err = exact !== 0 ? Math.abs((trapSum - exact) / exact) * 100 : 0;
-    const tex = `\\begin{aligned}
-      \\text{Estimate} &= ${fmtNum(trapSum)} \\; \\text{m} \\\\
-      \\text{Exact} &= ${fmtNum(exact)} \\; \\text{m} \\\\
-      \\text{Error} &= ${err.toFixed(2)}\\% \\; (n = ${n})
-    \\end{aligned}`;
-    try { katex.render(tex, el, {displayMode:true, throwOnError:false}); }
-    catch(e) { el.innerHTML = `<span style="color:var(--text-dim);">Est=${trapSum.toFixed(2)}, Exact=${exact.toFixed(2)}</span>`; }
+    analysisTex = `\\displaystyle
+      \\text{Estimate} = ${fmtNum(trapSum)} \\; \\text{m}\\qquad
+      \\text{Exact} = ${fmtNum(exact)} \\; \\text{m}\\qquad
+      \\text{Error} = ${err.toFixed(2)}\\% \\; (n = ${n})`;
   }
+  
+  // Combine with separator
+  const fullTex = eqTex + ` \\\\[6pt] ` + analysisTex;
+  try { katex.render(fullTex, el, {displayMode:true, throwOnError:false}); }
+  catch(e) { el.innerHTML = `<span style="color:var(--text-dim);font-size:0.65rem;">${sc.name} — ${e.message}</span>`; }
 }
 
 // ===== TRACER =====
