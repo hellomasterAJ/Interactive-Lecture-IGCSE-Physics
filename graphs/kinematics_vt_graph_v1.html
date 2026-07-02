@@ -1,0 +1,1349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Advanced Velocity–Time Graph — SUVAT + Calculus</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+<style>
+:root {
+  --bg: #0f172a; --card: #1e293b; --border: #334155;
+  --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
+  --accent: #22d3ee; --accent-glow: rgba(34,211,238,0.12);
+  --grid: #1e293b; --graph-bg: #0a0f1a;
+  --line-v: #22d3ee;
+  --green: #34d399; --rose: #fb7185; --violet: #a78bfa;
+  --amber: #fbbf24; --blue: #38bdf8; --orange: #fb923c;
+  --shade-rect: rgba(52,211,153,0.12);
+  --shade-tri: rgba(251,114,133,0.12);
+  --shade-amber: rgba(251,191,36,0.12);
+  --shade-trap: rgba(52,211,153,0.10);
+  --katex-color: #e2e8f0;
+}
+.light {
+  --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
+  --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
+  --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
+  --grid: #c9c2b5; --graph-bg: #e8e2d7;
+  --line-v: #0f766e;
+  --green: #047857; --rose: #be123c; --violet: #6d28d9;
+  --amber: #b45309; --blue: #0369a1; --orange: #c2410c;
+  --shade-rect: rgba(4,120,87,0.10);
+  --shade-tri: rgba(190,18,60,0.10);
+  --shade-amber: rgba(180,83,9,0.10);
+  --shade-trap: rgba(4,120,87,0.08);
+  --katex-color: #2d2a24;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background: var(--bg); color: var(--text);
+  font-family: 'Inter', sans-serif; transition: background 0.3s, color 0.3s;
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center;
+  padding: 12px;
+}
+.container{max-width: 1400px; width: 100%;}
+
+/* Top Bar */
+.top-bar{
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 10px; flex-wrap: wrap; gap: 8px;
+}
+.top-bar h1{font-size: 1.3rem; font-weight: 700; display: flex; align-items: center; gap: 8px;}
+.top-bar h1 span{color: var(--accent);}
+.badge-top{
+  font-family: 'JetBrains Mono', monospace; font-size: 0.55rem;
+  padding: 2px 8px; border-radius: 12px;
+  background: var(--accent-glow); color: var(--accent);
+  border: 1px solid var(--accent);
+}
+.mode-tabs{display: flex; gap: 4px; background: var(--card); border-radius: 8px; padding: 3px; border: 1px solid var(--border);}
+.mode-tab{
+  padding: 5px 14px; border-radius: 6px; border: none;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.65rem;
+  cursor: pointer; transition: all 0.2s;
+  background: transparent; color: var(--text-dim);
+}
+.mode-tab:hover{color: var(--text);}
+.mode-tab.active{background: var(--accent-glow); color: var(--accent); border-color: var(--accent);}
+.theme-btn{
+  background: var(--card); border: 1px solid var(--border); color: var(--text-dim);
+  padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 0.7rem;
+  font-family: 'JetBrains Mono', monospace; transition: all 0.2s;
+}
+.theme-btn:hover{border-color: var(--accent); color: var(--accent);}
+
+/* Main Layout */
+.main-grid{display: grid; grid-template-columns: 3fr 1fr; gap: 12px; align-items: start; min-width: 0;}
+@media(max-width: 1000px){.main-grid{grid-template-columns: 1fr;}}
+
+/* Graph */
+.graph-col{display: flex; flex-direction: column; gap: 10px; min-width: 0;}
+.graph-card{
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 10px;
+  position: relative;
+}
+.graph-card .g-title{
+  font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px; justify-content: space-between;
+}
+.graph-card .g-title .g-sub{font-weight: 400; text-transform: none; font-size: 0.62rem; color: var(--text-dim);}
+.graph-card canvas{width: 100%; height: auto; display: block; border-radius: 6px; max-width: 100%;}
+
+/* Value hover readout */
+.hover-readout{
+  position: absolute; bottom: 12px; right: 14px;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+  color: var(--text-dim); pointer-events: none; text-align: right;
+  line-height: 1.5; opacity: 0; transition: opacity 0.2s;
+}
+.hover-readout.show{opacity: 1;}
+
+/* Legend */
+.legend{
+  display: flex; gap: 16px; flex-wrap: wrap; margin-top: 5px;
+}
+.legend-item{
+  display: flex; align-items: center; gap: 6px;
+  font-size: 0.7rem; font-family: 'JetBrains Mono', monospace; color: var(--text-dim);
+}
+.legend-dot{
+  width: 12px; height: 4px; border-radius: 2px; display: inline-block;
+}
+
+/* Right Panel */
+.right-panel{display: flex; flex-direction: column; gap: 10px; min-width: 0; overflow: hidden;}
+.info-card{
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px;
+}
+.info-card .i-title{
+  font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 7px;
+}
+
+/* Value display grid */
+.val-grid{
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px;
+}
+.val-item{
+  background: var(--bg); border-radius: 5px; padding: 5px 8px;
+  border: 1px solid var(--border);
+  display: flex; flex-direction: column;
+}
+.val-item .v-label{
+  font-size: 0.55rem; text-transform: uppercase; color: var(--text-muted);
+  font-family: 'JetBrains Mono', monospace; letter-spacing: 0.04em;
+}
+.val-item .v-value{
+  font-size: 0.8rem; font-weight: 700; font-family: 'JetBrains Mono', monospace;
+  color: var(--accent);
+}
+
+/* Equation display */
+.eq-box{
+  background: var(--graph-bg); border-radius: 6px; padding: 10px 10px;
+  border: 1px solid var(--border); min-height: 72px;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; max-width: 100%;
+}
+.eq-box .katex{font-size: 1.15rem;}
+.eq-box .katex .mathcolor-blue{color: var(--blue);}
+.eq-box .katex .mathcolor-orange{color: var(--orange);}
+.eq-box .katex .mathcolor-green{color: var(--green);}
+.eq-box .katex .mathcolor-accent{color: var(--accent);}
+
+/* Equation proof buttons */
+.proof-tabs{
+  display: flex; flex-direction: column; gap: 3px; margin-top: 6px;
+}
+.proof-btn{
+  padding: 5px 12px; border-radius: 5px; border: 1px solid var(--border);
+  font-family: 'JetBrains Mono', monospace; font-size: 0.6rem;
+  background: transparent; color: var(--text-dim); cursor: pointer;
+  transition: all 0.15s;
+}
+.proof-btn:hover{border-color: var(--accent); color: var(--accent);}
+.proof-btn.active{
+  background: var(--accent-glow); border-color: var(--accent); color: var(--accent);
+}
+
+/* Area breakdown */
+.area-breakdown{
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px; margin-top: 6px;
+}
+.area-item{
+  padding: 5px 10px; border-radius: 4px; border: 1px solid var(--border);
+  display: flex; align-items: center; gap: 7px;
+  font-size: 0.58rem; font-family: 'JetBrains Mono', monospace;
+  background: var(--bg);
+}
+.area-item .a-swatch{
+  width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
+}
+.area-item .a-label{color: var(--text-dim);}
+.area-item .a-value{color: var(--accent); font-weight: 600; margin-left: auto;}
+
+/* Controls */
+.ctrl-card{
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px;
+}
+.ctrl-card .c-title{
+  font-size: 0.65rem; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 7px;
+}
+.ctrl-row{display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 4px;}
+.ctrl-row:last-child{margin-bottom: 0;}
+.slider-group{
+  display: flex; align-items: center; gap: 4px;
+  padding: 3px 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+}
+.slider-group label{
+  font-size: 0.62rem; color: var(--text-dim);
+  font-family: 'JetBrains Mono', monospace; white-space: nowrap;
+}
+.slider-group input[type="range"]{width: 60px; accent-color: var(--accent); height: 14px;}
+.slider-group .slider-val{
+  font-size: 0.62rem; color: var(--accent);
+  font-family: 'JetBrains Mono', monospace; font-weight: 600; min-width: 28px; text-align: right;
+}
+.ctrl-btn{
+  padding: 6px 14px; border: 1px solid var(--border); border-radius: 6px;
+  background: var(--card); color: var(--text);
+  font-family: 'Inter', sans-serif; font-size: 0.7rem; font-weight: 500;
+  cursor: pointer; transition: all 0.2s;
+}
+.ctrl-btn:hover{border-color: var(--accent); color: var(--accent);}
+.ctrl-btn.primary{
+  background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600;
+}
+.light .ctrl-btn.primary{color: #fff;}
+.ctrl-btn.random{background: rgba(167,139,250,0.12); border-color: var(--violet); color: var(--violet);}
+
+/* Description */
+.desc-box{
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 12px;
+}
+.desc-box .d-title{
+  font-size: 0.7rem; font-weight: 600; color: var(--accent); margin-bottom: 4px;
+}
+.desc-box p{font-size: 0.78rem; color: var(--text-dim); line-height: 1.55;}
+.desc-box .formula{
+  font-family: 'JetBrains Mono', monospace; color: var(--accent);
+  background: var(--accent-glow); padding: 1px 6px; border-radius: 3px; font-size: 0.7rem;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="top-bar">
+  <h1>
+    📈 <span>Advanced Velocity–Time Graph</span>
+    <span class="badge-top">v1.0.0</span>
+  </h1>
+  <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-mode="uniform" onclick="switchMode('uniform')">Uniform</button>
+      <button class="mode-tab" data-mode="nonuniform" onclick="switchMode('nonuniform')">Non-uniform</button>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+  </div>
+</div>
+
+<div class="main-grid">
+
+  <!-- LEFT: Graph + Key Concept -->
+  <div class="graph-col">
+    <div class="graph-card">
+      <div class="g-title">
+        <span><span class="g-dot" style="background:var(--line-v);width:8px;height:3px;display:inline-block;border-radius:2px;"></span> Velocity–Time Graph</span>
+        <span class="g-sub" id="graphSubLabel">Uniform Acceleration</span>
+      </div>
+      <canvas id="graphCanvas" width="780" height="400"></canvas>
+      <div class="hover-readout" id="hoverReadout"></div>
+      <div class="legend" id="legendArea">
+        <span class="legend-item"><span class="legend-dot" style="background:var(--line-v);"></span> v(t)</span>
+        <span class="legend-item" id="legendProof" style="display:none;">
+          <span class="legend-dot" style="background:var(--green);"></span> u·t
+          <span class="legend-dot" style="background:var(--rose);"></span> ½at²
+        </span>
+      </div>
+    </div>
+    <!-- Key Concept below graph (same width as graph) -->
+    <div class="desc-box" id="descBox">
+      <div class="d-title">💡 Key Concept</div>
+      <p id="descText">
+        The gradient of a velocity–time graph gives the <strong>acceleration</strong>.<br>
+        The area under the graph gives the <strong>displacement</strong>.
+      </p>
+    </div>
+  </div>
+
+  <!-- RIGHT: Values -->
+  <div class="right-panel">
+
+    <!-- Values -->
+    <div class="info-card" id="valuesCard">
+      <div class="i-title">📊 Current Values</div>
+      <div class="val-grid" id="valGridUniform">
+        <div class="val-item"><span class="v-label">u (Initial Velocity)</span><span class="v-value" id="vU">0.0 m/s</span></div>
+        <div class="val-item"><span class="v-label">v (Final Velocity)</span><span class="v-value" id="vV">0.0 m/s</span></div>
+        <div class="val-item"><span class="v-label">a (Acceleration)</span><span class="v-value" id="vA">0.0 m/s²</span></div>
+        <div class="val-item"><span class="v-label">t (Time)</span><span class="v-value" id="vT">0.0 s</span></div>
+        <div class="val-item"><span class="v-label">s (Displacement)</span><span class="v-value" id="vS">0.0 m</span></div>
+        <div class="val-item"><span class="v-label">Gradient</span><span class="v-value" id="vGrad">0.0 m/s²</span></div>
+      </div>
+      <div class="val-grid" id="valGridNonuniform" style="display:none;">
+        <div class="val-item"><span class="v-label">v(t) at cursor</span><span class="v-value" id="nvV">0.0 m/s</span></div>
+        <div class="val-item"><span class="v-label">a = dv/dt</span><span class="v-value" id="nvA">0.0 m/s²</span></div>
+        <div class="val-item"><span class="v-label">Displacement (∫)</span><span class="v-value" id="nvS">0.0 m</span></div>
+        <div class="val-item"><span class="v-label">t range</span><span class="v-value" id="nvT">0–5 s</span></div>
+      </div>
+    </div>
+
+    <!-- Equation (Uniform mode) -->
+    <div class="info-card" id="eqCard">
+      <div class="i-title">📐 Equation</div>
+      <div class="eq-box" id="eqDisplay">
+        <span style="color:var(--text-dim);font-size:0.65rem;">Adjust sliders to explore</span>
+      </div>
+      <div class="proof-tabs" id="proofTabs">
+        <button class="proof-btn" data-proof="0" onclick="setProof(0)">v = u + a t</button>
+        <button class="proof-btn active" data-proof="1" onclick="setProof(1)">s = u t + ½ a t²</button>
+        <button class="proof-btn" data-proof="2" onclick="setProof(2)">s = v t − ½ a t²</button>
+        <button class="proof-btn" data-proof="3" onclick="setProof(3)">s = ½(u+v) t</button>
+        <button class="proof-btn" data-proof="4" onclick="setProof(4)">v² = u² + 2 a s</button>
+      </div>
+      <div id="areaBreakdownContainer"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Controls + Description -->
+<div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px;">
+
+  <!-- Uniform controls -->
+  <div class="ctrl-card" id="uniformControls">
+    <div class="c-title">🎛️ Uniform Acceleration Parameters</div>
+    <div class="ctrl-row" style="margin-top:4px;">
+      <button class="ctrl-btn" onclick="setExample('speeding')">🟢 Speeding up</button>
+      <button class="ctrl-btn" onclick="setExample('slowing')">🟡 Slowing down</button>
+      <button class="ctrl-btn" onclick="setExample('constant')">🚙 Constant speed</button>
+      <button class="ctrl-btn" onclick="setExample('stationary')">🔴 Stationary</button>
+      <button class="ctrl-btn" onclick="setExample('direction')">🔄 Change direction</button>
+    </div>
+    <div class="ctrl-row">
+      <div class="slider-group">
+        <label>u (initial velocity)</label>
+        <input type="range" id="uSlider" min="-5" max="25" value="4" step="0.5" oninput="updateUniform()">
+        <span class="slider-val" id="uVal">4.0</span>
+      </div>
+      <div class="slider-group">
+        <label>a (acceleration)</label>
+        <input type="range" id="aSlider" min="-5" max="5" value="2" step="0.1" oninput="updateUniform()">
+        <span class="slider-val" id="aVal">2.0</span>
+      </div>
+      <div class="slider-group">
+        <label>t (time interval)</label>
+        <input type="range" id="tSlider" min="0.5" max="12" value="6" step="0.1" oninput="updateUniform()">
+        <span class="slider-val" id="tVal">6.0</span>
+      </div>
+    </div>
+    <div class="ctrl-row" style="margin-top:2px;">
+      <button class="ctrl-btn" onclick="toggleDefine()" id="defineBtn">📖 Define</button>
+    </div>
+    <div id="definePanel" style="display:none;margin-top:6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text-dim);line-height:1.7;">
+      <b style="color:var(--accent);">s</b> = displacement &nbsp;<span style="color:var(--text-muted);">(SI unit: m)</span><br>
+      <b style="color:var(--accent);">u</b> = initial velocity &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s)</span><br>
+      <b style="color:var(--accent);">v</b> = final velocity &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s)</span><br>
+      <b style="color:var(--accent);">a</b> = acceleration &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s²)</span><br>
+      <b style="color:var(--accent);">t</b> = time &nbsp;<span style="color:var(--text-muted);">(SI unit: s)</span>
+    </div>
+  </div>
+
+  <!-- Key Concept (moved below graph) -->
+
+  <!-- Non-uniform controls -->
+  <div class="ctrl-card" id="nonuniformControls" style="display:none;">
+    <div class="c-title">🎛️ Polynomial Coefficients (v(t) = a·t³ + b·t² + c·t + d)</div>
+    <div class="ctrl-row">
+      <div class="slider-group">
+        <label>a (t³)</label>
+        <input type="range" id="nuASlider" min="-3" max="3" value="0.4" step="0.1" oninput="updateNonuniform()">
+        <span class="slider-val" id="nuAVal">0.4</span>
+      </div>
+      <div class="slider-group">
+        <label>b (t²)</label>
+        <input type="range" id="nuBSlider" min="-5" max="5" value="-1.2" step="0.1" oninput="updateNonuniform()">
+        <span class="slider-val" id="nuBVal">−1.2</span>
+      </div>
+      <div class="slider-group">
+        <label>c (t)</label>
+        <input type="range" id="nuCSlider" min="-8" max="8" value="3.0" step="0.1" oninput="updateNonuniform()">
+        <span class="slider-val" id="nuCVal">3.0</span>
+      </div>
+      <div class="slider-group">
+        <label>d (const)</label>
+        <input type="range" id="nuDSlider" min="-5" max="15" value="2.0" step="0.1" oninput="updateNonuniform()">
+        <span class="slider-val" id="nuDVal">2.0</span>
+      </div>
+    </div>
+    <div class="ctrl-row" style="margin-top:4px;">
+      <button class="ctrl-btn random" onclick="randomizeCoeffs()">🎲 Randomize</button>
+      <button class="ctrl-btn primary" id="animTracerBtn" onclick="toggleTracer()">▶ Animate Tracer</button>
+      <span style="font-size:0.55rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">
+        t range: 0 – 5 s
+      </span>
+    </div>
+  </div>
+
+</div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<script>
+// ===== STATE =====
+const state = {
+  mode: 'uniform',       // 'uniform' | 'nonuniform'
+  theme: 'dark',
+  proof: 1,              // 0=overview, 1=ut+½at², 2=vt-½at², 3=½(u+v)t
+
+  // Uniform
+  u: 4, a: 2, t: 6,
+
+  // Non-uniform
+  coeffA: 0.4, coeffB: -1.2, coeffC: 3.0, coeffD: 2.0,
+
+  // Animation
+  tracerOn: false,
+  tracerT: 0,
+  tracerId: null,
+  tracerDir: 1,
+
+  // Mouse
+  mouseX: null,
+};
+
+const canvas = document.getElementById('graphCanvas');
+const ctx = canvas.getContext('2d');
+const W = canvas.width, H = canvas.height;
+
+// ===== HELPERS =====
+function isDark() { return state.theme === 'dark'; }
+
+// Nice step for axis ticks: rounds to 1, 2, 5 × 10^n
+function niceStep(range, targetTicks) {
+  if(range <= 0) return 1;
+  const rough = range / targetTicks;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rough)));
+  const norm = rough / magnitude;
+  let nice;
+  if(norm < 1.5) nice = 1;
+  else if(norm < 3.5) nice = 2;
+  else if(norm < 7.5) nice = 5;
+  else nice = 10;
+  return nice * magnitude;
+}
+
+// ===== PHYSICS =====
+function getFinalV(u, a, t) { return u + a * t; }
+function getDisplacement(u, a, t) { return u * t + 0.5 * a * t * t; }
+function getVNonuniform(t) {
+  const {coeffA, coeffB, coeffC, coeffD} = state;
+  return coeffA*t*t*t + coeffB*t*t + coeffC*t + coeffD;
+}
+function getDerivativeNonuniform(t) {
+  const {coeffA, coeffB, coeffC} = state;
+  return 3*coeffA*t*t + 2*coeffB*t + coeffC;
+}
+// Numerical integration (Simpson's rule)
+function integrateNonuniform(t1, t2, n=200) {
+  if (t1 === t2) return 0;
+  const h = (t2 - t1) / n;
+  let sum = getVNonuniform(t1) + getVNonuniform(t2);
+  for (let i = 1; i < n; i++) {
+    const t = t1 + i * h;
+    sum += (i % 2 === 0) ? 2 * getVNonuniform(t) : 4 * getVNonuniform(t);
+  }
+  return (h / 3) * sum;
+}
+
+// ===== THEME =====
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  state.theme = document.body.classList.contains('light') ? 'light' : 'dark';
+  drawAll();
+}
+
+// ===== MODE SWITCHING =====
+function switchMode(mode) {
+  state.mode = mode;
+  // Stop tracer if running
+  if(state.tracerOn || _tracerActive) {
+    state.tracerOn = false;
+    _tracerActive = false;
+    if(state.tracerId){cancelAnimationFrame(state.tracerId);state.tracerId=null;}
+    document.getElementById('animTracerBtn').textContent = '▶ Animate Tracer';
+  }
+  state.mouseX = null;
+  document.querySelectorAll('.mode-tab').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
+  document.getElementById('uniformControls').style.display = mode === 'uniform' ? 'block' : 'none';
+  document.getElementById('nonuniformControls').style.display = mode === 'nonuniform' ? 'block' : 'none';
+  document.getElementById('valGridUniform').style.display = mode === 'uniform' ? 'grid' : 'none';
+  document.getElementById('valGridNonuniform').style.display = mode === 'nonuniform' ? 'grid' : 'none';
+  document.getElementById('proofTabs').style.display = mode === 'uniform' ? 'flex' : 'none';
+  document.getElementById('graphSubLabel').textContent = mode === 'uniform' ? 'Uniform Acceleration' : 'Non-uniform (v(t) = at³+bt²+ct+d)';
+  document.getElementById('legendProof').style.display = mode === 'uniform' && state.proof > 0 && state.proof < 4 ? 'inline' : 'none';
+  if(mode === 'nonuniform') document.getElementById('legendProof').style.display = 'none';
+  if(mode === 'uniform') { updateUniform(); }
+  else { updateNonuniform(); }
+  updateLegend();
+}
+
+function updateLegend() {
+  const el = document.getElementById('legendProof');
+  if(state.mode === 'uniform' && state.proof > 0 && state.proof < 4) {
+    el.style.display = 'inline';
+    const p = state.proof;
+    if(p === 1) {
+      el.innerHTML = `<span class="legend-dot" style="background:${getCSS('green')};"></span> u·t
+          <span class="legend-dot" style="background:${getCSS('rose')};"></span> ½·a·t²`;
+    } else if(p === 2) {
+      el.innerHTML = `<span class="legend-dot" style="background:${getCSS('blue')};"></span> v·t
+          <span class="legend-dot" style="background:${getCSS('orange')};"></span> −½·a·t²`;
+    } else if(p === 3) {
+      el.innerHTML = `<span class="legend-dot" style="background:${getCSS('amber')};"></span> ½(u+v)·t`;
+    }
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+// ===== PROOF =====
+function setProof(p) {
+  state.proof = p;
+  document.querySelectorAll('.proof-btn').forEach(b => b.classList.toggle('active', parseInt(b.dataset.proof) === p));
+  updateLegend();
+  if(state.mode === 'uniform') updateUniform();
+}
+
+// ===== EXAMPLES =====
+function setExample(name) {
+  const ex = {
+    'speeding':   {u:4,  a:2.0, t:6},
+    'slowing':    {u:15, a:-2.0,t:6},
+    'constant':   {u:8,  a:0,   t:6},
+    'stationary': {u:0,  a:0,   t:6},
+    'direction':  {u:-3, a:2.5, t:6},
+  }[name];
+  if(!ex) return;
+  state.u=ex.u; state.a=ex.a; state.t=ex.t;
+  syncUniformSliders();
+  updateUniform();
+}
+function syncUniformSliders() {
+  document.getElementById('uSlider').value = state.u;
+  document.getElementById('uVal').textContent = state.u.toFixed(1);
+  document.getElementById('aSlider').value = state.a;
+  document.getElementById('aVal').textContent = state.a.toFixed(1);
+  document.getElementById('tSlider').value = state.t;
+  document.getElementById('tVal').textContent = state.t.toFixed(1);
+}
+
+// Toggle SUVAT definitions panel
+function toggleDefine() {
+  const panel = document.getElementById('definePanel');
+  const btn = document.getElementById('defineBtn');
+  const isOpen = panel.style.display !== 'none';
+  panel.style.display = isOpen ? 'none' : 'block';
+  btn.textContent = isOpen ? '📖 Define' : '📕 Define';
+}
+
+// ===== UNIFORM UPDATE =====
+function updateUniform() {
+  state.u = parseFloat(document.getElementById('uSlider').value);
+  state.a = parseFloat(document.getElementById('aSlider').value);
+  state.t = parseFloat(document.getElementById('tSlider').value);
+  document.getElementById('uVal').textContent = state.u.toFixed(1);
+  document.getElementById('aVal').textContent = state.a.toFixed(1);
+  document.getElementById('tVal').textContent = state.t.toFixed(1);
+
+  const {u, a, t} = state;
+  const v = getFinalV(u, a, t);
+  const s = getDisplacement(u, a, t);
+
+  document.getElementById('vU').textContent = u.toFixed(1) + ' m/s';
+  document.getElementById('vV').textContent = v.toFixed(1) + ' m/s';
+  document.getElementById('vA').textContent = a.toFixed(2) + ' m/s²';
+  document.getElementById('vT').textContent = t.toFixed(1) + ' s';
+  document.getElementById('vS').textContent = s.toFixed(2) + ' m';
+  document.getElementById('vGrad').textContent = a.toFixed(2) + ' m/s²';
+
+  drawAll();
+  renderEquations();
+  renderAreaBreakdown();
+  updateDescription();
+}
+
+// ===== NON-UNIFORM UPDATE =====
+function updateNonuniform() {
+  state.coeffA = parseFloat(document.getElementById('nuASlider').value);
+  state.coeffB = parseFloat(document.getElementById('nuBSlider').value);
+  state.coeffC = parseFloat(document.getElementById('nuCSlider').value);
+  state.coeffD = parseFloat(document.getElementById('nuDSlider').value);
+  document.getElementById('nuAVal').textContent = state.coeffA.toFixed(1);
+  document.getElementById('nuBVal').textContent = state.coeffB.toFixed(1);
+  document.getElementById('nuCVal').textContent = state.coeffC.toFixed(1);
+  document.getElementById('nuDVal').textContent = state.coeffD.toFixed(1);
+
+  const tMax = 5;
+  const vAtMouse = state.mouseX !== null ? getVNonuniform(state.mouseX) : getVNonuniform(0);
+  const aAtMouse = state.mouseX !== null ? getDerivativeNonuniform(state.mouseX) : getDerivativeNonuniform(0);
+  const totalS = integrateNonuniform(0, tMax);
+
+  document.getElementById('nvV').textContent = vAtMouse.toFixed(2) + ' m/s';
+  document.getElementById('nvA').textContent = aAtMouse.toFixed(2) + ' m/s²';
+  document.getElementById('nvS').textContent = totalS.toFixed(2) + ' m';
+  document.getElementById('nvT').textContent = '0–' + tMax.toFixed(0) + ' s';
+
+  drawAll();
+  renderNonuniformInfo();
+  updateDescription();
+}
+
+function randomizeCoeffs() {
+  state.coeffA = parseFloat((Math.random() * 6 - 3).toFixed(1));
+  state.coeffB = parseFloat((Math.random() * 10 - 5).toFixed(1));
+  state.coeffC = parseFloat((Math.random() * 16 - 8).toFixed(1));
+  state.coeffD = parseFloat((Math.random() * 20 - 5).toFixed(1));
+  document.getElementById('nuASlider').value = state.coeffA;
+  document.getElementById('nuBSlider').value = state.coeffB;
+  document.getElementById('nuCSlider').value = state.coeffC;
+  document.getElementById('nuDSlider').value = state.coeffD;
+  updateNonuniform();
+}
+
+// ===== TRACER =====
+let _tracerActive = false;
+function toggleTracer() {
+  state.tracerOn = !state.tracerOn;
+  _tracerActive = state.tracerOn;
+  document.getElementById('animTracerBtn').textContent = state.tracerOn ? '⏸ Pause' : '▶ Animate Tracer';
+  if(state.tracerOn) {
+    if(state.tracerT >= 5) state.tracerT = 0;
+    tracerLoop();
+  } else {
+    if(state.tracerId) { cancelAnimationFrame(state.tracerId); state.tracerId = null; }
+  }
+}
+function tracerLoop() {
+  if(!_tracerActive) { state.tracerOn = false; document.getElementById('animTracerBtn').textContent = '▶ Animate Tracer'; return; }
+  state.tracerT += 0.02 * state.tracerDir;
+  if(state.tracerT >= 5) { state.tracerT = 5; state.tracerDir = -1; }
+  if(state.tracerT <= 0) { state.tracerT = 0; state.tracerDir = 1; }
+  state.mouseX = state.tracerT;
+  updateNonuniform();
+  state.tracerId = requestAnimationFrame(tracerLoop);
+}
+
+// ===== KATEX EQUATIONS =====
+function getCSS(colorName) {
+  const isD = isDark();
+  const map = {
+    green: isD ? '#34d399' : '#047857',
+    rose:  isD ? '#fb7185' : '#be123c',
+    blue:  isD ? '#38bdf8' : '#0369a1',
+    orange: isD ? '#fb923c' : '#c2410c',
+    amber: isD ? '#fbbf24' : '#b45309',
+  };
+  return map[colorName] || '#38bdf8';
+}
+
+function renderEquations() {
+  const {u, a, t} = state;
+  const v = getFinalV(u, a, t);
+  const s = getDisplacement(u, a, t);
+  const p = state.proof;
+
+  let tex = '';
+  let singleLine = false;
+
+  if(p === 0) {
+    tex = `v = ${fmtNum(u)} + (${fmtNum(a)})(${fmtNum(t)}) = ${fmtNum(v)} \\; \\text{m/s}`;
+    singleLine = true;
+  } else if(p === 1) {
+    // s = ut + ½at² — two lines: formula then numeric
+    tex = `\\begin{aligned}
+      s &= {\\color{${getCSS('green')}} u t} + {\\color{${getCSS('rose')}} \\tfrac12 a t^{2}} \\\\
+        &= {\\color{${getCSS('green')}} ${fmtNum(u*t)}} + {\\color{${getCSS('rose')}} ${fmtNum(0.5*a*t*t)}} = ${fmtNum(s)} \\; \\text{m}
+    \\end{aligned}`;
+  } else if(p === 2) {
+    tex = `\\begin{aligned}
+      s &= {\\color{${getCSS('blue')}} v t} - {\\color{${getCSS('orange')}} \\tfrac12 a t^{2}} \\\\
+        &= {\\color{${getCSS('blue')}} ${fmtNum(v*t)}} - {\\color{${getCSS('orange')}} ${fmtNum(0.5*a*t*t)}} = ${fmtNum(s)} \\; \\text{m}
+    \\end{aligned}`;
+  } else if(p === 3) {
+    tex = `\\begin{aligned}
+      s &= {\\color{${getCSS('amber')}} \\tfrac12(${fmtNum(u)} + ${fmtNum(v)})(${fmtNum(t)})} \\\\
+        &= {\\color{${getCSS('amber')}} ${fmtNum(0.5*(u+v)*t)}} \\; \\text{m}
+    \\end{aligned}`;
+  } else if(p === 4) {
+    // v² = u² + 2as → s = (v² - u²) / (2a)
+    const vSq = v * v;
+    const uSq = u * u;
+    const diff = vSq - uSq;
+    const denom = 2 * a;
+    if(Math.abs(a) > 0.01) {
+      const sCalc = diff / denom;
+      tex = `\\begin{aligned}
+        v^{2} &= u^{2} + 2 a s \\\\
+        s &= \\frac{v^{2} - u^{2}}{2a} \\\\
+        &= \\frac{${fmtNum(vSq)} - ${fmtNum(uSq)}}{2(${fmtNum(a)})} \\\\
+        &= \\frac{${fmtNum(diff)}}{${fmtNum(denom)}} = ${fmtNum(sCalc)} \\; \\text{m}
+      \\end{aligned}`;
+    } else {
+      tex = `\\begin{aligned}
+        v^{2} &= u^{2} + 2 a s \\\\
+        a &= 0 \\;\\Rightarrow\\; v^{2} = u^{2}
+      \\end{aligned}`;
+    }
+  }
+
+  const el = document.getElementById('eqDisplay');
+  try {
+    katex.render(tex, el, {displayMode: !singleLine, throwOnError: false});
+  } catch(e) {
+    el.innerHTML = `<span style="color:var(--text-dim);font-size:0.65rem;">${tex.replace(/\\\\/g,' ')}</span>`;
+  }
+}
+
+function fmtNum(n) {
+  const rounded = Math.round(n * 100) / 100;
+  if (Number.isInteger(rounded)) return rounded.toFixed(0);
+  return rounded.toFixed(2);
+}
+
+// ===== AREA BREAKDOWN =====
+function renderAreaBreakdown() {
+  const {u, a, t} = state;
+  const v = getFinalV(u, a, t);
+  const p = state.proof;
+  const container = document.getElementById('areaBreakdownContainer');
+
+  if(state.mode !== 'uniform' || p === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  const rectArea = u * t;
+  const triArea = 0.5 * a * t * t;
+  const bigRectArea = v * t;
+  const trapArea = 0.5 * (u + v) * t;
+  const totalS = getDisplacement(u, a, t);
+
+  let html = '<div class="area-breakdown">';
+
+  if(p === 1) {
+    // s = ut + ½at² — green + rose
+    html += `<div class="area-item"><span class="a-swatch" style="background:${getCSS('green')};"></span><span class="a-label">u·t (rectangle)</span><span class="a-value">${fmtNum(rectArea)} m</span></div>`;
+    if(Math.abs(a) > 0.01) {
+      html += `<div class="area-item"><span class="a-swatch" style="background:${getCSS('rose')};"></span><span class="a-label">½·a·t² (triangle)</span><span class="a-value">${fmtNum(triArea)} m</span></div>`;
+    }
+    html += `<div class="area-item" style="grid-column:1/-1;border-color:var(--accent);"><span class="a-label" style="color:var(--accent);font-weight:600;">Total s = u·t + ½·a·t²</span><span class="a-value" style="font-size:0.65rem;">${fmtNum(totalS)} m</span></div>`;
+  } else if(p === 2) {
+    html += `<div class="area-item"><span class="a-swatch" style="background:${getCSS('blue')};"></span><span class="a-label">v·t (big rectangle)</span><span class="a-value">${fmtNum(bigRectArea)} m</span></div>`;
+    if(Math.abs(a) > 0.01) {
+      html += `<div class="area-item"><span class="a-swatch" style="background:${getCSS('orange')};"></span><span class="a-label">−½·a·t² (triangle)</span><span class="a-value">−${fmtNum(triArea)} m</span></div>`;
+    }
+    html += `<div class="area-item" style="grid-column:1/-1;border-color:var(--accent);"><span class="a-label" style="color:var(--accent);font-weight:600;">Total s = v·t − ½·a·t²</span><span class="a-value" style="font-size:0.65rem;">${fmtNum(totalS)} m</span></div>`;
+  } else if(p === 3) {
+    const avgV = (u + v) / 2;
+    html += `<div class="area-item" style="grid-column:1/-1;"><span class="a-swatch" style="background:${getCSS('amber')};"></span><span class="a-label">Rectangle area (avgVel × t)</span><span class="a-value">${fmtNum(trapArea)} m</span></div>`;
+    html += `<div class="area-item"><span class="a-label">Average velocity ½(u+v)</span><span class="a-value">${fmtNum(avgV)} m/s</span></div>`;
+    html += `<div class="area-item"><span class="a-label" style="color:var(--accent);font-weight:600;">t = ${fmtNum(t)} s</span><span class="a-value"></span></div>`;
+  } else if(p === 4) {
+    // v² = u² + 2as — just show result, no intermediate steps
+    const vSq = v * v, uSq = u * u, diff = vSq - uSq, denom = 2 * a;
+    if(Math.abs(a) > 0.01) {
+      const sCalc = diff / denom;
+      html += `<div class="area-item" style="grid-column:1/-1;border-color:var(--violet);"><span class="a-label" style="color:var(--violet);font-weight:600;">✧ v² = u² + 2 a s</span></div>`;
+      html += `<div class="area-item" style="grid-column:1/-1;border-color:var(--accent);"><span class="a-label" style="color:var(--accent);font-weight:600;">s = (v²−u²)/(2a) = ${fmtNum(sCalc)} m</span></div>`;
+    } else {
+      html += `<div class="area-item" style="grid-column:1/-1;"><span class="a-label" style="color:var(--text-dim);">a = 0 → v² = u² (constant speed)</span></div>`;
+    }
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+// ===== NON-UNIFORM INFO =====
+function renderNonuniformInfo() {
+  if(state.mode !== 'nonuniform') return;
+  const {coeffA, coeffB, coeffC, coeffD} = state;
+  const el = document.getElementById('eqDisplay');
+  const tex = `v(t) = ${fmtCoeff(coeffA)}t^{3} ${fmtCoeff(coeffB)}t^{2} ${fmtCoeff(coeffC)}t ${fmtCoeff(coeffD)}`;
+  try {
+    katex.render(tex, el, {displayMode: true, throwOnError: false});
+  } catch(e) {
+    el.innerHTML = `<span style="color:var(--text-dim);font-size:0.65rem;">${tex}</span>`;
+  }
+}
+function fmtCoeff(c) {
+  if(c === 0) return '';
+  const abs = Math.abs(c);
+  const s = abs === 1 ? '' : (abs === Math.round(abs) ? abs.toFixed(0) : abs.toFixed(1));
+  return (c < 0 ? ' - ' : ' + ') + s;
+}
+
+// ===== DESCRIPTION =====
+function updateDescription() {
+  const el = document.getElementById('descText');
+  if(state.mode === 'uniform') {
+    const {u, a, t} = state;
+    const v = getFinalV(u, a, t);
+    const s = getDisplacement(u, a, t);
+    const p = state.proof;
+
+    let txt = `<strong>Gradient = acceleration:</strong> a = (v − u)/t = (${fmtNum(v)} − ${fmtNum(u)})/${fmtNum(t)} = ${fmtNum(a)} m/s²<br>`;
+    txt += `<strong>Area under graph = displacement:</strong> s = ${fmtNum(s)} m<br>`;
+
+    if(p === 1) {
+      txt += `<br><strong>Visual Proof: s = u·t + ½·a·t²</strong><br>`;
+      txt += `The area is split into a <span style="color:${getCSS('green')};">rectangle</span> (u·t = ${fmtNum(u*t)} m) `;
+      txt += `and a <span style="color:${getCSS('rose')};">triangle</span> (½·a·t² = ${fmtNum(0.5*a*t*t)} m).`;
+      txt += `<br>Together they give the total displacement.`;
+    } else if(p === 2) {
+      txt += `<br><strong>Visual Proof: s = v·t − ½·a·t²</strong><br>`;
+      txt += `The large <span style="color:${getCSS('blue')};">rectangle</span> (v·t = ${fmtNum(v*t)} m) represents the displacement if velocity stayed at v the whole time.<br>`;
+      txt += `The <span style="color:${getCSS('orange')};">triangle</span> above the line (½·a·t² = ${fmtNum(0.5*a*t*t)} m) is the overcounted area we must subtract.<br>`;
+      txt += `s = v·t − ½·a·t² = ${fmtNum(v*t)} − ${fmtNum(0.5*a*t*t)} = ${fmtNum(s)} m.`;
+    } else if(p === 3) {
+      const avgV = (u + v) / 2;
+      txt += `<br><strong>Visual Proof: s = ½·(u+v)·t</strong><br>`;
+      txt += `Think of a <span style="color:${getCSS('amber')};">rectangle</span> whose height is the average velocity: ½(u+v) = ${fmtNum(avgV)} m/s.<br>`;
+      txt += `s = average velocity × time = ${fmtNum(avgV)} × ${fmtNum(t)} = ${fmtNum(s)} m.`;
+    } else if(p === 4) {
+      txt += `<br><strong>Derivation: v² = u² + 2 a s → s = (v² − u²) / (2a)</strong><br>`;
+      if(Math.abs(a) > 0.01) {
+        const vSq = v*v, uSq = u*u, diff = vSq - uSq, denom = 2*a;
+        txt += `s = (${fmtNum(vSq)} − ${fmtNum(uSq)}) / ${fmtNum(denom)} = ${fmtNum(diff)} / ${fmtNum(denom)} = ${fmtNum(s)} m.`;
+        txt += `<br>This is derived by eliminating t from the first two equations.`;
+      } else {
+        txt += `When a = 0 (constant speed), v = u, so v² = u².`;
+      }
+    } else {
+      txt += `<br>Use the proof buttons above to see how the area splits to derive each SUVAT equation.`;
+    }
+    el.innerHTML = txt;
+  } else {
+    // Non-uniform
+    const tVals = [0, 1, 2, 3, 4, 5];
+    const vVals = tVals.map(t => getVNonuniform(t));
+    const aDeriv = `a(t) = ${fmtCoeff(3*state.coeffA)}t² ${fmtCoeff(2*state.coeffB)}t ${fmtCoeff(state.coeffC)}`;
+    const totalS = integrateNonuniform(0, 5);
+
+    let txt = `<strong>Non-uniform acceleration:</strong> a = dv/dt is NOT constant.<br>`;
+    txt += `<strong>Derivative:</strong> a(t) = ` + aDeriv.replace(/\+/g, '+').replace(/\-/g, '−') + `<br>`;
+    txt += `<strong>Total displacement:</strong> s = ∫v(t) dt = ${fmtNum(totalS)} m (t: 0→5 s)<br><br>`;
+    txt += `Values at key points:<br>`;
+    for(let i = 0; i < tVals.length; i++) {
+      txt += `t=${tVals[i]}s → v=${fmtNum(vVals[i])} m/s, a=${fmtNum(getDerivativeNonuniform(tVals[i]))} m/s²`;
+      if(i < tVals.length-1) txt += `<br>`;
+    }
+    el.innerHTML = txt;
+  }
+}
+
+// ===== GRAPH DRAWING =====
+function drawAll() {
+  ctx.clearRect(0, 0, W, H);
+  const isD = isDark();
+  const bg = isD ? '#0a0f1a' : '#e8e2d7';
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  if(state.mode === 'uniform') drawUniformGraph();
+  else drawNonuniformGraph();
+}
+
+function drawUniformGraph() {
+  const {u, a, t} = state;
+  const v = getFinalV(u, a, t);
+  const isD = isDark();
+
+  // Determine Y range
+  let maxV = Math.max(u, v, 0) * 1.2;
+  let minV = Math.min(u, v, 0) * 1.2;
+  // Stationary case (u=0, a=0): fix Y range -10 to +10 so line at v=0 is visible
+  if(Math.abs(u) < 0.01 && Math.abs(a) < 0.01) {
+    maxV = 10;
+    minV = -10;
+  }
+  const yRange = Math.max(maxV - minV, 1);
+  const yMax = maxV;
+  const yMin = minV;
+
+  const xMax = Math.max(t * 1.15, 6);
+  const pad = {top: 22, right: 18, bottom: 28, left: 48};
+  const gW = W - pad.left - pad.right;
+  const gH = H - pad.top - pad.bottom;
+
+  function xPos(tv) { return pad.left + (tv / xMax) * gW; }
+  function yPos(vv) { return pad.top + gH - ((vv - yMin) / (yMax - yMin)) * gH; }
+
+  // Grid — nice round steps
+  ctx.strokeStyle = isD ? '#1e293b' : '#c9c2b5';
+  ctx.lineWidth = 0.4;
+  const xStep = niceStep(xMax, 8);
+  const xTicks = Math.floor(xMax / xStep);
+  const yStep = niceStep(yMax - yMin, 6);
+  const yTicks = Math.floor((yMax - yMin) / yStep);
+  
+  for(let i = 0; i <= xTicks; i++) {
+    const xv = i * xStep;
+    const x = xPos(xv);
+    ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top+gH); ctx.stroke();
+  }
+  for(let i = 0; i <= yTicks; i++) {
+    const yv = yMin + i * yStep;
+    const y = yPos(yv);
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left+gW, y); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = isD ? '#475569' : '#8c8578';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top+gH);
+  ctx.lineTo(pad.left+gW, pad.top+gH);
+  ctx.stroke();
+
+  // Zero line
+  const zy = yPos(0);
+  if(zy >= pad.top && zy <= pad.top+gH) {
+    ctx.strokeStyle = isD ? '#334155' : '#bdb5a8';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(pad.left, zy); ctx.lineTo(pad.left+gW, zy); ctx.stroke();
+  }
+
+  // Axis labels
+  ctx.fillStyle = isD ? '#94a3b8' : '#635d52';
+  ctx.font = '11px Inter, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for(let i = 0; i <= xTicks; i++) {
+    const xv = i * xStep;
+    if(xv > xMax + 0.01) break;
+    ctx.fillText(xv.toFixed(xv % 1 === 0 ? 0 : 1), xPos(xv), pad.top+gH+6);
+  }
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for(let i = 0; i <= yTicks; i++) {
+    const yv = yMin + i * yStep;
+    const y = yPos(yv);
+    if(y >= pad.top-3 && y <= pad.top+gH+3) ctx.fillText(yv.toFixed(yv % 1 === 0 ? 0 : 1), pad.left-6, y);
+  }
+
+  // Axis titles
+  ctx.fillStyle = isD ? '#cbd5e1' : '#2d2a24';
+  ctx.font = '11px Inter, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillText('Time / s', pad.left+gW/2, H-6);
+  ctx.save();
+  ctx.translate(14, pad.top+gH/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  ctx.fillText('Velocity / (m/s)', 0, 0);
+  ctx.restore();
+
+  // === VT Line ===
+  const x0 = xPos(0), y0 = yPos(u);
+  const x1 = xPos(t), y1 = yPos(v);
+
+  // Shading (proof-based)
+  const p = state.proof;
+  if(p > 0) {
+    const zyZero = yPos(0);
+
+    if(p === 1) {
+      // s = ut + ½at²: GREEN rectangle + ROSE triangle
+      const rectTop = yPos(u);        // top of rectangle at y=u
+      const triRightV = yPos(v);      // right vertex of triangle at y=v
+      const triRightU = rectTop;      // right vertex of triangle at y=u (shared with rectangle)
+
+      // Rectangle: u·t (green) — from y=0 to y=u, width=t
+      ctx.fillStyle = isD ? 'rgba(52,211,153,0.12)' : 'rgba(4,120,87,0.10)';
+      ctx.fillRect(x0, Math.min(zyZero, rectTop), x1-x0, Math.abs(rectTop - zyZero));
+      // Rectangle border (dashed green)
+      ctx.strokeStyle = getCSS('green');
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([4,3]);
+      ctx.strokeRect(x0, Math.min(zyZero, rectTop), x1-x0, Math.abs(rectTop - zyZero));
+      ctx.setLineDash([]);
+
+      // Label: "u·t" (green) — center of rectangle
+      ctx.fillStyle = getCSS('green');
+      ctx.font = 'bold 13px JetBrains Mono, monospace';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('u·t', (x0+x1)/2, (zyZero + rectTop)/2);
+
+      // Triangle: ½·a·t² (rose) — only if a !== 0
+      if(Math.abs(a) > 0.01) {
+        // Triangle points: (0,u) → (t,u) → (t,v)
+        ctx.fillStyle = isD ? 'rgba(251,114,133,0.12)' : 'rgba(190,18,60,0.10)';
+        ctx.beginPath();
+        ctx.moveTo(x0, rectTop);
+        ctx.lineTo(x1, triRightU);
+        ctx.lineTo(x1, triRightV);
+        ctx.closePath();
+        ctx.fill();
+
+        // Triangle border (dashed rose)
+        ctx.strokeStyle = getCSS('rose');
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([4,3]);
+        ctx.beginPath();
+        ctx.moveTo(x0, rectTop);
+        ctx.lineTo(x1, triRightU);
+        ctx.lineTo(x1, triRightV);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Label: "½·a·t²" (rose) — centroid of right triangle
+        const triCx = (x0 + x1 + x1) / 3;
+        const triCy = (rectTop + triRightU + triRightV) / 3;
+        ctx.fillStyle = getCSS('rose');
+        ctx.font = 'bold 13px JetBrains Mono, monospace';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('½·a·t²', triCx, triCy);
+      }
+    } else if(p === 2) {
+      // s = vt - ½at²: blue big rectangle minus orange triangle
+      const bigRectTop = yPos(v);    // top of big rectangle at y=v
+      const triLeft = yPos(u);       // line start at y=u (left vertex of triangle)
+
+      // Big rectangle v·t (blue)
+      ctx.fillStyle = isD ? 'rgba(56,189,248,0.08)' : 'rgba(3,105,161,0.07)';
+      ctx.fillRect(x0, Math.min(zyZero, bigRectTop), x1-x0, Math.abs(bigRectTop - zyZero));
+      // Rectangle border (dashed blue)
+      ctx.strokeStyle = getCSS('blue');
+      ctx.lineWidth = 1.2;
+      ctx.setLineDash([4,3]);
+      ctx.strokeRect(x0, Math.min(zyZero, bigRectTop), x1-x0, Math.abs(bigRectTop - zyZero));
+      ctx.setLineDash([]);
+
+      // Label: "v·t" (blue) — center of big rectangle
+      ctx.fillStyle = getCSS('blue');
+      ctx.font = 'bold 13px JetBrains Mono, monospace';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('v·t', (x0+x1)/2, (zyZero + bigRectTop)/2);
+
+      // Triangle: ½·a·t² (orange) — only if a !== 0
+      // Triangle ABOVE the graph line: (0,u) → (0,v) → (t,v)
+      if(Math.abs(a) > 0.01) {
+        // Triangle points: (0,u) → (0,v) → (t,v) — left edge, above the line
+        ctx.fillStyle = isD ? 'rgba(251,146,60,0.10)' : 'rgba(194,65,12,0.08)';
+        ctx.beginPath();
+        ctx.moveTo(x0, triLeft);
+        ctx.lineTo(x0, bigRectTop);
+        ctx.lineTo(x1, bigRectTop);
+        ctx.closePath();
+        ctx.fill();
+
+        // Triangle border (dashed orange)
+        ctx.strokeStyle = getCSS('orange');
+        ctx.lineWidth = 1.2;
+        ctx.setLineDash([4,3]);
+        ctx.beginPath();
+        ctx.moveTo(x0, triLeft);
+        ctx.lineTo(x0, bigRectTop);
+        ctx.lineTo(x1, bigRectTop);
+        ctx.closePath();
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Label: "−½·a·t²" (orange) — centroid of left-edge triangle
+        const triCx = (x0 + x0 + x1) / 3;
+        const triCy = (triLeft + bigRectTop + bigRectTop) / 3;
+        ctx.fillStyle = getCSS('orange');
+        ctx.font = 'bold 13px JetBrains Mono, monospace';
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText('−½·a·t²', triCx, triCy);
+      }
+
+    } else if(p === 3) {
+      // s = ½(u+v)t: RECTANGLE at average velocity (not trapezoid)
+      // Average velocity = (u+v)/2, rectangle = avgVel × t
+      const avgV = (u + v) / 2;
+      const avgV_y = yPos(avgV);      // y-position of average velocity
+
+      // Rectangle fill: shaded amber/yellow
+      ctx.fillStyle = isD ? 'rgba(251,191,36,0.10)' : 'rgba(180,83,9,0.08)';
+      ctx.fillRect(x0, Math.min(zyZero, avgV_y), x1-x0, Math.abs(avgV_y - zyZero));
+
+      // Rectangle border: dashed amber/yellow
+      ctx.strokeStyle = getCSS('amber');
+      ctx.lineWidth = 1.6;
+      ctx.setLineDash([5,4]);
+      ctx.strokeRect(x0, Math.min(zyZero, avgV_y), x1-x0, Math.abs(avgV_y - zyZero));
+      ctx.setLineDash([]);
+
+      // Label: "½(u+v)·t" (amber) — center of rectangle
+      ctx.fillStyle = getCSS('amber');
+      ctx.font = 'bold 13px JetBrains Mono, monospace';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('½(u+v)·t', (x0+x1)/2, (zyZero + avgV_y)/2);
+
+      // Also show the average velocity line label
+      ctx.fillStyle = getCSS('amber');
+      ctx.font = '10px JetBrains Mono, monospace';
+      ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
+      ctx.fillText(`½(u+v) = ${avgV.toFixed(1)}`, Math.max(x0 - 4, 0), avgV_y - 3);
+    }
+  }
+
+  // Draw the VT line itself (on top of shading)
+  ctx.strokeStyle = isD ? '#22d3ee' : '#0f766e';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  ctx.moveTo(x0, y0);
+  ctx.lineTo(x1, y1);
+  ctx.stroke();
+
+  // Start point marker — bigger with contrasting border for visibility
+  ctx.beginPath();
+  ctx.arc(x0, y0, 5, 0, Math.PI*2);
+  ctx.fillStyle = '#22d3ee';
+  ctx.fill();
+  ctx.strokeStyle = isD ? '#0f172a' : '#e8e2d7';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // End point marker — bigger with contrasting border
+  ctx.beginPath();
+  ctx.arc(x1, y1, 5, 0, Math.PI*2);
+  ctx.fillStyle = '#22d3ee';
+  ctx.fill();
+  ctx.strokeStyle = isD ? '#0f172a' : '#e8e2d7';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+
+  // Labels: (0, u) and (t, v)
+  ctx.fillStyle = isD ? '#94a3b8' : '#635d52';
+  ctx.font = '11px JetBrains Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(`(0, ${u.toFixed(1)})`, x0, y0-8);
+  ctx.fillText(`(${t.toFixed(1)}, ${v.toFixed(1)})`, x1, y1-8);
+
+  // Gradient annotation
+  const midX = (x0+x1)/2;
+  const midY = (y0+y1)/2;
+  ctx.save();
+  const angle = Math.atan2(y1-y0, x1-x0);
+  ctx.translate(midX, midY);
+  ctx.rotate(angle);
+  ctx.fillStyle = isD ? 'rgba(148,163,184,0.5)' : 'rgba(99,93,82,0.4)';
+  ctx.font = '10px JetBrains Mono, monospace';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+  ctx.fillText(`a = ${a.toFixed(1)} m/s²`, 4, -2);
+  ctx.restore();
+}
+
+function drawNonuniformGraph() {
+  const isD = isDark();
+  const tMax = 5;
+  const pad = {top: 22, right: 18, bottom: 28, left: 48};
+  const gW = W - pad.left - pad.right;
+  const gH = H - pad.top - pad.bottom;
+
+  const samples = 200;
+  let maxV = -Infinity, minV = Infinity;
+  for(let i = 0; i <= samples; i++) {
+    const t = (i/samples)*tMax;
+    const v = getVNonuniform(t);
+    if(v > maxV) maxV = v;
+    if(v < minV) minV = v;
+  }
+  const yPad = Math.max((maxV - minV) * 0.15, 1);
+  let yMax = maxV + yPad;
+  let yMin = minV - yPad;
+  if(yMax === yMin) { yMax = yMin + 1; }
+
+  function xPos(tv) { return pad.left + (tv / tMax) * gW; }
+  function yPos(vv) { return pad.top + gH - ((vv - yMin) / (yMax - yMin)) * gH; }
+
+  // Grid
+  ctx.strokeStyle = isD ? '#1e293b' : '#c9c2b5';
+  ctx.lineWidth = 0.4;
+  for(let i = 0; i <= 8; i++) {
+    const x = pad.left + (i/8)*gW, y = pad.top + (i/8)*gH;
+    ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top+gH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left+gW, y); ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle = isD ? '#475569' : '#8c8578';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top+gH);
+  ctx.lineTo(pad.left+gW, pad.top+gH);
+  ctx.stroke();
+
+  // Zero line
+  const zy = yPos(0);
+  if(zy >= pad.top && zy <= pad.top+gH) {
+    ctx.strokeStyle = isD ? '#334155' : '#bdb5a8';
+    ctx.lineWidth = 0.8;
+    ctx.beginPath(); ctx.moveTo(pad.left, zy); ctx.lineTo(pad.left+gW, zy); ctx.stroke();
+  }
+
+  // Axis labels
+  ctx.fillStyle = isD ? '#94a3b8' : '#635d52';
+  ctx.font = '11px Inter, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for(let i = 0; i <= xTicks; i++) {
+    const xv = i * xStep;
+    if(xv > tMax) break;
+    ctx.fillText(xv.toFixed(xv % 1 === 0 ? 0 : 1), xPos(xv), pad.top+gH+6);
+  }
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  for(let i = 0; i <= yTicks; i++) {
+    const yv = yMin + i * yStep;
+    const y = yPos(yv);
+    if(y >= pad.top-3 && y <= pad.top+gH+3) ctx.fillText(yv.toFixed(yv % 1 === 0 ? 0 : 1), pad.left-6, y);
+  }
+
+  // Axis titles
+  ctx.fillStyle = isD ? '#cbd5e1' : '#2d2a24';
+  ctx.font = '11px Inter, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  ctx.fillText('Time / s', pad.left+gW/2, H-6);
+  ctx.save();
+  ctx.translate(14, pad.top+gH/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  ctx.fillText('Velocity / (m/s)', 0, 0);
+  ctx.restore();
+
+  // Area under curve shading
+  ctx.fillStyle = isD ? 'rgba(34,211,238,0.06)' : 'rgba(15,118,110,0.05)';
+  ctx.beginPath();
+  ctx.moveTo(xPos(0), zy);
+  for(let i = 0; i <= samples; i++) {
+    const t = (i/samples)*tMax;
+    const v = getVNonuniform(t);
+    ctx.lineTo(xPos(t), yPos(v));
+  }
+  ctx.lineTo(xPos(tMax), zy);
+  ctx.closePath();
+  ctx.fill();
+
+  // Draw the curve
+  ctx.strokeStyle = isD ? '#22d3ee' : '#0f766e';
+  ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for(let i = 0; i <= samples; i++) {
+    const t = (i/samples)*tMax;
+    const v = getVNonuniform(t);
+    const x = xPos(t), y = yPos(v);
+    if(i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.stroke();
+
+  // Tracer point
+  const tracerT = state.tracerOn ? state.tracerT : (state.mouseX !== null ? state.mouseX : 0);
+  if(tracerT >= 0 && tracerT <= tMax) {
+    const vT = getVNonuniform(tracerT);
+    const aT = getDerivativeNonuniform(tracerT);
+    const tx = xPos(tracerT), ty = yPos(vT);
+
+    // Vertical guide line
+    ctx.strokeStyle = isD ? 'rgba(251,191,36,0.3)' : 'rgba(180,83,9,0.25)';
+    ctx.lineWidth = 0.8;
+    ctx.setLineDash([3,3]);
+    ctx.beginPath(); ctx.moveTo(tx, pad.top+gH); ctx.lineTo(tx, ty); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Tangent line
+    const tangentSlope = aT;
+    const tangentLen = 80;
+    const scale = gH / (yMax - yMin);
+    const dx = tangentLen / Math.sqrt(1 + (tangentSlope*scale)**2);
+    const dy = tangentSlope * scale * dx;
+    ctx.strokeStyle = isD ? '#fb7185' : '#be123c';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([3,3]);
+    ctx.beginPath();
+    ctx.moveTo(tx - dx*0.5, ty - dy*0.5);
+    ctx.lineTo(tx + dx*0.5, ty + dy*0.5);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Point
+    ctx.beginPath();
+    ctx.arc(tx, ty, 5, 0, Math.PI*2);
+    ctx.fillStyle = '#fbbf24';
+    ctx.fill();
+    ctx.strokeStyle = isD ? '#0f172a' : '#e8e2d7';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle = '#fbbf24';
+    ctx.font = 'bold 11px JetBrains Mono, monospace';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+    ctx.fillText(`t=${tracerT.toFixed(2)}s`, tx+7, ty-3);
+    ctx.fillStyle = isD ? '#fb7185' : '#be123c';
+    ctx.font = '10px JetBrains Mono, monospace';
+    ctx.fillText(`a=${aT.toFixed(2)}`, tx+7, ty-15);
+  }
+}
+
+// Mouse tracking (non-uniform mode only)
+canvas.addEventListener('mousemove', function(e) {
+  if(state.mode !== 'nonuniform') return;
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const mx = (e.clientX - rect.left) * scaleX;
+  const padL = 48, padR = 18;
+  const gWidth = W - padL - padR;
+  const tVal = ((mx - padL) / gWidth) * 5;
+  if(tVal >= 0 && tVal <= 5) {
+    state.mouseX = tVal;
+    if(!state.tracerOn && !_tracerActive) {
+      const v = getVNonuniform(tVal);
+      const a = getDerivativeNonuniform(tVal);
+      document.getElementById('nvV').textContent = v.toFixed(2) + ' m/s';
+      document.getElementById('nvA').textContent = a.toFixed(2) + ' m/s²';
+      drawAll();
+    }
+  }
+});
+
+canvas.addEventListener('mouseleave', function() {
+  if(state.mode !== 'nonuniform') return;
+  state.mouseX = 0;
+  if(!state.tracerOn && !_tracerActive) {
+    updateNonuniform();
+  }
+});
+
+// ===== INIT =====
+function init() {
+  syncUniformSliders();
+  updateUniform();
+}
+
+init();
+</script>
+</body>
+</html>

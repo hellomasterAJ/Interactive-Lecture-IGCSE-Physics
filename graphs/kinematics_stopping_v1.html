@@ -1,0 +1,1251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stopping Distance — Thinking + Braking</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0f172a; --card: #1e293b; --border: #334155;
+  --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
+  --accent: #22d3ee; --accent-glow: rgba(34,211,238,0.12);
+  --grid: #1e293b; --graph-bg: #0a0f1a;
+  --line-speed: #22d3ee; --shade-think: rgba(34,211,238,0.08);
+  --shade-brake: rgba(251,114,133,0.08);
+  --green: #34d399; --rose: #fb7185; --violet: #a78bfa; --amber: #fbbf24;
+}
+.light {
+  --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
+  --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
+  --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
+  --grid: #c9c2b5; --graph-bg: #e8e2d7;
+  --line-speed: #0f766e; --shade-think: rgba(15,118,110,0.06);
+  --shade-brake: rgba(190,18,60,0.06);
+  --green: #047857; --rose: #be123c; --violet: #6d28d9; --amber: #b45309;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body {
+  background:var(--bg);color:var(--text);
+  font-family:'Inter',sans-serif;transition:background 0.3s,color 0.3s;
+  min-height:100vh;display:flex;flex-direction:column;align-items:center;
+  padding:12px;
+}
+.container{max-width:1100px;width:100%;}
+
+/* Top bar */
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+.top-bar h1{font-size:1.1rem;font-weight:700;}
+.top-bar h1 span{color:var(--accent);}
+.badge-top{
+  font-family:'JetBrains Mono',monospace;font-size:0.5rem;padding:2px 8px;border-radius:12px;
+  background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent);margin-left:6px;
+}
+.theme-btn{
+  background:var(--card);border:1px solid var(--border);color:var(--text-dim);
+  padding:5px 12px;border-radius:8px;cursor:pointer;font-size:0.75rem;
+  font-family:'JetBrains Mono',monospace;transition:all 0.2s;
+}
+.theme-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* Sections */
+.section{
+  background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;
+  margin-bottom:10px;
+}
+.section .sec-title{
+  font-size:0.6rem;font-weight:600;text-transform:uppercase;
+  letter-spacing:0.06em;color:var(--text-muted);margin-bottom:6px;
+}
+
+/* Graph section */
+.graph-wrap{position:relative;}
+.graph-wrap canvas{width:100%;height:auto;display:block;border-radius:6px;background:var(--graph-bg);}
+
+/* Road scene */
+.road-scene{
+  position:relative;width:100%;height:240px;
+  background:var(--graph-bg);border-radius:8px;
+  border:1px solid var(--border);overflow:hidden;
+}
+.sky-bg{
+  position:absolute;top:0;left:0;right:0;height:45%;
+  background:linear-gradient(180deg, var(--accent-glow) 0%, transparent 100%);
+  opacity:0.15;
+}
+.road{
+  position:absolute;bottom:20px;left:0;right:0;height:60px;
+  background:#3a3a4a;border-top:3px solid #555;
+}
+.light .road{background:#9a9a8a;border-top:3px solid #888;}
+.road-line{
+  position:absolute;bottom:48px;left:0;right:0;height:2px;
+  background:var(--amber);opacity:0.6;
+}
+.road-mark{
+  position:absolute;bottom:38px;width:30px;height:2px;
+  background:var(--text-dim);opacity:0.3;
+}
+
+/* Car */
+.car-container{
+  position:absolute;bottom:72px;left:5%;z-index:2;
+  transition:left 0.05s linear;
+}
+.car-svg{width:85px;height:auto;display:block;}
+
+/* === Scene backgrounds === */
+.scene-bg{
+  position:absolute;top:0;left:0;right:0;bottom:20px;z-index:0;
+  pointer-events:none;overflow:hidden;display:none;
+}
+.scene-bg.active{display:block;}
+
+/* ── City (Normal) ── 3 layers for depth ── */
+.city-sky{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:linear-gradient(180deg, #1a1a3e 0%, #2a2a5a 50%, #3a3a6a 100%);
+  opacity:0.15;
+}
+/* Back layer — darker, taller */
+.city-layer-b{position:absolute;bottom:0;left:0;right:0;height:100%;opacity:0.08;}
+.city-layer-m{position:absolute;bottom:0;left:0;right:0;height:100%;opacity:0.11;}
+.city-layer-f{position:absolute;bottom:0;left:0;right:0;height:100%;opacity:0.15;}
+.building{
+  position:absolute;bottom:0;border-radius:1px 1px 0 0;
+}
+.b-building{background:var(--text-muted);}
+.b-m-building{background:var(--text-dim);}
+.b-f-building{background:var(--text);}
+/* Window */
+.window-lit{
+  position:absolute;width:3px;height:4px;
+  background:var(--amber);border-radius:1px;opacity:0.6;
+}
+.window-lit.off{background:var(--text-muted);opacity:0.15;}
+/* Back layer b-buildings (tall) */
+.bb1{left:2%;width:18px;height:85%;}
+.bb2{left:8%;width:12px;height:60%;}
+.bb3{left:15%;width:22px;height:92%;}
+.bb4{left:24%;width:14px;height:70%;}
+.bb5{left:32%;width:26px;height:80%;}
+.bb6{left:42%;width:14px;height:55%;}
+.bb7{left:50%;width:20px;height:88%;}
+.bb8{left:58%;width:24px;height:65%;}
+.bb9{left:66%;width:16px;height:75%;}
+.bb10{left:74%;width:12px;height:50%;}
+.bb11{left:80%;width:22px;height:96%;}
+.bb12{left:88%;width:15px;height:60%;}
+/* Middle layer m-buildings */
+.bm1{left:5%;width:16px;height:70%;}
+.bm2{left:12%;width:10px;height:45%;}
+.bm3{left:18%;width:18px;height:78%;}
+.bm4{left:26%;width:12px;height:55%;}
+.bm5{left:34%;width:20px;height:65%;}
+.bm6{left:44%;width:10px;height:40%;}
+.bm7{left:52%;width:16px;height:72%;}
+.bm8{left:60%;width:20px;height:50%;}
+.bm9{left:68%;width:14px;height:60%;}
+.bm10{left:76%;width:10px;height:38%;}
+.bm11{left:82%;width:18px;height:82%;}
+.bm12{left:90%;width:12px;height:48%;}
+/* Front layer f-buildings (short) */
+.bf1{left:3%;width:14px;height:55%;}
+.bf2{left:10%;width:8px;height:35%;}
+.bf3{left:16%;width:16px;height:62%;}
+.bf4{left:24%;width:10px;height:42%;}
+.bf5{left:32%;width:18px;height:52%;}
+.bf6{left:42%;width:8px;height:30%;}
+.bf7{left:50%;width:14px;height:58%;}
+.bf8{left:58%;width:16px;height:40%;}
+.bf9{left:66%;width:12px;height:48%;}
+.bf10{left:74%;width:8px;height:28%;}
+.bf11{left:80%;width:16px;height:68%;}
+.bf12{left:88%;width:10px;height:35%;}
+/* Houses (front) */
+.house{position:absolute;bottom:0;opacity:0.15;}
+.house .walls{width:16px;height:12px;background:var(--text);border-radius:1px;}
+.house .roof-top{
+  width:0;height:0;
+  border-left:9px solid transparent;border-right:9px solid transparent;
+  border-bottom:7px solid var(--text-dim);
+}
+.house .light-window{
+  width:4px;height:4px;background:var(--amber);opacity:0.5;
+  position:absolute;top:3px;left:3px;border-radius:1px;
+}
+
+/* ── Highway (sunset + clouds + skyline) ── */
+.highway-sky{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:linear-gradient(180deg, #ff6b35 0%, #ff8c42 15%, #ffb347 35%, #ffd699 55%, #7ab8e0 75%, #3a5a8a 100%);
+  opacity:0.1;
+}
+.highway-sun{
+  position:absolute;top:12%;left:55%;z-index:1;
+  width:36px;height:36px;border-radius:50%;
+  background:radial-gradient(circle, #ffd700 0%, #ff8c00 40%, transparent 70%);
+  opacity:0.2;
+}
+.highway-cloud{
+  position:absolute;font-size:32px;opacity:0.15;
+  z-index:2;
+}
+.hc1{top:4%;left:45%;animation:hwCloud 20s linear infinite;}
+.hc2{top:8%;left:60%;font-size:24px;animation:hwCloud 25s linear infinite 8s;}
+.hc3{top:2%;left:30%;font-size:28px;animation:hwCloud 22s linear infinite 4s;}
+@keyframes hwCloud{
+  0%{transform:translateX(0);}
+  50%{transform:translateX(15px);}
+  100%{transform:translateX(0);}
+}
+/* Highway skyline buildings */
+.hw-skyline{position:absolute;bottom:30%;left:0;right:0;height:50%;opacity:0.06;}
+.hw-bld{position:absolute;bottom:0;background:var(--text);border-radius:1px 1px 0 0;}
+.highway-barrier{
+  position:absolute;bottom:72px;left:0;right:0;height:10px;z-index:1;
+  background:var(--text-dim);opacity:0.12;
+  border-top:2px solid var(--accent);border-bottom:2px solid var(--accent);opacity:0.25;
+}
+.highway-post{
+  position:absolute;bottom:72px;width:3px;height:12px;z-index:1;
+  background:var(--text-muted);opacity:0.15;
+}
+
+/* ── Rain ── */
+.rain-sky{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:linear-gradient(180deg, #2a2a3e 0%, #3a3a4e 50%, #4a4a5e 100%);
+  opacity:0.18;
+}
+.rain-cloud{
+  position:absolute;font-size:32px;opacity:0.2;
+}
+.rain-cloud.c1{top:14%;left:5%;animation:cloudDrift 20s linear infinite;}
+.rain-cloud.c2{top:18%;right:10%;font-size:28px;animation:cloudDrift 25s linear infinite 5s;}
+.rain-cloud.c3{top:24%;left:35%;font-size:22px;animation:cloudDrift 30s linear infinite 10s;}
+.rain-cloud.c4{top:10%;left:55%;font-size:26px;animation:cloudDrift 28s linear infinite 3s;}
+.rain-cloud.c5{top:28%;right:30%;font-size:20px;animation:cloudDrift 22s linear infinite 7s;}
+.rain-cloud.c6{top:6%;left:20%;font-size:30px;animation:cloudDrift 26s linear infinite 2s;}
+.rain-cloud.c7{top:22%;left:65%;font-size:18px;animation:cloudDrift 30s linear infinite 6s;}
+.rain-cloud.c8{top:16%;left:80%;font-size:26px;animation:cloudDrift 24s linear infinite 4s;}
+.rain-cloud.c9{top:30%;left:15%;font-size:22px;animation:cloudDrift 28s linear infinite 9s;}
+.rain-cloud.c10{top:8%;left:90%;font-size:20px;animation:cloudDrift 32s linear infinite 1s;}
+.raindrop{
+  position:absolute;width:1.5px;height:10px;background:var(--accent);opacity:0.2;
+  animation:rainFall 0.6s linear infinite;
+}
+@keyframes rainFall{
+  0%{transform:translateY(-10px);opacity:0.2;}
+  100%{transform:translateY(280px);opacity:0;}
+}
+.lightning{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:rgba(255,255,255,0.15);opacity:0;
+  pointer-events:none;
+}
+.lightning.flash{animation:lightningFlash 0.12s ease-in-out;}
+
+/* ── Snow ── */
+.snow-sky{
+  position:absolute;top:0;left:0;right:0;bottom:0;
+  background:linear-gradient(180deg, #5a5a6e 0%, #6a6a7e 30%, #8a8a9a 60%, #aaaabb 100%);
+  opacity:0.1;
+}
+.snow-cover{
+  position:absolute;bottom:0;left:0;right:0;height:25%;
+  background:linear-gradient(180deg, transparent 0%, var(--text-dim) 100%);
+  opacity:0.1;
+  pointer-events:none;
+}
+.snowflake{
+  position:absolute;font-size:16px;opacity:0.5;
+  animation:snowFall linear infinite;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+}
+@keyframes snowFall{
+  0%{transform:translateY(-20px) translateX(0) rotate(0deg);opacity:0.5;}
+  20%{transform:translateX(12px) rotate(30deg);}
+  40%{transform:translateX(-8px) rotate(-20deg);}
+  60%{transform:translateX(15px) rotate(45deg);}
+  80%{transform:translateX(-10px) rotate(-30deg);}
+  100%{transform:translateY(280px) translateX(0) rotate(0deg);opacity:0;}
+}
+.dist-marker{
+  position:absolute;bottom:15px;height:50px;width:2px;z-index:1;
+  opacity:0;transition:opacity 0.3s;
+}
+.dist-marker.think-bar{background:var(--accent);opacity:0.5;}
+.dist-marker.brake-bar{background:var(--rose);opacity:0.5;}
+.dist-marker.stop-bar{background:var(--green);opacity:0.7;}
+.dist-label{
+  position:absolute;bottom:68px;font-size:0.45rem;
+  font-family:'JetBrains Mono',monospace;color:var(--text-muted);
+  white-space:nowrap;opacity:0;transition:opacity 0.3s;
+  transform:translateX(-50%);
+}
+
+/* Obstacle */
+.obstacle{
+  position:absolute;bottom:20px;right:8%;z-index:3;
+  font-size:36px;opacity:0.7;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+/* Scene stats overlay */
+.scene-stats{
+  position:absolute;top:6px;left:8px;z-index:4;
+  font-family:'JetBrains Mono',monospace;font-size:0.55rem;color:var(--text-dim);
+  line-height:1.6;
+}
+.scene-stats .val{color:var(--accent);font-weight:600;}
+
+/* Bottom section: two-column layout */
+.bottom-grid{
+  display:flex;flex-direction:column;gap:10px;
+}
+.ctrl-row{
+  display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+}
+.ctrl-group{
+  display:flex;align-items:center;gap:4px;
+  padding:3px 8px;background:var(--card);border:1px solid var(--border);border-radius:6px;
+}
+.ctrl-group label{
+  font-size:0.58rem;color:var(--text-dim);
+  font-family:'JetBrains Mono',monospace;white-space:nowrap;
+}
+.ctrl-group select{
+  background:var(--card);color:var(--text);border:1px solid var(--border);
+  border-radius:4px;padding:2px 4px;font-size:0.58rem;
+  font-family:'JetBrains Mono',monospace;cursor:pointer;
+}
+.ctrl-group select:focus{border-color:var(--accent);outline:none;}
+.ctrl-group input[type="range"]{width:70px;accent-color:var(--accent);}
+.ctrl-group .slider-val{
+  font-size:0.58rem;color:var(--accent);
+  font-family:'JetBrains Mono',monospace;font-weight:600;min-width:32px;text-align:right;
+}
+.ctrl-btn{
+  padding:5px 12px;border:1px solid var(--border);border-radius:6px;
+  background:var(--card);color:var(--text);
+  font-family:'Inter',sans-serif;font-size:0.68rem;font-weight:500;
+  cursor:pointer;transition:all 0.2s;
+}
+.ctrl-btn:hover{border-color:var(--accent);color:var(--accent);}
+.ctrl-btn.primary{
+  background:var(--accent);color:#0f172a;border-color:var(--accent);font-weight:600;
+}
+.ctrl-btn.primary:hover{opacity:0.85;}
+.scenario-btn{
+  padding:3px 8px;border:1px solid var(--border);border-radius:5px;
+  background:transparent;color:var(--text-dim);
+  font-size:0.56rem;font-family:'JetBrains Mono',monospace;
+  cursor:pointer;transition:all 0.15s;
+}
+.scenario-btn:hover{border-color:var(--accent);color:var(--accent);}
+.scenario-btn.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+.unit-btn{
+  padding:3px 8px;border:1px solid var(--border);border-radius:4px;
+  background:transparent;color:var(--text-dim);
+  font-size:0.5rem;font-family:'JetBrains Mono',monospace;
+  cursor:pointer;transition:all 0.15s;
+}
+.unit-btn:hover{border-color:var(--accent);color:var(--accent);}
+.unit-btn.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+
+/* Data display */
+.data-grid{
+  display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;
+}
+.data-item{
+  background:var(--graph-bg);border-radius:6px;padding:6px 8px;
+  border:1px solid var(--border);
+}
+.data-item .d-label{
+  font-size:0.5rem;text-transform:uppercase;color:var(--text-muted);
+  font-family:'JetBrains Mono',monospace;
+}
+.data-item .d-value{
+  font-size:0.85rem;font-weight:700;color:var(--accent);
+  font-family:'JetBrains Mono',monospace;margin-top:1px;
+}
+.data-item .d-value.think{color:var(--accent);}
+.data-item .d-value.brake{color:var(--rose);}
+.data-item .d-value.total{color:var(--amber);}
+.data-item .d-unit{
+  font-size:0.5rem;color:var(--text-dim);font-weight:400;
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* Description boxes */
+.desc-box{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:8px;padding:8px 12px;
+}
+.desc-box .d-title{
+  font-size:0.62rem;font-weight:600;color:var(--accent);margin-bottom:3px;
+}
+.desc-box p{
+  font-size:0.68rem;color:var(--text-dim);line-height:1.5;
+}
+.desc-box .formula{
+  font-family:'JetBrains Mono',monospace;color:var(--accent);
+  background:var(--accent-glow);padding:1px 6px;border-radius:3px;font-size:0.7rem;
+}
+
+/* Two-column bottom area */
+.bottom-col{display:flex;flex-direction:column;gap:10px;}
+
+/* Responsive */
+@media(max-width:700px){
+  .road-scene{height:180px;}
+  .car-svg{width:60px;}
+  .obstacle{font-size:28px;}
+  .data-grid{grid-template-columns:1fr 1fr;}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- Top bar -->
+<div class="top-bar">
+  <h1>🚗 <span>Stopping Distance</span> <span class="badge-top">v1.0.0</span></h1>
+  <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+</div>
+
+<!-- Graph section -->
+<div class="section">
+  <div class="sec-title">📈 Velocity–Time Graph</div>
+  <div class="graph-wrap">
+    <canvas id="vtGraph" width="900" height="320"></canvas>
+  </div>
+</div>
+
+<!-- Animation section -->
+<div class="section">
+  <div class="sec-title">🚦 Road Simulation</div>
+  <div class="road-scene" id="scene">
+    <div class="sky-bg"></div>
+
+    <!-- Scene backgrounds -->
+    <div class="scene-bg" id="bgNormal">
+      <div class="city-sky"></div>
+      <!-- Back layer (tall, dim) -->
+      <div class="city-layer-b">
+        <div class="building b-building bb1"></div>
+        <div class="building b-building bb2"></div>
+        <div class="building b-building bb3"></div>
+        <div class="building b-building bb4"></div>
+        <div class="building b-building bb5"></div>
+        <div class="building b-building bb6"></div>
+        <div class="building b-building bb7"></div>
+        <div class="building b-building bb8"></div>
+        <div class="building b-building bb9"></div>
+        <div class="building b-building bb10"></div>
+        <div class="building b-building bb11"></div>
+        <div class="building b-building bb12"></div>
+      </div>
+      <!-- Middle layer (medium) -->
+      <div class="city-layer-m">
+        <div class="building b-m-building bm1"></div>
+        <div class="building b-m-building bm2"></div>
+        <div class="building b-m-building bm3"></div>
+        <div class="building b-m-building bm4"></div>
+        <div class="building b-m-building bm5"></div>
+        <div class="building b-m-building bm6"></div>
+        <div class="building b-m-building bm7"></div>
+        <div class="building b-m-building bm8"></div>
+        <div class="building b-m-building bm9"></div>
+        <div class="building b-m-building bm10"></div>
+        <div class="building b-m-building bm11"></div>
+        <div class="building b-m-building bm12"></div>
+      </div>
+      <!-- Front layer (short) -->
+      <div class="city-layer-f">
+        <div class="building b-f-building bf1"></div>
+        <div class="building b-f-building bf2"></div>
+        <div class="building b-f-building bf3"></div>
+        <div class="building b-f-building bf4"></div>
+        <div class="building b-f-building bf5"></div>
+        <div class="building b-f-building bf6"></div>
+        <div class="building b-f-building bf7"></div>
+        <div class="building b-f-building bf8"></div>
+        <div class="building b-f-building bf9"></div>
+        <div class="building b-f-building bf10"></div>
+        <div class="building b-f-building bf11"></div>
+        <div class="building b-f-building bf12"></div>
+        <!-- Houses with warm lights -->
+        <div class="house" style="left:56%;"><div class="roof-top"></div><div class="walls"><div class="light-window"></div></div></div>
+        <div class="house" style="left:76%;"><div class="roof-top"></div><div class="walls"><div class="light-window"></div></div></div>
+      </div>
+    </div>
+
+    <div class="scene-bg" id="bgHighway">
+      <div class="highway-sky"></div>
+      <div class="highway-sun"></div>
+      <div class="highway-cloud hc1">☁️</div>
+      <div class="highway-cloud hc2">☁️</div>
+      <div class="highway-cloud hc3">☁️</div>
+      <!-- Skyline -->
+      <div class="hw-skyline">
+        <div class="hw-bld" style="left:5%;width:12px;height:65%;"></div>
+        <div class="hw-bld" style="left:12%;width:8px;height:40%;"></div>
+        <div class="hw-bld" style="left:18%;width:16px;height:75%;"></div>
+        <div class="hw-bld" style="left:28%;width:10px;height:50%;"></div>
+        <div class="hw-bld" style="left:35%;width:14px;height:85%;"></div>
+        <div class="hw-bld" style="left:45%;width:8px;height:35%;"></div>
+        <div class="hw-bld" style="left:52%;width:18px;height:70%;"></div>
+        <div class="hw-bld" style="left:62%;width:12px;height:55%;"></div>
+        <div class="hw-bld" style="left:70%;width:10px;height:80%;"></div>
+        <div class="hw-bld" style="left:78%;width:16px;height:45%;"></div>
+        <div class="hw-bld" style="left:88%;width:10px;height:60%;"></div>
+      </div>
+      <div class="highway-barrier"></div>
+      <div class="highway-post" style="left:10%;"></div>
+      <div class="highway-post" style="left:30%;"></div>
+      <div class="highway-post" style="left:50%;"></div>
+      <div class="highway-post" style="left:70%;"></div>
+      <div class="highway-post" style="left:90%;"></div>
+    </div>
+
+    <div class="scene-bg" id="bgRain">
+      <div class="rain-sky"></div>
+      <div class="rain-cloud c1">☁️</div>
+      <div class="rain-cloud c2">☁️</div>
+      <div class="rain-cloud c3">☁️</div>
+      <div class="rain-cloud c4">☁️</div>
+      <div class="rain-cloud c5">☁️</div>
+      <div class="rain-cloud c6">☁️</div>
+      <div class="rain-cloud c7">☁️</div>
+      <div class="rain-cloud c8">☁️</div>
+      <div class="rain-cloud c9">☁️</div>
+      <div class="rain-cloud c10">☁️</div>
+      <div class="lightning" id="lightning"></div>
+    </div>
+
+    <div class="scene-bg" id="bgSnow">
+      <div class="snow-sky"></div>
+      <div class="snow-cover"></div>
+    </div>
+
+    <div class="road">
+      <div class="road-line"></div>
+    </div>
+    <!-- Distance markers on road -->
+    <div class="dist-marker think-bar" id="thinkMarker"></div>
+    <div class="dist-marker brake-bar" id="brakeMarker"></div>
+    <div class="dist-marker stop-bar" id="stopMarker"></div>
+    <div class="dist-label" id="thinkLabel" style="left:0;">Thinking</div>
+    <div class="dist-label" id="brakeLabel" style="left:0;">Braking</div>
+    <div class="dist-label" id="stopLabel" style="left:0;">Stop</div>
+    <!-- Car -->
+    <div class="car-container" id="carContainer" style="left:5%;">
+      <svg class="car-svg" viewBox="0 0 100 38" fill="none">
+        <!-- Shadow -->
+        <ellipse cx="50" cy="35" rx="35" ry="3.5" fill="rgba(0,0,0,0.12)"/>
+        <!-- Main body — lower sportier profile -->
+        <path d="M14 27 L8 21 L8 15 Q8 11 14 11 L20 11 L25 6 Q27 4 33 4 L67 4 Q73 4 75 6 L80 11 L86 11 Q92 11 92 15 L92 21 L86 27 Z"
+          fill="var(--accent)" opacity="0.85" stroke="var(--border)" stroke-width="0.5"/>
+        <!-- Roof — longer cabin -->
+        <path d="M26 6 Q28 4 34 4 L66 4 Q72 4 74 6 L74 6 L78 11 L22 11 Z"
+          fill="var(--card)" stroke="var(--border)" stroke-width="0.5"/>
+        <!-- Windshield -->
+        <path d="M70 6 L76 11 L80 11 L74 6 Z" fill="var(--bg)" opacity="0.4"/>
+        <path d="M56 6 L62 11 L70 11 L64 6 Z" fill="var(--bg)" opacity="0.3"/>
+        <path d="M48 6 L54 11 L56 11 L50 6 Z" fill="var(--bg)" opacity="0.35"/>
+        <path d="M36 6 L42 11 L48 11 L42 6 Z" fill="var(--bg)" opacity="0.3"/>
+        <path d="M26 6 L30 11 L36 11 L32 6 Z" fill="var(--bg)" opacity="0.4"/>
+        <!-- Cute eyes (headlights) -->
+        <circle cx="86" cy="17" r="4.5" fill="var(--amber)" opacity="0.75"/>
+        <circle cx="86" cy="17" r="2" fill="#fff" opacity="0.6"/>
+        <circle cx="86" cy="16" r="0.8" fill="#fff" opacity="0.8"/>
+        <!-- Smile (bumper) -->
+        <rect x="88" y="25" width="4" height="2.5" rx="1.2" fill="var(--text-muted)" opacity="0.3"/>
+        <!-- Tail light -->
+        <rect x="8" y="17" width="3" height="5" rx="1.5" fill="var(--rose)" opacity="0.6"/>
+        <!-- Wheels -->
+        <circle cx="24" cy="28" r="7" fill="#1a1a2e"/>
+        <circle cx="24" cy="28" r="4" fill="#555"/>
+        <circle cx="24" cy="28" r="1.8" fill="#888"/>
+        <circle cx="24" cy="28" r="0.8" fill="#aaa"/>
+        <circle cx="76" cy="28" r="7" fill="#1a1a2e"/>
+        <circle cx="76" cy="28" r="4" fill="#555"/>
+        <circle cx="76" cy="28" r="1.8" fill="#888"/>
+        <circle cx="76" cy="28" r="0.8" fill="#aaa"/>
+        <!-- Wheel arches -->
+        <path d="M16 28 Q20 21 32 28" fill="none" stroke="var(--card)" stroke-width="1.8" opacity="0.35"/>
+        <path d="M68 28 Q72 21 84 28" fill="none" stroke="var(--card)" stroke-width="1.8" opacity="0.35"/>
+        <!-- Antenna -->
+        <line x1="58" y1="4" x2="60" y2="-1.5" stroke="var(--text-muted)" stroke-width="1" opacity="0.4"/>
+        <circle cx="60" cy="-2" r="1.2" fill="var(--accent)" opacity="0.5"/>
+        <!-- Side mirror -->
+        <ellipse cx="78" cy="10" rx="2.5" ry="2" fill="var(--card)" stroke="var(--border)" stroke-width="0.3" opacity="0.6"/>
+      </svg>
+    </div>
+    <!-- Obstacle -->
+    <div class="obstacle" id="obstacle">🚧</div>
+    <!-- Scene stats overlay -->
+    <div class="scene-stats" id="sceneStats">
+      <div>Time: <span class="val" id="sTime">0.0</span> s</div>
+      <div>Speed: <span class="val" id="sSpeed">0.0</span> <span id="sUnit">m/s</span></div>
+      <div>Dist: <span class="val" id="sDist">0.0</span> m</div>
+    </div>
+  </div>
+</div>
+
+<!-- Data display -->
+<div class="section">
+  <div class="data-grid">
+    <div class="data-item">
+      <div class="d-label">🧠 Thinking Distance</div>
+      <div class="d-value think" id="dThink">0.0 <span class="d-unit">m</span></div>
+    </div>
+    <div class="data-item">
+      <div class="d-label">🛑 Braking Distance</div>
+      <div class="d-value brake" id="dBrake">0.0 <span class="d-unit">m</span></div>
+    </div>
+    <div class="data-item">
+      <div class="d-label">⛔ Stopping Distance</div>
+      <div class="d-value total" id="dStop">0.0 <span class="d-unit">m</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Controls + Descriptions -->
+<div class="bottom-col">
+
+  <!-- Controls -->
+  <div class="section">
+    <div class="sec-title">🎛️ Parameters</div>
+
+    <!-- Unit toggle -->
+    <div class="ctrl-row" style="margin-bottom:4px;">
+      <span style="font-size:0.55rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">Units:</span>
+      <button class="unit-btn active" data-u="ms" onclick="setUnit('ms')">m/s</button>
+      <button class="unit-btn" data-u="kmh" onclick="setUnit('kmh')">km/h</button>
+      <button class="unit-btn" data-u="mih" onclick="setUnit('mih')">mi/h</button>
+    </div>
+
+    <div class="ctrl-row">
+      <div class="ctrl-group">
+        <label>Speed</label>
+        <input type="range" id="speedSlider" min="5" max="50" value="20" step="1" oninput="updateSpeed(this.value)">
+        <span class="slider-val" id="speedVal">20</span>
+      </div>
+      <div class="ctrl-group">
+        <label>Road</label>
+        <select id="roadSelect" onchange="updateRoad(this.value)">
+          <option value="dry">🟢 Dry Asphalt (−6.5)</option>
+          <option value="wet">🟡 Wet Road (−4.0)</option>
+          <option value="snow">🔵 Snow (−2.0)</option>
+          <option value="ice">⚪ Ice (−0.5)</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <label>Reaction</label>
+        <select id="reactionSelect" onchange="updateReaction(this.value)">
+          <option value="alert">⚡ Alert (0.5s)</option>
+          <option value="normal" selected>👤 Normal (0.7s)</option>
+          <option value="tired">😴 Tired (1.0s)</option>
+          <option value="distracted">📱 Distracted (1.5s)</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="ctrl-row">
+      <span style="font-size:0.55rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace;">Presets:</span>
+      <button class="scenario-btn active" data-p="normal" onclick="setPreset('normal')">🚗 Normal</button>
+      <button class="scenario-btn" data-p="highway" onclick="setPreset('highway')">🛣️ Highway</button>
+      <button class="scenario-btn" data-p="rain" onclick="setPreset('rain')">🌧️ Rain</button>
+      <button class="scenario-btn" data-p="ice" onclick="setPreset('ice')">❄️ Ice</button>
+    </div>
+
+    <div class="ctrl-row" style="margin-top:4px;">
+      <button class="ctrl-btn primary" id="playBtn" onclick="togglePlay()">▶ Play</button>
+      <button class="ctrl-btn" onclick="resetSim()">↺ Reset</button>
+    </div>
+  </div>
+
+  <!-- Conditions -->
+  <div class="desc-box">
+    <div class="d-title">📋 Conditions</div>
+    <p id="conditionsText">Initial speed: <strong>20</strong> m/s. Road: <strong>Dry Asphalt</strong>. Deceleration: <strong>−6.5</strong> m/s². Reaction time: <strong>0.7</strong> s.</p>
+  </div>
+
+  <!-- Description -->
+  <div class="desc-box" id="motionBox">
+    <div class="d-title">📊 Describing Motion</div>
+    <p id="motionText">Set parameters and press Play to simulate stopping distance.</p>
+  </div>
+
+</div>
+
+</div>
+
+<script>
+const state={
+  speed:20, decel:-6.5, reaction:0.7, unit:'ms',
+  playing:false, time:0, animId:null, waitTimer:0,
+  maxTime:0, tBrake:0, tStop:0,
+  thinkingDist:0, brakingDist:0,
+  history:[], theme:'dark'
+};
+
+// Road surface data
+const roads={
+  'dry':{name:'Dry Asphalt',decel:-6.5,icon:'🟢'},
+  'wet':{name:'Wet Road',decel:-4.0,icon:'🟡'},
+  'snow':{name:'Snow',decel:-2.0,icon:'🔵'},
+  'ice':{name:'Ice',decel:-0.5,icon:'⚪'}
+};
+
+// Reaction time data
+const reactions={
+  'alert':{name:'Alert',time:0.5,icon:'⚡'},
+  'normal':{name:'Normal',time:0.7,icon:'👤'},
+  'tired':{name:'Tired',time:1.0,icon:'😴'},
+  'distracted':{name:'Distracted',time:1.5,icon:'📱'}
+};
+
+// Presets
+const presets={
+  'normal':{speed:20,road:'dry',reaction:'normal',name:'Normal'},
+  'highway':{speed:30,road:'dry',reaction:'alert',name:'Highway'},
+  'rain':{speed:15,road:'wet',reaction:'normal',name:'Rain'},
+  'ice':{speed:10,road:'ice',reaction:'tired',name:'Ice'}
+};
+
+// Unit conversion
+function toUnit(v){
+  if(state.unit==='kmh') return v*3.6;
+  if(state.unit==='mih') return v*2.237;
+  return v;
+}
+function unitLabel(){return state.unit==='kmh'?'km/h':state.unit==='mih'?'mi/h':'m/s';}
+
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  state.theme=document.body.classList.contains('light')?'light':'dark';
+  drawGraph();
+}
+function isDark(){return state.theme==='dark';}
+
+// Physics
+function compute(){
+  const u=state.speed;
+  const a=state.decel;  // negative
+  const tr=state.reaction;
+  // Thinking distance
+  const sd=u*tr;
+  // Braking time: v = u + a*t = 0 → t = -u/a
+  const tb= a!==0 ? -u/a : 0;
+  // Braking distance: s = u*t + 0.5*a*t²
+  const bd= u*tb + 0.5*a*tb*tb;
+  // Total
+  const st=sd+bd;
+  const tt=tr+tb;
+
+  state.thinkingDist=sd;
+  state.brakingDist=bd;
+  state.maxTime=Math.max(tt+1, 5);
+  state.tBrake=tr;
+  state.tStop=tt;
+
+  // Update data display
+  document.getElementById('dThink').innerHTML=sd.toFixed(1)+' <span class="d-unit">m</span>';
+  document.getElementById('dBrake').innerHTML=bd.toFixed(1)+' <span class="d-unit">m</span>';
+  document.getElementById('dStop').innerHTML=st.toFixed(1)+' <span class="d-unit">m</span>';
+
+  updateConditions();
+}
+
+function getSpeed(t){
+  if(t<=state.reaction) return state.speed;
+  const dt=t-state.reaction;
+  const v=state.speed+state.decel*dt;
+  return Math.max(0, v);
+}
+function getDist(t){
+  if(t<=state.reaction) return state.speed*t;
+  const dt=t-state.reaction;
+  const sd=state.speed*state.reaction;
+  const bd=state.speed*dt + 0.5*state.decel*dt*dt;
+  return sd+Math.max(0,bd);
+}
+
+// Graph drawing
+function drawGraph(){
+  const c=document.getElementById('vtGraph');
+  const ctx=c.getContext('2d');
+  const W=c.width,H=c.height;
+  const pad={top:24,right:65,bottom:32,left:55};
+  const gW=W-pad.left-pad.right, gH=H-pad.top-pad.bottom;
+  const d=isDark();
+
+  // Background
+  ctx.fillStyle=d?'#0a0f1a':'#e8e2d7';ctx.fillRect(0,0,W,H);
+
+  compute();
+  const u=state.speed;
+  const tr=state.reaction;
+  const tb= state.decel!==0 ? -u/state.decel : 0;
+  const tt=tr+tb;
+  const maxT=Math.max(tt+0.5, 5);
+  const maxV=u*1.15;
+
+  // Grid
+  ctx.strokeStyle=d?'#1e293b':'#c9c2b5';ctx.lineWidth=0.4;
+  for(let i=0;i<=8;i++){
+    const x=pad.left+(i/8)*gW, y=pad.top+(i/8)*gH;
+    ctx.beginPath();ctx.moveTo(x,pad.top);ctx.lineTo(x,pad.top+gH);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(pad.left+gW,y);ctx.stroke();
+  }
+
+  // Axes
+  ctx.strokeStyle=d?'#475569':'#8c8578';ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(pad.left,pad.top);ctx.lineTo(pad.left,pad.top+gH);ctx.lineTo(pad.left+gW,pad.top+gH);ctx.stroke();
+
+  // Zero line
+  const zy=pad.top+gH;
+  ctx.strokeStyle=d?'rgba(148,163,184,0.15)':'rgba(99,93,82,0.15)';
+  ctx.lineWidth=0.8;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(pad.left,zy);ctx.lineTo(pad.left+gW,zy);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Labels
+  ctx.fillStyle=d?'#94a3b8':'#635d52';ctx.font='10px Inter,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';
+  for(let i=0;i<=8;i++){
+    const tv=(i/8)*maxT;const x=pad.left+(i/8)*gW;
+    ctx.fillText(tv.toFixed(1),x,pad.top+gH+6);
+  }
+  ctx.textAlign='right';ctx.textBaseline='middle';
+  for(let i=0;i<=6;i++){
+    const vv=(i/6)*maxV;const y=pad.top+gH-(i/6)*gH;
+    if(y>=pad.top-3&&y<=pad.top+gH+3) ctx.fillText(vv.toFixed(vv%1===0?0:1),pad.left-6,y);
+  }
+  ctx.fillStyle=d?'#cbd5e1':'#2d2a24';ctx.font='10px Inter,sans-serif';
+  ctx.textAlign='center';ctx.textBaseline='top';ctx.fillText('Time / s',pad.left+gW/2,H-6);
+  ctx.save();ctx.translate(14,pad.top+gH/2);ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center';ctx.textBaseline='bottom';
+  ctx.fillText('Velocity / ('+unitLabel()+')',0,0);ctx.restore();
+
+  // Phase lines
+  const xThink=pad.left+(tr/maxT)*gW;
+  const xStop=pad.left+(tt/maxT)*gW;
+  const yStop=pad.top+gH;
+  const yMax=pad.top+gH-(u/maxV)*gH;
+
+  // Shade thinking distance
+  ctx.fillStyle='rgba(34,211,238,0.07)';
+  ctx.fillRect(pad.left, yMax, xThink-pad.left, gH-(yMax-pad.top));
+
+  // Shade braking distance
+  ctx.fillStyle='rgba(251,114,133,0.07)';
+  ctx.beginPath();ctx.moveTo(xThink,yMax);
+  ctx.lineTo(xStop, yStop);
+  ctx.lineTo(xThink, yStop);
+  ctx.closePath();ctx.fill();
+
+  // Velocity line
+  ctx.strokeStyle=d?'#22d3ee':'#0f766e';ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.moveTo(pad.left,yMax);
+  if(tr>0) ctx.lineTo(xThink,yMax);
+  if(tb>0) ctx.lineTo(xStop,yStop);
+  ctx.stroke();
+
+  // Phase vertical lines
+  ctx.strokeStyle=d?'rgba(148,163,184,0.2)':'rgba(99,93,82,0.2)';
+  ctx.lineWidth=0.8;ctx.setLineDash([4,3]);
+  if(tr>0){ctx.beginPath();ctx.moveTo(xThink,pad.top);ctx.lineTo(xThink,pad.top+gH);ctx.stroke();}
+  ctx.beginPath();ctx.moveTo(xStop,pad.top);ctx.lineTo(xStop,pad.top+gH);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Labels on graph
+  ctx.font='9px Inter,sans-serif';
+  ctx.textAlign='center';
+  // Thinking label
+  const thinkMid=(pad.left+xThink)/2;
+  ctx.fillStyle=d?'#22d3ee':'#0f766e';ctx.fillText('🧠 Thinking',thinkMid,pad.top+10);
+  // Braking label
+  const brakeMid=(xThink+xStop)/2;
+  ctx.fillStyle=d?'#fb7185':'#be123c';ctx.fillText('🛑 Braking',brakeMid,pad.top+10);
+
+  // Current point (if animating)
+  if(state.time>0 && state.history.length>0){
+    const t=state.time;
+    const v=getSpeed(t);
+    const x=pad.left+(t/maxT)*gW;
+    const y=t<=tt ? pad.top+gH-(v/maxV)*gH : pad.top+gH;
+    ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);
+    ctx.fillStyle=d?'#22d3ee':'#0f766e';ctx.fill();
+    ctx.strokeStyle=d?'#0f172a':'#e8e2d7';ctx.lineWidth=1.5;ctx.stroke();
+  }
+
+  // Distance labels on graph
+  ctx.font='9px JetBrains Mono,monospace';ctx.textAlign='center';
+  const sd=state.speed*state.reaction;
+  const bd=state.speed*tb+0.5*state.decel*tb*tb;
+  const td=Math.round(sd);
+  const bdR=Math.round(bd);
+
+  ctx.fillStyle=d?'rgba(34,211,238,0.5)':'rgba(15,118,110,0.5)';
+  ctx.fillText(td+' m',thinkMid,pad.top+gH-8);
+  ctx.fillStyle=d?'rgba(251,114,133,0.5)':'rgba(190,18,60,0.5)';
+  ctx.fillText(bdR+' m',brakeMid,pad.top+gH-8);
+}
+
+// Car animation
+function updateScene(){
+  const t=state.time;
+  const v=getSpeed(t);
+  const d=getDist(t);
+  const u=state.speed;
+  const tr=state.reaction;
+  const tt=state.tStop;
+  const sd=state.thinkingDist;
+  const bd=state.brakingDist;
+  const totalDist=sd+bd;
+
+  // Scene width in pixels (for mapping distance to position)
+  const scene=document.querySelector('.road-scene');
+  const sceneW=scene.clientWidth;
+  // Road area: left 5% to obstacle right 8%
+  const roadStart=0.05*sceneW;
+  const roadEnd=(1-0.08)*sceneW - 80;  // minus car width
+  const roadLen=roadEnd-roadStart;
+
+  // Map distance to car position
+  const frac=totalDist>0 ? Math.min(1, d/totalDist) : 0;
+  const carLeft=roadStart+frac*roadLen;
+  document.getElementById('carContainer').style.left=(carLeft/sceneW*100)+'%';
+
+  // Update stats
+  document.getElementById('sTime').textContent=t.toFixed(1);
+  document.getElementById('sSpeed').textContent=toUnit(v).toFixed(state.unit==='ms'?1:0);
+  document.getElementById('sDist').textContent=d.toFixed(1);
+
+  // Show distance markers when animation is done
+  const mkThink=document.getElementById('thinkMarker');
+  const mkBrake=document.getElementById('brakeMarker');
+  const mkStop=document.getElementById('stopMarker');
+  const lbThink=document.getElementById('thinkLabel');
+  const lbBrake=document.getElementById('brakeLabel');
+  const lbStop=document.getElementById('stopLabel');
+
+  // Calculate marker positions on road
+  const thinkPx=roadStart+(sd/totalDist)*roadLen;
+  const brakePx=roadStart+((sd+bd)/totalDist)*roadLen;
+  const stopPx=roadStart+(totalDist/totalDist)*roadLen;
+
+  if(t>=tt || (t>=tr && getSpeed(t)<=0.5)){
+    mkThink.style.left=(thinkPx/sceneW*100)+'%';mkThink.style.opacity='1';
+    mkBrake.style.left=(brakePx/sceneW*100)+'%';mkBrake.style.opacity='1';
+    mkStop.style.left=(stopPx/sceneW*100)+'%';mkStop.style.opacity='1';
+    lbThink.style.left=(thinkPx/sceneW*100)+'%';lbThink.style.opacity='1';
+    lbBrake.style.left=((thinkPx+brakePx)/2/sceneW*100)+'%';lbBrake.style.opacity='1';
+    lbStop.style.left=(stopPx/sceneW*100)+'%';lbStop.style.opacity='1';
+  } else if(t>=tr){
+    // Show thinking marker
+    mkThink.style.left=(thinkPx/sceneW*100)+'%';mkThink.style.opacity='1';
+    lbThink.style.left=(thinkPx/sceneW*100)+'%';lbThink.style.opacity='1';
+  }
+}
+
+// Animation loop — slow & smooth
+function loop(){
+  if(!state.playing)return;
+
+  // Initial pause before car starts moving
+  if(state.waitTimer < 1.5){
+    state.waitTimer += 0.016;
+    updateScene();
+    state.animId=requestAnimationFrame(loop);
+    return;
+  }
+
+  const t=state.time;
+  const v=getSpeed(t);
+  if(v<=0.1 && t>state.reaction+0.1){pauseSim();return;}
+  if(t>=state.maxTime){pauseSim();return;}
+
+  state.time+=0.016;  // slower: ~1 real sec per sim sec
+  const vt=getSpeed(state.time);
+  state.history.push({t:state.time, v:vt});
+
+  drawGraph();
+  updateScene();
+  describeMotion(state.time);
+  updateLightning();
+
+  state.animId=requestAnimationFrame(loop);
+}
+
+function pauseSim(){
+  state.playing=false;
+  if(state.animId)cancelAnimationFrame(state.animId);
+  state.animId=null;
+  document.getElementById('playBtn').textContent='▶ Play';
+  document.getElementById('playBtn').className='ctrl-btn primary';
+}
+
+function togglePlay(){
+  if(state.playing){pauseSim();return;}
+  // Reset if at end
+  const v=getSpeed(state.time);
+  if(v<=0.1 && state.time>state.reaction){
+    state.time=0;state.waitTimer=0;state.history=[];
+    compute();drawGraph();updateScene();describeMotion(0);
+  }
+  state.playing=true;
+  state.waitTimer=0;
+  document.getElementById('playBtn').textContent='⏸ Pause';
+  document.getElementById('playBtn').className='ctrl-btn';
+  state.animId=requestAnimationFrame(loop);
+}
+
+function resetSim(){
+  pauseSim();
+  state.time=0;state.waitTimer=0;state.history=[];
+  // Reset car position
+  const scene=document.querySelector('.road-scene');
+  const sceneW=scene.clientWidth;
+  const roadStart=0.05*sceneW;
+  document.getElementById('carContainer').style.left='5%';
+  document.getElementById('sTime').textContent='0.0';
+  document.getElementById('sSpeed').textContent=toUnit(state.speed).toFixed(state.unit==='ms'?1:0);
+  document.getElementById('sDist').textContent='0.0';
+  // Hide markers
+  document.getElementById('thinkMarker').style.opacity='0';
+  document.getElementById('brakeMarker').style.opacity='0';
+  document.getElementById('stopMarker').style.opacity='0';
+  document.getElementById('thinkLabel').style.opacity='0';
+  document.getElementById('brakeLabel').style.opacity='0';
+  document.getElementById('stopLabel').style.opacity='0';
+  compute();drawGraph();updateScene();describeMotion(0);
+}
+
+// Controls
+function updateSpeed(v){
+  state.speed=parseFloat(v);
+  document.getElementById('speedVal').textContent=toUnit(state.speed).toFixed(state.unit==='ms'?1:0);
+  if(state.time===0||!state.playing){resetSim();}else{compute();drawGraph();}
+}
+function updateRoad(v){
+  state.decel=roads[v].decel;
+  if(state.time===0||!state.playing) resetSim();
+  else {compute();drawGraph();}
+}
+function updateReaction(v){
+  state.reaction=reactions[v].time;
+  if(state.time===0||!state.playing) resetSim();
+  else {compute();drawGraph();}
+}
+
+function setUnit(u){
+  state.unit=u;
+  document.querySelectorAll('.unit-btn').forEach(b=>{
+    b.classList.toggle('active',b.dataset.u===u);
+  });
+  // Update speed slider label
+  const unitLb=unitLabel();
+  document.getElementById('speedVal').textContent=toUnit(state.speed).toFixed(unitLb==='m/s'?1:0);
+  // Update conditions, graph, scene
+  updateConditions();
+  drawGraph();
+  if(state.time>0) describeMotion(state.time);
+  document.getElementById('sUnit').textContent=unitLb;
+  document.getElementById('sSpeed').textContent=toUnit(getSpeed(state.time)).toFixed(unitLb==='m/s'?1:0);
+}
+
+function setPreset(p){
+  const pr=presets[p];
+  if(!pr)return;
+  state.speed=pr.speed;state.decel=roads[pr.road].decel;state.reaction=reactions[pr.reaction].time;
+  document.getElementById('speedSlider').value=pr.speed;
+  document.getElementById('speedVal').textContent=toUnit(pr.speed).toFixed(state.unit==='ms'?1:0);
+  document.getElementById('roadSelect').value=pr.road;
+  document.getElementById('reactionSelect').value=pr.reaction;
+  document.querySelectorAll('.scenario-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.scenario-btn[data-p="${p}"]`).classList.add('active');
+  switchSceneBg(p);
+  // Update obstacle for snow
+  document.getElementById('obstacle').textContent = (p==='snow'||p==='ice') ? '⛄' : '🚧';
+  resetSim();
+}
+
+function switchSceneBg(type){
+  const ids=['bgNormal','bgHighway','bgRain','bgSnow'];
+  ids.forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.classList.remove('active');
+  });
+  const map={'normal':'bgNormal','highway':'bgHighway','rain':'bgRain','ice':'bgSnow','snow':'bgSnow'};
+  const target=document.getElementById(map[type]);
+  if(target) target.classList.add('active');
+
+  // Generate windows on city buildings
+  const normalBg=document.getElementById('bgNormal');
+  if(normalBg){
+    // Remove old windows
+    normalBg.querySelectorAll('.window-lit').forEach(el=>el.remove());
+    if(type==='normal'){
+      // Add windows to middle+front layer buildings
+      const blds=normalBg.querySelectorAll('.city-layer-m .building, .city-layer-f .building');
+      blds.forEach(b=>{
+        const cs=getComputedStyle(b);
+        const bh=parseFloat(cs.height)||50;
+        const bw=parseFloat(cs.width)||10;
+        const cols=Math.max(1, Math.floor(bw/6));
+        const rows=Math.max(1, Math.floor(bh/10));
+        for(let r=0;r<rows;r++){
+          for(let c=0;c<cols;c++){
+            const w=document.createElement('div');
+            w.className='window-lit'+(Math.random()>0.5?' off':'');
+            w.style.left=(2+c*6)+'px';
+            w.style.bottom=(3+r*10)+'px';
+            b.appendChild(w);
+          }
+        }
+      });
+    }
+  }
+
+  // Generate rain drops
+  const rainBg=document.getElementById('bgRain');
+  if(rainBg){
+    rainBg.querySelectorAll('.raindrop').forEach(el=>el.remove());
+    if(type==='rain'){
+      for(let i=0;i<100;i++){
+        const d=document.createElement('div');
+        d.className='raindrop';
+        d.style.left=Math.random()*100+'%';
+        d.style.animationDuration=(0.3+Math.random()*0.4)+'s';
+        d.style.animationDelay=Math.random()*0.6+'s';
+        d.style.opacity=(0.12+Math.random()*0.15);
+        rainBg.appendChild(d);
+      }
+    }
+  }
+
+  // Generate snowflakes
+  const snowBg=document.getElementById('bgSnow');
+  if(snowBg){
+    snowBg.querySelectorAll('.snowflake').forEach(el=>el.remove());
+    if(type==='snow'||type==='ice'){
+      const sizes=['❄','❄️','❄','❄️','❄','❄️','❄','❄️','❄','*'];
+      for(let i=0;i<50;i++){
+        const s=document.createElement('div');
+        s.className='snowflake';
+        s.textContent=sizes[i%sizes.length];
+        s.style.left=Math.random()*100+'%';
+        s.style.fontSize=(10+Math.random()*14)+'px';
+        s.style.animationDuration=(3+Math.random()*5)+'s';
+        s.style.animationDelay=Math.random()*6+'s';
+        s.style.opacity=(0.2+Math.random()*0.5);
+        snowBg.appendChild(s);
+      }
+    }
+  }
+
+  // Road color for snow
+  const road=document.querySelector('.road');
+  if(road){
+    if(type==='snow'||type==='ice'){
+      road.style.background='#6a7a8a';
+      road.style.borderTop='3px solid #8a9aaa';
+    } else {
+      road.style.background='';
+      road.style.borderTop='';
+    }
+  }
+}
+
+// Lightning flash
+let lightningTimer=0;
+function updateLightning(){
+  const el=document.getElementById('lightning');
+  if(!el||!el.closest('.active'))return;
+  lightningTimer+=0.04;
+  if(lightningTimer>3+Math.random()*5){
+    lightningTimer=0;
+    el.classList.remove('flash');
+    void el.offsetWidth;
+    el.classList.add('flash');
+    el.style.opacity='1';
+    setTimeout(()=>{if(el)el.style.opacity='0';},150);
+  }
+}
+
+function updateConditions(){
+  const speedK=toUnit(state.speed);
+  const decel=state.decel;
+  const react=state.reaction;
+  const unitLb=unitLabel();
+  // Find road name
+  let roadName='';
+  for(const[k,v]of Object.entries(roads)){
+    if(v.decel===decel){roadName=v.name;break;}
+  }
+  // Find reaction name
+  let reactName='';
+  for(const[k,v]of Object.entries(reactions)){
+    if(v.time===react){reactName=v.name;break;}
+  }
+  document.getElementById('conditionsText').innerHTML=
+    `Initial speed: <strong>${speedK.toFixed(unitLb==='m/s'?1:0)}</strong> ${unitLb}. `+
+    `Road: <strong>${roadName||'Custom'}</strong>. `+
+    `Deceleration: <strong>${decel.toFixed(1)}</strong> m/s². `+
+    `Reaction time: <strong>${react.toFixed(1)}</strong> s (${reactName||'Custom'}).`;
+}
+
+function describeMotion(t){
+  const u=state.speed;
+  const tr=state.reaction;
+  const a=state.decel;
+  const tb= a!==0 ? -u/a : 0;
+  const tt=tr+tb;
+  const sd=u*tr;
+  const bd= u*tb + 0.5*a*tb*tb;
+  const st=sd+bd;
+  const v=getSpeed(t);
+  const d=getDist(t);
+  const unitLb=unitLabel();
+  const speedD=toUnit(u).toFixed(unitLb==='m/s'?1:0);
+
+  let txt='';
+  txt+=`<b>At ${speedD} ${unitLb}</b> (${u.toFixed(1)} m/s) on ${roads[Object.keys(roads).find(k=>roads[k].decel===a)]?.name||'current road'}. `;
+
+  if(t===0){
+    txt+=`The driver sees an obstacle ahead. After a <b>reaction time of ${tr.toFixed(1)} s</b>, the brakes are applied.`;
+    txt+=`<br>🧠 Thinking Distance = <b>${sd.toFixed(1)} m</b> (constant speed during reaction).`;
+    txt+=`<br>🛑 Braking Distance = <b>${bd.toFixed(1)} m</b> (deceleration ${a.toFixed(1)} m/s²).`;
+    txt+=`<br>⛔ Stopping Distance = <b>${st.toFixed(1)} m</b> in <b>${tt.toFixed(2)} s</b>.`;
+  } else if(t<=tr){
+    txt+=`<br><b>Now:</b> t=${t.toFixed(2)}s — Still reacting. Speed=${v.toFixed(1)} ${unitLb}. `;
+    txt+=`Distance travelled in thinking phase = <b>${d.toFixed(1)} m</b>.`;
+    txt+=`<br>⏳ Brakes will be applied at t=${tr.toFixed(2)}s.`;
+  } else if(v>0.5){
+    txt+=`<br><b>Now:</b> t=${t.toFixed(2)}s — <strong>Braking!</strong> Speed=${v.toFixed(1)} ${unitLb}. `;
+    txt+=`Braking distance covered = <b>${(d-sd).toFixed(1)} m</b>. Remaining = <b>${(st-d).toFixed(1)} m</b>.`;
+  } else {
+    txt+=`<br><b>Stopped!</b> The car comes to rest after <b>${tt.toFixed(2)} s</b>, covering <b>${st.toFixed(1)} m</b>.`;
+    txt+=`<br>🧠 Think=${sd.toFixed(1)}m + 🛑 Brake=${bd.toFixed(1)}m = ⛔ ${st.toFixed(1)}m.`;
+  }
+  document.getElementById('motionText').innerHTML=txt;
+}
+
+function init(){
+  switchSceneBg('normal');
+  compute();drawGraph();updateScene();describeMotion(0);
+  updateConditions();
+  document.getElementById('sSpeed').textContent=toUnit(state.speed).toFixed(state.unit==='ms'?1:0);
+  document.getElementById('sUnit').textContent=unitLabel();
+}
+init();
+
+</script>
+</body>
+</html>

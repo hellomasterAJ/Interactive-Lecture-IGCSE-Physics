@@ -15,8 +15,10 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 ├── output/                ← Generated: HTML + PDF + JSON
 │   └── dashboard.html     ← Lecture index (auto-generated)
 ├── graphs/                ← Interactive graph HTML files
-│   ├── kinematics_graphs_v1.html    ← Horizontal Motion 🚗
-│   └── kinematics_freefall_v1.html  ← Free Fall 🍎
+│   ├── kinematics_graphs_v1.html       ← Horizontal Motion 🚗
+│   ├── kinematics_freefall_v1.html     ← Free Fall 🍎
+│   ├── kinematics_stopping_v1.html     ← Stopping Distance 🚘
+│   └── kinematics_vt_graph_v1.html     ← Advanced VT Graph 📈
 ├── scripts/               ← Build system (Python)
 │   ├── build.py           ← Main: python build.py lecture.md
 │   ├── build_dashboard.py ← Dashboard generator
@@ -51,7 +53,7 @@ python3 -m playwright install chromium
 | # | Topic | Interactive Graph |
 |---|-------|:--------:|
 | 1.1 | Physical Quantities & Measurement | ❌ |
-| 1.2 | Motion — Kinematics | ✅ |
+| 1.2 | Motion — Kinematics | ✅ Horizontal, Free-fall, Stopping, Advanced VT Graph |
 | 1.3 | Mass and Weight | ❌ |
 | 1.4 | Density | ❌ |
 | 1.5 | Forces (Hooke's Law) | ❌ |

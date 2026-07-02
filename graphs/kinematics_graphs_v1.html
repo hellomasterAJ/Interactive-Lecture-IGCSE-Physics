@@ -462,6 +462,19 @@ function toggleTheme() {
 }
 function isDark() { return state.theme === 'dark'; }
 
+function niceStep(range, targetTicks) {
+  if(range <= 0) return 1;
+  const rough = range / targetTicks;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rough)));
+  const norm = rough / magnitude;
+  let nice;
+  if(norm < 1.5) nice = 1;
+  else if(norm < 3.5) nice = 2;
+  else if(norm < 7.5) nice = 5;
+  else nice = 10;
+  return nice * magnitude;
+}
+
 // Physics engine — 6 modes
 function getAccelSign(mode) {
   switch(mode) {
@@ -619,21 +632,30 @@ function drawGraph() {
   }
   ctx.textAlign='right';ctx.textBaseline='middle';
   if(isAccel){
-    const nt=5;
-    for(let i=0;i<=nt;i++){
-      const yv=yMin+(i/nt)*yRange,y=pad.top+gH-(i/nt)*gH;
-      if(y>=pad.top-5&&y<=pad.top+gH+5)ctx.fillText(yv.toFixed(yv%1===0?0:2),pad.left-7,y);
+    const aStep=niceStep(Math.max(yMax,-yMin),4);
+    // Positive ticks
+    for(let val=aStep;val<=yMax+0.001;val+=aStep){
+      const y=pad.top+gH-((val-yMin)/yRange)*gH;
+      if(y>=pad.top-5&&y<=pad.top+gH+5)ctx.fillText(val%1===0?val.toFixed(0):val.toFixed(1),pad.left-7,y);
     }
+    // Negative ticks
+    for(let val=-aStep;val>=yMin-0.001;val-=aStep){
+      const y=pad.top+gH-((val-yMin)/yRange)*gH;
+      if(y>=pad.top-5&&y<=pad.top+gH+5)ctx.fillText(val%1===0?val.toFixed(0):val.toFixed(1),pad.left-7,y);
+    }
+    // Zero tick + dashed line
     if(yCenter>=pad.top&&yCenter<=pad.top+gH){
+      ctx.fillText('0',pad.left-7,yCenter);
       ctx.strokeStyle=isDark()?'rgba(148,163,184,0.2)':'rgba(100,116,139,0.2)';
       ctx.lineWidth=1;ctx.setLineDash([3,3]);
       ctx.beginPath();ctx.moveTo(pad.left,yCenter);ctx.lineTo(pad.left+gW,yCenter);ctx.stroke();
       ctx.setLineDash([]);
     }
   } else {
-    for(let i=0;i<=10;i++){
-      const yv=(i/10)*yMax,y=pad.top+gH-(i/10)*gH;
-      ctx.fillText(yv.toFixed(1),pad.left-7,y);
+    const yStep=niceStep(yMax,8);
+    for(let yv=0;yv<=yMax+0.001;yv+=yStep){
+      const y=pad.top+gH-(yv/yMax)*gH;
+      ctx.fillText(yv%1===0?yv.toFixed(0):yv.toFixed(1),pad.left-7,y);
     }
   }
 
