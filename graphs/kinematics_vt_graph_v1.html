@@ -102,6 +102,54 @@
   --shade-trap: rgba(90,122,74,0.08);
   --katex-color: #2d2622;
 }
+
+/* ── Dark Theme 1: Cyberpunk Neon (🌃 deep purple-neon) ── */
+.theme-neon {
+  --bg: #0d0f1a; --card: #1a1c2e; --border: #2a2d4a;
+  --text: #e0e0f0; --text-dim: #8888b8; --text-muted: #5a5a8a;
+  --accent: #00ffc8; --accent-glow: rgba(0,255,200,0.1);
+  --grid: #1a1c2e; --graph-bg: #080a14;
+  --line-v: #00ffc8;
+  --green: #00ff88; --rose: #ff4499; --violet: #8844ff;
+  --amber: #ffcc00; --blue: #4488ff; --orange: #ff6633;
+  --shade-rect: rgba(0,255,136,0.10);
+  --shade-tri: rgba(255,68,153,0.10);
+  --shade-amber: rgba(255,204,0,0.10);
+  --shade-trap: rgba(0,255,136,0.08);
+  --katex-color: #e0e0f0;
+}
+
+/* ── Dark Theme 2: Vintage Dark (📜 sepia ink at night) ── */
+.theme-vintage {
+  --bg: #141210; --card: #22201c; --border: #3a3530;
+  --text: #d4cfc4; --text-dim: #8a8578; --text-muted: #6a655a;
+  --accent: #c49a5a; --accent-glow: rgba(196,154,90,0.1);
+  --grid: #22201c; --graph-bg: #0e0c0a;
+  --line-v: #c49a5a;
+  --green: #6a9a5a; --rose: #aa5555; --violet: #7a5a8a;
+  --amber: #c4a040; --blue: #4a6a8a; --orange: #b07a3a;
+  --shade-rect: rgba(106,154,90,0.10);
+  --shade-tri: rgba(170,85,85,0.10);
+  --shade-amber: rgba(196,160,64,0.10);
+  --shade-trap: rgba(106,154,90,0.08);
+  --katex-color: #d4cfc4;
+}
+
+/* ── Dark Theme 3: Cosmic Void (🌌 deep space purple) ── */
+.theme-cosmic {
+  --bg: #070b14; --card: #111827; --border: #1e293b;
+  --text: #c8d0e0; --text-dim: #7a84a0; --text-muted: #4a5470;
+  --accent: #a78bfa; --accent-glow: rgba(167,139,250,0.1);
+  --grid: #111827; --graph-bg: #040810;
+  --line-v: #a78bfa;
+  --green: #34d399; --rose: #fb7185; --violet: #c084fc;
+  --amber: #fbbf24; --blue: #60a5fa; --orange: #fb923c;
+  --shade-rect: rgba(52,211,153,0.10);
+  --shade-tri: rgba(251,113,133,0.10);
+  --shade-amber: rgba(251,191,36,0.10);
+  --shade-trap: rgba(52,211,153,0.08);
+  --katex-color: #c8d0e0;
+}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
   background: var(--bg); color: var(--text);
@@ -294,7 +342,11 @@ body{
 .ctrl-btn.primary{
   background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600;
 }
-body[class*="theme-"] .ctrl-btn.primary{color: #fff;}
+.theme-warm .ctrl-btn.primary,
+.theme-sage .ctrl-btn.primary,
+.theme-sand .ctrl-btn.primary,
+.theme-mist .ctrl-btn.primary,
+.theme-clay .ctrl-btn.primary{color: #fff;}
 .ctrl-btn.random{background: rgba(167,139,250,0.12); border-color: var(--violet); color: var(--violet);}
 
 /* Scenario & Analysis buttons */
@@ -338,7 +390,10 @@ body[class*="theme-"] .ctrl-btn.primary{color: #fff;}
       <button class="mode-tab" data-mode="nonuniform" onclick="switchMode('nonuniform')">Non-uniform</button>
     </div>
     <select class="theme-select" onchange="setTheme(this.value)">
-      <option value="dark">🌙 Dark</option>
+      <option value="dark">🌙 Classic Dark</option>
+      <option value="neon">🌃 Cyberpunk Neon</option>
+      <option value="vintage">📜 Vintage Dark</option>
+      <option value="cosmic">🌌 Cosmic Void</option>
       <option value="warm">🌅 Warm Taupe</option>
       <option value="sage">🌿 Soft Sage</option>
       <option value="sand">🏜️ Warm Sand</option>
@@ -523,7 +578,7 @@ const ctx = canvas.getContext('2d');
 const W = canvas.width, H = canvas.height;
 
 // ===== HELPERS =====
-function isDark() { return state.theme === 'dark'; }
+function isDark() { return state.theme === 'dark' || state.theme === 'neon' || state.theme === 'vintage' || state.theme === 'cosmic'; }
 
 // Nice step for axis ticks: rounds to 1, 2, 5 × 10^n
 function niceStep(range, targetTicks) {
@@ -591,7 +646,7 @@ function getNuTMax() { return getNuSc().tMax; }
 
 // ===== THEME =====
 function setTheme(name) {
-  const themeClasses = ['theme-warm','theme-sage','theme-sand','theme-mist','theme-clay'];
+  const themeClasses = ['theme-neon','theme-vintage','theme-cosmic','theme-warm','theme-sage','theme-sand','theme-mist','theme-clay'];
   document.body.classList.remove(...themeClasses);
   if(name !== 'dark') document.body.classList.add('theme-' + name);
   state.theme = name;
