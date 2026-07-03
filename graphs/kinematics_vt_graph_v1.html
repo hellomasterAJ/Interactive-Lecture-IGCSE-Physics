@@ -7,6 +7,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
 <style>
+/* ── Dark (default) ── */
 :root {
   --bg: #0f172a; --card: #1e293b; --border: #334155;
   --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
@@ -21,7 +22,9 @@
   --shade-trap: rgba(52,211,153,0.10);
   --katex-color: #e2e8f0;
 }
-.light {
+
+/* ── Light Theme 1: Warm Taupe (🌅 warm beige) ── */
+.theme-warm {
   --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
   --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
   --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
@@ -34,6 +37,70 @@
   --shade-amber: rgba(180,83,9,0.10);
   --shade-trap: rgba(4,120,87,0.08);
   --katex-color: #2d2a24;
+}
+
+/* ── Light Theme 2: Soft Sage (🌿 green-tinted calm) ── */
+.theme-sage {
+  --bg: #d4d9cc; --card: #e3e7db; --border: #c2c9b5;
+  --text: #2d2a24; --text-dim: #5d6b52; --text-muted: #8a9a78;
+  --accent: #3d7a5a; --accent-glow: rgba(61,122,90,0.1);
+  --grid: #c9d0bd; --graph-bg: #eef2e7;
+  --line-v: #3d7a5a;
+  --green: #2d6a4f; --rose: #9d4e3c; --violet: #6b4d8a;
+  --amber: #9a7b3d; --blue: #3a6b8a; --orange: #b0692d;
+  --shade-rect: rgba(45,106,79,0.10);
+  --shade-tri: rgba(157,78,60,0.10);
+  --shade-amber: rgba(154,123,61,0.10);
+  --shade-trap: rgba(45,106,79,0.08);
+  --katex-color: #2d2a24;
+}
+
+/* ── Light Theme 3: Warm Sand (🏜️ desert tones) ── */
+.theme-sand {
+  --bg: #d6cebd; --card: #e6ddd0; --border: #c4b9a6;
+  --text: #2d2922; --text-dim: #6b6052; --text-muted: #928678;
+  --accent: #b87a3a; --accent-glow: rgba(184,122,58,0.1);
+  --grid: #ccc2b2; --graph-bg: #f0eae0;
+  --line-v: #b87a3a;
+  --green: #7a8a3d; --rose: #a04a3a; --violet: #7a4d8a;
+  --amber: #c4902d; --blue: #3a6a7a; --orange: #c2702d;
+  --shade-rect: rgba(122,138,61,0.10);
+  --shade-tri: rgba(160,74,58,0.10);
+  --shade-amber: rgba(196,144,45,0.10);
+  --shade-trap: rgba(122,138,61,0.08);
+  --katex-color: #2d2922;
+}
+
+/* ── Light Theme 4: Mist Blue (🌫️ cool soft blue) ── */
+.theme-mist {
+  --bg: #c8ced6; --card: #dadfe8; --border: #b5bcc9;
+  --text: #22262d; --text-dim: #4d5663; --text-muted: #7a8492;
+  --accent: #3a6a8a; --accent-glow: rgba(58,106,138,0.1);
+  --grid: #c2c8d2; --graph-bg: #e6eaf0;
+  --line-v: #3a6a8a;
+  --green: #3a7a5a; --rose: #8a4a5a; --violet: #5a4d8a;
+  --amber: #8a7a3a; --blue: #2a5a7a; --orange: #9a5a2a;
+  --shade-rect: rgba(58,122,90,0.10);
+  --shade-tri: rgba(138,74,90,0.10);
+  --shade-amber: rgba(138,122,58,0.10);
+  --shade-trap: rgba(58,122,90,0.08);
+  --katex-color: #22262d;
+}
+
+/* ── Light Theme 5: Warm Clay (🏺 terracotta earthy) ── */
+.theme-clay {
+  --bg: #d4c8be; --card: #e5d9d0; --border: #c2b5aa;
+  --text: #2d2622; --text-dim: #6a5a4d; --text-muted: #928078;
+  --accent: #a55a3a; --accent-glow: rgba(165,90,58,0.1);
+  --grid: #ccbfb5; --graph-bg: #eee6de;
+  --line-v: #a55a3a;
+  --green: #5a7a4a; --rose: #a03a3a; --violet: #6a4d7a;
+  --amber: #b07a2a; --blue: #3a5a7a; --orange: #b05a2a;
+  --shade-rect: rgba(90,122,74,0.10);
+  --shade-tri: rgba(160,58,58,0.10);
+  --shade-amber: rgba(176,122,42,0.10);
+  --shade-trap: rgba(90,122,74,0.08);
+  --katex-color: #2d2622;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
@@ -72,6 +139,13 @@ body{
   font-family: 'JetBrains Mono', monospace; transition: all 0.2s;
 }
 .theme-btn:hover{border-color: var(--accent); color: var(--accent);}
+.theme-select{
+  background: var(--card); border: 1px solid var(--border); color: var(--text);
+  padding: 4px 10px; border-radius: 8px; cursor: pointer; font-size: 0.7rem;
+  font-family: 'JetBrains Mono', monospace; transition: all 0.2s;
+  outline: none; min-width: 110px;
+}
+.theme-select:hover{border-color: var(--accent);}
 
 /* Main Layout */
 .main-grid{display: grid; grid-template-columns: 3fr 1fr; gap: 12px; align-items: start; min-width: 0;}
@@ -220,7 +294,7 @@ body{
 .ctrl-btn.primary{
   background: var(--accent); color: #0f172a; border-color: var(--accent); font-weight: 600;
 }
-.light .ctrl-btn.primary{color: #fff;}
+body[class*="theme-"] .ctrl-btn.primary{color: #fff;}
 .ctrl-btn.random{background: rgba(167,139,250,0.12); border-color: var(--violet); color: var(--violet);}
 
 /* Scenario & Analysis buttons */
@@ -263,7 +337,14 @@ body{
       <button class="mode-tab active" data-mode="uniform" onclick="switchMode('uniform')">Uniform</button>
       <button class="mode-tab" data-mode="nonuniform" onclick="switchMode('nonuniform')">Non-uniform</button>
     </div>
-    <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+    <select class="theme-select" onchange="setTheme(this.value)">
+      <option value="dark">🌙 Dark</option>
+      <option value="warm">🌅 Warm Taupe</option>
+      <option value="sage">🌿 Soft Sage</option>
+      <option value="sand">🏜️ Warm Sand</option>
+      <option value="mist">🌫️ Mist Blue</option>
+      <option value="clay">🏺 Warm Clay</option>
+    </select>
   </div>
 </div>
 
@@ -509,9 +590,11 @@ function getNuInt(t1,t2,n) {
 function getNuTMax() { return getNuSc().tMax; }
 
 // ===== THEME =====
-function toggleTheme() {
-  document.body.classList.toggle('light');
-  state.theme = document.body.classList.contains('light') ? 'light' : 'dark';
+function setTheme(name) {
+  const themeClasses = ['theme-warm','theme-sage','theme-sand','theme-mist','theme-clay'];
+  document.body.classList.remove(...themeClasses);
+  if(name !== 'dark') document.body.classList.add('theme-' + name);
+  state.theme = name;
   drawAll();
 }
 
@@ -1585,6 +1668,8 @@ canvas.addEventListener('mouseleave', function() {
 
 // ===== INIT =====
 function init() {
+  // Set theme selector to default (dark)
+  document.querySelector('.theme-select').value = 'dark';
   syncUniformSliders();
   updateUniform();
 }
