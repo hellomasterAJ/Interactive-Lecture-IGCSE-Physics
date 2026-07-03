@@ -87,3 +87,14 @@ python3 -m playwright install chromium
 ## 📜 License
 
 Educational use — HAUS Academy
+
+## 📋 Changelog
+
+### 3 July 2026 — Layout Refinements (`kinematics_vt_graph_v1.html`)
+
+| # | การเปลี่ยนแปลง | รายละเอียด |
+|---|---------------|-----------|
+| 1 | **Animate → ใต้ slider** | ย้ายปุ่ม ▶ Animate ใน Analysis Tool (Non-uniform) ไปอยู่ด้านล่างของ time slider |
+| 2 | **Uniform Parameters → Left column** | ย้าย 🎛️ Uniform Acceleration Parameters เข้าไปใน left column ใต้ graph-card (กว้างเท่ากับกราฟ) อยู่เหนือ Key Concept |
+| 3 | **📖 Define → Equation card** | ย้ายปุ่ม Define + panel จาก Uniform Parameters ไปไว้ด้านล่างสุดของ Equation card (ฝั่งขวา) |
+| 4 | **Fix layout break** | ลบ `</div>` เกินที่เหลือจาก definePanel — แก้ HTML structure ให้ถูกต้อง |
