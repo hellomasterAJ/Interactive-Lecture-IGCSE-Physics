@@ -313,6 +313,15 @@ body{
           <span class="slider-val" id="tVal">6.0</span>
         </div>
       </div>
+      <div class="ctrl-row" style="margin-top:2px;">
+        <button class="ctrl-btn" onclick="toggleDefine()" id="defineBtn">📖 Define</button>
+      </div>
+      <div id="definePanel" style="display:none;margin-top:6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text-dim);line-height:1.7;">
+        <b style="color:var(--accent);">s</b> = displacement &nbsp;<span style="color:var(--text-muted);">(SI unit: m)</span><br>
+        <b style="color:var(--accent);">u</b> = initial velocity &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s)</span><br>
+        <b style="color:var(--accent);">v</b> = final velocity &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s)</span><br>
+        <b style="color:var(--accent);">a</b> = acceleration &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s²)</span><br>
+        <b style="color:var(--accent);">t</b> = time &nbsp;<span style="color:var(--text-muted);">(SI unit: s)</span>
       </div>
     </div>
     <!-- Motion Scenario below graph (same width as graph) -->
@@ -372,16 +381,6 @@ body{
         <button class="proof-btn" data-proof="4" onclick="setProof(4)">v² = u² + 2 a s</button>
       </div>
       <div id="areaBreakdownContainer"></div>
-      <div class="ctrl-row" style="margin-top:6px;">
-        <button class="ctrl-btn" onclick="toggleDefine()" id="defineBtn">📖 Define</button>
-      </div>
-      <div id="definePanel" style="display:none;margin-top:6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text-dim);line-height:1.7;">
-        <b style="color:var(--accent);">s</b> = displacement &nbsp;<span style="color:var(--text-muted);">(SI unit: m)</span><br>
-        <b style="color:var(--accent);">u</b> = initial velocity &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s)</span><br>
-        <b style="color:var(--accent);">v</b> = final velocity &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s)</span><br>
-        <b style="color:var(--accent);">a</b> = acceleration &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s²)</span><br>
-        <b style="color:var(--accent);">t</b> = time &nbsp;<span style="color:var(--text-muted);">(SI unit: s)</span>
-      </div>
     </div>
 
     <!-- Equations (Non-uniform mode only) -->
