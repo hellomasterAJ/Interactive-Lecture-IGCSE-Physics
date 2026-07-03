@@ -317,7 +317,7 @@ body{
       </div>
     </div>
 
-    <!-- Equation (Uniform mode) -->
+    <!-- Equation (Uniform mode, hidden in non-uniform) -->
     <div class="info-card" id="eqCard">
       <div class="i-title">📐 Equation</div>
       <div class="eq-box" id="eqDisplay">
@@ -331,6 +331,14 @@ body{
         <button class="proof-btn" data-proof="4" onclick="setProof(4)">v² = u² + 2 a s</button>
       </div>
       <div id="areaBreakdownContainer"></div>
+    </div>
+
+    <!-- Equations (Non-uniform mode only) -->
+    <div class="info-card" id="nuEqCard" style="display:none;">
+      <div class="i-title">📐 Scenario Equations</div>
+      <div id="nuEqDisplay" style="display:flex;flex-direction:column;gap:3px;">
+        <span style="color:var(--text-muted);font-size:0.6rem;font-family:'JetBrains Mono',monospace;">Select a scenario</span>
+      </div>
     </div>
 
   </div>
@@ -524,7 +532,8 @@ function switchMode(mode) {
   document.getElementById('nonuniformControls').style.display = mode === 'nonuniform' ? 'block' : 'none';
   document.getElementById('valGridUniform').style.display = mode === 'uniform' ? 'grid' : 'none';
   document.getElementById('valGridNonuniform').style.display = mode === 'nonuniform' ? 'grid' : 'none';
-  document.getElementById('eqCard').style.display = 'block';
+  document.getElementById('eqCard').style.display = mode === 'uniform' ? 'block' : 'none';
+  document.getElementById('nuEqCard').style.display = mode === 'nonuniform' ? 'block' : 'none';
   document.getElementById('proofTabs').style.display = mode === 'uniform' ? 'flex' : 'none';
   document.getElementById('graphSubLabel').textContent = mode === 'uniform' ? 'Uniform Acceleration' : 'Non-uniform Acceleration';
   document.getElementById('legendProof').style.display = mode === 'uniform' && state.proof > 0 && state.proof < 4 ? 'inline' : 'none';
@@ -709,43 +718,38 @@ function refreshNu() {
 
 function renderNuInfo() {
   const sc = getNuSc();
-  const el = document.getElementById('eqDisplay');
+  const el = document.getElementById('nuEqDisplay');
   const tMax = getNuTMax();
-  
-  // Scenario-specific physics equations (as plain display)
-  let eqTex = '';
   const s = state.nuScenario;
+  
+  // Build scenario equations
+  let eqLines = [];
   if(s === 'terminal') {
-    eqTex = `\\displaystyle
-      a(t)=\\frac{V_t}{\\tau}e^{-t/\\tau}\\qquad
-      v(t)=V_t(1-e^{-t/\\tau})\\qquad
-      s(t)=V_t\\bigl(t+\\tau(e^{-t/\\tau}-1)\\bigr)`;
+    eqLines.push(`a(t) = \\\\frac{V_t}{\\\\tau} e^{-t/\\\\tau}`);
+    eqLines.push(`v(t) = V_t(1 - e^{-t/\\\\tau})`);
+    eqLines.push(`s(t) = V_t\\\\bigl(t + \\\\tau(e^{-t/\\\\tau} - 1)\\\\bigr)`);
   } else if(s === 'rocket') {
-    eqTex = `\\displaystyle
-      a(t)=\\frac{v_{ex}}{\\tau+t}\\qquad
-      v(t)=v_{ex}\\ln\\bigl(1+\\frac{t}{\\tau}\\bigr)\\qquad
-      s(t)=v_{ex}\\bigl((\\tau+t)\\ln(1+\\frac{t}{\\tau})-t\\bigr)`;
+    eqLines.push(`a(t) = \\\\frac{v_{ex}}{\\\\tau + t}`);
+    eqLines.push(`v(t) = v_{ex}\\\\ln(1 + \\\\frac{t}{\\\\tau})`);
+    eqLines.push(`s(t) = v_{ex}\\\\bigl((\\\\tau+t)\\\\ln(1+\\\\frac{t}{\\\\tau}) - t\\\\bigr)`);
   } else if(s === 'shm') {
-    eqTex = `\\displaystyle
-      x(t)=A\\cos(\\omega t)\\qquad
-      v(t)=-A\\omega\\sin(\\omega t)\\qquad
-      a(t)=-A\\omega^2\\cos(\\omega t)`;
+    eqLines.push(`x(t) = A\\\\cos(\\\\omega t)`);
+    eqLines.push(`v(t) = -A\\\\omega\\\\sin(\\\\omega t)`);
+    eqLines.push(`a(t) = -A\\\\omega^2\\\\cos(\\\\omega t)`);
   } else if(s === 'jerk') {
-    eqTex = `\\displaystyle
-      a(t)=k\\,t\\qquad
-      v(t)=\\tfrac12 k\\,t^2\\qquad
-      s(t)=\\tfrac16 k\\,t^3`;
+    eqLines.push(`a(t) = k\\\\,t`);
+    eqLines.push(`v(t) = \\\\tfrac12 k\\\\,t^2`);
+    eqLines.push(`s(t) = \\\\tfrac16 k\\\\,t^3`);
   }
   
-  // Analysis info
-  let analysisTex = '';
+  // Analysis lines
+  let anLines = [];
   if(state.nuAnalysis === 'gradient') {
     const tPt = state.nuGradT;
     const vPt = getNuV(tPt);
     const aPt = getNuDV(tPt);
-    analysisTex = `\\displaystyle
-      v(${tPt.toFixed(1)}) = ${fmtNum(vPt)}\\qquad
-      a = \\left.\\frac{dv}{dt}\\right|_{t=${tPt.toFixed(1)}} = ${fmtNum(aPt)} \\; \\text{m/s}^2`;
+    anLines.push(`v(${tPt.toFixed(1)}) = ${fmtNum(vPt)} \\\\; \\\\text{m/s}`);
+    anLines.push(`a = dv/dt = ${fmtNum(aPt)} \\\\; \\\\text{m/s}^2`);
   } else {
     const n = state.nuStrips;
     const h = tMax / n;
@@ -753,16 +757,53 @@ function renderNuInfo() {
     for(let i = 0; i < n; i++) { const t1=i*h,t2=(i+1)*h; trapSum += (getNuV(t1)+getNuV(t2))*h/2; }
     const exact = getNuInt(0, tMax);
     const err = exact !== 0 ? Math.abs((trapSum - exact) / exact) * 100 : 0;
-    analysisTex = `\\displaystyle
-      \\text{Estimate} = ${fmtNum(trapSum)} \\; \\text{m}\\qquad
-      \\text{Exact} = ${fmtNum(exact)} \\; \\text{m}\\qquad
-      \\text{Error} = ${err.toFixed(2)}\\% \\; (n = ${n})`;
+    anLines.push(`\\\\text{Estimate} = ${fmtNum(trapSum)} \\\\; \\\\text{m}`);
+    anLines.push(`\\\\text{Exact} = ${fmtNum(exact)} \\\\; \\\\text{m}`);
+    anLines.push(`\\\\text{Error} = ${err.toFixed(2)}\\\\%`);
   }
   
-  // Combine with separator
-  const fullTex = eqTex + ` \\\\[6pt] ` + analysisTex;
-  try { katex.render(fullTex, el, {displayMode:true, throwOnError:false}); }
-  catch(e) { el.innerHTML = `<span style="color:var(--text-dim);font-size:0.65rem;">${sc.name} — ${e.message}</span>`; }
+  // Render each equation as individual inline KaTeX in a vertical stack
+  el.innerHTML = '';
+  
+  const eqContainer = document.createElement('div');
+  eqContainer.style.cssText = 'display:flex;flex-direction:column;gap:2px;padding:4px 0;';
+  
+  // Section label
+  const scLabel = document.createElement('div');
+  scLabel.style.cssText = 'font-size:0.6rem;font-weight:600;color:var(--accent);margin-bottom:2px;';
+  scLabel.textContent = sc.name;
+  eqContainer.appendChild(scLabel);
+  
+  // Equations
+  for(const line of eqLines) {
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:1px 4px;';
+    try { katex.render(line, div, {displayMode:false, throwOnError:false}); }
+    catch(e) { div.textContent = line; }
+    eqContainer.appendChild(div);
+  }
+  
+  // Separator
+  const sep = document.createElement('div');
+  sep.style.cssText = 'height:1px;background:var(--border);margin:4px 0;';
+  eqContainer.appendChild(sep);
+  
+  // Analysis label
+  const anLabel = document.createElement('div');
+  anLabel.style.cssText = 'font-size:0.6rem;font-weight:600;color:var(--accent);margin-bottom:2px;';
+  anLabel.textContent = state.nuAnalysis === 'gradient' ? 'Gradient Analysis' : 'Trapezoidal Area';
+  eqContainer.appendChild(anLabel);
+  
+  // Analysis
+  for(const line of anLines) {
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:1px 4px;';
+    try { katex.render(line, div, {displayMode:false, throwOnError:false}); }
+    catch(e) { div.textContent = line; }
+    eqContainer.appendChild(div);
+  }
+  
+  el.appendChild(eqContainer);
 }
 
 // ===== TRACER =====
