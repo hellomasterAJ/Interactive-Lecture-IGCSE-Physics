@@ -269,7 +269,7 @@ body{
 
 <div class="main-grid">
 
-  <!-- LEFT: Graph + Key Concept -->
+  <!-- LEFT: Graph + Motion Scenario + Key Concept -->
   <div class="graph-col">
     <div class="graph-card">
       <div class="g-title">
@@ -286,7 +286,18 @@ body{
         </span>
       </div>
     </div>
-    <!-- Key Concept below graph (same width as graph) -->
+    <!-- Motion Scenario below graph (same width as graph) -->
+    <div class="ctrl-card" id="nuScenarioCard" style="display:none;">
+      <div class="c-title">🎯 Motion Scenario</div>
+      <div class="scenario-tabs">
+        <button class="scenario-btn active" data-scenario="terminal" onclick="setNuScenario('terminal')">🪂 Terminal Velocity</button>
+        <button class="scenario-btn" data-scenario="rocket" onclick="setNuScenario('rocket')">🚀 Rocket Launch</button>
+        <button class="scenario-btn" data-scenario="shm" onclick="setNuScenario('shm')">〰️ Harmonic Motion</button>
+        <button class="scenario-btn" data-scenario="jerk" onclick="setNuScenario('jerk')">📈 Constant Jerk</button>
+      </div>
+      <div id="nuParamSliders" class="ctrl-row"></div>
+    </div>
+    <!-- Key Concept below Motion Scenario (same width as graph) -->
     <div class="desc-box" id="descBox">
       <div class="d-title">💡 Key Concept</div>
       <p id="descText">
@@ -294,18 +305,6 @@ body{
         The area under the graph gives the <strong>displacement</strong>.
       </p>
     </div>
-
-    <!-- Analysis Tool below graph (same width as graph) -->
-    <div class="ctrl-card" id="nuAnalysisCard" style="display:none;">
-      <div class="c-title">🔬 Analysis Tool</div>
-      <div class="ctrl-row">
-        <button class="mode-tab active" data-analysis="gradient" onclick="setNuAnalysis('gradient')">📐 Gradient (a = dv/dt)</button>
-        <button class="mode-tab" data-analysis="area" onclick="setNuAnalysis('area')">📊 Area (Trapezoidal Rule)</button>
-        <button class="ctrl-btn primary" id="animTracerBtn" onclick="toggleTracer()">▶ Animate</button>
-      </div>
-      <div id="nuAnalysisParams" class="ctrl-row" style="margin-top:4px;"></div>
-    </div>
-
   </div>
 
   <!-- RIGHT: Values -->
@@ -354,16 +353,15 @@ body{
       </div>
     </div>
 
-    <!-- Non-uniform: Scenario card (right column, below equations) -->
-    <div class="ctrl-card" id="nuScenarioCard" style="display:none;">
-      <div class="c-title">🎯 Motion Scenario</div>
-      <div class="scenario-tabs">
-        <button class="scenario-btn active" data-scenario="terminal" onclick="setNuScenario('terminal')">🪂 Terminal Velocity</button>
-        <button class="scenario-btn" data-scenario="rocket" onclick="setNuScenario('rocket')">🚀 Rocket Launch</button>
-        <button class="scenario-btn" data-scenario="shm" onclick="setNuScenario('shm')">〰️ Harmonic Motion</button>
-        <button class="scenario-btn" data-scenario="jerk" onclick="setNuScenario('jerk')">📈 Constant Jerk</button>
+    <!-- Analysis Tool below Scenario Equations (same width as eq card) -->
+    <div class="ctrl-card" id="nuAnalysisCard" style="display:none;">
+      <div class="c-title">🔬 Analysis Tool</div>
+      <div class="ctrl-row">
+        <button class="mode-tab active" data-analysis="gradient" onclick="setNuAnalysis('gradient')">📐 Gradient (a = dv/dt)</button>
+        <button class="mode-tab" data-analysis="area" onclick="setNuAnalysis('area')">📊 Area (Trapezoidal Rule)</button>
+        <button class="ctrl-btn primary" id="animTracerBtn" onclick="toggleTracer()">▶ Animate</button>
       </div>
-      <div id="nuParamSliders" class="ctrl-row"></div>
+      <div id="nuAnalysisParams" class="ctrl-row" style="margin-top:4px;"></div>
     </div>
 
   </div>
@@ -473,7 +471,7 @@ function getDisplacement(u, a, t) { return u * t + 0.5 * a * t * t; }
 // Non-uniform scenario physics
 const NU_SCENARIOS = {
   terminal: {
-    name:'Terminal Velocity', tMax:8, vMin:0,
+    name:'Terminal Velocity', tMax:8,
     v:(t,p)=>p.Vt*(1-Math.exp(-t/p.tau)),
     dv:(t,p)=>(p.Vt/p.tau)*Math.exp(-t/p.tau),
     integral:(t,p)=>p.Vt*(t+p.tau*(Math.exp(-t/p.tau)-1)),
@@ -1382,10 +1380,6 @@ function drawNonuniformGraph() {
   let yMax = maxV + yPad;
   let yMin = minV - yPad;
   if(yMax === yMin) { yMax = yMin + 1; }
-  // Clamp y-axis to scenario's vMin/vMax if defined
-  const sc = getNuSc();
-  if(sc.vMin !== undefined && yMin > sc.vMin) yMin = sc.vMin;
-  if(sc.vMax !== undefined && yMax < sc.vMax) yMax = sc.vMax;
 
   // Compute nice steps FIRST, then round yMin/yMax to step multiples
   const xStep = niceStep(tMax, 8);
