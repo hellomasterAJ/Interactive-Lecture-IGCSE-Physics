@@ -290,10 +290,10 @@ body{
     <div class="ctrl-card" id="nuScenarioCard" style="display:none;">
       <div class="c-title">🎯 Motion Scenario</div>
       <div class="scenario-tabs">
-        <button class="scenario-btn active" data-scenario="terminal" onclick="setNuScenario('terminal')">🪂 Terminal Velocity</button>
+        <button class="scenario-btn active" data-scenario="terminal" onclick="setNuScenario('terminal')">🪂 Skydriver</button>
         <button class="scenario-btn" data-scenario="rocket" onclick="setNuScenario('rocket')">🚀 Rocket Launch</button>
-        <button class="scenario-btn" data-scenario="shm" onclick="setNuScenario('shm')">〰️ Harmonic Motion</button>
-        <button class="scenario-btn" data-scenario="jerk" onclick="setNuScenario('jerk')">📈 Constant Jerk</button>
+        <button class="scenario-btn" data-scenario="shm" onclick="setNuScenario('shm')">🕰️ Simple Pendulum</button>
+        <button class="scenario-btn" data-scenario="jerk" onclick="setNuScenario('jerk')">🏎️ Constant Jerk</button>
       </div>
       <div id="nuParamSliders" class="ctrl-row"></div>
     </div>
@@ -359,6 +359,8 @@ body{
       <div class="ctrl-row">
         <button class="mode-tab active" data-analysis="gradient" onclick="setNuAnalysis('gradient')">📐 Gradient (a = dv/dt)</button>
         <button class="mode-tab" data-analysis="area" onclick="setNuAnalysis('area')">📊 Area (Trapezoidal Rule)</button>
+      </div>
+      <div class="ctrl-row" style="margin-top:4px;">
         <button class="ctrl-btn primary" id="animTracerBtn" onclick="toggleTracer()">▶ Animate</button>
       </div>
       <div id="nuAnalysisParams" class="ctrl-row" style="margin-top:4px;"></div>
@@ -428,7 +430,7 @@ const state = {
 
   // Non-uniform
   nuScenario: 'terminal',
-  nuParams: {Vt: 29.4, tau: 3, vex: 2000, rtau: 2, amp: 15, omega: 1.5, k: 2},
+  nuParams: {Vt: 40, tau: 2, vex: 2500, rtau: 3, amp: 15, T: 3, k: 0.5},
   nuAnalysis: 'gradient',
   nuGradT: 2,
   nuStrips: 4,
@@ -471,35 +473,36 @@ function getDisplacement(u, a, t) { return u * t + 0.5 * a * t * t; }
 // Non-uniform scenario physics
 const NU_SCENARIOS = {
   terminal: {
-    name:'Terminal Velocity', tMax:8,
+    name:'Skydriver', tMax:8,
     v:(t,p)=>p.Vt*(1-Math.exp(-t/p.tau)),
     dv:(t,p)=>(p.Vt/p.tau)*Math.exp(-t/p.tau),
     integral:(t,p)=>p.Vt*(t+p.tau*(Math.exp(-t/p.tau)-1)),
-    params:[{id:'Vt',label:'V_term',min:5,max:80,def:29.4,step:0.1,unit:'m/s'},
-            {id:'tau',label:'τ',min:0.5,max:8,def:3,step:0.1,unit:'s'}]
+    params:[{id:'Vt',label:'V_term',min:5,max:80,def:40,step:1,unit:'m/s'},
+            {id:'tau',label:'τ',min:0.5,max:8,def:2,step:0.1,unit:'s'}]
   },
   rocket: {
     name:'Rocket Launch', tMax:10,
     v:(t,p)=>p.vex*Math.log(1+t/p.rtau),
     dv:(t,p)=>p.vex/(p.rtau+t),
     integral:(t,p)=>p.vex*((p.rtau+t)*Math.log(1+t/p.rtau)-t),
-    params:[{id:'vex',label:'v_ex',min:500,max:5000,def:2000,step:100,unit:'m/s'},
-            {id:'rtau',label:'τ',min:0.5,max:5,def:2,step:0.1,unit:'s'}]
+    params:[{id:'vex',label:'v_ex',min:500,max:5000,def:2500,step:100,unit:'m/s'},
+            {id:'rtau',label:'τ',min:0.5,max:5,def:3,step:0.1,unit:'s'}]
   },
   shm: {
-    name:'Harmonic Motion', tMax:6,
-    v:(t,p)=>p.amp*Math.sin(p.omega*t),
-    dv:(t,p)=>p.amp*p.omega*Math.cos(p.omega*t),
-    integral:(t,p)=>(p.amp/p.omega)*(1-Math.cos(p.omega*t)),
+    name:'Simple Pendulum', tMax:6,
+    getOmega: function(p) { return 2*Math.PI/p.T; },
+    v:function(t,p){ const w=2*Math.PI/p.T; return p.amp*w*Math.sin(w*t); },
+    dv:function(t,p){ const w=2*Math.PI/p.T; return p.amp*w*w*Math.cos(w*t); },
+    integral:function(t,p){ const w=2*Math.PI/p.T; return (p.amp/w)*(1-Math.cos(w*t)); },
     params:[{id:'amp',label:'Amplitude',min:5,max:50,def:15,step:1,unit:'m/s'},
-            {id:'omega',label:'ω',min:0.5,max:4,def:1.5,step:0.1,unit:'rad/s'}]
+            {id:'T',label:'T (Period)',min:0.5,max:6,def:3,step:0.1,unit:'s'}]
   },
   jerk: {
     name:'Constant Jerk', tMax:8,
     v:(t,p)=>0.5*p.k*t*t,
     dv:(t,p)=>p.k*t,
     integral:(t,p)=>(1/6)*p.k*t*t*t,
-    params:[{id:'k',label:'Jerk (k)',min:0.5,max:5,def:2,step:0.1,unit:'m/s³'}]
+    params:[{id:'k',label:'Jerk (k)',min:0.1,max:2,def:0.5,step:0.1,unit:'m/s³'}]
   }
 };
 function getNuSc() { return NU_SCENARIOS[state.nuScenario]; }
@@ -662,6 +665,11 @@ function buildNuSliders() {
       <span class="slider-val" id="nuPV_${p.id}">${state.nuParams[p.id]}</span>
     </div>`
   ).join('');
+  // Show computed omega for Simple Pendulum
+  if(state.nuScenario === 'shm') {
+    const w = 2 * Math.PI / state.nuParams.T;
+    el.innerHTML += '<div style="font-size:0.55rem;color:var(--text-muted);font-family:JetBrains Mono,monospace;padding:2px 8px;">\u03c9 = ' + w.toFixed(3) + ' rad/s</div>';
+  }
 }
 
 function onNuParamChange(id, v) {
