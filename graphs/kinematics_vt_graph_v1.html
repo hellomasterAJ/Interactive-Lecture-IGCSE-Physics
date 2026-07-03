@@ -149,6 +149,7 @@ body{
   overflow: hidden; max-width: 100%;
 }
 .eq-box .katex{font-size: 1.15rem;}
+.eq-box-sm .katex{font-size: 0.85rem;}
 .eq-box .katex .mathcolor-blue{color: var(--blue);}
 .eq-box .katex .mathcolor-orange{color: var(--orange);}
 .eq-box .katex .mathcolor-green{color: var(--green);}
@@ -293,6 +294,18 @@ body{
         The area under the graph gives the <strong>displacement</strong>.
       </p>
     </div>
+
+    <!-- Analysis Tool below graph (same width as graph) -->
+    <div class="ctrl-card" id="nuAnalysisCard" style="display:none;">
+      <div class="c-title">🔬 Analysis Tool</div>
+      <div class="ctrl-row">
+        <button class="mode-tab active" data-analysis="gradient" onclick="setNuAnalysis('gradient')">📐 Gradient (a = dv/dt)</button>
+        <button class="mode-tab" data-analysis="area" onclick="setNuAnalysis('area')">📊 Area (Trapezoidal Rule)</button>
+        <button class="ctrl-btn primary" id="animTracerBtn" onclick="toggleTracer()">▶ Animate</button>
+      </div>
+      <div id="nuAnalysisParams" class="ctrl-row" style="margin-top:4px;"></div>
+    </div>
+
   </div>
 
   <!-- RIGHT: Values -->
@@ -336,9 +349,21 @@ body{
     <!-- Equations (Non-uniform mode only) -->
     <div class="info-card" id="nuEqCard" style="display:none;">
       <div class="i-title">📐 Scenario Equations</div>
-      <div id="nuEqDisplay" style="display:flex;flex-direction:column;gap:3px;">
-        <span style="color:var(--text-muted);font-size:0.6rem;font-family:'JetBrains Mono',monospace;">Select a scenario</span>
+      <div class="eq-box eq-box-sm" id="nuEqDisplay" style="display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start;min-height:72px;padding:10px 12px;">
+        <span style="color:var(--text-muted);font-size:0.55rem;font-family:'JetBrains Mono',monospace;">Select a scenario</span>
       </div>
+    </div>
+
+    <!-- Non-uniform: Scenario card (right column, below equations) -->
+    <div class="ctrl-card" id="nuScenarioCard" style="display:none;">
+      <div class="c-title">🎯 Motion Scenario</div>
+      <div class="scenario-tabs">
+        <button class="scenario-btn active" data-scenario="terminal" onclick="setNuScenario('terminal')">🪂 Terminal Velocity</button>
+        <button class="scenario-btn" data-scenario="rocket" onclick="setNuScenario('rocket')">🚀 Rocket Launch</button>
+        <button class="scenario-btn" data-scenario="shm" onclick="setNuScenario('shm')">〰️ Harmonic Motion</button>
+        <button class="scenario-btn" data-scenario="jerk" onclick="setNuScenario('jerk')">📈 Constant Jerk</button>
+      </div>
+      <div id="nuParamSliders" class="ctrl-row"></div>
     </div>
 
   </div>
@@ -388,25 +413,6 @@ body{
 
   <!-- Key Concept (moved below graph) -->
 
-  <!-- Non-uniform controls -->
-  <div class="ctrl-card" id="nonuniformControls" style="display:none;">
-    <div class="c-title">🎯 Motion Scenario</div>
-    <div class="scenario-tabs">
-      <button class="scenario-btn active" data-scenario="terminal" onclick="setNuScenario('terminal')">🪂 Terminal Velocity</button>
-      <button class="scenario-btn" data-scenario="rocket" onclick="setNuScenario('rocket')">🚀 Rocket Launch</button>
-      <button class="scenario-btn" data-scenario="shm" onclick="setNuScenario('shm')">〰️ Harmonic Motion</button>
-      <button class="scenario-btn" data-scenario="jerk" onclick="setNuScenario('jerk')">📈 Constant Jerk</button>
-    </div>
-    <div id="nuParamSliders" class="ctrl-row"></div>
-    <div class="c-title" style="margin-top:6px;">🔬 Analysis Tool</div>
-    <div class="ctrl-row">
-      <button class="mode-tab active" data-analysis="gradient" onclick="setNuAnalysis('gradient')">📐 Gradient (a = dv/dt)</button>
-      <button class="mode-tab" data-analysis="area" onclick="setNuAnalysis('area')">📊 Area (Trapezoidal Rule)</button>
-      <button class="ctrl-btn primary" id="animTracerBtn" onclick="toggleTracer()">▶ Animate</button>
-    </div>
-    <div id="nuAnalysisParams" class="ctrl-row" style="margin-top:4px;"></div>
-  </div>
-
 </div>
 
 </div>
@@ -424,7 +430,7 @@ const state = {
 
   // Non-uniform
   nuScenario: 'terminal',
-  nuParams: {Vt: 50, tau: 2, vex: 2000, rtau: 2, amp: 15, omega: 1.5, k: 2},
+  nuParams: {Vt: 29.4, tau: 3, vex: 2000, rtau: 2, amp: 15, omega: 1.5, k: 2},
   nuAnalysis: 'gradient',
   nuGradT: 2,
   nuStrips: 4,
@@ -467,12 +473,12 @@ function getDisplacement(u, a, t) { return u * t + 0.5 * a * t * t; }
 // Non-uniform scenario physics
 const NU_SCENARIOS = {
   terminal: {
-    name:'Terminal Velocity', tMax:10,
+    name:'Terminal Velocity', tMax:8, vMin:0,
     v:(t,p)=>p.Vt*(1-Math.exp(-t/p.tau)),
     dv:(t,p)=>(p.Vt/p.tau)*Math.exp(-t/p.tau),
     integral:(t,p)=>p.Vt*(t+p.tau*(Math.exp(-t/p.tau)-1)),
-    params:[{id:'Vt',label:'V_term',min:10,max:100,def:50,step:1,unit:'m/s'},
-            {id:'tau',label:'τ',min:0.5,max:5,def:2,step:0.1,unit:'s'}]
+    params:[{id:'Vt',label:'V_term',min:5,max:80,def:29.4,step:0.1,unit:'m/s'},
+            {id:'tau',label:'τ',min:0.5,max:8,def:3,step:0.1,unit:'s'}]
   },
   rocket: {
     name:'Rocket Launch', tMax:10,
@@ -529,7 +535,8 @@ function switchMode(mode) {
   state.mouseX = null;
   document.querySelectorAll('.mode-tab').forEach(b => b.classList.toggle('active', b.dataset.mode === mode));
   document.getElementById('uniformControls').style.display = mode === 'uniform' ? 'block' : 'none';
-  document.getElementById('nonuniformControls').style.display = mode === 'nonuniform' ? 'block' : 'none';
+  document.getElementById('nuScenarioCard').style.display = mode === 'nonuniform' ? 'block' : 'none';
+  document.getElementById('nuAnalysisCard').style.display = mode === 'nonuniform' ? 'block' : 'none';
   document.getElementById('valGridUniform').style.display = mode === 'uniform' ? 'grid' : 'none';
   document.getElementById('valGridNonuniform').style.display = mode === 'nonuniform' ? 'grid' : 'none';
   document.getElementById('eqCard').style.display = mode === 'uniform' ? 'block' : 'none';
@@ -725,21 +732,21 @@ function renderNuInfo() {
   // Build scenario equations
   let eqLines = [];
   if(s === 'terminal') {
-    eqLines.push(`a(t) = \\\\frac{V_t}{\\\\tau} e^{-t/\\\\tau}`);
-    eqLines.push(`v(t) = V_t(1 - e^{-t/\\\\tau})`);
-    eqLines.push(`s(t) = V_t\\\\bigl(t + \\\\tau(e^{-t/\\\\tau} - 1)\\\\bigr)`);
+    eqLines.push(`a(t) = \\frac{V_t}{\\tau} e^{-t/\\tau}`);
+    eqLines.push(`v(t) = V_t(1 - e^{-t/\\tau})`);
+    eqLines.push(`s(t) = V_t\\bigl(t + \\tau(e^{-t/\\tau} - 1)\\bigr)`);
   } else if(s === 'rocket') {
-    eqLines.push(`a(t) = \\\\frac{v_{ex}}{\\\\tau + t}`);
-    eqLines.push(`v(t) = v_{ex}\\\\ln(1 + \\\\frac{t}{\\\\tau})`);
-    eqLines.push(`s(t) = v_{ex}\\\\bigl((\\\\tau+t)\\\\ln(1+\\\\frac{t}{\\\\tau}) - t\\\\bigr)`);
+    eqLines.push(`a(t) = \\frac{v_{ex}}{\\tau + t}`);
+    eqLines.push(`v(t) = v_{ex}\\ln\\bigl(1 + \\frac{t}{\\tau}\\bigr)`);
+    eqLines.push(`s(t) = v_{ex}\\bigl((\\tau+t)\\ln(1+\\frac{t}{\\tau}) - t\\bigr)`);
   } else if(s === 'shm') {
-    eqLines.push(`x(t) = A\\\\cos(\\\\omega t)`);
-    eqLines.push(`v(t) = -A\\\\omega\\\\sin(\\\\omega t)`);
-    eqLines.push(`a(t) = -A\\\\omega^2\\\\cos(\\\\omega t)`);
+    eqLines.push(`x(t) = A\\cos(\\omega t)`);
+    eqLines.push(`v(t) = -A\\omega\\sin(\\omega t)`);
+    eqLines.push(`a(t) = -A\\omega^2\\cos(\\omega t)`);
   } else if(s === 'jerk') {
-    eqLines.push(`a(t) = k\\\\,t`);
-    eqLines.push(`v(t) = \\\\tfrac12 k\\\\,t^2`);
-    eqLines.push(`s(t) = \\\\tfrac16 k\\\\,t^3`);
+    eqLines.push(`a(t) = k\\,t`);
+    eqLines.push(`v(t) = \\tfrac12 k\\,t^2`);
+    eqLines.push(`s(t) = \\tfrac16 k\\,t^3`);
   }
   
   // Analysis lines
@@ -748,8 +755,8 @@ function renderNuInfo() {
     const tPt = state.nuGradT;
     const vPt = getNuV(tPt);
     const aPt = getNuDV(tPt);
-    anLines.push(`v(${tPt.toFixed(1)}) = ${fmtNum(vPt)} \\\\; \\\\text{m/s}`);
-    anLines.push(`a = dv/dt = ${fmtNum(aPt)} \\\\; \\\\text{m/s}^2`);
+    anLines.push(`v(${tPt.toFixed(1)}) = ${fmtNum(vPt)} \\; \\text{m/s}`);
+    anLines.push(`a = dv/dt = ${fmtNum(aPt)} \\; \\text{m/s}^2`);
   } else {
     const n = state.nuStrips;
     const h = tMax / n;
@@ -757,53 +764,53 @@ function renderNuInfo() {
     for(let i = 0; i < n; i++) { const t1=i*h,t2=(i+1)*h; trapSum += (getNuV(t1)+getNuV(t2))*h/2; }
     const exact = getNuInt(0, tMax);
     const err = exact !== 0 ? Math.abs((trapSum - exact) / exact) * 100 : 0;
-    anLines.push(`\\\\text{Estimate} = ${fmtNum(trapSum)} \\\\; \\\\text{m}`);
-    anLines.push(`\\\\text{Exact} = ${fmtNum(exact)} \\\\; \\\\text{m}`);
-    anLines.push(`\\\\text{Error} = ${err.toFixed(2)}\\\\%`);
+    anLines.push(`\\text{Estimate} = ${fmtNum(trapSum)} \\; \\text{m}`);
+    anLines.push(`\\text{Exact} = ${fmtNum(exact)} \\; \\text{m}`);
+    anLines.push(`\\text{Error} = ${err.toFixed(2)}\\%`);
   }
   
-  // Render each equation as individual inline KaTeX in a vertical stack
+  // Render each equation as individual KaTeX in a compact vertical stack
   el.innerHTML = '';
   
-  const eqContainer = document.createElement('div');
-  eqContainer.style.cssText = 'display:flex;flex-direction:column;gap:2px;padding:4px 0;';
+  const c = document.createElement('div');
+  c.style.cssText = 'width:100%;';
   
-  // Section label
-  const scLabel = document.createElement('div');
-  scLabel.style.cssText = 'font-size:0.6rem;font-weight:600;color:var(--accent);margin-bottom:2px;';
-  scLabel.textContent = sc.name;
-  eqContainer.appendChild(scLabel);
+  // Scenario name label
+  const lbl = document.createElement('div');
+  lbl.style.cssText = 'font-size:0.5rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:3px;';
+  lbl.textContent = sc.name;
+  c.appendChild(lbl);
   
   // Equations
   for(const line of eqLines) {
-    const div = document.createElement('div');
-    div.style.cssText = 'padding:1px 4px;';
-    try { katex.render(line, div, {displayMode:false, throwOnError:false}); }
-    catch(e) { div.textContent = line; }
-    eqContainer.appendChild(div);
+    const d = document.createElement('div');
+    d.style.cssText = 'line-height:1.5;';
+    try { katex.render(line, d, {displayMode:false, throwOnError:false}); }
+    catch(e) { d.textContent = line; d.style.cssText += 'font-size:0.55rem;color:var(--text-dim);font-family:monospace;'; }
+    c.appendChild(d);
   }
   
   // Separator
   const sep = document.createElement('div');
-  sep.style.cssText = 'height:1px;background:var(--border);margin:4px 0;';
-  eqContainer.appendChild(sep);
+  sep.style.cssText = 'height:1px;background:var(--border);margin:3px 0;';
+  c.appendChild(sep);
   
   // Analysis label
-  const anLabel = document.createElement('div');
-  anLabel.style.cssText = 'font-size:0.6rem;font-weight:600;color:var(--accent);margin-bottom:2px;';
-  anLabel.textContent = state.nuAnalysis === 'gradient' ? 'Gradient Analysis' : 'Trapezoidal Area';
-  eqContainer.appendChild(anLabel);
+  const albl = document.createElement('div');
+  albl.style.cssText = 'font-size:0.5rem;font-weight:600;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em;margin-bottom:2px;';
+  albl.textContent = state.nuAnalysis === 'gradient' ? 'Gradient Analysis' : 'Trapezoidal Area';
+  c.appendChild(albl);
   
   // Analysis
   for(const line of anLines) {
-    const div = document.createElement('div');
-    div.style.cssText = 'padding:1px 4px;';
-    try { katex.render(line, div, {displayMode:false, throwOnError:false}); }
-    catch(e) { div.textContent = line; }
-    eqContainer.appendChild(div);
+    const d = document.createElement('div');
+    d.style.cssText = 'line-height:1.5;';
+    try { katex.render(line, d, {displayMode:false, throwOnError:false}); }
+    catch(e) { d.textContent = line; d.style.cssText += 'font-size:0.55rem;color:var(--text-dim);font-family:monospace;'; }
+    c.appendChild(d);
   }
   
-  el.appendChild(eqContainer);
+  el.appendChild(c);
 }
 
 // ===== TRACER =====
@@ -1375,6 +1382,10 @@ function drawNonuniformGraph() {
   let yMax = maxV + yPad;
   let yMin = minV - yPad;
   if(yMax === yMin) { yMax = yMin + 1; }
+  // Clamp y-axis to scenario's vMin/vMax if defined
+  const sc = getNuSc();
+  if(sc.vMin !== undefined && yMin > sc.vMin) yMin = sc.vMin;
+  if(sc.vMax !== undefined && yMax < sc.vMax) yMax = sc.vMax;
 
   // Compute nice steps FIRST, then round yMin/yMax to step multiples
   const xStep = niceStep(tMax, 8);
