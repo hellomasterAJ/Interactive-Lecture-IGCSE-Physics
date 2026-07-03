@@ -286,6 +286,44 @@ body{
         </span>
       </div>
     </div>
+    <!-- Uniform Acceleration Parameters below graph (same width as graph) -->
+    <div class="ctrl-card" id="uniformControls">
+      <div class="c-title">🎛️ Uniform Acceleration Parameters</div>
+      <div class="ctrl-row" style="margin-top:4px;">
+        <button class="ctrl-btn" onclick="setExample('speeding')">🟢 Speeding up</button>
+        <button class="ctrl-btn" onclick="setExample('slowing')">🟡 Slowing down</button>
+        <button class="ctrl-btn" onclick="setExample('constant')">🚙 Constant speed</button>
+        <button class="ctrl-btn" onclick="setExample('stationary')">🔴 Stationary</button>
+        <button class="ctrl-btn" onclick="setExample('direction')">🔄 Change direction</button>
+      </div>
+      <div class="ctrl-row">
+        <div class="slider-group">
+          <label>u (initial velocity)</label>
+          <input type="range" id="uSlider" min="-5" max="25" value="4" step="0.5" oninput="updateUniform()">
+          <span class="slider-val" id="uVal">4.0</span>
+        </div>
+        <div class="slider-group">
+          <label>a (acceleration)</label>
+          <input type="range" id="aSlider" min="-5" max="5" value="2" step="0.1" oninput="updateUniform()">
+          <span class="slider-val" id="aVal">2.0</span>
+        </div>
+        <div class="slider-group">
+          <label>t (time interval)</label>
+          <input type="range" id="tSlider" min="0.5" max="12" value="6" step="0.1" oninput="updateUniform()">
+          <span class="slider-val" id="tVal">6.0</span>
+        </div>
+      </div>
+      <div class="ctrl-row" style="margin-top:2px;">
+        <button class="ctrl-btn" onclick="toggleDefine()" id="defineBtn">📖 Define</button>
+      </div>
+      <div id="definePanel" style="display:none;margin-top:6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text-dim);line-height:1.7;">
+        <b style="color:var(--accent);">s</b> = displacement &nbsp;<span style="color:var(--text-muted);">(SI unit: m)</span><br>
+        <b style="color:var(--accent);">u</b> = initial velocity &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s)</span><br>
+        <b style="color:var(--accent);">v</b> = final velocity &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s)</span><br>
+        <b style="color:var(--accent);">a</b> = acceleration &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s²)</span><br>
+        <b style="color:var(--accent);">t</b> = time &nbsp;<span style="color:var(--text-muted);">(SI unit: s)</span>
+      </div>
+    </div>
     <!-- Motion Scenario below graph (same width as graph) -->
     <div class="ctrl-card" id="nuScenarioCard" style="display:none;">
       <div class="c-title">🎯 Motion Scenario</div>
@@ -367,52 +405,6 @@ body{
     </div>
 
   </div>
-</div>
-
-<!-- Controls + Description -->
-<div style="display:grid;grid-template-columns:1fr;gap:8px;margin-top:10px;">
-
-  <!-- Uniform controls -->
-  <div class="ctrl-card" id="uniformControls">
-    <div class="c-title">🎛️ Uniform Acceleration Parameters</div>
-    <div class="ctrl-row" style="margin-top:4px;">
-      <button class="ctrl-btn" onclick="setExample('speeding')">🟢 Speeding up</button>
-      <button class="ctrl-btn" onclick="setExample('slowing')">🟡 Slowing down</button>
-      <button class="ctrl-btn" onclick="setExample('constant')">🚙 Constant speed</button>
-      <button class="ctrl-btn" onclick="setExample('stationary')">🔴 Stationary</button>
-      <button class="ctrl-btn" onclick="setExample('direction')">🔄 Change direction</button>
-    </div>
-    <div class="ctrl-row">
-      <div class="slider-group">
-        <label>u (initial velocity)</label>
-        <input type="range" id="uSlider" min="-5" max="25" value="4" step="0.5" oninput="updateUniform()">
-        <span class="slider-val" id="uVal">4.0</span>
-      </div>
-      <div class="slider-group">
-        <label>a (acceleration)</label>
-        <input type="range" id="aSlider" min="-5" max="5" value="2" step="0.1" oninput="updateUniform()">
-        <span class="slider-val" id="aVal">2.0</span>
-      </div>
-      <div class="slider-group">
-        <label>t (time interval)</label>
-        <input type="range" id="tSlider" min="0.5" max="12" value="6" step="0.1" oninput="updateUniform()">
-        <span class="slider-val" id="tVal">6.0</span>
-      </div>
-    </div>
-    <div class="ctrl-row" style="margin-top:2px;">
-      <button class="ctrl-btn" onclick="toggleDefine()" id="defineBtn">📖 Define</button>
-    </div>
-    <div id="definePanel" style="display:none;margin-top:6px;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--text-dim);line-height:1.7;">
-      <b style="color:var(--accent);">s</b> = displacement &nbsp;<span style="color:var(--text-muted);">(SI unit: m)</span><br>
-      <b style="color:var(--accent);">u</b> = initial velocity &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s)</span><br>
-      <b style="color:var(--accent);">v</b> = final velocity &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s)</span><br>
-      <b style="color:var(--accent);">a</b> = acceleration &nbsp;<span style="color:var(--text-muted);">(SI unit: m/s²)</span><br>
-      <b style="color:var(--accent);">t</b> = time &nbsp;<span style="color:var(--text-muted);">(SI unit: s)</span>
-    </div>
-  </div>
-
-  <!-- Key Concept (moved below graph) -->
-
 </div>
 
 </div>
