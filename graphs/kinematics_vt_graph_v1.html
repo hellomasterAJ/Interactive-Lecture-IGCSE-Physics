@@ -55,20 +55,20 @@
   --katex-color: #2d2a24;
 }
 
-/* ── Light Theme 3: Warm Sand (🏜️ desert tones) ── */
-.theme-sand {
-  --bg: #d6cebd; --card: #e6ddd0; --border: #c4b9a6;
-  --text: #2d2922; --text-dim: #6b6052; --text-muted: #928678;
-  --accent: #b87a3a; --accent-glow: rgba(184,122,58,0.1);
-  --grid: #ccc2b2; --graph-bg: #f0eae0;
-  --line-v: #b87a3a;
-  --green: #7a8a3d; --rose: #a04a3a; --violet: #7a4d8a;
-  --amber: #c4902d; --blue: #3a6a7a; --orange: #c2702d;
-  --shade-rect: rgba(122,138,61,0.10);
-  --shade-tri: rgba(160,74,58,0.10);
-  --shade-amber: rgba(196,144,45,0.10);
-  --shade-trap: rgba(122,138,61,0.08);
-  --katex-color: #2d2922;
+/* ── Light Theme 3: Classic Light (☀️ clean white-blue) ── */
+.theme-light {
+  --bg: #ffffff; --card: #f3f4f6; --border: #d1d5db;
+  --text: #111827; --text-dim: #4b5563; --text-muted: #9ca3af;
+  --accent: #2563eb; --accent-glow: rgba(37,99,235,0.1);
+  --grid: #e5e7eb; --graph-bg: #f9fafb;
+  --line-v: #2563eb;
+  --green: #059669; --rose: #dc2626; --violet: #7c3aed;
+  --amber: #d97706; --blue: #2563eb; --orange: #ea580c;
+  --shade-rect: rgba(5,150,105,0.10);
+  --shade-tri: rgba(220,38,38,0.10);
+  --shade-amber: rgba(217,119,6,0.10);
+  --shade-trap: rgba(5,150,105,0.08);
+  --katex-color: #111827;
 }
 
 /* ── Light Theme 4: Mist Blue (🌫️ cool soft blue) ── */
@@ -149,6 +149,22 @@
   --shade-amber: rgba(251,191,36,0.10);
   --shade-trap: rgba(52,211,153,0.08);
   --katex-color: #c8d0e0;
+}
+
+/* ── Dark Theme 4: One Dark (💎 Atom's iconic dark) ── */
+.theme-onedark {
+  --bg: #282c34; --card: #353b45; --border: #4b5263;
+  --text: #abb2bf; --text-dim: #7a8294; --text-muted: #5c6370;
+  --accent: #61afef; --accent-glow: rgba(97,175,239,0.1);
+  --grid: #353b45; --graph-bg: #21252b;
+  --line-v: #61afef;
+  --green: #98c379; --rose: #e06c75; --violet: #c678dd;
+  --amber: #e5c07b; --blue: #61afef; --orange: #d19a66;
+  --shade-rect: rgba(152,195,121,0.10);
+  --shade-tri: rgba(224,108,117,0.10);
+  --shade-amber: rgba(229,192,123,0.10);
+  --shade-trap: rgba(152,195,121,0.08);
+  --katex-color: #abb2bf;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
@@ -344,7 +360,7 @@ body{
 }
 .theme-warm .ctrl-btn.primary,
 .theme-sage .ctrl-btn.primary,
-.theme-sand .ctrl-btn.primary,
+.theme-light .ctrl-btn.primary,
 .theme-mist .ctrl-btn.primary,
 .theme-clay .ctrl-btn.primary{color: #fff;}
 .ctrl-btn.random{background: rgba(167,139,250,0.12); border-color: var(--violet); color: var(--violet);}
@@ -394,9 +410,10 @@ body{
       <option value="neon">🌃 Cyberpunk Neon</option>
       <option value="vintage">📜 Vintage Dark</option>
       <option value="cosmic">🌌 Cosmic Void</option>
+      <option value="onedark">💎 One Dark</option>
       <option value="warm">🌅 Warm Taupe</option>
       <option value="sage">🌿 Soft Sage</option>
-      <option value="sand">🏜️ Warm Sand</option>
+      <option value="light">☀️ Classic Light</option>
       <option value="mist">🌫️ Mist Blue</option>
       <option value="clay">🏺 Warm Clay</option>
     </select>
@@ -646,7 +663,7 @@ function getNuTMax() { return getNuSc().tMax; }
 
 // ===== THEME =====
 function setTheme(name) {
-  const themeClasses = ['theme-neon','theme-vintage','theme-cosmic','theme-warm','theme-sage','theme-sand','theme-mist','theme-clay'];
+  const themeClasses = ['theme-neon','theme-vintage','theme-cosmic','theme-onedark','theme-warm','theme-sage','theme-light','theme-mist','theme-clay'];
   document.body.classList.remove(...themeClasses);
   if(name !== 'dark') document.body.classList.add('theme-' + name);
   state.theme = name;
