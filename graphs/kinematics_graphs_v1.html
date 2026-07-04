@@ -60,14 +60,23 @@
     --line-color: #3d7a5a; --shade: rgba(61,122,90,0.05);
     --green: #2d6a4f; --rose: #9d4e3c; --violet: #6b4d8a;
   }
-  /* ── Light Theme 3: Warm Sand ── */
-  .theme-sand {
-    --bg: #d6cebd; --card: #e6ddd0; --border: #c4b9a6;
-    --text: #2d2922; --text-dim: #6b6052; --text-muted: #928678;
-    --accent: #b87a3a; --accent-glow: rgba(184,122,58,0.1);
-    --grid: #ccc2b2; --graph-bg: #f0eae0;
-    --line-color: #b87a3a; --shade: rgba(184,122,58,0.05);
-    --green: #7a8a3d; --rose: #a04a3a; --violet: #7a4d8a;
+  /* ── Light Theme 3: Classic White ── */
+  .theme-light {
+    --bg:#ffffff; --card:#f3f4f6; --border:#d1d5db;
+    --text:#111827; --text-dim:#4b5563; --text-muted:#9ca3af;
+    --accent:#2563eb; --accent-glow:rgba(37,99,235,0.1);
+    --grid:#e5e7eb; --graph-bg:#f9fafb;
+    --line-color:#2563eb; --shade:rgba(37,99,235,0.05);
+    --green:#059669; --rose:#dc2626; --violet:#7c3aed;
+  }
+  /* ── Dark Theme 4: One Dark ── */
+  .theme-onedark {
+    --bg:#282c34; --card:#353b45; --border:#4b5263;
+    --text:#abb2bf; --text-dim:#7a8294; --text-muted:#5c6370;
+    --accent:#61afef; --accent-glow:rgba(97,175,239,0.1);
+    --grid:#353b45; --graph-bg:#21252b;
+    --line-color:#61afef; --shade:rgba(152,195,121,0.06);
+    --green:#98c379; --rose:#e06c75; --violet:#c678dd;
   }
   /* ── Light Theme 4: Mist Blue ── */
   .theme-mist {
@@ -290,8 +299,8 @@
     background:var(--border);opacity:0.15;
     border-radius:50%;transition:all 0.3s;
   }
-  .theme-warm .cloud, .theme-sage .cloud, .theme-sand .cloud, .theme-mist .cloud, .theme-clay .cloud{background:rgba(147,197,253,0.25);opacity:0.35;border:1px solid rgba(30,64,175,0.2);}
-  .theme-warm .cloud::after, .theme-sage .cloud::after, .theme-sand .cloud::after, .theme-mist .cloud::after, .theme-clay .cloud::after{background:rgba(147,197,253,0.2);border:1px solid rgba(30,64,175,0.15);}
+  .theme-warm .cloud, .theme-sage .cloud, .theme-light .cloud, .theme-mist .cloud, .theme-clay .cloud{background:rgba(147,197,253,0.25);opacity:0.35;border:1px solid rgba(30,64,175,0.2);}
+  .theme-warm .cloud::after, .theme-sage .cloud::after, .theme-light .cloud::after, .theme-mist .cloud::after, .theme-clay .cloud::after{background:rgba(147,197,253,0.2);border:1px solid rgba(30,64,175,0.15);}
   .scene-moon-sun{
     position:absolute;top:14px;right:18px;width:25px;height:25px;
     z-index:3;pointer-events:none;text-align:center;
@@ -303,8 +312,8 @@
   }
   .scene-moon-sun .moon{font-size:20px;opacity:0.15;}
   .scene-moon-sun .sun{opacity:0;}
-  .theme-warm .scene-moon-sun .moon, .theme-sage .scene-moon-sun .moon, .theme-sand .scene-moon-sun .moon, .theme-mist .scene-moon-sun .moon, .theme-clay .scene-moon-sun .moon{opacity:0;}
-  .theme-warm .scene-moon-sun .sun, .theme-sage .scene-moon-sun .sun, .theme-sand .scene-moon-sun .sun, .theme-mist .scene-moon-sun .sun, .theme-clay .scene-moon-sun .sun{opacity:0.25;}
+  .theme-warm .scene-moon-sun .moon, .theme-sage .scene-moon-sun .moon, .theme-light .scene-moon-sun .moon, .theme-mist .scene-moon-sun .moon, .theme-clay .scene-moon-sun .moon{opacity:0;}
+  .theme-warm .scene-moon-sun .sun, .theme-sage .scene-moon-sun .sun, .theme-light .scene-moon-sun .sun, .theme-mist .scene-moon-sun .sun, .theme-clay .scene-moon-sun .sun{opacity:0.25;}
   /* Sun: warm circle with red glow instead of emoji */
   .scene-moon-sun .sun-inner{
     width:20px;height:20px;border-radius:50%;
@@ -312,7 +321,7 @@
     box-shadow:0 0 20px rgba(220,38,38,0.25),0 0 40px rgba(249,115,22,0.15);
     opacity:0.5;transition:opacity 0.4s;
   }
-  .theme-warm .scene-moon-sun .sun-inner, .theme-sage .scene-moon-sun .sun-inner, .theme-sand .scene-moon-sun .sun-inner, .theme-mist .scene-moon-sun .sun-inner, .theme-clay .scene-moon-sun .sun-inner{
+  .theme-warm .scene-moon-sun .sun-inner, .theme-sage .scene-moon-sun .sun-inner, .theme-light .scene-moon-sun .sun-inner, .theme-mist .scene-moon-sun .sun-inner, .theme-clay .scene-moon-sun .sun-inner{
     border:1.5px solid #991b1b;
     opacity:0.6;
   }
@@ -387,14 +396,15 @@
   <h1>📊 <span>Kinematics Graphs of Horizontal Motion</span> <span class="badge-top">v1.2.0</span></h1>
   <select class="theme-select" onchange="setTheme(this.value)">
       <option value="dark">🌙 Classic Dark</option>
-      <option value="neon">🌃 Cyberpunk Neon</option>
       <option value="vintage">📜 Vintage Dark</option>
+      <option value="neon">🌃 Cyberpunk Neon</option>
       <option value="cosmic">🌌 Cosmic Void</option>
+      <option value="onedark">💎 One Dark</option>
+      <option value="light">☀️ Classic White</option>
+      <option value="clay">🏺 Warm Clay</option>
       <option value="warm">🌅 Warm Taupe</option>
       <option value="sage">🌿 Soft Sage</option>
-      <option value="sand">🏜️ Warm Sand</option>
       <option value="mist">🌫️ Mist Blue</option>
-      <option value="clay">🏺 Warm Clay</option>
     </select>
 </div>
 
@@ -528,12 +538,12 @@ const animScene = document.getElementById('animScene');
 
 // ===== THEME =====
 function setTheme(name) {
-  const themeClasses = ['theme-neon','theme-vintage','theme-cosmic','theme-warm','theme-sage','theme-sand','theme-mist','theme-clay'];
+  const themeClasses = ['theme-neon','theme-vintage','theme-cosmic','theme-onedark','theme-light','theme-warm','theme-sage','theme-mist','theme-clay'];
   document.body.classList.remove(...themeClasses);
   if(name !== 'dark') document.body.classList.add('theme-' + name);
   state.theme = name;
 }
-function isDark() { return state.theme === 'dark' || state.theme === 'neon' || state.theme === 'vintage' || state.theme === 'cosmic'; }
+function isDark() { return state.theme === 'dark' || state.theme === 'neon' || state.theme === 'vintage' || state.theme === 'cosmic' || state.theme === 'onedark'; }
 
 function niceStep(range, targetTicks) {
   if(range <= 0) return 1;

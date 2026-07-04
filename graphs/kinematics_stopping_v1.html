@@ -46,7 +46,27 @@
   --shade-brake: rgba(251,113,133,0.08);
   --green: #34d399; --rose: #fb7185; --violet: #c084fc; --amber: #fbbf24;
 }
-/* ── Light Theme 1: Warm Taupe ── */
+/* ── Dark Theme 4: One Dark ── */
+.theme-onedark {
+  --bg: #282c34; --card: #2c313a; --border: #3e4452;
+  --text: #abb2bf; --text-dim: #848b98; --text-muted: #5c6370;
+  --accent: #61afef; --accent-glow: rgba(97,175,239,0.12);
+  --grid: #2c313a; --graph-bg: #21252b;
+  --line-speed: #61afef; --shade-think: rgba(97,175,239,0.08);
+  --shade-brake: rgba(224,108,117,0.08);
+  --green: #98c379; --rose: #e06c75; --violet: #c678dd; --amber: #e5c07b;
+}
+/* ── Light Theme 1: Classic White ── */
+.theme-light {
+  --bg: #ffffff; --card: #f1f5f9; --border: #cbd5e1;
+  --text: #0f172a; --text-dim: #475569; --text-muted: #94a3b8;
+  --accent: #0f766e; --accent-glow: rgba(15,118,110,0.08);
+  --grid: #c9c2b5; --graph-bg: #f8fafc;
+  --line-speed: #0f766e; --shade-think: rgba(15,118,110,0.06);
+  --shade-brake: rgba(190,18,60,0.06);
+  --green: #047857; --rose: #be123c; --violet: #6d28d9; --amber: #b45309;
+}
+/* ── Light Theme 2: Warm Taupe ── */
 .theme-warm {
   --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
   --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
@@ -56,7 +76,7 @@
   --shade-brake: rgba(190,18,60,0.06);
   --green: #047857; --rose: #be123c; --violet: #6d28d9; --amber: #b45309;
 }
-/* ── Light Theme 2: Soft Sage ── */
+/* ── Light Theme 3: Soft Sage ── */
 .theme-sage {
   --bg: #d4d9cc; --card: #e3e7db; --border: #c2c9b5;
   --text: #2d2a24; --text-dim: #5d6b52; --text-muted: #8a9a78;
@@ -65,16 +85,6 @@
   --line-speed: #3d7a5a; --shade-think: rgba(61,122,90,0.06);
   --shade-brake: rgba(157,78,60,0.06);
   --green: #2d6a4f; --rose: #9d4e3c; --violet: #6b4d8a; --amber: #9a7b3d;
-}
-/* ── Light Theme 3: Warm Sand ── */
-.theme-sand {
-  --bg: #d6cebd; --card: #e6ddd0; --border: #c4b9a6;
-  --text: #2d2922; --text-dim: #6b6052; --text-muted: #928678;
-  --accent: #b87a3a; --accent-glow: rgba(184,122,58,0.1);
-  --grid: #ccc2b2; --graph-bg: #f0eae0;
-  --line-speed: #b87a3a; --shade-think: rgba(184,122,58,0.06);
-  --shade-brake: rgba(160,74,58,0.06);
-  --green: #7a8a3d; --rose: #a04a3a; --violet: #7a4d8a; --amber: #c4902d;
 }
 /* ── Light Theme 4: Mist Blue ── */
 .theme-mist {
@@ -156,7 +166,7 @@ body {
   position:absolute;bottom:20px;left:0;right:0;height:60px;
   background:#3a3a4a;border-top:3px solid #555;
 }
-.theme-warm .road, .theme-sage .road, .theme-sand .road, .theme-mist .road, .theme-clay .road{background:#9a9a8a;border-top:3px solid #888;}
+.theme-warm .road, .theme-sage .road, .theme-light .road, .theme-mist .road, .theme-clay .road{background:#9a9a8a;border-top:3px solid #888;}
 .road-line{
   position:absolute;bottom:48px;left:0;right:0;height:2px;
   background:var(--amber);opacity:0.6;
@@ -493,14 +503,15 @@ body {
   <h1>🚗 <span>Stopping Distance</span> <span class="badge-top">v1.0.0</span></h1>
   <select class="theme-select" onchange="setTheme(this.value)">
       <option value="dark">🌙 Classic Dark</option>
-      <option value="neon">🌃 Cyberpunk Neon</option>
       <option value="vintage">📜 Vintage Dark</option>
+      <option value="neon">🌃 Cyberpunk Neon</option>
       <option value="cosmic">🌌 Cosmic Void</option>
+      <option value="onedark">💎 One Dark</option>
+      <option value="light">☀️ Classic White</option>
+      <option value="clay">🏺 Warm Clay</option>
       <option value="warm">🌅 Warm Taupe</option>
       <option value="sage">🌿 Soft Sage</option>
-      <option value="sand">🏜️ Warm Sand</option>
       <option value="mist">🌫️ Mist Blue</option>
-      <option value="clay">🏺 Warm Clay</option>
     </select>
 </div>
 
@@ -814,8 +825,8 @@ function toUnit(v){
 }
 function unitLabel(){return state.unit==='kmh'?'km/h':state.unit==='mih'?'mi/h':'m/s';}
 
-function setTheme(name){const tc=['theme-neon','theme-vintage','theme-cosmic','theme-warm','theme-sage','theme-sand','theme-mist','theme-clay'];document.body.classList.remove(...tc);if(name!=='dark')document.body.classList.add('theme-'+name);state.theme=name;drawGraph();}
-function isDark(){return state.theme==='dark'||state.theme==='neon'||state.theme==='vintage'||state.theme==='cosmic';}
+function setTheme(name){const tc=['theme-neon','theme-vintage','theme-cosmic','theme-onedark','theme-light','theme-warm','theme-sage','theme-mist','theme-clay'];document.body.classList.remove(...tc);if(name!=='dark')document.body.classList.add('theme-'+name);state.theme=name;drawGraph();}
+function isDark(){return state.theme==='dark'||state.theme==='neon'||state.theme==='vintage'||state.theme==='cosmic'||state.theme==='onedark';}
 
 // Physics
 function compute(){

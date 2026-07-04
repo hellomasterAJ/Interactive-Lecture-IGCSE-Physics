@@ -66,15 +66,25 @@
     --shade: rgba(154,123,61,0.05);
     --green: #2d6a4f; --rose: #9d4e3c; --violet: #6b4d8a;
   }
-  /* ── Light Theme 3: Warm Sand ── */
-  .theme-sand {
-    --bg: #d6cebd; --card: #e6ddd0; --border: #c4b9a6;
-    --text: #2d2922; --text-dim: #6b6052; --text-muted: #928678;
-    --accent: #b87a3a; --accent-glow: rgba(184,122,58,0.1);
-    --grid: #ccc2b2; --graph-bg: #f0eae0;
-    --line-d: #c4902d; --line-v: #b87a3a; --line-a: #a04a3a;
-    --shade: rgba(196,144,45,0.05);
-    --green: #7a8a3d; --rose: #a04a3a; --violet: #7a4d8a;
+  /* ── Light Theme: Classic White ── */
+  .theme-light {
+    --bg: #ffffff; --card: #f8f9fa; --border: #dee2e6;
+    --text: #212529; --text-dim: #6c757d; --text-muted: #adb5bd;
+    --accent: #3b82f6; --accent-glow: rgba(59,130,246,0.1);
+    --grid: #e9ecef; --graph-bg: #f1f3f5;
+    --line-d: #f59e0b; --line-v: #3b82f6; --line-a: #ef4444;
+    --shade: rgba(245,158,11,0.05);
+    --green: #10b981; --rose: #ef4444; --violet: #8b5cf6;
+  }
+  /* ── Dark Theme: One Dark ── */
+  .theme-onedark {
+    --bg: #1e2127; --card: #282c34; --border: #3b4048;
+    --text: #abb2bf; --text-dim: #7f848e; --text-muted: #5c6370;
+    --accent: #61afef; --accent-glow: rgba(97,175,239,0.12);
+    --grid: #2c313a; --graph-bg: #181a1f;
+    --line-d: #e5c07b; --line-v: #61afef; --line-a: #e06c75;
+    --shade: rgba(229,192,123,0.06);
+    --green: #98c379; --rose: #e06c75; --violet: #c678dd;
   }
   /* ── Light Theme 4: Mist Blue ── */
   .theme-mist {
@@ -426,14 +436,15 @@
   <h1>🍎 <span>Kinematics of a Freely Falling Body</span> <span class="badge-top">v1.0.0</span></h1>
   <select class="theme-select" onchange="setTheme(this.value)">
       <option value="dark">🌙 Classic Dark</option>
-      <option value="neon">🌃 Cyberpunk Neon</option>
       <option value="vintage">📜 Vintage Dark</option>
+      <option value="neon">🌃 Cyberpunk Neon</option>
       <option value="cosmic">🌌 Cosmic Void</option>
+      <option value="onedark">💎 One Dark</option>
+      <option value="light">☀️ Classic White</option>
+      <option value="clay">🏺 Warm Clay</option>
       <option value="warm">🌅 Warm Taupe</option>
       <option value="sage">🌿 Soft Sage</option>
-      <option value="sand">🏜️ Warm Sand</option>
       <option value="mist">🌫️ Mist Blue</option>
-      <option value="clay">🏺 Warm Clay</option>
     </select>
 </div>
 
@@ -569,8 +580,8 @@ const state={
 const scene=document.getElementById('scene');
 const apple=document.getElementById('appleContainer');
 
-function setTheme(name){const tc=['theme-neon','theme-vintage','theme-cosmic','theme-warm','theme-sage','theme-sand','theme-mist','theme-clay'];document.body.classList.remove(...tc);if(name!=='dark')document.body.classList.add('theme-'+name);state.theme=name;drawAll();}
-function isDark(){return state.theme==='dark'||state.theme==='neon'||state.theme==='vintage'||state.theme==='cosmic';}
+function setTheme(name){const tc=['theme-neon','theme-vintage','theme-cosmic','theme-onedark','theme-light','theme-warm','theme-sage','theme-mist','theme-clay'];document.body.classList.remove(...tc);if(name!=='dark')document.body.classList.add('theme-'+name);state.theme=name;drawAll();}
+function isDark(){return state.theme==='dark'||state.theme==='neon'||state.theme==='vintage'||state.theme==='cosmic'||state.theme==='onedark';}
 
 // Physics — g is NEGATIVE (downward)
 function getY(t){return state.y0+state.u*t+0.5*state.g*t*t;}
