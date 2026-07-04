@@ -947,7 +947,7 @@ function updateDescription(){
 
 function updateContextLabels(){
   const cells=[1,2,3,4].map(i=>document.getElementById('ctx'+i));
-  cells.forEach(c=>c.textContent='');
+  cells.forEach(c=>c.textContent='\u200B'); // zero-width space to prevent collapse
   const gt=state.graphType;
   if(gt==='dist-time'){
     cells[2].textContent='Gradient';  // above Speed
@@ -955,7 +955,7 @@ function updateContextLabels(){
     cells[1].textContent='Area';      // above Distance
     cells[3].textContent='Gradient';  // above Accel
   }
-  // accel-time: nothing
+  // accel-time: all stay as zero-width space = same height
 }
 function updateSentence(){
   const info=getSentences();
