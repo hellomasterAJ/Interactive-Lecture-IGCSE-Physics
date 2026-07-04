@@ -6,6 +6,7 @@
 <title>Stopping Distance — Thinking + Braking</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+/* ── Dark (default) ── */
 :root {
   --bg: #0f172a; --card: #1e293b; --border: #334155;
   --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
@@ -15,7 +16,38 @@
   --shade-brake: rgba(251,114,133,0.08);
   --green: #34d399; --rose: #fb7185; --violet: #a78bfa; --amber: #fbbf24;
 }
-.light {
+/* ── Dark Theme 1: Cyberpunk Neon ── */
+.theme-neon {
+  --bg: #0d0f1a; --card: #1a1c2e; --border: #2a2d4a;
+  --text: #e0e0f0; --text-dim: #8888b8; --text-muted: #5a5a8a;
+  --accent: #00ffc8; --accent-glow: rgba(0,255,200,0.1);
+  --grid: #1a1c2e; --graph-bg: #080a14;
+  --line-speed: #00ffc8; --shade-think: rgba(0,255,200,0.08);
+  --shade-brake: rgba(255,68,153,0.08);
+  --green: #00ff88; --rose: #ff4499; --violet: #8844ff; --amber: #ffcc00;
+}
+/* ── Dark Theme 2: Vintage Dark ── */
+.theme-vintage {
+  --bg: #141210; --card: #22201c; --border: #3a3530;
+  --text: #d4cfc4; --text-dim: #8a8578; --text-muted: #6a655a;
+  --accent: #c49a5a; --accent-glow: rgba(196,154,90,0.1);
+  --grid: #22201c; --graph-bg: #0e0c0a;
+  --line-speed: #c49a5a; --shade-think: rgba(196,154,90,0.08);
+  --shade-brake: rgba(170,85,85,0.08);
+  --green: #6a9a5a; --rose: #aa5555; --violet: #7a5a8a; --amber: #c4a040;
+}
+/* ── Dark Theme 3: Cosmic Void ── */
+.theme-cosmic {
+  --bg: #070b14; --card: #111827; --border: #1e293b;
+  --text: #c8d0e0; --text-dim: #7a84a0; --text-muted: #4a5470;
+  --accent: #a78bfa; --accent-glow: rgba(167,139,250,0.1);
+  --grid: #111827; --graph-bg: #040810;
+  --line-speed: #a78bfa; --shade-think: rgba(167,139,250,0.08);
+  --shade-brake: rgba(251,113,133,0.08);
+  --green: #34d399; --rose: #fb7185; --violet: #c084fc; --amber: #fbbf24;
+}
+/* ── Light Theme 1: Warm Taupe ── */
+.theme-warm {
   --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
   --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
   --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
@@ -23,6 +55,46 @@
   --line-speed: #0f766e; --shade-think: rgba(15,118,110,0.06);
   --shade-brake: rgba(190,18,60,0.06);
   --green: #047857; --rose: #be123c; --violet: #6d28d9; --amber: #b45309;
+}
+/* ── Light Theme 2: Soft Sage ── */
+.theme-sage {
+  --bg: #d4d9cc; --card: #e3e7db; --border: #c2c9b5;
+  --text: #2d2a24; --text-dim: #5d6b52; --text-muted: #8a9a78;
+  --accent: #3d7a5a; --accent-glow: rgba(61,122,90,0.1);
+  --grid: #c9d0bd; --graph-bg: #eef2e7;
+  --line-speed: #3d7a5a; --shade-think: rgba(61,122,90,0.06);
+  --shade-brake: rgba(157,78,60,0.06);
+  --green: #2d6a4f; --rose: #9d4e3c; --violet: #6b4d8a; --amber: #9a7b3d;
+}
+/* ── Light Theme 3: Warm Sand ── */
+.theme-sand {
+  --bg: #d6cebd; --card: #e6ddd0; --border: #c4b9a6;
+  --text: #2d2922; --text-dim: #6b6052; --text-muted: #928678;
+  --accent: #b87a3a; --accent-glow: rgba(184,122,58,0.1);
+  --grid: #ccc2b2; --graph-bg: #f0eae0;
+  --line-speed: #b87a3a; --shade-think: rgba(184,122,58,0.06);
+  --shade-brake: rgba(160,74,58,0.06);
+  --green: #7a8a3d; --rose: #a04a3a; --violet: #7a4d8a; --amber: #c4902d;
+}
+/* ── Light Theme 4: Mist Blue ── */
+.theme-mist {
+  --bg: #c8ced6; --card: #dadfe8; --border: #b5bcc9;
+  --text: #22262d; --text-dim: #4d5663; --text-muted: #7a8492;
+  --accent: #3a6a8a; --accent-glow: rgba(58,106,138,0.1);
+  --grid: #c2c8d2; --graph-bg: #e6eaf0;
+  --line-speed: #3a6a8a; --shade-think: rgba(58,106,138,0.06);
+  --shade-brake: rgba(138,74,90,0.06);
+  --green: #3a7a5a; --rose: #8a4a5a; --violet: #5a4d8a; --amber: #8a7a3a;
+}
+/* ── Light Theme 5: Warm Clay ── */
+.theme-clay {
+  --bg: #d4c8be; --card: #e5d9d0; --border: #c2b5aa;
+  --text: #2d2622; --text-dim: #6a5a4d; --text-muted: #928078;
+  --accent: #a55a3a; --accent-glow: rgba(165,90,58,0.1);
+  --grid: #ccbfb5; --graph-bg: #eee6de;
+  --line-speed: #a55a3a; --shade-think: rgba(165,90,58,0.06);
+  --shade-brake: rgba(160,58,58,0.06);
+  --green: #5a7a4a; --rose: #a03a3a; --violet: #6a4d7a; --amber: #b07a2a;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body {
@@ -47,6 +119,13 @@ body {
   font-family:'JetBrains Mono',monospace;transition:all 0.2s;
 }
 .theme-btn:hover{border-color:var(--accent);color:var(--accent);}
+.theme-select{
+  background:var(--card);border:1px solid var(--border);color:var(--text);
+  padding:4px 10px;border-radius:8px;cursor:pointer;font-size:0.7rem;
+  font-family:'JetBrains Mono',monospace;transition:all 0.2s;
+  outline:none;min-width:110px;
+}
+.theme-select:hover{border-color:var(--accent);}
 
 /* Sections */
 .section{
@@ -77,7 +156,7 @@ body {
   position:absolute;bottom:20px;left:0;right:0;height:60px;
   background:#3a3a4a;border-top:3px solid #555;
 }
-.light .road{background:#9a9a8a;border-top:3px solid #888;}
+.theme-warm .road, .theme-sage .road, .theme-sand .road, .theme-mist .road, .theme-clay .road{background:#9a9a8a;border-top:3px solid #888;}
 .road-line{
   position:absolute;bottom:48px;left:0;right:0;height:2px;
   background:var(--amber);opacity:0.6;
@@ -412,7 +491,17 @@ body {
 <!-- Top bar -->
 <div class="top-bar">
   <h1>🚗 <span>Stopping Distance</span> <span class="badge-top">v1.0.0</span></h1>
-  <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+  <select class="theme-select" onchange="setTheme(this.value)">
+      <option value="dark">🌙 Classic Dark</option>
+      <option value="neon">🌃 Cyberpunk Neon</option>
+      <option value="vintage">📜 Vintage Dark</option>
+      <option value="cosmic">🌌 Cosmic Void</option>
+      <option value="warm">🌅 Warm Taupe</option>
+      <option value="sage">🌿 Soft Sage</option>
+      <option value="sand">🏜️ Warm Sand</option>
+      <option value="mist">🌫️ Mist Blue</option>
+      <option value="clay">🏺 Warm Clay</option>
+    </select>
 </div>
 
 <!-- Graph section -->
@@ -725,12 +814,8 @@ function toUnit(v){
 }
 function unitLabel(){return state.unit==='kmh'?'km/h':state.unit==='mih'?'mi/h':'m/s';}
 
-function toggleTheme(){
-  document.body.classList.toggle('light');
-  state.theme=document.body.classList.contains('light')?'light':'dark';
-  drawGraph();
-}
-function isDark(){return state.theme==='dark';}
+function setTheme(name){const tc=['theme-neon','theme-vintage','theme-cosmic','theme-warm','theme-sage','theme-sand','theme-mist','theme-clay'];document.body.classList.remove(...tc);if(name!=='dark')document.body.classList.add('theme-'+name);state.theme=name;drawGraph();}
+function isDark(){return state.theme==='dark'||state.theme==='neon'||state.theme==='vintage'||state.theme==='cosmic';}
 
 // Physics
 function compute(){
@@ -1238,6 +1323,7 @@ function describeMotion(t){
 }
 
 function init(){
+  document.querySelector('.theme-select').value='dark';
   switchSceneBg('normal');
   compute();drawGraph();updateScene();describeMotion(0);
   updateConditions();
