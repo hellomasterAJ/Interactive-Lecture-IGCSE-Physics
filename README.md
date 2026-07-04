@@ -94,9 +94,9 @@ Educational use — HAUS Academy
 
 | # | การเปลี่ยนแปลง | ไฟล์ที่เกี่ยวข้อง | รายละเอียด |
 |---|---------------|------------------|-----------|
-| 1 | **เพิ่ม 3 ธีมใหม่** | ทั้ง 4 ไฟล์ | 💎 One Dark (Atom), ☀️ Classic White, 🌃 Cyberpunk Neon |
-| 2 | **ลบ Warm Sand** | ทั้ง 4 ไฟล์ | เปลี่ยนเป็น Classic White แทน |
-| 3 | **เปลี่ยนชื่อ** | ทั้ง 4 ไฟล์ | Classic Light → Classic White |
+| 1 | **เพิ่ม 3 ธีมใหม่** | ทั้ง 4 ไฟล์ | 💎 One Dark (Atom), ☀️ Classic Light, 🌃 Cyberpunk Neon |
+| 2 | **ลบ Warm Sand** | ทั้ง 4 ไฟล์ | เปลี่ยนเป็น Classic Light แทน |
+| 3 | **เปลี่ยนชื่อ** | ทั้ง 4 ไฟล์ | กลับไปใช้ Classic Light (แก้จาก White) |
 | 4 | **Reorder dropdown** | ทั้ง 4 ไฟล์ | Dark→Vintage→Neon→Cosmic→OneDark→White→Clay→Warm→Sage→Mist |
 
 ### 3 July 2026 — Layout Refinements (`kinematics_vt_graph_v1.html`)
