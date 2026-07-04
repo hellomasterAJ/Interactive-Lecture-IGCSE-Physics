@@ -18,7 +18,8 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── kinematics_graphs_v1.html       ← Horizontal Motion 🚗
 │   ├── kinematics_freefall_v1.html     ← Free Fall 🍎
 │   ├── kinematics_stopping_v1.html     ← Stopping Distance 🚘
-│   └── kinematics_vt_graph_v1.html     ← Advanced VT Graph 📈
+│   ├── kinematics_vt_graph_v1.html     ← Advanced VT Graph 📈
+│   └── kinematics_terminal_velocity_v1.html ← Terminal Velocity Skydive 🪂
 ├── scripts/               ← Build system (Python)
 │   ├── build.py           ← Main: python build.py lecture.md
 │   ├── build_dashboard.py ← Dashboard generator
@@ -53,7 +54,7 @@ python3 -m playwright install chromium
 | # | Topic | Interactive Graph |
 |---|-------|:--------:|
 | 1.1 | Physical Quantities & Measurement | ❌ |
-| 1.2 | Motion — Kinematics | ✅ Horizontal, Free-fall, Stopping, Advanced VT Graph |
+| 1.2 | Motion — Kinematics | ✅ Horizontal, Free-fall, Stopping, Advanced VT, Terminal Velocity Skydive 🪂 |
 | 1.3 | Mass and Weight | ❌ |
 | 1.4 | Density | ❌ |
 | 1.5 | Forces (Hooke's Law) | ❌ |
@@ -64,9 +65,10 @@ python3 -m playwright install chromium
 ## 🎯 Features
 
 - **5-part lecture structure**: 📜 History → 🌍 Nature → ⚛️ Theory → 📊 Graphs → ✍️ Examples
-- **Interactive graphs**: Real-time animation with Canvas + SVG (horizontal motion 🚗, free fall 🍎, stopping distance 🚘, advanced VT graph 📈)
+- **Interactive graphs**: Real-time animation with Canvas + SVG (horizontal motion 🚗, free fall 🍎, stopping distance 🚘, advanced VT graph 📈, terminal velocity skydive 🪂)
 - **SUVAT proofs**: 5 visual area proofs (v=u+at, s=ut+½at², s=vt-½at², s=½(u+v)t, v²=u²+2as)
 - **Non-uniform scenarios**: Terminal Velocity 🪂, Rocket Launch 🚀, Harmonic Motion 〰️ with gradient & trapezoidal analysis
+- **2-phase Skydive simulation**: Freefall (tanh model, a=g→Vt₁) + Parachute deployment (drag multiplier→Vt₂) with force arrows (Weight ↓ / Drag ↑), animated skydiver, moving clouds, airplane background
 - **Dark/Light theme**: Warm taupe light mode (not harsh white)
 - **KaTeX equations**: Beautiful LaTeX rendering
 - **PDF export**: A4 format via Playwright headless browser
