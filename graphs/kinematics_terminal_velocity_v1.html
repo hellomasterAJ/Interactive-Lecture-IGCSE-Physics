@@ -680,7 +680,7 @@ function drawAnim(){
   // --- PARACHUTE (redesigned — realistic dome with ribs) ---
   if(isPhase2){
     const openRatio = Math.min((currentT - td) / 1.0, 1);
-    const chuteW = 68 * (0.6 + 0.4 * openRatio);
+    const chuteW = 58 * (0.6 + 0.4 * openRatio);
     const chuteH = 28 * openRatio;
     const chuteTop = diverY - 42 * S - chuteH;
     const chuteBot = chuteTop + chuteH;
@@ -783,6 +783,75 @@ function drawAnim(){
     ctx.beginPath();
     ctx.arc(diverX, chuteTop + 2, 3, 0, Math.PI * 2);
     ctx.fill();
+  }
+
+  // === FORCE ARROWS (Weight ↓ & Air Resistance ↑) ===
+  const arrowX = diverX - 30 * S;
+  const arrowBaseY = diverY;
+  const wLen = 22 * S; // Weight arrow length (constant)
+
+  // Effective Vt transitions smoothly during deployment
+  const deployFrac = isPhase2 ? Math.min((currentT - td) / 1.0, 1) : 0;
+  const vtEff = isPhase2 ? state.vt1 - deployFrac * (state.vt1 - state.vt2) : state.vt1;
+  // Drag = (v / Vt_eff)² → at terminal: D=W=1
+  let dragRatio = (currentV / vtEff) * (currentV / vtEff);
+  // Cap visual drag at 3× weight for dramatic deployment
+  if(dragRatio > 3) dragRatio = 3;
+
+  const dLen = wLen * Math.max(0.05, dragRatio);
+
+  // --- Weight arrow (↓) ---
+  ctx.fillStyle = '#fbbf24'; // Amber/gold
+  ctx.strokeStyle = '#fbbf24';
+  ctx.lineWidth = 2;
+  // Arrow shaft
+  ctx.beginPath();
+  ctx.moveTo(arrowX, arrowBaseY);
+  ctx.lineTo(arrowX, arrowBaseY + wLen);
+  ctx.stroke();
+  // Arrowhead (down)
+  ctx.beginPath();
+  ctx.moveTo(arrowX - 4, arrowBaseY + wLen - 5);
+  ctx.lineTo(arrowX, arrowBaseY + wLen);
+  ctx.lineTo(arrowX + 4, arrowBaseY + wLen - 5);
+  ctx.fill();
+  // Label
+  ctx.fillStyle = '#fbbf24';
+  ctx.font = 'bold 8px Inter';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'top';
+  ctx.fillText('W', arrowX, arrowBaseY + wLen + 2);
+
+  // --- Drag arrow (↑) ---
+  const isDragLonger = dLen > wLen + 2;
+  ctx.fillStyle = isDragLonger ? '#fb7185' : '#60a5fa';
+  ctx.strokeStyle = isDragLonger ? '#fb7185' : '#60a5fa';
+  ctx.lineWidth = 2;
+  // Arrow shaft
+  ctx.beginPath();
+  ctx.moveTo(arrowX, arrowBaseY);
+  ctx.lineTo(arrowX, arrowBaseY - dLen);
+  ctx.stroke();
+  // Arrowhead (up)
+  ctx.beginPath();
+  ctx.moveTo(arrowX - 4, arrowBaseY - dLen + 5);
+  ctx.lineTo(arrowX, arrowBaseY - dLen);
+  ctx.lineTo(arrowX + 4, arrowBaseY - dLen + 5);
+  ctx.fill();
+  // Label
+  ctx.fillStyle = isDragLonger ? '#fb7185' : '#60a5fa';
+  ctx.font = 'bold 7px Inter';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'bottom';
+  ctx.fillText('D', arrowX, arrowBaseY - dLen - 1);
+
+  // Force balance text at very bottom
+  if(Math.abs(dragRatio - 1) < 0.08 && currentT > 0.5){
+    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+    ctx.font = '7px Inter';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    ctx.fillText('ΣF = 0', arrowX, arrowBaseY + wLen + 16);
   }
 
   // --- SKYDIVER BODY (scaled 0.7×) ---
