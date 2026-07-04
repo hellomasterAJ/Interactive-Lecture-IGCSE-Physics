@@ -88,7 +88,7 @@ body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);transit
 .kpi-strip{display:flex;gap:6px}
 .kpi-item{flex:1;background:var(--bg);border-radius:6px;padding:6px 10px;text-align:center}
 .kpi-item .k-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim)}
-.kpi-item .k-value{font-size:1rem;font-weight:700;font-family:'JetBrains Mono',monospace}
+.kpi-item .k-value{font-size:.85rem;font-weight:700;font-family:'JetBrains Mono',monospace}
 .kpi-item .k-value.good{color:var(--green)}
 .kpi-item .k-value.warn{color:var(--amber)}
 .kpi-item .k-value.bad{color:var(--rose)}
@@ -167,7 +167,7 @@ body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);transit
       <div class="ctrl-card">
         <div class="c-title">🎛️ Parameters</div>
         <div class="ctrl-row">
-          <label>Vt₁ (Freefall)</label>
+          <label>Terminal V₁ (Freefall)</label>
           <input type="range" id="vt1Slider" min="30" max="70" value="50" step="1">
           <span class="s-val" id="vt1Val">50</span>
           <span class="s-unit">m/s</span>
@@ -479,7 +479,7 @@ function drawGraph(){
   ctx.fillStyle = 'rgba(0,212,255,0.6)';
   ctx.font = '10px Inter';
   ctx.textAlign = 'left';
-  ctx.fillText('Vt₁ = ' + state.vt1 + ' m/s', PAD.left + 4, toY(state.vt1) - 3);
+  ctx.fillText('Terminal V₁ = ' + state.vt1 + ' m/s', PAD.left + 4, toY(state.vt1) - 3);
   ctx.setLineDash([]);
 
   // ----- Vt2 DASHED LINE -----
@@ -494,7 +494,7 @@ function drawGraph(){
   ctx.fillStyle = 'rgba(255,179,71,0.6)';
   ctx.font = '10px Inter';
   ctx.textAlign = 'left';
-  ctx.fillText('Vt₂ = ' + state.vt2 + ' m/s', PAD.left + 4, toY(state.vt2) - 3);
+  ctx.fillText('Terminal V₂ = ' + state.vt2 + ' m/s', PAD.left + 4, toY(state.vt2) - 3);
   ctx.setLineDash([]);
 
   // ----- DEPLOY MARKER -----
@@ -605,9 +605,6 @@ function drawAnim(){
   const currentV = vAt(currentT);
   const speedRatio = currentV / state.vt1;
   let suitColor = '#e74c3c';
-  if(speedRatio > 0.9) suitColor = '#fb7185';
-  else if(speedRatio > 0.6) suitColor = '#f97316';
-  else suitColor = '#3b82f6';
 
   // Clear
   ctx.clearRect(0, 0, W, H);
@@ -656,26 +653,88 @@ function drawAnim(){
   // --- AIRPLANE (moves right, opposite to clouds) ---
   state.planeX += 0.08 + speedRatio * 0.05;
   if(state.planeX > W + 100) state.planeX = -120;
-  const px = state.planeX, py = 25 + Math.sin(state.planeX * 0.005) * 5;
+  const px = state.planeX, py = 30 + Math.sin(state.planeX * 0.008) * 6;
   ctx.save();
   ctx.translate(px, py);
-  ctx.scale(0.5, 0.5);
-  // Fuselage
-  ctx.fillStyle = isDark() ? 'rgba(148,163,184,0.3)' : 'rgba(100,120,140,0.2)';
+  ctx.scale(0.45, 0.45);
+
+  // Fuselage body
+  ctx.fillStyle = isDark() ? '#94a3b8' : '#6b8cae';
   ctx.beginPath();
-  ctx.ellipse(0, 0, 32, 6, 0, 0, Math.PI * 2);
+  ctx.ellipse(0, 0, 34, 7, 0, 0, Math.PI * 2);
   ctx.fill();
-  // Wings
+  ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.12)';
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+
+  // Cockpit windows (blue)
+  ctx.fillStyle = isDark() ? '#60a5fa' : '#3b82f6';
   ctx.beginPath();
-  ctx.moveTo(-5, -18); ctx.lineTo(5, -18); ctx.lineTo(15, 0); ctx.lineTo(5, 18);
-  ctx.lineTo(-5, 18); ctx.lineTo(-15, 0); ctx.closePath();
+  ctx.ellipse(22, -1, 7, 4, -0.1, 0, Math.PI * 2);
   ctx.fill();
-  // Tail
+  ctx.fillStyle = isDark() ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.3)';
   ctx.beginPath();
-  ctx.moveTo(-28, -10); ctx.lineTo(-20, -10); ctx.lineTo(-25, 0); ctx.closePath();
+  ctx.ellipse(23, -2, 3, 2, -0.1, 0, Math.PI * 2);
   ctx.fill();
-  // Tail horizontal
-  ctx.fillRect(-30, -2, 12, 4);
+
+  // Passenger windows
+  ctx.fillStyle = isDark() ? 'rgba(148,163,184,0.4)' : 'rgba(100,130,160,0.4)';
+  for(let i = 0; i < 4; i++){
+    ctx.fillRect(4 + i * 7, -3, 3, 3);
+  }
+
+  // Main wings (top view — dark gray)
+  ctx.fillStyle = isDark() ? '#64748b' : '#4a6a8a';
+  ctx.beginPath();
+  ctx.moveTo(-2, -22); ctx.lineTo(8, -22);
+  ctx.lineTo(20, 0); ctx.lineTo(8, 22);
+  ctx.lineTo(-2, 22); ctx.lineTo(-14, 0);
+  ctx.closePath();
+  ctx.fill();
+  ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
+  ctx.lineWidth = 0.5;
+  ctx.stroke();
+
+  // Wing stripes (colored accents)
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillRect(0, -18, 4, 36);
+
+  // Horizontal stabilizer (tail wings)
+  ctx.fillStyle = isDark() ? '#64748b' : '#4a6a8a';
+  ctx.beginPath();
+  ctx.moveTo(-32, -10); ctx.lineTo(-24, -10);
+  ctx.lineTo(-24, 10); ctx.lineTo(-32, 10);
+  ctx.closePath();
+  ctx.fill();
+
+  // Vertical stabilizer (tail fin)
+  ctx.fillStyle = isDark() ? '#475569' : '#3a5a7a';
+  ctx.beginPath();
+  ctx.moveTo(-30, -14); ctx.lineTo(-24, -14);
+  ctx.lineTo(-22, 0); ctx.lineTo(-30, 0);
+  ctx.closePath();
+  ctx.fill();
+
+  // Red tail stripe
+  ctx.fillStyle = '#e74c3c';
+  ctx.fillRect(-31, -2, 8, 4);
+
+  // Engine (small detail)
+  ctx.fillStyle = isDark() ? '#475569' : '#3a5a7a';
+  ctx.beginPath();
+  ctx.ellipse(32, 0, 4, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Contrails / exhaust
+  ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.08)' : 'rgba(200,200,255,0.06)';
+  ctx.lineWidth = 2;
+  ctx.setLineDash([4,6]);
+  ctx.beginPath();
+  ctx.moveTo(-35, 1);
+  ctx.lineTo(-55, 1);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
   ctx.restore();
 
   // Ground
@@ -846,9 +905,9 @@ function drawAnim(){
 
   const dLen = wLen * Math.max(0.05, dragRatio);
 
-  // --- Weight arrow (↓) ---
-  ctx.fillStyle = '#fbbf24'; // Amber/gold
-  ctx.strokeStyle = '#fbbf24';
+  // --- Weight arrow (↓) — Pastel Orange ---
+  ctx.fillStyle = '#fbb88c';
+  ctx.strokeStyle = '#fbb88c';
   ctx.lineWidth = 3;
   // Arrow shaft
   ctx.beginPath();
@@ -862,16 +921,15 @@ function drawAnim(){
   ctx.lineTo(arrowX + 6, arrowBaseY + wLen - 7);
   ctx.fill();
   // Label
-  ctx.fillStyle = '#fbbf24';
+  ctx.fillStyle = '#fbb88c';
   ctx.font = 'bold 12px Inter';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillText('W (mg)', arrowX, arrowBaseY + wLen + 3);
+  ctx.fillText('Weight (mg)', arrowX, arrowBaseY + wLen + 3);
 
-  // --- Drag arrow (↑) ---
-  const isDragLonger = dLen > wLen + 2;
-  ctx.fillStyle = isDragLonger ? '#fb7185' : '#60a5fa';
-  ctx.strokeStyle = isDragLonger ? '#fb7185' : '#60a5fa';
+  // --- Drag arrow (↑) — Light Blue ---
+  ctx.fillStyle = '#87cefa';
+  ctx.strokeStyle = '#87cefa';
   ctx.lineWidth = 3;
   // Arrow shaft
   ctx.beginPath();
@@ -885,11 +943,11 @@ function drawAnim(){
   ctx.lineTo(arrowX + 6, arrowBaseY - dLen + 7);
   ctx.fill();
   // Label
-  ctx.fillStyle = isDragLonger ? '#fb7185' : '#60a5fa';
+  ctx.fillStyle = '#87cefa';
   ctx.font = 'bold 11px Inter';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('D = Air Resistance', arrowX, arrowBaseY - dLen - 2);
+  ctx.fillText('Air Resistance (D)', arrowX, arrowBaseY - dLen - 2);
 
   // Force balance text
   if(Math.abs(dragRatio - 1) < 0.08 && currentT > 0.5){
@@ -1186,7 +1244,8 @@ function updateDisplay(){
   document.getElementById('kpTime').textContent = t.toFixed(1) + ' s';
   document.getElementById('kpVel').textContent = v.toFixed(1) + ' m/s';
   document.getElementById('kpVel').className = 'k-value ' + (v > state.vt1 * 0.9 ? 'good' : '');
-  document.getElementById('kpAccel').textContent = a.toFixed(2) + ' m/s²';
+  const aDisplay = Math.abs(a) < 0.005 ? '0.00' : a.toFixed(2);
+  document.getElementById('kpAccel').textContent = aDisplay + ' m/s²';
   if(Math.abs(a) < 0.5) document.getElementById('kpAccel').className = 'k-value';
   else if(a < 0) document.getElementById('kpAccel').className = 'k-value bad';
   else document.getElementById('kpAccel').className = 'k-value warn';
@@ -1201,21 +1260,21 @@ function updateDisplay(){
     const aG = (a / G * 100).toFixed(0);
     det.innerHTML = `<b>Phase 1: Freefall</b><br>`
       + `Acceleration = ${a.toFixed(2)} m/s² (${aG}% of g)<br>`
-      + (a > 1 ? 'Air resistance increasing...' : 'Approaching Terminal Velocity Vt₁');
+      + (a > 1 ? 'Air resistance increasing...' : 'Approaching Terminal V₁');
   } else {
     det.innerHTML = `<b>Phase 2: Parachute Deployed</b><br>`
       + `Decelerating from ${vAt(td).toFixed(1)} → ${state.vt2} m/s<br>`
       + `Cross-sectional area increased → drag increased → slowing down`;
     if(Math.abs(a) < 0.3){
-      det.innerHTML += `<br>✅ Reached new Terminal Velocity Vt₂ = ${state.vt2} m/s`;
+      det.innerHTML += `<br>✅ Reached new Terminal Velocity V₂ = ${state.vt2} m/s`;
     }
   }
 
   // Graph sub-label
   if(t <= td){
-    document.getElementById('graphSubLabel').textContent = '🪂 Freefall Phase (a = ' + a.toFixed(2) + ' m/s² → Vt₁)';
+    document.getElementById('graphSubLabel').textContent = '🪂 Freefall Phase (a = ' + a.toFixed(2) + ' m/s² → Terminal V₁)';
   } else {
-    document.getElementById('graphSubLabel').textContent = '🪂 Parachute Phase (decelerating → Vt₂ = ' + state.vt2 + ' m/s)';
+    document.getElementById('graphSubLabel').textContent = '🪂 Parachute Phase (decelerating → Terminal V₂ = ' + state.vt2 + ' m/s)';
   }
 
   drawGraph();
