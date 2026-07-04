@@ -6,6 +6,7 @@
 <title>Interactive Graph Library — CIE IGCSE Physics</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
+  /* ── Dark (default) ── */
   :root {
     --bg: #0f172a; --card: #1e293b; --border: #334155;
     --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
@@ -14,22 +15,77 @@
     --line-color: #fbbf24; --shade: rgba(251,191,36,0.06);
     --green: #34d399; --rose: #fb7185; --violet: #a78bfa;
   }
-  .light {
-    --bg: #cdc7bc;
-    --card: #ddd7cc;
-    --border: #bdb5a8;
-    --text: #2d2a24;
-    --text-dim: #635d52;
-    --text-muted: #8c8578;
-    --accent: #0f766e;
-    --accent-glow: rgba(15,118,110,0.1);
-    --grid: #c9c2b5;
-    --graph-bg: #e8e2d7;
-    --line-color: #b45309;
-    --shade: rgba(180,83,9,0.05);
-    --green: #047857;
-    --rose: #be123c;
-    --violet: #6d28d9;
+  /* ── Dark Theme 1: Cyberpunk Neon ── */
+  .theme-neon {
+    --bg: #0d0f1a; --card: #1a1c2e; --border: #2a2d4a;
+    --text: #e0e0f0; --text-dim: #8888b8; --text-muted: #5a5a8a;
+    --accent: #00ffc8; --accent-glow: rgba(0,255,200,0.1);
+    --grid: #1a1c2e; --graph-bg: #080a14;
+    --line-color: #00ffc8; --shade: rgba(0,255,200,0.06);
+    --green: #00ff88; --rose: #ff4499; --violet: #8844ff;
+  }
+  /* ── Dark Theme 2: Vintage Dark ── */
+  .theme-vintage {
+    --bg: #141210; --card: #22201c; --border: #3a3530;
+    --text: #d4cfc4; --text-dim: #8a8578; --text-muted: #6a655a;
+    --accent: #c49a5a; --accent-glow: rgba(196,154,90,0.1);
+    --grid: #22201c; --graph-bg: #0e0c0a;
+    --line-color: #c49a5a; --shade: rgba(196,154,90,0.06);
+    --green: #6a9a5a; --rose: #aa5555; --violet: #7a5a8a;
+  }
+  /* ── Dark Theme 3: Cosmic Void ── */
+  .theme-cosmic {
+    --bg: #070b14; --card: #111827; --border: #1e293b;
+    --text: #c8d0e0; --text-dim: #7a84a0; --text-muted: #4a5470;
+    --accent: #a78bfa; --accent-glow: rgba(167,139,250,0.1);
+    --grid: #111827; --graph-bg: #040810;
+    --line-color: #a78bfa; --shade: rgba(167,139,250,0.06);
+    --green: #34d399; --rose: #fb7185; --violet: #c084fc;
+  }
+  /* ── Light Theme 1: Warm Taupe ── */
+  .theme-warm {
+    --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
+    --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
+    --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
+    --grid: #c9c2b5; --graph-bg: #e8e2d7;
+    --line-color: #b45309; --shade: rgba(180,83,9,0.05);
+    --green: #047857; --rose: #be123c; --violet: #6d28d9;
+  }
+  /* ── Light Theme 2: Soft Sage ── */
+  .theme-sage {
+    --bg: #d4d9cc; --card: #e3e7db; --border: #c2c9b5;
+    --text: #2d2a24; --text-dim: #5d6b52; --text-muted: #8a9a78;
+    --accent: #3d7a5a; --accent-glow: rgba(61,122,90,0.1);
+    --grid: #c9d0bd; --graph-bg: #eef2e7;
+    --line-color: #3d7a5a; --shade: rgba(61,122,90,0.05);
+    --green: #2d6a4f; --rose: #9d4e3c; --violet: #6b4d8a;
+  }
+  /* ── Light Theme 3: Warm Sand ── */
+  .theme-sand {
+    --bg: #d6cebd; --card: #e6ddd0; --border: #c4b9a6;
+    --text: #2d2922; --text-dim: #6b6052; --text-muted: #928678;
+    --accent: #b87a3a; --accent-glow: rgba(184,122,58,0.1);
+    --grid: #ccc2b2; --graph-bg: #f0eae0;
+    --line-color: #b87a3a; --shade: rgba(184,122,58,0.05);
+    --green: #7a8a3d; --rose: #a04a3a; --violet: #7a4d8a;
+  }
+  /* ── Light Theme 4: Mist Blue ── */
+  .theme-mist {
+    --bg: #c8ced6; --card: #dadfe8; --border: #b5bcc9;
+    --text: #22262d; --text-dim: #4d5663; --text-muted: #7a8492;
+    --accent: #3a6a8a; --accent-glow: rgba(58,106,138,0.1);
+    --grid: #c2c8d2; --graph-bg: #e6eaf0;
+    --line-color: #3a6a8a; --shade: rgba(58,106,138,0.05);
+    --green: #3a7a5a; --rose: #8a4a5a; --violet: #5a4d8a;
+  }
+  /* ── Light Theme 5: Warm Clay ── */
+  .theme-clay {
+    --bg: #d4c8be; --card: #e5d9d0; --border: #c2b5aa;
+    --text: #2d2622; --text-dim: #6a5a4d; --text-muted: #928078;
+    --accent: #a55a3a; --accent-glow: rgba(165,90,58,0.1);
+    --grid: #ccbfb5; --graph-bg: #eee6de;
+    --line-color: #a55a3a; --shade: rgba(165,90,58,0.05);
+    --green: #5a7a4a; --rose: #a03a3a; --violet: #6a4d7a;
   }
   *{margin:0;padding:0;box-sizing:border-box;}
   body {
@@ -48,6 +104,13 @@
     font-family:'JetBrains Mono',monospace;transition:all 0.2s;
   }
   .theme-btn:hover{border-color:var(--accent);color:var(--accent);}
+  .theme-select{
+    background:var(--card);border:1px solid var(--border);color:var(--text);
+    padding:4px 10px;border-radius:8px;cursor:pointer;font-size:0.7rem;
+    font-family:'JetBrains Mono',monospace;transition:all 0.2s;
+    outline:none;min-width:110px;
+  }
+  .theme-select:hover{border-color:var(--accent);}
   .badge-top{
     display:inline-block;font-family:'JetBrains Mono',monospace;
     font-size:0.55rem;padding:2px 8px;border-radius:12px;
@@ -227,8 +290,8 @@
     background:var(--border);opacity:0.15;
     border-radius:50%;transition:all 0.3s;
   }
-  .light .cloud{background:rgba(147,197,253,0.25);opacity:0.35;border:1px solid rgba(30,64,175,0.2);}
-  .light .cloud::after{background:rgba(147,197,253,0.2);border:1px solid rgba(30,64,175,0.15);}
+  .theme-warm .cloud, .theme-sage .cloud, .theme-sand .cloud, .theme-mist .cloud, .theme-clay .cloud{background:rgba(147,197,253,0.25);opacity:0.35;border:1px solid rgba(30,64,175,0.2);}
+  .theme-warm .cloud::after, .theme-sage .cloud::after, .theme-sand .cloud::after, .theme-mist .cloud::after, .theme-clay .cloud::after{background:rgba(147,197,253,0.2);border:1px solid rgba(30,64,175,0.15);}
   .scene-moon-sun{
     position:absolute;top:14px;right:18px;width:25px;height:25px;
     z-index:3;pointer-events:none;text-align:center;
@@ -240,10 +303,8 @@
   }
   .scene-moon-sun .moon{font-size:20px;opacity:0.15;}
   .scene-moon-sun .sun{opacity:0;}
-  .light .scene-moon-sun .moon{opacity:0;}
-  .light .scene-moon-sun .sun{opacity:0.25;}
-  .scene-moon-sun .moon{opacity:0.15;}
-  .scene-moon-sun .sun{opacity:0;}
+  .theme-warm .scene-moon-sun .moon, .theme-sage .scene-moon-sun .moon, .theme-sand .scene-moon-sun .moon, .theme-mist .scene-moon-sun .moon, .theme-clay .scene-moon-sun .moon{opacity:0;}
+  .theme-warm .scene-moon-sun .sun, .theme-sage .scene-moon-sun .sun, .theme-sand .scene-moon-sun .sun, .theme-mist .scene-moon-sun .sun, .theme-clay .scene-moon-sun .sun{opacity:0.25;}
   /* Sun: warm circle with red glow instead of emoji */
   .scene-moon-sun .sun-inner{
     width:20px;height:20px;border-radius:50%;
@@ -251,7 +312,7 @@
     box-shadow:0 0 20px rgba(220,38,38,0.25),0 0 40px rgba(249,115,22,0.15);
     opacity:0.5;transition:opacity 0.4s;
   }
-  .light .scene-moon-sun .sun-inner{
+  .theme-warm .scene-moon-sun .sun-inner, .theme-sage .scene-moon-sun .sun-inner, .theme-sand .scene-moon-sun .sun-inner, .theme-mist .scene-moon-sun .sun-inner, .theme-clay .scene-moon-sun .sun-inner{
     border:1.5px solid #991b1b;
     opacity:0.6;
   }
@@ -324,7 +385,17 @@
 
 <div class="top-bar">
   <h1>📊 <span>Kinematics Graphs of Horizontal Motion</span> <span class="badge-top">v1.2.0</span></h1>
-  <button class="theme-btn" onclick="toggleTheme()">🌓 Theme</button>
+  <select class="theme-select" onchange="setTheme(this.value)">
+      <option value="dark">🌙 Classic Dark</option>
+      <option value="neon">🌃 Cyberpunk Neon</option>
+      <option value="vintage">📜 Vintage Dark</option>
+      <option value="cosmic">🌌 Cosmic Void</option>
+      <option value="warm">🌅 Warm Taupe</option>
+      <option value="sage">🌿 Soft Sage</option>
+      <option value="sand">🏜️ Warm Sand</option>
+      <option value="mist">🌫️ Mist Blue</option>
+      <option value="clay">🏺 Warm Clay</option>
+    </select>
 </div>
 
 <div class="tabs">
@@ -456,11 +527,13 @@ const carContainer = document.getElementById('carContainer');
 const animScene = document.getElementById('animScene');
 
 // ===== THEME =====
-function toggleTheme() {
-  document.body.classList.toggle('light');
-  state.theme = document.body.classList.contains('light') ? 'light' : 'dark';
+function setTheme(name) {
+  const themeClasses = ['theme-neon','theme-vintage','theme-cosmic','theme-warm','theme-sage','theme-sand','theme-mist','theme-clay'];
+  document.body.classList.remove(...themeClasses);
+  if(name !== 'dark') document.body.classList.add('theme-' + name);
+  state.theme = name;
 }
-function isDark() { return state.theme === 'dark'; }
+function isDark() { return state.theme === 'dark' || state.theme === 'neon' || state.theme === 'vintage' || state.theme === 'cosmic'; }
 
 function niceStep(range, targetTicks) {
   if(range <= 0) return 1;
@@ -888,6 +961,8 @@ function switchTab(type){
 }
 
 function init(){
+  // Set theme selector to default (dark)
+  document.querySelector('.theme-select').value = 'dark';
   // Generate trees — fill entire viewport
   const treeLayer=document.getElementById('treeLayer');
   if(treeLayer){
