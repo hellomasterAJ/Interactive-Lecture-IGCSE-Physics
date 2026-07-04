@@ -39,15 +39,15 @@ body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);transit
 .graph-section canvas{display:block;width:100%;height:auto;background:var(--bg);border-radius:6px;border:1px solid var(--border)}
 
 /* Bottom Layout */
-.bottom-layout{display:grid;grid-template-columns:380px 1fr;gap:12px;min-height:0}
+.bottom-layout{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0}
 
 /* Animation Section  ด้านหน้า/ล่าง */
-.anim-section{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;flex-direction:column}
+.anim-section{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;flex-direction:column;min-height:0}
 .anim-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .anim-header .a-title{font-size:.8rem;font-weight:600}
 .anim-header .a-phase{font-size:.7rem;padding:2px 8px;border-radius:10px;font-weight:500;transition:.3s;background:var(--accent);color:var(--bg)}
 .anim-header .a-phase.phase2{background:var(--amber);color:#000}
-.anim-section canvas{display:block;width:100%;height:auto;background:var(--bg);border-radius:6px;border:1px solid var(--border)}
+.anim-section canvas{display:block;width:100%;height:auto;background:var(--bg);border-radius:6px;border:1px solid var(--border);flex:1;min-height:300px}
 
 /* Controls  ด้านหลัง/ล่าง */
 .controls-section{display:flex;flex-direction:column;gap:8px;min-width:0}
@@ -144,7 +144,7 @@ body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);transit
         <span class="a-title">🪂 Skydiver</span>
         <span class="a-phase phase1" id="phaseBadge">🔴 FREEFALL</span>
       </div>
-      <canvas id="animCanvas" width="380" height="340"></canvas>
+      <canvas id="animCanvas" width="400" height="400"></canvas>
       <div class="legend-row" style="margin-top:4px">
         <span class="legend-item"><span class="legend-swatch" style="background:#00d4ff"></span> Height: <span id="heightDisplayAnim">—</span> m</span>
         <span class="legend-item"><span class="legend-swatch" style="background:var(--amber)"></span> v = <span id="speedDisplayAnim" style="font-family:'JetBrains Mono',monospace">0</span> m/s</span>
@@ -575,13 +575,13 @@ function drawGraph(){
 }
 
 // ===== ANIMATION DRAWING =====
-let aCW = 380, aCH = 340;
+let aCW = 400, aCH = 400;
 
 function getACtx(){
   const c = document.getElementById('animCanvas');
   const rect = c.getBoundingClientRect();
-  c.width = aCW = rect.width || 380;
-  c.height = aCH = 340;
+  c.width = aCW = Math.max(rect.width, 300);
+  c.height = aCH = Math.max(rect.height, 300);
   return c.getContext('2d');
 }
 
@@ -1294,8 +1294,8 @@ function init(){
   gc.width = gc.clientWidth || 920;
   gc.height = 360;
   const ac = document.getElementById('animCanvas');
-  ac.width = ac.clientWidth || 380;
-  ac.height = 340;
+  ac.width = Math.max(ac.clientWidth, 300);
+  ac.height = Math.max(ac.clientHeight, 300);
 
   updateDisplay();
   // Auto-highlight Normal preset
