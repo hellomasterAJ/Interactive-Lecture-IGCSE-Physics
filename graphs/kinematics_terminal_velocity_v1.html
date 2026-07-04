@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Terminal Velocity — Skydive V-T Graph</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);transition:background .3s,color .3s;min-height:100vh;display:flex;justify-content:center;padding:16px}
+/* === CSS Variables: Dark (default) === */
+:root{--bg:#0f172a;--card:#1e293b;--border:#334155;--text:#e2e8f0;--text-dim:#94a3b8;--accent:#38bdf8;--line-v:#60a5fa;--green:#4ade80;--rose:#fb7185;--amber:#fbbf24;--blue:#60a5fa;--orange:#fb923c;--shade1:rgba(56,189,248,0.08);--shade2:rgba(56,189,248,0.15);--phase1:rgba(0,212,255,0.12);--phase2:rgba(255,179,71,0.12);--katex-color:#e2e8f0}
+.theme-vintage{--bg:#1a1410;--card:#2a221c;--border:#3d322b;--text:#d4c5a9;--text-dim:#9b8a74;--accent:#d4a853;--line-v:#c9a04f;--green:#8bc34a;--rose:#e57373;--amber:#ffd54f;--blue:#64b5f6;--orange:#ffb74d;--shade1:rgba(212,168,83,0.08);--shade2:rgba(212,168,83,0.15);--phase1:rgba(200,180,120,0.12);--phase2:rgba(212,168,83,0.12);--katex-color:#d4c5a9}
+.theme-neon{--bg:#0d0221;--card:#1a0a30;--border:#3a1a6a;--text:#e0d0ff;--text-dim:#a080d0;--accent:#00f5d4;--line-v:#ff00ff;--green:#39ff14;--rose:#ff0040;--amber:#ffdd00;--blue:#00d4ff;--orange:#ff6600;--shade1:rgba(0,245,212,0.08);--shade2:rgba(255,0,255,0.15);--phase1:rgba(0,212,255,0.10);--phase2:rgba(255,221,0,0.10);--katex-color:#e0d0ff}
+.theme-cosmic{--bg:#0b0812;--card:#1c1530;--border:#2f2450;--text:#c8b8e8;--text-dim:#8a7aaa;--accent:#a78bfa;--line-v:#7c3aed;--green:#6ee7b7;--rose:#f472b6;--amber:#fcd34d;--blue:#818cf8;--orange:#fb923c;--shade1:rgba(167,139,250,0.08);--shade2:rgba(167,139,250,0.15);--phase1:rgba(129,140,248,0.12);--phase2:rgba(252,211,77,0.12);--katex-color:#c8b8e8}
+.theme-onedark{--bg:#282c34;--card:#2c323c;--border:#3e4451;--text:#abb2bf;--text-dim:#5c6370;--accent:#61afef;--line-v:#56b6c2;--green:#98c379;--rose:#e06c75;--amber:#e5c07b;--blue:#61afef;--orange:#d19a66;--shade1:rgba(97,175,239,0.1);--shade2:rgba(97,175,239,0.18);--phase1:rgba(86,182,194,0.12);--phase2:rgba(229,192,123,0.12);--katex-color:#abb2bf}
+.theme-light{--bg:#f8f6f0;--card:#ffffff;--border:#ddd6cc;--text:#2d2a24;--text-dim:#8a8278;--accent:#2563eb;--line-v:#3b82f6;--green:#16a34a;--rose:#e11d48;--amber:#d97706;--blue:#2563eb;--orange:#ea580c;--shade1:rgba(37,99,235,0.06);--shade2:rgba(37,99,235,0.12);--phase1:rgba(0,100,200,0.08);--phase2:rgba(217,119,6,0.08);--katex-color:#2d2a24}
+.theme-clay{--bg:#e8ddd0;--card:#f5ede2;--border:#d4c8b8;--text:#3d3228;--text-dim:#8a7a68;--accent:#b85c38;--line-v:#c97b4a;--green:#5a8f4a;--rose:#c44a5a;--amber:#c4943a;--blue:#4a7ab8;--orange:#c46838;--shade1:rgba(184,92,56,0.06);--shade2:rgba(184,92,56,0.12);--phase1:rgba(74,122,184,0.08);--phase2:rgba(196,148,58,0.08);--katex-color:#3d3228}
+.theme-warm{--bg:#f0ebe0;--card:#faf5ec;--border:#e0d8ca;--text:#3a3530;--text-dim:#8a8270;--accent:#c97b4a;--line-v:#b87a3a;--green:#5a8f4a;--rose:#c44a5a;--amber:#c4943a;--blue:#4a7ab8;--orange:#c46838;--shade1:rgba(201,123,74,0.06);--shade2:rgba(201,123,74,0.12);--phase1:rgba(74,122,184,0.08);--phase2:rgba(196,148,58,0.08);--katex-color:#3a3530}
+.theme-sage{--bg:#e8ece0;--card:#f4f7ef;--border:#d2dac8;--text:#2d3828;--text-dim:#7a8a6a;--accent:#4a7a5a;--line-v:#6a9a7a;--green:#4a8a5a;--rose:#b85a6a;--amber:#b89a4a;--blue:#4a7ab8;--orange:#b87a4a;--shade1:rgba(74,122,90,0.06);--shade2:rgba(74,122,90,0.12);--phase1:rgba(74,122,184,0.08);--phase2:rgba(184,154,74,0.08);--katex-color:#2d3828}
+.theme-mist{--bg:#e8edf0;--card:#f4f7fa;--border:#ccd4dc;--text:#2a3038;--text-dim:#6a7a8a;--accent:#4a7a9a;--line-v:#5a8aaa;--green:#4a8a6a;--rose:#a85a6a;--amber:#a88a4a;--blue:#4a7ab8;--orange:#a87a4a;--shade1:rgba(74,122,154,0.06);--shade2:rgba(74,122,154,0.12);--phase1:rgba(74,122,184,0.08);--phase2:rgba(168,138,74,0.08);--katex-color:#2a3038}
+
+.layout{max-width:1060px;width:100%;display:flex;flex-direction:column;gap:12px}
+/* Title Bar */
+.title-bar{display:flex;justify-content:space-between;align-items:center;padding:8px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px}
+.title-bar h1{font-size:1.1rem;font-weight:600;color:var(--accent)}
+.title-bar h1 span{font-weight:400;color:var(--text-dim);font-size:.85rem}
+.theme-select{background:var(--bg);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 8px;font-size:.8rem;cursor:pointer;font-family:Inter,sans-serif;outline:none}
+.theme-select:focus{border-color:var(--accent)}
+
+/* Graph Section */
+.graph-section{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px}
+.graph-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.graph-header .g-title{font-size:.85rem;font-weight:600;color:var(--accent)}
+.graph-header .g-sub{font-size:.75rem;color:var(--text-dim)}
+.graph-section canvas{display:block;width:100%;height:auto;background:var(--bg);border-radius:6px;border:1px solid var(--border)}
+
+/* Bottom Layout */
+.bottom-layout{display:grid;grid-template-columns:380px 1fr;gap:12px;min-height:0}
+
+/* Animation Section  ด้านหน้า/ล่าง */
+.anim-section{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px;display:flex;flex-direction:column}
+.anim-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.anim-header .a-title{font-size:.8rem;font-weight:600}
+.anim-header .a-phase{font-size:.7rem;padding:2px 8px;border-radius:10px;font-weight:500;transition:.3s;background:var(--accent);color:var(--bg)}
+.anim-header .a-phase.phase2{background:var(--amber);color:#000}
+.anim-section canvas{display:block;width:100%;height:auto;background:var(--bg);border-radius:6px;border:1px solid var(--border)}
+
+/* Controls  ด้านหลัง/ล่าง */
+.controls-section{display:flex;flex-direction:column;gap:8px;min-width:0}
+.ctrl-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:10px 12px}
+.ctrl-card .c-title{font-size:.75rem;font-weight:600;color:var(--accent);margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em}
+.ctrl-row{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.ctrl-row + .ctrl-row{margin-top:6px}
+.ctrl-row label{font-size:.75rem;color:var(--text-dim);font-weight:500;white-space:nowrap}
+.ctrl-row input[type=range]{flex:1;min-width:60px;accent-color:var(--accent);height:4px;cursor:pointer}
+.ctrl-row .s-val{font-size:.8rem;font-weight:600;color:var(--text);min-width:30px;font-family:'JetBrains Mono',monospace}
+.ctrl-row .s-unit{font-size:.7rem;color:var(--text-dim)}
+.ctrl-row .s-label{font-size:.7rem;font-weight:500;color:var(--text-dim);min-width:50px}
+
+.ctrl-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-size:.75rem;font-weight:500;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s}
+.ctrl-btn:hover{border-color:var(--accent);color:var(--accent)}
+.ctrl-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.theme-warm .ctrl-btn.primary,.theme-sage .ctrl-btn.primary,.theme-light .ctrl-btn.primary,.theme-mist .ctrl-btn.primary,.theme-clay .ctrl-btn.primary{color:#fff}
+.ctrl-btn.primary:hover{filter:brightness(1.1)}
+.ctrl-btn.small{padding:3px 8px;font-size:.7rem}
+.ctrl-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;filter:brightness(1.1)}
+.ctrl-btn.danger{background:var(--rose);border-color:var(--rose);color:#fff}
+
+/* Value Grid */
+.val-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.val-item{background:var(--bg);border-radius:6px;padding:6px 10px;display:flex;flex-direction:column}
+.val-item .v-label{font-size:.6rem;color:var(--text-dim);text-transform:uppercase;letter-spacing:.05em}
+.val-item .v-value{font-size:.9rem;font-weight:600;font-family:'JetBrains Mono',monospace;color:var(--accent)}
+.val-item .v-value.phase2-color{color:var(--amber)}
+.val-item .v-unit{font-size:.65rem;color:var(--text-dim);font-weight:400;font-family:Inter,sans-serif}
+
+/* Preset Buttons */
+.preset-row{display:flex;gap:4px;flex-wrap:wrap}
+.preset-btn{padding:4px 10px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:.7rem;font-weight:500;cursor:pointer;font-family:Inter,sans-serif;transition:all .1s}
+.preset-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--bg)}
+.preset-btn.selected{border-color:var(--accent);background:var(--accent);color:var(--bg)!important}
+
+/* KPI Strip */
+.kpi-strip{display:flex;gap:6px}
+.kpi-item{flex:1;background:var(--bg);border-radius:6px;padding:6px 10px;text-align:center}
+.kpi-item .k-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim)}
+.kpi-item .k-value{font-size:1rem;font-weight:700;font-family:'JetBrains Mono',monospace}
+.kpi-item .k-value.good{color:var(--green)}
+.kpi-item .k-value.warn{color:var(--amber)}
+.kpi-item .k-value.bad{color:var(--rose)}
+
+/* Phase Legend */
+.legend-row{display:flex;gap:4px;margin:4px 0}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:.65rem;color:var(--text-dim)}
+.legend-swatch{width:12px;height:3px;border-radius:2px;display:inline-block}
+
+@media(max-width:780px){
+  .bottom-layout{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+  <!-- Title Bar -->
+  <div class="title-bar">
+    <h1>🪂 Terminal Velocity <span>Skydive V–T Graph</span></h1>
+    <select class="theme-select" onchange="setTheme(this.value)">
+      <option value="dark">🌙 Classic Dark</option>
+      <option value="vintage">📜 Vintage Dark</option>
+      <option value="neon">🌃 Cyberpunk Neon</option>
+      <option value="cosmic">🌌 Cosmic Void</option>
+      <option value="onedark">💎 One Dark</option>
+      <option value="light">☀️ Classic Light</option>
+      <option value="clay">🏺 Warm Clay</option>
+      <option value="warm">🌅 Warm Taupe</option>
+      <option value="sage">🌿 Soft Sage</option>
+      <option value="mist">🌫️ Mist Blue</option>
+    </select>
+  </div>
+
+  <!-- Graph Section (บน) -->
+  <div class="graph-section">
+    <div class="graph-header">
+      <div><span class="g-title">📈 Velocity–Time Graph</span></div>
+      <div class="g-sub" id="graphSubLabel">🪂 Skydive Simulation</div>
+    </div>
+    <canvas id="graphCanvas" width="920" height="360"></canvas>
+    <div class="legend-row" style="margin-top:4px">
+      <span class="legend-item"><span class="legend-swatch" style="background:#00d4ff"></span> Phase 1 — Freefall</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:#ffb347"></span> Phase 2 — Parachute</span>
+      <span class="legend-item"><span class="legend-swatch" style="background:var(--text-dim);border-top:1px dashed var(--text-dim);"></span> V<sub>t</sub> Terminal Velocity</span>
+    </div>
+  </div>
+
+  <!-- Bottom: Animation + Controls -->
+  <div class="bottom-layout">
+    <!-- Animation (ด้านหน้า) -->
+    <div class="anim-section">
+      <div class="anim-header">
+        <span class="a-title">🪂 Skydiver</span>
+        <span class="a-phase phase1" id="phaseBadge">🔴 FREEFALL</span>
+      </div>
+      <canvas id="animCanvas" width="380" height="340"></canvas>
+      <div class="legend-row" style="margin-top:4px">
+        <span class="legend-item"><span class="legend-swatch" style="background:#00d4ff"></span> Height: <span id="heightDisplayAnim">—</span> m</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--amber)"></span> v = <span id="speedDisplayAnim" style="font-family:'JetBrains Mono',monospace">0</span> m/s</span>
+      </div>
+    </div>
+
+    <!-- Controls (ด้านหลัง) -->
+    <div class="controls-section">
+      <!-- KPI Strip -->
+      <div class="ctrl-card" style="padding:6px 10px">
+        <div class="kpi-strip">
+          <div class="kpi-item"><div class="k-label">⏱ Time</div><div class="k-value" id="kpTime">0.0 s</div></div>
+          <div class="kpi-item"><div class="k-label">🚀 Velocity</div><div class="k-value good" id="kpVel">0 m/s</div></div>
+          <div class="kpi-item"><div class="k-label">⚡ Acceleration</div><div class="k-value warn" id="kpAccel">9.81 m/s²</div></div>
+          <div class="kpi-item"><div class="k-label">📏 Distance</div><div class="k-value" id="kpDist">0 m</div></div>
+        </div>
+      </div>
+
+      <!-- Sliders -->
+      <div class="ctrl-card">
+        <div class="c-title">🎛️ Parameters</div>
+        <div class="ctrl-row">
+          <label>Vt₁ (Freefall)</label>
+          <input type="range" id="vt1Slider" min="30" max="70" value="50" step="1">
+          <span class="s-val" id="vt1Val">50</span>
+          <span class="s-unit">m/s</span>
+        </div>
+        <div class="ctrl-row">
+          <label>⏰ Deploy Time</label>
+          <input type="range" id="deploySlider" min="4" max="25" value="12" step="0.5">
+          <span class="s-val" id="deployVal">12.0</span>
+          <span class="s-unit">s</span>
+        </div>
+        <div class="ctrl-row">
+          <label>Vt₂ (Parachute)</label>
+          <input type="range" id="vt2Slider" min="3" max="15" value="5" step="0.5">
+          <span class="s-val" id="vt2Val">5.0</span>
+          <span class="s-unit">m/s</span>
+        </div>
+        <div class="ctrl-row">
+          <label>⚡ Speed</label>
+          <input type="range" id="speedSlider" min="0.1" max="5" value="1" step="0.1">
+          <span class="s-val" id="speedVal">1.0</span>
+          <span class="s-unit">×</span>
+        </div>
+      </div>
+
+      <!-- Controls -->
+      <div class="ctrl-card">
+        <div class="c-title">🎮 Controls</div>
+        <div class="ctrl-row">
+          <button class="ctrl-btn primary" id="playBtn" onclick="togglePlay()">▶ Play</button>
+          <button class="ctrl-btn" onclick="resetSim()">🔄 Reset</button>
+          <button class="ctrl-btn small" onclick="stepBack()">◀ Step</button>
+          <button class="ctrl-btn small" onclick="stepForward()">Step ▶</button>
+        </div>
+      </div>
+
+      <!-- Presets -->
+      <div class="ctrl-card">
+        <div class="c-title">🎯 Presets</div>
+        <div class="preset-row">
+          <button class="preset-btn selected" onclick="setPreset('normal')">🪂 Normal</button>
+          <button class="preset-btn" onclick="setPreset('fastDeploy')">⚡ Fast Deploy</button>
+          <button class="preset-btn" onclick="setPreset('raceChute')">🏎️ Racing Chute</button>
+          <button class="preset-btn" onclick="setPreset('lowAlt')">⬇️ Low Altitude</button>
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="ctrl-card" id="detailCard" style="flex:1;min-height:50px">
+        <div class="c-title">📋 Details</div>
+        <div id="detailContent" style="font-size:.72rem;color:var(--text-dim);line-height:1.5">
+          Click ▶ Play to start the simulation.
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== STATE =====
+const G = 9.81;
+const state = {
+  theme: 'dark',
+  playing: false,
+  time: 0,
+  // params
+  vt1: 50,
+  tDeploy: 12,
+  vt2: 5,
+  speedMult: 1,
+  // animation
+  lastTs: 0,
+  rafId: null,
+  phase: 1, // 1=freefall, 2=parachute
+};
+
+// ===== THEME =====
+function setTheme(name){
+  const tc = ['theme-neon','theme-vintage','theme-cosmic','theme-onedark','theme-light','theme-warm','theme-sage','theme-mist','theme-clay'];
+  document.body.classList.remove(...tc);
+  if(name !== 'dark') document.body.classList.add('theme-' + name);
+  state.theme = name;
+  drawGraph();
+  drawAnim();
+}
+function isDark(){
+  return state.theme === 'dark' || state.theme === 'neon' || state.theme === 'vintage' || state.theme === 'cosmic' || state.theme === 'onedark';
+}
+
+// ===== PHYSICS =====
+function getTau1(){ return state.vt1 / G; }
+function getTau2(){ return state.vt2 / G; }
+
+/** Velocity at time t */
+function vAt(t){
+  const td = state.tDeploy;
+  if(t <= td){
+    // Phase 1: tanh model (quadratic drag)
+    const tau1 = getTau1();
+    return state.vt1 * Math.tanh(G * t / state.vt1);
+    // alt: return state.vt1 * (1 - Math.exp(-t/tau1));
+  } else {
+    // Phase 2: exponential decay from v_deploy towards vt2
+    const vDeploy = vAt(td);
+    const tau2 = getTau2();
+    return state.vt2 + (vDeploy - state.vt2) * Math.exp(-(t - td) / tau2);
+  }
+}
+
+/** Time constant for Phase 2 — parachute creates ~3× drag area vs freefall */
+function getTau2Eff(){
+  // Parachute drag multiplier: bigger ratio Vt₁/Vt₂ → more dramatic deceleration
+  const dragRatio = Math.max(1.5, state.vt1 / state.vt2 * 0.3);
+  return state.vt2 / (G * dragRatio);
+}
+
+/** Acceleration at time t */
+function aAt(t){
+  const td = state.tDeploy;
+  if(t <= td){
+    // a = g * sech²(gt/Vt1)
+    const sech = 1 / Math.cosh(G * t / state.vt1);
+    return G * sech * sech;
+  } else {
+    const vDeploy = vAt(td);
+    const tau2 = getTau2Eff();
+    return -(vDeploy - state.vt2) / tau2 * Math.exp(-(t - td) / tau2);
+  }
+}
+
+/** Distance fallen at time t (exact integral) */
+function sAt(t){
+  const td = state.tDeploy;
+  if(t <= td){
+    // ∫Vt·tanh(g·t/Vt) dt = (Vt²/g)·ln(cosh(g·t/Vt))
+    return (state.vt1 * state.vt1 / G) * Math.log(Math.cosh(G * t / state.vt1));
+  } else {
+    const sDeploy = sAt(td);
+    const vDeploy = vAt(td);
+    const tau2 = getTau2Eff();
+    const dt = t - td;
+    return sDeploy + state.vt2 * dt + (vDeploy - state.vt2) * tau2 * (1 - Math.exp(-dt / tau2));
+  }
+}
+
+function getTMax(){
+  const tDeploy = state.tDeploy;
+  const tau2 = getTau2Eff();
+  // Enough time for Phase 2 to reach Vt2 (5·τ₂) + buffer
+  return Math.max(tDeploy + Math.max(8, 5 * tau2 + 2), 25);
+}
+
+// ===== NICE STEP =====
+function niceStep(range, targetTicks){
+  if(range <= 0) return 1;
+  const rough = range / targetTicks;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rough)));
+  const norm = rough / magnitude;
+  let nice;
+  if(norm < 1.5) nice = 1;
+  else if(norm < 3.5) nice = 2;
+  else if(norm < 7.5) nice = 5;
+  else nice = 10;
+  return nice * magnitude;
+}
+
+// ===== GRAPH DRAWING =====
+const PAD = {top:20, right:16, bottom:28, left:52};
+let gCW = 920, gCH = 360;
+
+function getGCtx(){
+  const c = document.getElementById('graphCanvas');
+  const rect = c.getBoundingClientRect();
+  c.width = gCW = rect.width || 920;
+  c.height = gCH = 360;
+  return c.getContext('2d');
+}
+
+function drawGraph(){
+  const ctx = getGCtx();
+  const W = gCW, H2 = gCH;
+  const tMax = getTMax();
+  const vMax = state.vt1 * 1.12;
+
+  // NiceStep
+  const xStep = niceStep(tMax, 5);
+  const yStep = niceStep(vMax, 5);
+  const xMax = Math.ceil(tMax / xStep) * xStep;
+  const yMax = Math.ceil(vMax / yStep) * yStep;
+
+  const gW = W - PAD.left - PAD.right;
+  const gH = H2 - PAD.top - PAD.bottom;
+  const xScale = gW / xMax;
+  const yScale = gH / yMax;
+
+  // Clear
+  ctx.clearRect(0, 0, W, H2);
+  ctx.fillStyle = isDark() ? '#0f172a' : '#f8f6f0';
+  ctx.fillRect(0, 0, W, H2);
+
+  function toX(t){ return PAD.left + t * xScale; }
+  function toY(v){ return PAD.top + (yMax - v) * yScale; }
+
+  // Grid
+  ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+  ctx.lineWidth = 1;
+  for(let x = xStep; x < xMax; x += xStep){
+    ctx.beginPath(); ctx.moveTo(toX(x), PAD.top); ctx.lineTo(toX(x), PAD.top + gH); ctx.stroke();
+  }
+  for(let y = yStep; y < yMax; y += yStep){
+    ctx.beginPath(); ctx.moveTo(PAD.left, toY(y)); ctx.lineTo(PAD.left + gW, toY(y)); ctx.stroke();
+  }
+
+  // Axis lines
+  ctx.strokeStyle = isDark() ? '#64748b' : '#999080';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(PAD.left, PAD.top); ctx.lineTo(PAD.left, PAD.top + gH);
+  ctx.lineTo(PAD.left + gW, PAD.top + gH);
+  ctx.stroke();
+
+  // Axis labels
+  ctx.fillStyle = isDark() ? '#94a3b8' : '#8a8278';
+  ctx.font = '11px Inter';
+  ctx.textAlign = 'center';
+  for(let x = xStep; x < xMax; x += xStep){
+    const xp = toX(x);
+    ctx.fillText(x.toFixed(xStep >= 1 ? 0 : 1), xp, PAD.top + gH + 18);
+  }
+  ctx.textAlign = 'right';
+  for(let y = yStep; y < yMax; y += yStep){
+    const yp = toY(y);
+    ctx.fillText(y.toFixed(0), PAD.left - 6, yp + 4);
+  }
+  // Axis titles
+  ctx.fillStyle = isDark() ? '#cbd5e1' : '#3a3530';
+  ctx.font = '11px Inter';
+  ctx.textAlign = 'center';
+  ctx.fillText('Time (s)', PAD.left + gW / 2, H2 - 2);
+  ctx.save(); ctx.translate(12, PAD.top + gH / 2); ctx.rotate(-Math.PI / 2);
+  ctx.fillText('Velocity (m/s)', 0, 0); ctx.restore();
+
+  const td = state.tDeploy;
+  const currentT = state.time;
+
+  // ----- PHASE 1 CURVE (Freefall) -----
+  ctx.beginPath();
+  const samples = 200;
+  for(let i = 0; i <= samples; i++){
+    const t = (td / samples) * i;
+    const v = vAt(t);
+    const method = i === 0 ? 'moveTo' : 'lineTo';
+    ctx[method](toX(t), toY(v));
+  }
+  ctx.strokeStyle = '#00d4ff';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Phase 1 fill
+  ctx.beginPath();
+  ctx.moveTo(toX(0), toY(0));
+  for(let i = 0; i <= samples; i++){
+    const t = (td / samples) * i;
+    ctx.lineTo(toX(t), toY(vAt(t)));
+  }
+  ctx.lineTo(toX(td), toY(0));
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(0,212,255,0.08)';
+  ctx.fill();
+
+  // ----- PHASE 2 CURVE (Parachute) -----
+  ctx.beginPath();
+  const p2Samples = 200;
+  for(let i = 0; i <= p2Samples; i++){
+    const t = td + ((tMax - td) / p2Samples) * i;
+    const v = vAt(t);
+    const method = i === 0 ? 'moveTo' : 'lineTo';
+    ctx[method](toX(t), toY(v));
+  }
+  ctx.strokeStyle = '#ffb347';
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // Phase 2 fill
+  ctx.beginPath();
+  ctx.moveTo(toX(td), toY(0));
+  for(let i = 0; i <= p2Samples; i++){
+    const t = td + ((tMax - td) / p2Samples) * i;
+    ctx.lineTo(toX(t), toY(vAt(t)));
+  }
+  ctx.lineTo(toX(tMax), toY(0));
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(255,179,71,0.08)';
+  ctx.fill();
+
+  // ----- Vt1 DASHED LINE -----
+  ctx.setLineDash([6,4]);
+  ctx.strokeStyle = 'rgba(0,212,255,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(PAD.left, toY(state.vt1));
+  ctx.lineTo(PAD.left + gW, toY(state.vt1));
+  ctx.stroke();
+
+  // Vt1 label
+  ctx.fillStyle = 'rgba(0,212,255,0.6)';
+  ctx.font = '10px Inter';
+  ctx.textAlign = 'left';
+  ctx.fillText('Vt₁ = ' + state.vt1 + ' m/s', PAD.left + 4, toY(state.vt1) - 3);
+  ctx.setLineDash([]);
+
+  // ----- Vt2 DASHED LINE -----
+  ctx.setLineDash([6,4]);
+  ctx.strokeStyle = 'rgba(255,179,71,0.5)';
+  ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(PAD.left, toY(state.vt2));
+  ctx.lineTo(PAD.left + gW, toY(state.vt2));
+  ctx.stroke();
+
+  ctx.fillStyle = 'rgba(255,179,71,0.6)';
+  ctx.font = '10px Inter';
+  ctx.textAlign = 'left';
+  ctx.fillText('Vt₂ = ' + state.vt2 + ' m/s', PAD.left + 4, toY(state.vt2) - 3);
+  ctx.setLineDash([]);
+
+  // ----- DEPLOY MARKER -----
+  if(td > 0 && td < tMax){
+    ctx.setLineDash([4,4]);
+    ctx.strokeStyle = isDark() ? '#fbbf24' : '#d97706';
+    ctx.lineWidth = 1.2;
+    ctx.beginPath();
+    ctx.moveTo(toX(td), PAD.top);
+    ctx.lineTo(toX(td), PAD.top + gH);
+    ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Deploy label
+    ctx.fillStyle = isDark() ? '#fbbf24' : '#d97706';
+    ctx.font = '10px Inter';
+    ctx.textAlign = 'center';
+    ctx.fillText('🪂 Deploy', toX(td), PAD.top - 4);
+  }
+
+  // ----- KEY POINT LABELS -----
+  ctx.font = '9px Inter';
+  ctx.textAlign = 'center';
+
+  // "Jump" at origin
+  ctx.fillStyle = isDark() ? '#94a3b8' : '#8a8278';
+  ctx.fillText('Jump ⬇', PAD.left, toY(0) + 14);
+
+  // At t_deploy — label the v value
+  ctx.fillStyle = isDark() ? '#fbbf24' : '#d97706';
+  const vDep = vAt(td);
+  ctx.fillText('v=' + vDep.toFixed(1) + ' m/s', toX(td), toY(vDep) - 6);
+
+  // Near end: Vt₂ as asymptotic label
+  const endV = vAt(tMax);
+  ctx.fillStyle = 'rgba(255,179,71,0.5)';
+  ctx.textAlign = 'right';
+  ctx.fillText('→ ' + endV.toFixed(1) + ' m/s', PAD.left + gW - 2, toY(endV) + 3);
+
+  // ----- TRACER (current position) -----
+  if(currentT >= 0 && currentT <= tMax){
+    const curV = vAt(currentT);
+    const cx = toX(currentT), cy = toY(curV);
+    const tPhase = currentT <= td ? 1 : 2;
+
+    // Glow
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 18);
+    grad.addColorStop(0, tPhase === 1 ? 'rgba(0,212,255,0.4)' : 'rgba(255,179,71,0.4)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath(); ctx.arc(cx, cy, 18, 0, Math.PI * 2); ctx.fill();
+
+    // Dot
+    ctx.fillStyle = tPhase === 1 ? '#00d4ff' : '#ffb347';
+    ctx.beginPath(); ctx.arc(cx, cy, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Tracer crosshair lines
+    ctx.setLineDash([3,4]);
+    ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 0.8;
+    // horizontal line
+    ctx.beginPath(); ctx.moveTo(PAD.left, cy); ctx.lineTo(PAD.left + gW, cy); ctx.stroke();
+    // vertical line
+    ctx.beginPath(); ctx.moveTo(cx, PAD.top); ctx.lineTo(cx, PAD.top + gH); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  // Phase label on graph
+  ctx.font = '9px Inter';
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#00d4ff';
+  const labelMid1 = td / 2;
+  ctx.fillText('Phase 1: Freefall', toX(labelMid1) - 30, PAD.top + 14);
+  if(td < tMax){
+    ctx.fillStyle = '#ffb347';
+    const labelMid2 = td + (tMax - td) * 0.35;
+    ctx.fillText('Phase 2: Parachute', toX(labelMid2) - 40, PAD.top + 30);
+  }
+}
+
+// ===== ANIMATION DRAWING =====
+let aCW = 380, aCH = 340;
+
+function getACtx(){
+  const c = document.getElementById('animCanvas');
+  const rect = c.getBoundingClientRect();
+  c.width = aCW = rect.width || 380;
+  c.height = aCH = 340;
+  return c.getContext('2d');
+}
+
+function drawAnim(){
+  const ctx = getACtx();
+  const W = aCW, H = aCH;
+  const currentT = Math.min(state.time, getTMax());
+  const td = state.tDeploy;
+
+  // Compute height
+  const totalDist = sAt(currentT);
+  // Max reasonable height for the scene
+  const maxDist = Math.max(600, sAt(getTMax()));
+
+  // Clear
+  ctx.clearRect(0, 0, W, H);
+
+  // Sky gradient
+  const skyGrad = ctx.createLinearGradient(0, 0, 0, H);
+  if(isDark()){
+    skyGrad.addColorStop(0, '#1a2840');
+    skyGrad.addColorStop(0.6, '#2a3850');
+    skyGrad.addColorStop(1, '#3a4850');
+  } else {
+    skyGrad.addColorStop(0, '#7ec8e3');
+    skyGrad.addColorStop(0.5, '#a8d8ea');
+    skyGrad.addColorStop(1, '#c8d8c8');
+  }
+  ctx.fillStyle = skyGrad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Clouds (if Phase 1 or early Phase 2)
+  const cloudAlpha = currentT < td + 3 ? 0.6 : 0.15;
+  ctx.fillStyle = `rgba(255,255,255,${cloudAlpha})`;
+  drawCloud(ctx, 60, 40, 1);
+  drawCloud(ctx, 170, 80, 0.7);
+  drawCloud(ctx, 280, 30, 0.8);
+  if(currentT < td + 5){
+    drawCloud(ctx, 130, 110, 0.5);
+    drawCloud(ctx, 300, 75, 0.6);
+  }
+
+  // Ground
+  const groundY = H - 18;
+  // Ground strip
+  const grdGrad = ctx.createLinearGradient(0, groundY, 0, H);
+  if(isDark()){
+    grdGrad.addColorStop(0, '#2d5a2d');
+    grdGrad.addColorStop(1, '#1a3a1a');
+  } else {
+    grdGrad.addColorStop(0, '#5a9a4a');
+    grdGrad.addColorStop(1, '#3a7a2a');
+  }
+  ctx.fillStyle = grdGrad;
+  ctx.fillRect(0, groundY, W, H - groundY);
+
+  // Grass detail
+  ctx.strokeStyle = isDark() ? '#3a7a3a' : '#6aaa5a';
+  ctx.lineWidth = 1;
+  for(let i = 0; i < 30; i++){
+    const gx = 10 + (i / 30) * (W - 20);
+    ctx.beginPath();
+    ctx.moveTo(gx, groundY);
+    ctx.lineTo(gx + 2, groundY - 4 - Math.random() * 3);
+    ctx.stroke();
+  }
+
+  // Height scale on left
+  ctx.fillStyle = isDark() ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)';
+  ctx.font = '9px Inter';
+  ctx.textAlign = 'right';
+  const scaleSteps = 5;
+  for(let i = 0; i <= scaleSteps; i++){
+    const frac = i / scaleSteps;
+    const sy = groundY - (groundY - 20) * frac;
+    const hVal = ((maxDist) * (1 - frac)).toFixed(0);
+    ctx.fillText(hVal + 'm', 28, sy + 3);
+    ctx.fillRect(30, sy, 4, 1);
+  }
+
+  // ===== SKYDIVER =====
+  // Position: map height to canvas Y (20px below top → groundY - 15)
+  const fracH = Math.min(totalDist / maxDist, 1);
+  const diverY = 20 + (groundY - 30) * fracH;
+  const diverX = W / 2 + 20;
+
+  const isPhase2 = currentT > td && td > 0;
+
+  // Speed color indicator
+  const currentV = vAt(currentT);
+  const speedRatio = currentV / state.vt1;
+  let bodyColor = isDark() ? '#e2e8f0' : '#334155';
+  if(speedRatio > 0.9) bodyColor = '#fb7185'; // fast
+  else if(speedRatio > 0.6) bodyColor = '#fbbf24'; // medium
+  else bodyColor = isDark() ? '#e2e8f0' : '#334155'; // slow
+
+  // Draw parachute (behind skydiver, if deployed within last 1s, animate opening)
+  if(isPhase2){
+    // Parachute canopy
+    const openRatio = Math.min((currentT - td) / 1.0, 1);
+    const chuteW = 50 * (0.7 + 0.3 * openRatio);
+    const chuteH = 30 * openRatio;
+    const chuteY = diverY - 28 - chuteH;
+
+    // Canopy strings
+    ctx.strokeStyle = isDark() ? '#94a3b8' : '#666';
+    ctx.lineWidth = 0.8;
+    for(let i = -1; i <= 1; i++){
+      ctx.beginPath();
+      ctx.moveTo(diverX + i * 12, diverY - 8);
+      ctx.lineTo(diverX + i * chuteW * 0.5, chuteY + chuteH);
+      ctx.stroke();
+    }
+
+    // Canopy dome
+    ctx.beginPath();
+    ctx.moveTo(diverX - chuteW, chuteY + chuteH);
+    ctx.quadraticCurveTo(diverX, chuteY, diverX + chuteW, chuteY + chuteH);
+    ctx.closePath();
+
+    const chuteColors = ['#e74c3c','#f39c12','#e74c3c','#27ae60','#e74c3c'];
+    const chuteGrad = ctx.createLinearGradient(diverX - chuteW, chuteY, diverX + chuteW, chuteY);
+    chuteGrad.addColorStop(0, chuteColors[0]);
+    chuteGrad.addColorStop(0.25, chuteColors[1]);
+    chuteGrad.addColorStop(0.5, chuteColors[2]);
+    chuteGrad.addColorStop(0.75, chuteColors[3]);
+    chuteGrad.addColorStop(1, chuteColors[4]);
+    ctx.fillStyle = chuteGrad;
+    ctx.fill();
+    ctx.strokeStyle = isDark() ? '#64748b' : '#555';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+  }
+
+  // Draw skydiver body
+  // Head
+  ctx.fillStyle = isDark() ? '#f8e8d0' : '#f0d0a0';
+  ctx.beginPath();
+  ctx.arc(diverX, diverY - 18, 8, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Body
+  ctx.strokeStyle = bodyColor;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  ctx.moveTo(diverX, diverY - 10);
+  ctx.lineTo(diverX, diverY + 10);
+  ctx.stroke();
+
+  // Arms (up if freefall, different if parachute deployed)
+  if(isPhase2){
+    // Arms up holding lines
+    ctx.beginPath();
+    ctx.moveTo(diverX - 3, diverY - 6);
+    ctx.lineTo(diverX - 16, diverY - 22);
+    ctx.moveTo(diverX + 3, diverY - 6);
+    ctx.lineTo(diverX + 16, diverY - 22);
+    ctx.stroke();
+  } else {
+    // Arms out (spread-eagle freefall)
+    ctx.beginPath();
+    ctx.moveTo(diverX - 3, diverY - 4);
+    ctx.lineTo(diverX - 20, diverY + 2);
+    ctx.moveTo(diverX + 3, diverY - 4);
+    ctx.lineTo(diverX + 20, diverY + 2);
+    ctx.stroke();
+  }
+
+  // Legs
+  ctx.beginPath();
+  ctx.moveTo(diverX - 2, diverY + 10);
+  ctx.lineTo(diverX - 8, diverY + 24);
+  ctx.moveTo(diverX + 2, diverY + 10);
+  ctx.lineTo(diverX + 8, diverY + 24);
+  ctx.stroke();
+
+  // Speed indicator arc near skydiver
+  const arcR = 12 + speedRatio * 14;
+  ctx.beginPath();
+  ctx.arc(diverX + 16, diverY - 16, arcR, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(${isPhase2 ? '255,179,71' : '0,212,255'},0.15)`;
+  ctx.lineWidth = 1;
+  ctx.setLineDash([2,3]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Speed text above
+  ctx.fillStyle = isDark() ? '#e2e8f0' : '#334155';
+  ctx.font = 'bold 11px JetBrains Mono';
+  ctx.textAlign = 'center';
+  ctx.fillText(currentV.toFixed(1) + ' m/s', diverX, diverY - 34 - (isPhase2 ? 20 : 0));
+
+  // Phase indicator on animation
+  ctx.font = '9px Inter';
+  ctx.textAlign = 'left';
+  if(!isPhase2){
+    ctx.fillStyle = '#00d4ff';
+    ctx.fillText('🔴 Freefall', 8, H - 2);
+  } else {
+    ctx.fillStyle = '#ffb347';
+    ctx.fillText('🟠 Parachute Deployed', 8, H - 2);
+  }
+
+  // Update height display
+  document.getElementById('heightDisplayAnim').textContent = totalDist.toFixed(0);
+  document.getElementById('speedDisplayAnim').textContent = currentV.toFixed(1);
+}
+
+function drawCloud(ctx, cx, cy, scale){
+  const s = scale;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 14 * s, 0, Math.PI * 2);
+  ctx.arc(cx + 16 * s, cy - 4 * s, 12 * s, 0, Math.PI * 2);
+  ctx.arc(cx + 30 * s, cy, 10 * s, 0, Math.PI * 2);
+  ctx.arc(cx + 14 * s, cy + 4 * s, 10 * s, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// ===== UI UPDATE =====
+function updateDisplay(){
+  const t = Math.min(state.time, getTMax());
+  const v = vAt(t);
+  const a = aAt(t);
+  const s = sAt(t);
+  const td = state.tDeploy;
+
+  // Phase
+  const phase = t <= td ? 1 : 2;
+  state.phase = phase;
+  const badge = document.getElementById('phaseBadge');
+  badge.textContent = phase === 1 ? '🔴 FREEFALL' : '🟠 PARACHUTE';
+  badge.className = 'a-phase ' + (phase === 1 ? 'phase1' : 'phase2');
+
+  // KPI
+  document.getElementById('kpTime').textContent = t.toFixed(1) + ' s';
+  document.getElementById('kpVel').textContent = v.toFixed(1) + ' m/s';
+  document.getElementById('kpVel').className = 'k-value ' + (v > state.vt1 * 0.9 ? 'good' : '');
+  document.getElementById('kpAccel').textContent = a.toFixed(2) + ' m/s²';
+  if(Math.abs(a) < 0.5) document.getElementById('kpAccel').className = 'k-value';
+  else if(a < 0) document.getElementById('kpAccel').className = 'k-value bad';
+  else document.getElementById('kpAccel').className = 'k-value warn';
+  document.getElementById('kpDist').textContent = s.toFixed(0) + ' m';
+
+  // Details
+  const det = document.getElementById('detailContent');
+  if(t === 0){
+    det.innerHTML = '▶ Press <b>Play</b> to start the skydive simulation.<br>'
+      + 'Watch how velocity increases with air resistance until <b>Terminal Velocity</b> is reached.';
+  } else if(t <= td){
+    const aG = (a / G * 100).toFixed(0);
+    det.innerHTML = `<b>Phase 1: Freefall</b><br>`
+      + `Acceleration = ${a.toFixed(2)} m/s² (${aG}% of g)<br>`
+      + (a > 1 ? 'Air resistance increasing...' : 'Approaching Terminal Velocity Vt₁');
+  } else {
+    det.innerHTML = `<b>Phase 2: Parachute Deployed</b><br>`
+      + `Decelerating from ${vAt(td).toFixed(1)} → ${state.vt2} m/s<br>`
+      + `Cross-sectional area increased → drag increased → slowing down`;
+    if(Math.abs(a) < 0.3){
+      det.innerHTML += `<br>✅ Reached new Terminal Velocity Vt₂ = ${state.vt2} m/s`;
+    }
+  }
+
+  // Graph sub-label
+  if(t <= td){
+    document.getElementById('graphSubLabel').textContent = '🪂 Freefall Phase (a = ' + a.toFixed(2) + ' m/s² → Vt₁)';
+  } else {
+    document.getElementById('graphSubLabel').textContent = '🪂 Parachute Phase (decelerating → Vt₂ = ' + state.vt2 + ' m/s)';
+  }
+
+  drawGraph();
+  drawAnim();
+}
+
+// ===== PLAYBACK =====
+function togglePlay(){
+  state.playing = !state.playing;
+  document.getElementById('playBtn').textContent = state.playing ? '⏸ Pause' : '▶ Play';
+  if(state.playing){
+    state._lastTs = performance.now();
+    state.rafId = requestAnimationFrame(loop);
+  } else if(state.rafId){
+    cancelAnimationFrame(state.rafId);
+    state.rafId = null;
+  }
+}
+
+function loop(){
+  if(!state.playing) return;
+  const now = performance.now();
+  if(!state._lastTs) state._lastTs = now;
+  const dt = (now - state._lastTs) / 1000 * state.speedMult;
+  state._lastTs = now;
+  state.time += dt;
+
+  const tMax = getTMax();
+  if(state.time >= tMax){
+    state.time = tMax;
+    state.playing = false;
+    document.getElementById('playBtn').textContent = '▶ Play';
+    updateDisplay();
+    return;
+  }
+  updateDisplay();
+  state.rafId = requestAnimationFrame(loop);
+}
+
+function resetSim(){
+  state.playing = false;
+  if(state.rafId){ cancelAnimationFrame(state.rafId); state.rafId = null; }
+  state.time = 0;
+  state._lastTs = 0;
+  document.getElementById('playBtn').textContent = '▶ Play';
+  updateDisplay();
+}
+
+function stepForward(){
+  if(state.playing) togglePlay();
+  const tMax = getTMax();
+  state.time = Math.min(state.time + 0.5, tMax);
+  updateDisplay();
+}
+
+function stepBack(){
+  if(state.playing) togglePlay();
+  state.time = Math.max(state.time - 0.5, 0);
+  updateDisplay();
+}
+
+// ===== SLIDERS =====
+function onSliderChange(){
+  state.vt1 = parseFloat(document.getElementById('vt1Slider').value);
+  state.tDeploy = parseFloat(document.getElementById('deploySlider').value);
+  state.vt2 = parseFloat(document.getElementById('vt2Slider').value);
+  state.speedMult = parseFloat(document.getElementById('speedSlider').value);
+
+  document.getElementById('vt1Val').textContent = state.vt1;
+  document.getElementById('deployVal').textContent = state.tDeploy.toFixed(1);
+  document.getElementById('vt2Val').textContent = state.vt2.toFixed(1);
+  document.getElementById('speedVal').textContent = state.speedMult.toFixed(1);
+
+  // Clamp time
+  const tMax = getTMax();
+  if(state.time > tMax) state.time = tMax;
+
+  updateDisplay();
+  // Update preset selection
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('selected'));
+}
+
+document.getElementById('vt1Slider').addEventListener('input', onSliderChange);
+document.getElementById('deploySlider').addEventListener('input', onSliderChange);
+document.getElementById('vt2Slider').addEventListener('input', onSliderChange);
+document.getElementById('speedSlider').addEventListener('input', onSliderChange);
+
+// ===== PRESETS =====
+const PRESETS = {
+  normal: { vt1: 50, tDeploy: 12, vt2: 5, name: '🪂 Normal' },
+  fastDeploy: { vt1: 55, tDeploy: 6, vt2: 5.5, name: '⚡ Fast Deploy' },
+  raceChute: { vt1: 60, tDeploy: 18, vt2: 8, name: '🏎️ Racing Chute' },
+  lowAlt: { vt1: 40, tDeploy: 8, vt2: 4, name: '⬇️ Low Altitude' },
+};
+
+function setPreset(name){
+  const p = PRESETS[name];
+  if(!p) return;
+
+  state.playing = false;
+  if(state.rafId){ cancelAnimationFrame(state.rafId); state.rafId = null; }
+  document.getElementById('playBtn').textContent = '▶ Play';
+  state.time = 0;
+
+  document.getElementById('vt1Slider').value = p.vt1;
+  document.getElementById('deploySlider').value = p.tDeploy;
+  document.getElementById('vt2Slider').value = p.vt2;
+
+  // Trigger input event to update state
+  document.getElementById('vt1Slider').dispatchEvent(new Event('input'));
+
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('selected'));
+  const btns = document.querySelectorAll('.preset-btn');
+  const idx = ['normal','fastDeploy','raceChute','lowAlt'].indexOf(name);
+  if(btns[idx]) btns[idx].classList.add('selected');
+
+  onSliderChange();
+}
+
+// ===== INIT =====
+function init(){
+  // Fix canvas sizes
+  const gc = document.getElementById('graphCanvas');
+  gc.width = gc.clientWidth || 920;
+  gc.height = 360;
+  const ac = document.getElementById('animCanvas');
+  ac.width = ac.clientWidth || 380;
+  ac.height = 340;
+
+  updateDisplay();
+  // Auto-highlight Normal preset
+  document.querySelectorAll('.preset-btn')[0].classList.add('selected');
+}
+
+// Resize
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { drawGraph(); drawAnim(); }, 150);
+});
+
+window.addEventListener('load', init);
+document.addEventListener('keydown', function(e){
+  if(e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'SELECT'){
+    e.preventDefault();
+    togglePlay();
+  }
+});
+</script>
+</body>
+</html>
