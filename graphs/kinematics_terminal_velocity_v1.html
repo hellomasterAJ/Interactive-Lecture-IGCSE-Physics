@@ -786,9 +786,9 @@ function drawAnim(){
   }
 
   // === FORCE ARROWS (Weight ↓ & Air Resistance ↑) ===
-  const arrowX = diverX - 30 * S;
+  const arrowX = diverX - 55 * S;
   const arrowBaseY = diverY;
-  const wLen = 22 * S; // Weight arrow length (constant)
+  const wLen = 32 * S; // Weight arrow length (constant, bigger)
 
   // Effective Vt transitions smoothly during deployment
   const deployFrac = isPhase2 ? Math.min((currentT - td) / 1.0, 1) : 0;
@@ -803,7 +803,7 @@ function drawAnim(){
   // --- Weight arrow (↓) ---
   ctx.fillStyle = '#fbbf24'; // Amber/gold
   ctx.strokeStyle = '#fbbf24';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 3;
   // Arrow shaft
   ctx.beginPath();
   ctx.moveTo(arrowX, arrowBaseY);
@@ -811,22 +811,22 @@ function drawAnim(){
   ctx.stroke();
   // Arrowhead (down)
   ctx.beginPath();
-  ctx.moveTo(arrowX - 4, arrowBaseY + wLen - 5);
+  ctx.moveTo(arrowX - 6, arrowBaseY + wLen - 7);
   ctx.lineTo(arrowX, arrowBaseY + wLen);
-  ctx.lineTo(arrowX + 4, arrowBaseY + wLen - 5);
+  ctx.lineTo(arrowX + 6, arrowBaseY + wLen - 7);
   ctx.fill();
   // Label
   ctx.fillStyle = '#fbbf24';
-  ctx.font = 'bold 8px Inter';
+  ctx.font = 'bold 12px Inter';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'top';
-  ctx.fillText('W', arrowX, arrowBaseY + wLen + 2);
+  ctx.fillText('W (mg)', arrowX, arrowBaseY + wLen + 3);
 
   // --- Drag arrow (↑) ---
   const isDragLonger = dLen > wLen + 2;
   ctx.fillStyle = isDragLonger ? '#fb7185' : '#60a5fa';
   ctx.strokeStyle = isDragLonger ? '#fb7185' : '#60a5fa';
-  ctx.lineWidth = 2;
+  ctx.lineWidth = 3;
   // Arrow shaft
   ctx.beginPath();
   ctx.moveTo(arrowX, arrowBaseY);
@@ -834,24 +834,24 @@ function drawAnim(){
   ctx.stroke();
   // Arrowhead (up)
   ctx.beginPath();
-  ctx.moveTo(arrowX - 4, arrowBaseY - dLen + 5);
+  ctx.moveTo(arrowX - 6, arrowBaseY - dLen + 7);
   ctx.lineTo(arrowX, arrowBaseY - dLen);
-  ctx.lineTo(arrowX + 4, arrowBaseY - dLen + 5);
+  ctx.lineTo(arrowX + 6, arrowBaseY - dLen + 7);
   ctx.fill();
   // Label
   ctx.fillStyle = isDragLonger ? '#fb7185' : '#60a5fa';
-  ctx.font = 'bold 7px Inter';
+  ctx.font = 'bold 11px Inter';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText('D', arrowX, arrowBaseY - dLen - 1);
+  ctx.fillText('D = Air Resistance', arrowX, arrowBaseY - dLen - 2);
 
-  // Force balance text at very bottom
+  // Force balance text
   if(Math.abs(dragRatio - 1) < 0.08 && currentT > 0.5){
-    ctx.fillStyle = 'rgba(255,255,255,0.3)';
-    ctx.font = '7px Inter';
+    ctx.fillStyle = isDark() ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.3)';
+    ctx.font = 'bold 9px Inter';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'top';
-    ctx.fillText('ΣF = 0', arrowX, arrowBaseY + wLen + 16);
+    ctx.fillText('ΣF = 0  (Balanced)', arrowX, arrowBaseY + wLen + 24);
   }
 
   // --- SKYDIVER BODY (scaled 0.7×) ---
@@ -1077,20 +1077,21 @@ function drawAnim(){
   // === SPEED INDICATOR RING ===
   const ringR = (12 + speedRatio * 8) * S;
   ctx.beginPath();
-  ctx.arc(diverX + 14 * S, diverY - 15 * S, ringR, 0, Math.PI * 2);
+  ctx.arc(diverX + 35 * S, diverY - 15 * S, ringR, 0, Math.PI * 2);
   ctx.strokeStyle = `rgba(${isPhase2 ? '255,179,71' : '0,212,255'},0.12)`;
   ctx.lineWidth = 1;
   ctx.setLineDash([3,4]);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // === SPEED TEXT ===
+  // === SPEED TEXT (right side) ===
   ctx.fillStyle = isDark() ? '#e2e8f0' : '#334155';
-  ctx.font = 'bold 11px JetBrains Mono';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'bottom';
-  const textY = diverY - 32 * S - (isPhase2 ? 16 * S : 0);
-  ctx.fillText(currentV.toFixed(1) + ' m/s', diverX, textY);
+  ctx.font = 'bold 13px JetBrains Mono';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  const textX = diverX + 24 * S;
+  const textY = diverY - 34 * S - (isPhase2 ? 18 * S : 0);
+  ctx.fillText(currentV.toFixed(1) + ' m/s', textX, textY);
 
   // === PHASE INDICATOR ===
   ctx.font = '9px Inter';
