@@ -662,352 +662,355 @@ function drawAnim(){
     ctx.fillRect(30, sy, 4, 1);
   }
 
-  // ===== SKYDIVER (Cute Style) =====
-  // Position: map height to canvas Y (20px below top → groundY - 15)
+  // ===== SKYDIVER (Cute + Realistic Style) =====
+  // Scale factor: 0.7× smaller
+  const S = 0.7;
   const fracH = Math.min(totalDist / maxDist, 1);
   const diverY = 20 + (groundY - 35) * fracH;
   const diverX = W / 2 + 20;
 
   const isPhase2 = currentT > td && td > 0;
-
-  // Speed state
   const currentV = vAt(currentT);
   const speedRatio = currentV / state.vt1;
   let suitColor = '#e74c3c';
-  if(speedRatio > 0.9) suitColor = '#fb7185'; // fast — pinkish
-  else if(speedRatio > 0.6) suitColor = '#f97316'; // medium — orange
-  else suitColor = '#3b82f6'; // slow — blue
+  if(speedRatio > 0.9) suitColor = '#fb7185';
+  else if(speedRatio > 0.6) suitColor = '#f97316';
+  else suitColor = '#3b82f6';
 
-  // --- Parachute (drawn behind skydiver) ---
+  // --- PARACHUTE (redesigned — realistic dome with ribs) ---
   if(isPhase2){
-    const openRatio = Math.min((currentT - td) / 1.2, 1);
-    const chuteW = 55 * (0.7 + 0.3 * openRatio);
-    const chuteH = 32 * openRatio;
-    const chuteTop = diverY - 42 - chuteH;
+    const openRatio = Math.min((currentT - td) / 1.0, 1);
+    const chuteW = 68 * (0.6 + 0.4 * openRatio);
+    const chuteH = 28 * openRatio;
+    const chuteTop = diverY - 42 * S - chuteH;
     const chuteBot = chuteTop + chuteH;
 
-    // --- Pilot chute (small parachute above) ---
-    const pilotOpen = Math.max(0, Math.min((currentT - td - 0.15) / 0.4, 1));
+    // Pilot chute
+    const pilotOpen = Math.max(0, Math.min((currentT - td - 0.15) / 0.35, 1));
     if(pilotOpen > 0){
-      const py = chuteTop - 18 * pilotOpen;
+      const py = chuteTop - 14 * pilotOpen;
       ctx.fillStyle = '#e74c3c';
       ctx.beginPath();
       ctx.arc(diverX, py, 6 * pilotOpen, Math.PI, 0);
       ctx.fill();
-      ctx.strokeStyle = isDark() ? '#94a3b8' : '#666';
+      ctx.strokeStyle = isDark() ? '#94a3b8' : '#777';
       ctx.lineWidth = 0.5;
       ctx.beginPath();
-      ctx.moveTo(diverX, py);
+      ctx.moveTo(diverX, py + 1);
       ctx.lineTo(diverX, chuteTop);
       ctx.stroke();
     }
 
-    // --- Shroud lines (8 lines from canopy edge to skydiver) ---
-    ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)';
-    ctx.lineWidth = 0.7;
-    for(let i = 0; i < 8; i++){
-      const frac = (i / 7) * 2 - 1; // -1 to 1
-      const cx = diverX + frac * chuteW;
-      const cy = chuteBot;
-      const dx = diverX + frac * 10;
-      const dy = diverY - 14;
+    // === Shroud lines (10 lines from canopy to harness) ===
+    ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.2)' : 'rgba(80,70,60,0.25)';
+    ctx.lineWidth = 0.6;
+    for(let i = 0; i < 10; i++){
+      const frac = (i / 9) * 2 - 1;
+      const ex = diverX + frac * chuteW * 0.92;
+      const ey = chuteBot;
+      const sx = diverX + frac * 12 * S;
+      const sy = diverY - 12 * S;
       ctx.beginPath();
-      ctx.moveTo(cx, cy);
-      ctx.lineTo(dx - 2 + i % 3, dy);
+      ctx.moveTo(ex, ey);
+      // Slight curve for realism
+      ctx.quadraticCurveTo((ex + sx) / 2 + frac * 5, (ey + sy) / 2, sx, sy);
       ctx.stroke();
     }
 
-    // --- Canopy dome with panel gores ---
-    for(let i = 0; i < 7; i++){
-      const frac = (i / 6) * 2 - 1;
-      const nextFrac = ((i + 1) / 6) * 2 - 1;
-      const x1 = diverX + frac * chuteW;
-      const x2 = diverX + nextFrac * chuteW;
-      const midX = (x1 + x2) / 2;
-
-      // Alternate panel colors
-      const colors = ['#e74c3c','#3498db','#e74c3c','#f1c40f','#e74c3c','#2ecc71','#e74c3c'];
-      ctx.fillStyle = colors[i % colors.length];
-
-      ctx.beginPath();
-      ctx.moveTo(x1, chuteBot);
-      ctx.quadraticCurveTo(midX, chuteTop - 6, x2, chuteBot);
-      ctx.closePath();
-      ctx.fill();
-      ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)';
-      ctx.lineWidth = 0.8;
-      ctx.stroke();
-    }
-
-    // Canopy outline
+    // === Canopy dome — realistic scalloped parachute ===
+    // Draw the dome body
     ctx.beginPath();
-    for(let i = 0; i <= 20; i++){
-      const frac = (i / 20) * 2 - 1;
-      const x = diverX + frac * chuteW;
-      const y = chuteBot - chuteH * (1 - frac * frac);
-      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    }
-    ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)';
+    // Left edge
+    ctx.moveTo(diverX - chuteW, chuteBot);
+    // Dome arc (slightly flattened top)
+    ctx.quadraticCurveTo(diverX - chuteW * 0.7, chuteTop - 4,
+                         diverX, chuteTop - 2);
+    ctx.quadraticCurveTo(diverX + chuteW * 0.7, chuteTop - 4,
+                         diverX + chuteW, chuteBot);
+    ctx.closePath();
+
+    // Dome fill — gradient from center
+    const domeGrad = ctx.createRadialGradient(diverX, chuteTop - 5, 0, diverX, chuteTop + 5, chuteW);
+    domeGrad.addColorStop(0, '#ff6b6b');
+    domeGrad.addColorStop(0.3, '#e74c3c');
+    domeGrad.addColorStop(0.6, '#c0392b');
+    domeGrad.addColorStop(1, '#922b21');
+    ctx.fillStyle = domeGrad;
+    ctx.fill();
+
+    // Dome outline
+    ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.3)' : 'rgba(60,40,30,0.3)';
     ctx.lineWidth = 1.2;
     ctx.stroke();
 
-    // Canopy bottom hem
+    // === Rib lines (parachute structural seams) ===
+    ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.2)' : 'rgba(60,40,30,0.18)';
+    ctx.lineWidth = 0.8;
+    const numRibs = 9;
+    for(let i = 1; i < numRibs; i++){
+      const frac = (i / (numRibs - 1)) * 2 - 1;
+      const bx = diverX + frac * chuteW * 0.88;
+      const by = chuteBot;
+      // Mid point (parabolic arc)
+      const midX = diverX + frac * chuteW * 0.55;
+      const midY = chuteTop + 4 + (1 - Math.abs(frac)) * (chuteH * 0.15);
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.quadraticCurveTo(midX, midY, diverX, chuteTop - 2);
+      ctx.stroke();
+    }
+
+    // === Bottom skirt (opening hem) ===
     ctx.beginPath();
+    // Skirt — slightly curved (concave up) for realistic parachute opening
     ctx.moveTo(diverX - chuteW, chuteBot);
-    ctx.lineTo(diverX + chuteW, chuteBot);
-    ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)';
-    ctx.lineWidth = 1.5;
+    ctx.quadraticCurveTo(diverX, chuteBot + 5, diverX + chuteW, chuteBot);
+    ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.25)' : 'rgba(60,40,30,0.2)';
+    ctx.lineWidth = 2;
     ctx.stroke();
+
+    // === Reinforcement tape on ribs (visible white strips at top) ===
+    for(let i = 0; i < 5; i++){
+      const frac = (i / 4) * 2 - 1;
+      const tx = diverX + frac * chuteW * 0.4;
+      const ty = chuteTop + 6;
+      ctx.fillStyle = isDark() ? 'rgba(255,255,255,0.08)' : 'rgba(255,255,255,0.15)';
+      ctx.fillRect(tx - 1, ty - 0.5, 2, 3);
+    }
+
+    // Small vent hole at top center
+    ctx.fillStyle = isDark() ? 'rgba(0,0,0,0.2)' : 'rgba(60,40,30,0.15)';
+    ctx.beginPath();
+    ctx.arc(diverX, chuteTop + 2, 3, 0, Math.PI * 2);
+    ctx.fill();
   }
 
-  // --- SKYDIVER BODY ---
+  // --- SKYDIVER BODY (scaled 0.7×) ---
 
   // Speed effect: wind lines when fast
   if(speedRatio > 0.4){
     ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.12)' : 'rgba(100,100,255,0.1)';
     ctx.lineWidth = 1;
     for(let i = 0; i < 3; i++){
-      const wy = diverY - 20 + i * 8 + (Math.sin(currentT * 5 + i) * 3);
+      const wy = diverY - 14 * S + i * 6 * S + (Math.sin(currentT * 5 + i) * 2);
       ctx.beginPath();
-      ctx.moveTo(diverX - 28 - speedRatio * 10 + i * 5, wy);
-      ctx.lineTo(diverX - 10 - speedRatio * 5 + i * 3, wy);
+      ctx.moveTo(diverX - 20 * S - speedRatio * 7 * S + i * 4 * S, wy);
+      ctx.lineTo(diverX - 7 * S - speedRatio * 3 * S + i * 2 * S, wy);
       ctx.stroke();
     }
   }
 
   // === LEGS ===
   if(isPhase2){
-    // Dangling legs (parachute — sitting in harness)
     ctx.strokeStyle = suitColor;
-    ctx.lineWidth = 3.5;
+    ctx.lineWidth = 2.5 * S;
     ctx.beginPath();
-    ctx.moveTo(diverX - 5, diverY + 8);
-    ctx.quadraticCurveTo(diverX - 10, diverY + 20, diverX - 12, diverY + 30);
+    ctx.moveTo(diverX - 4 * S, diverY + 6 * S);
+    ctx.quadraticCurveTo(diverX - 7 * S, diverY + 14 * S, diverX - 9 * S, diverY + 22 * S);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(diverX + 5, diverY + 8);
-    ctx.quadraticCurveTo(diverX + 10, diverY + 20, diverX + 12, diverY + 30);
+    ctx.moveTo(diverX + 4 * S, diverY + 6 * S);
+    ctx.quadraticCurveTo(diverX + 7 * S, diverY + 14 * S, diverX + 9 * S, diverY + 22 * S);
     ctx.stroke();
     // Boots
     ctx.fillStyle = '#8B4513';
     ctx.beginPath();
-    ctx.arc(diverX - 12, diverY + 31, 4, 0, Math.PI * 2);
+    ctx.arc(diverX - 9 * S, diverY + 23 * S, 3 * S, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(diverX + 12, diverY + 31, 4, 0, Math.PI * 2);
+    ctx.arc(diverX + 9 * S, diverY + 23 * S, 3 * S, 0, Math.PI * 2);
     ctx.fill();
   } else {
-    // Freefall legs — spread slightly, knees bent
     ctx.strokeStyle = suitColor;
-    ctx.lineWidth = 3.5;
-    // Left leg
+    ctx.lineWidth = 2.5 * S;
     ctx.beginPath();
-    ctx.moveTo(diverX - 3, diverY + 8);
-    ctx.quadraticCurveTo(diverX - 12, diverY + 16, diverX - 14, diverY + 28);
+    ctx.moveTo(diverX - 2 * S, diverY + 6 * S);
+    ctx.quadraticCurveTo(diverX - 9 * S, diverY + 12 * S, diverX - 10 * S, diverY + 21 * S);
     ctx.stroke();
-    // Right leg
     ctx.beginPath();
-    ctx.moveTo(diverX + 3, diverY + 8);
-    ctx.quadraticCurveTo(diverX + 12, diverY + 16, diverX + 14, diverY + 28);
+    ctx.moveTo(diverX + 2 * S, diverY + 6 * S);
+    ctx.quadraticCurveTo(diverX + 9 * S, diverY + 12 * S, diverX + 10 * S, diverY + 21 * S);
     ctx.stroke();
-    // Boots
     ctx.fillStyle = '#8B4513';
     ctx.beginPath();
-    ctx.arc(diverX - 14, diverY + 29, 3.5, 0, Math.PI * 2);
+    ctx.arc(diverX - 10 * S, diverY + 22 * S, 2.5 * S, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(diverX + 14, diverY + 29, 3.5, 0, Math.PI * 2);
+    ctx.arc(diverX + 10 * S, diverY + 22 * S, 2.5 * S, 0, Math.PI * 2);
     ctx.fill();
   }
 
   // === TORSO ===
   ctx.fillStyle = suitColor;
   ctx.beginPath();
-  ctx.moveTo(diverX - 8, diverY - 10);
-  ctx.lineTo(diverX + 8, diverY - 10);
-  ctx.lineTo(diverX + 7, diverY + 8);
-  ctx.lineTo(diverX - 7, diverY + 8);
+  ctx.moveTo(diverX - 6 * S, diverY - 7 * S);
+  ctx.lineTo(diverX + 6 * S, diverY - 7 * S);
+  ctx.lineTo(diverX + 5 * S, diverY + 6 * S);
+  ctx.lineTo(diverX - 5 * S, diverY + 6 * S);
   ctx.closePath();
   ctx.fill();
   ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)';
   ctx.lineWidth = 0.5;
   ctx.stroke();
-
-  // Jumpsuit stripe (center zipper)
+  // Jumpsuit zipper
   ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
-  ctx.lineWidth = 0.8;
+  ctx.lineWidth = 0.6;
   ctx.setLineDash([2,3]);
   ctx.beginPath();
-  ctx.moveTo(diverX, diverY - 10);
-  ctx.lineTo(diverX, diverY + 8);
+  ctx.moveTo(diverX, diverY - 7 * S);
+  ctx.lineTo(diverX, diverY + 6 * S);
   ctx.stroke();
   ctx.setLineDash([]);
 
   // === ARMS ===
   if(isPhase2){
-    // Arms up — holding risers (gripping)
     ctx.strokeStyle = suitColor;
-    ctx.lineWidth = 3;
-    // Left arm
+    ctx.lineWidth = 2.2 * S;
     ctx.beginPath();
-    ctx.moveTo(diverX - 6, diverY - 6);
-    ctx.quadraticCurveTo(diverX - 14, diverY - 20, diverX - 10, diverY - 30);
+    ctx.moveTo(diverX - 4 * S, diverY - 4 * S);
+    ctx.quadraticCurveTo(diverX - 10 * S, diverY - 14 * S, diverX - 7 * S, diverY - 22 * S);
     ctx.stroke();
-    // Right arm
     ctx.beginPath();
-    ctx.moveTo(diverX + 6, diverY - 6);
-    ctx.quadraticCurveTo(diverX + 14, diverY - 20, diverX + 10, diverY - 30);
+    ctx.moveTo(diverX + 4 * S, diverY - 4 * S);
+    ctx.quadraticCurveTo(diverX + 10 * S, diverY - 14 * S, diverX + 7 * S, diverY - 22 * S);
     ctx.stroke();
-    // Gloves
     ctx.fillStyle = '#f59e0b';
     ctx.beginPath();
-    ctx.arc(diverX - 10, diverY - 31, 3, 0, Math.PI * 2);
+    ctx.arc(diverX - 7 * S, diverY - 23 * S, 2.2 * S, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(diverX + 10, diverY - 31, 3, 0, Math.PI * 2);
+    ctx.arc(diverX + 7 * S, diverY - 23 * S, 2.2 * S, 0, Math.PI * 2);
     ctx.fill();
   } else {
-    // Freefall arms — spread-eagle with slight upward sweep
     ctx.strokeStyle = suitColor;
-    ctx.lineWidth = 3;
-    // Left arm
+    ctx.lineWidth = 2.2 * S;
     ctx.beginPath();
-    ctx.moveTo(diverX - 7, diverY - 4);
-    ctx.quadraticCurveTo(diverX - 18, diverY - 12, diverX - 26, diverY - 4);
+    ctx.moveTo(diverX - 5 * S, diverY - 3 * S);
+    ctx.quadraticCurveTo(diverX - 13 * S, diverY - 9 * S, diverX - 18 * S, diverY - 3 * S);
     ctx.stroke();
-    // Right arm
     ctx.beginPath();
-    ctx.moveTo(diverX + 7, diverY - 4);
-    ctx.quadraticCurveTo(diverX + 18, diverY - 12, diverX + 26, diverY - 4);
+    ctx.moveTo(diverX + 5 * S, diverY - 3 * S);
+    ctx.quadraticCurveTo(diverX + 13 * S, diverY - 9 * S, diverX + 18 * S, diverY - 3 * S);
     ctx.stroke();
-    // Gloves
     ctx.fillStyle = '#f59e0b';
     ctx.beginPath();
-    ctx.arc(diverX - 26, diverY - 4, 3, 0, Math.PI * 2);
+    ctx.arc(diverX - 18 * S, diverY - 3 * S, 2.2 * S, 0, Math.PI * 2);
     ctx.fill();
     ctx.beginPath();
-    ctx.arc(diverX + 26, diverY - 4, 3, 0, Math.PI * 2);
+    ctx.arc(diverX + 18 * S, diverY - 3 * S, 2.2 * S, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // === Harness straps (visible in parachute mode) ===
+  // === HARNESS STRAPS ===
   if(isPhase2){
     ctx.strokeStyle = isDark() ? '#94a3b8' : '#555';
-    ctx.lineWidth = 1.2;
-    // Chest strap
+    ctx.lineWidth = 0.9 * S;
     ctx.beginPath();
-    ctx.moveTo(diverX - 7, diverY - 4);
-    ctx.quadraticCurveTo(diverX, diverY - 8, diverX + 7, diverY - 4);
-    ctx.stroke();
-    // Leg straps
-    ctx.beginPath();
-    ctx.moveTo(diverX - 5, diverY + 4);
-    ctx.lineTo(diverX - 7, diverY + 12);
+    ctx.moveTo(diverX - 5 * S, diverY - 3 * S);
+    ctx.quadraticCurveTo(diverX, diverY - 6 * S, diverX + 5 * S, diverY - 3 * S);
     ctx.stroke();
     ctx.beginPath();
-    ctx.moveTo(diverX + 5, diverY + 4);
-    ctx.lineTo(diverX + 7, diverY + 12);
+    ctx.moveTo(diverX - 4 * S, diverY + 3 * S);
+    ctx.lineTo(diverX - 5 * S, diverY + 9 * S);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(diverX + 4 * S, diverY + 3 * S);
+    ctx.lineTo(diverX + 5 * S, diverY + 9 * S);
     ctx.stroke();
   }
 
   // === HEAD / HELMET ===
-  const headY = diverY - 24;
+  const headY = diverY - 17 * S;
 
-  // Helmet dome
   ctx.fillStyle = '#e2e8f0';
   ctx.beginPath();
-  ctx.arc(diverX, headY, 11, 0, Math.PI * 2);
+  ctx.arc(diverX, headY, 8 * S, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)';
-  ctx.lineWidth = 1;
+  ctx.lineWidth = 0.8;
   ctx.stroke();
 
-  // Helmet top stripe
+  // Helmet stripe
   ctx.fillStyle = suitColor;
   ctx.beginPath();
-  ctx.arc(diverX, headY - 3, 11, Math.PI * 1.1, Math.PI * 1.9, false);
-  ctx.lineWidth = 2.5;
+  ctx.arc(diverX, headY - 2 * S, 8 * S, Math.PI * 1.1, Math.PI * 1.9, false);
+  ctx.lineWidth = 1.8 * S;
   ctx.stroke();
 
   // === GOGGLES ===
-  // Goggle strap
   ctx.strokeStyle = '#444';
-  ctx.lineWidth = 1.2;
+  ctx.lineWidth = 0.9 * S;
   ctx.beginPath();
-  ctx.moveTo(diverX - 12, headY - 2);
-  ctx.lineTo(diverX + 12, headY - 2);
+  ctx.moveTo(diverX - 9 * S, headY - 1 * S);
+  ctx.lineTo(diverX + 9 * S, headY - 1 * S);
   ctx.stroke();
 
-  // Left goggle
   ctx.fillStyle = isDark() ? '#0f172a' : '#1e293b';
   ctx.beginPath();
-  ctx.ellipse(diverX - 5, headY - 1, 4.5, 3.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(diverX - 3.5 * S, headY, 3.2 * S, 2.5 * S, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = '#888';
-  ctx.lineWidth = 0.8;
+  ctx.lineWidth = 0.6;
   ctx.stroke();
-  // Reflection in left goggle
   ctx.fillStyle = 'rgba(255,255,255,0.25)';
   ctx.beginPath();
-  ctx.ellipse(diverX - 6, headY - 3, 1.5, 1, 0, 0, Math.PI * 2);
+  ctx.ellipse(diverX - 4.2 * S, headY - 1.4 * S, 1 * S, 0.7 * S, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Right goggle
   ctx.fillStyle = isDark() ? '#0f172a' : '#1e293b';
   ctx.beginPath();
-  ctx.ellipse(diverX + 5, headY - 1, 4.5, 3.5, 0, 0, Math.PI * 2);
+  ctx.ellipse(diverX + 3.5 * S, headY, 3.2 * S, 2.5 * S, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.strokeStyle = '#888';
-  ctx.lineWidth = 0.8;
+  ctx.lineWidth = 0.6;
   ctx.stroke();
-  // Reflection in right goggle
   ctx.fillStyle = 'rgba(255,255,255,0.25)';
   ctx.beginPath();
-  ctx.ellipse(diverX + 4, headY - 3, 1.5, 1, 0, 0, Math.PI * 2);
+  ctx.ellipse(diverX + 2.8 * S, headY - 1.4 * S, 1 * S, 0.7 * S, 0, 0, Math.PI * 2);
   ctx.fill();
 
   // === SMILE ===
   ctx.strokeStyle = isDark() ? '#c0847a' : '#a06050';
-  ctx.lineWidth = 1.2;
+  ctx.lineWidth = 0.9 * S;
   ctx.beginPath();
-  ctx.arc(diverX, headY + 5, 3, 0.15, Math.PI - 0.15);
+  ctx.arc(diverX, headY + 3.5 * S, 2.2 * S, 0.15, Math.PI - 0.15);
   ctx.stroke();
 
-  // Cheek blush (cute!)
+  // Cheek blush
   ctx.fillStyle = isDark() ? 'rgba(251,113,133,0.2)' : 'rgba(251,113,133,0.15)';
   ctx.beginPath();
-  ctx.ellipse(diverX - 7, headY + 3, 3, 2, 0, 0, Math.PI * 2);
+  ctx.ellipse(diverX - 5 * S, headY + 2 * S, 2.2 * S, 1.5 * S, 0, 0, Math.PI * 2);
   ctx.fill();
   ctx.beginPath();
-  ctx.ellipse(diverX + 7, headY + 3, 3, 2, 0, 0, Math.PI * 2);
+  ctx.ellipse(diverX + 5 * S, headY + 2 * S, 2.2 * S, 1.5 * S, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // === ALTIMETER (wrist gadget) ===
+  // === ALTIMETER ===
   ctx.fillStyle = isDark() ? '#94a3b8' : '#64748b';
-  ctx.fillRect(diverX + 14, diverY - 10, 4, 5);
+  ctx.fillRect(diverX + 10 * S, diverY - 7 * S, 3 * S, 3.5 * S);
   ctx.fillStyle = isDark() ? '#38bdf8' : '#2563eb';
-  ctx.fillRect(diverX + 15, diverY - 9, 2, 3);
+  ctx.fillRect(diverX + 10.5 * S, diverY - 6.5 * S, 2 * S, 2 * S);
 
-  // === SPEED TRAIL / MOTION LINES ===
+  // === SPEED TRAIL ===
   if(speedRatio > 0.3){
     ctx.strokeStyle = isDark() ? `rgba(255,255,255,${0.08 + speedRatio * 0.08})` : `rgba(100,100,255,${0.06 + speedRatio * 0.06})`;
-    ctx.lineWidth = 1;
-    for(let i = 0; i < 4 + Math.floor(speedRatio * 3); i++){
-      const ly = diverY + 5 + i * 7 - speedRatio * 5;
-      const lxOffset = (i % 2 === 0 ? 8 : -8) + Math.sin(currentT * 3 + i) * 4;
+    ctx.lineWidth = 0.8;
+    for(let i = 0; i < 3 + Math.floor(speedRatio * 2); i++){
+      const ly = diverY + 4 * S + i * 5 * S - speedRatio * 3 * S;
+      const lxOffset = (i % 2 === 0 ? 6 : -6) * S + Math.sin(currentT * 3 + i) * 3 * S;
       ctx.beginPath();
       ctx.moveTo(diverX + lxOffset, ly);
-      ctx.lineTo(diverX + lxOffset + (isPhase2 ? 6 : 10 - speedRatio * 3), ly - 4);
+      ctx.lineTo(diverX + lxOffset + (isPhase2 ? 4 : 7 - speedRatio * 2) * S, ly - 3 * S);
       ctx.stroke();
     }
   }
 
   // === SPEED INDICATOR RING ===
-  const ringR = 16 + speedRatio * 12;
+  const ringR = (12 + speedRatio * 8) * S;
   ctx.beginPath();
-  ctx.arc(diverX + 20, diverY - 22, ringR, 0, Math.PI * 2);
+  ctx.arc(diverX + 14 * S, diverY - 15 * S, ringR, 0, Math.PI * 2);
   ctx.strokeStyle = `rgba(${isPhase2 ? '255,179,71' : '0,212,255'},0.12)`;
-  ctx.lineWidth = 1.2;
+  ctx.lineWidth = 1;
   ctx.setLineDash([3,4]);
   ctx.stroke();
   ctx.setLineDash([]);
@@ -1017,7 +1020,8 @@ function drawAnim(){
   ctx.font = 'bold 11px JetBrains Mono';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'bottom';
-  ctx.fillText(currentV.toFixed(1) + ' m/s', diverX, diverY - 44 - (isPhase2 ? 24 : 0));
+  const textY = diverY - 32 * S - (isPhase2 ? 16 * S : 0);
+  ctx.fillText(currentV.toFixed(1) + ' m/s', diverX, textY);
 
   // === PHASE INDICATOR ===
   ctx.font = '9px Inter';
