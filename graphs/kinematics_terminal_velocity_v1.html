@@ -86,8 +86,8 @@ body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);transit
 
 /* KPI Strip */
 .kpi-strip{display:flex;gap:6px}
-.kpi-item{flex:1;background:var(--bg);border-radius:6px;padding:6px 10px;text-align:center}
-.kpi-item .k-label{font-size:.6rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-dim)}
+.kpi-item{flex:1;background:var(--bg);border-radius:6px;padding:4px 5px;text-align:center}
+.kpi-item .k-label{font-size:.55rem;text-transform:uppercase;letter-spacing:.03em;color:var(--text-dim)}
 .kpi-item .k-value{font-size:.85rem;font-weight:700;font-family:'JetBrains Mono',monospace}
 .kpi-item .k-value.good{color:var(--green)}
 .kpi-item .k-value.warn{color:var(--amber)}
@@ -179,7 +179,7 @@ body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);transit
           <span class="s-unit">s</span>
         </div>
         <div class="ctrl-row">
-          <label>Vt₂ (Parachute)</label>
+          <label>Terminal V₂ (Parachute)</label>
           <input type="range" id="vt2Slider" min="3" max="15" value="5" step="0.5">
           <span class="s-val" id="vt2Val">5.0</span>
           <span class="s-unit">m/s</span>
@@ -604,7 +604,7 @@ function drawAnim(){
   const isPhase2 = currentT > td && td > 0;
   const currentV = vAt(currentT);
   const speedRatio = currentV / state.vt1;
-  let suitColor = '#e74c3c';
+  let suitColor = '#3b82f6'; // Blue jumpsuit
 
   // Clear
   ctx.clearRect(0, 0, W, H);
