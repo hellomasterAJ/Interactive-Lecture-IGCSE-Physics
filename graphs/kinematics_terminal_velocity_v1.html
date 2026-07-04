@@ -662,133 +662,376 @@ function drawAnim(){
     ctx.fillRect(30, sy, 4, 1);
   }
 
-  // ===== SKYDIVER =====
+  // ===== SKYDIVER (Cute Style) =====
   // Position: map height to canvas Y (20px below top → groundY - 15)
   const fracH = Math.min(totalDist / maxDist, 1);
-  const diverY = 20 + (groundY - 30) * fracH;
+  const diverY = 20 + (groundY - 35) * fracH;
   const diverX = W / 2 + 20;
 
   const isPhase2 = currentT > td && td > 0;
 
-  // Speed color indicator
+  // Speed state
   const currentV = vAt(currentT);
   const speedRatio = currentV / state.vt1;
-  let bodyColor = isDark() ? '#e2e8f0' : '#334155';
-  if(speedRatio > 0.9) bodyColor = '#fb7185'; // fast
-  else if(speedRatio > 0.6) bodyColor = '#fbbf24'; // medium
-  else bodyColor = isDark() ? '#e2e8f0' : '#334155'; // slow
+  let suitColor = '#e74c3c';
+  if(speedRatio > 0.9) suitColor = '#fb7185'; // fast — pinkish
+  else if(speedRatio > 0.6) suitColor = '#f97316'; // medium — orange
+  else suitColor = '#3b82f6'; // slow — blue
 
-  // Draw parachute (behind skydiver, if deployed within last 1s, animate opening)
+  // --- Parachute (drawn behind skydiver) ---
   if(isPhase2){
-    // Parachute canopy
-    const openRatio = Math.min((currentT - td) / 1.0, 1);
-    const chuteW = 50 * (0.7 + 0.3 * openRatio);
-    const chuteH = 30 * openRatio;
-    const chuteY = diverY - 28 - chuteH;
+    const openRatio = Math.min((currentT - td) / 1.2, 1);
+    const chuteW = 55 * (0.7 + 0.3 * openRatio);
+    const chuteH = 32 * openRatio;
+    const chuteTop = diverY - 42 - chuteH;
+    const chuteBot = chuteTop + chuteH;
 
-    // Canopy strings
-    ctx.strokeStyle = isDark() ? '#94a3b8' : '#666';
-    ctx.lineWidth = 0.8;
-    for(let i = -1; i <= 1; i++){
+    // --- Pilot chute (small parachute above) ---
+    const pilotOpen = Math.max(0, Math.min((currentT - td - 0.15) / 0.4, 1));
+    if(pilotOpen > 0){
+      const py = chuteTop - 18 * pilotOpen;
+      ctx.fillStyle = '#e74c3c';
       ctx.beginPath();
-      ctx.moveTo(diverX + i * 12, diverY - 8);
-      ctx.lineTo(diverX + i * chuteW * 0.5, chuteY + chuteH);
+      ctx.arc(diverX, py, 6 * pilotOpen, Math.PI, 0);
+      ctx.fill();
+      ctx.strokeStyle = isDark() ? '#94a3b8' : '#666';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(diverX, py);
+      ctx.lineTo(diverX, chuteTop);
       ctx.stroke();
     }
 
-    // Canopy dome
-    ctx.beginPath();
-    ctx.moveTo(diverX - chuteW, chuteY + chuteH);
-    ctx.quadraticCurveTo(diverX, chuteY, diverX + chuteW, chuteY + chuteH);
-    ctx.closePath();
+    // --- Shroud lines (8 lines from canopy edge to skydiver) ---
+    ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 0.7;
+    for(let i = 0; i < 8; i++){
+      const frac = (i / 7) * 2 - 1; // -1 to 1
+      const cx = diverX + frac * chuteW;
+      const cy = chuteBot;
+      const dx = diverX + frac * 10;
+      const dy = diverY - 14;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(dx - 2 + i % 3, dy);
+      ctx.stroke();
+    }
 
-    const chuteColors = ['#e74c3c','#f39c12','#e74c3c','#27ae60','#e74c3c'];
-    const chuteGrad = ctx.createLinearGradient(diverX - chuteW, chuteY, diverX + chuteW, chuteY);
-    chuteGrad.addColorStop(0, chuteColors[0]);
-    chuteGrad.addColorStop(0.25, chuteColors[1]);
-    chuteGrad.addColorStop(0.5, chuteColors[2]);
-    chuteGrad.addColorStop(0.75, chuteColors[3]);
-    chuteGrad.addColorStop(1, chuteColors[4]);
-    ctx.fillStyle = chuteGrad;
-    ctx.fill();
-    ctx.strokeStyle = isDark() ? '#64748b' : '#555';
-    ctx.lineWidth = 1;
+    // --- Canopy dome with panel gores ---
+    for(let i = 0; i < 7; i++){
+      const frac = (i / 6) * 2 - 1;
+      const nextFrac = ((i + 1) / 6) * 2 - 1;
+      const x1 = diverX + frac * chuteW;
+      const x2 = diverX + nextFrac * chuteW;
+      const midX = (x1 + x2) / 2;
+
+      // Alternate panel colors
+      const colors = ['#e74c3c','#3498db','#e74c3c','#f1c40f','#e74c3c','#2ecc71','#e74c3c'];
+      ctx.fillStyle = colors[i % colors.length];
+
+      ctx.beginPath();
+      ctx.moveTo(x1, chuteBot);
+      ctx.quadraticCurveTo(midX, chuteTop - 6, x2, chuteBot);
+      ctx.closePath();
+      ctx.fill();
+      ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.12)';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+
+    // Canopy outline
+    ctx.beginPath();
+    for(let i = 0; i <= 20; i++){
+      const frac = (i / 20) * 2 - 1;
+      const x = diverX + frac * chuteW;
+      const y = chuteBot - chuteH * (1 - frac * frac);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    }
+    ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)';
+    ctx.lineWidth = 1.2;
+    ctx.stroke();
+
+    // Canopy bottom hem
+    ctx.beginPath();
+    ctx.moveTo(diverX - chuteW, chuteBot);
+    ctx.lineTo(diverX + chuteW, chuteBot);
+    ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 1.5;
     ctx.stroke();
   }
 
-  // Draw skydiver body
-  // Head
-  ctx.fillStyle = isDark() ? '#f8e8d0' : '#f0d0a0';
+  // --- SKYDIVER BODY ---
+
+  // Speed effect: wind lines when fast
+  if(speedRatio > 0.4){
+    ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.12)' : 'rgba(100,100,255,0.1)';
+    ctx.lineWidth = 1;
+    for(let i = 0; i < 3; i++){
+      const wy = diverY - 20 + i * 8 + (Math.sin(currentT * 5 + i) * 3);
+      ctx.beginPath();
+      ctx.moveTo(diverX - 28 - speedRatio * 10 + i * 5, wy);
+      ctx.lineTo(diverX - 10 - speedRatio * 5 + i * 3, wy);
+      ctx.stroke();
+    }
+  }
+
+  // === LEGS ===
+  if(isPhase2){
+    // Dangling legs (parachute — sitting in harness)
+    ctx.strokeStyle = suitColor;
+    ctx.lineWidth = 3.5;
+    ctx.beginPath();
+    ctx.moveTo(diverX - 5, diverY + 8);
+    ctx.quadraticCurveTo(diverX - 10, diverY + 20, diverX - 12, diverY + 30);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(diverX + 5, diverY + 8);
+    ctx.quadraticCurveTo(diverX + 10, diverY + 20, diverX + 12, diverY + 30);
+    ctx.stroke();
+    // Boots
+    ctx.fillStyle = '#8B4513';
+    ctx.beginPath();
+    ctx.arc(diverX - 12, diverY + 31, 4, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(diverX + 12, diverY + 31, 4, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    // Freefall legs — spread slightly, knees bent
+    ctx.strokeStyle = suitColor;
+    ctx.lineWidth = 3.5;
+    // Left leg
+    ctx.beginPath();
+    ctx.moveTo(diverX - 3, diverY + 8);
+    ctx.quadraticCurveTo(diverX - 12, diverY + 16, diverX - 14, diverY + 28);
+    ctx.stroke();
+    // Right leg
+    ctx.beginPath();
+    ctx.moveTo(diverX + 3, diverY + 8);
+    ctx.quadraticCurveTo(diverX + 12, diverY + 16, diverX + 14, diverY + 28);
+    ctx.stroke();
+    // Boots
+    ctx.fillStyle = '#8B4513';
+    ctx.beginPath();
+    ctx.arc(diverX - 14, diverY + 29, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(diverX + 14, diverY + 29, 3.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // === TORSO ===
+  ctx.fillStyle = suitColor;
   ctx.beginPath();
-  ctx.arc(diverX, diverY - 18, 8, 0, Math.PI * 2);
+  ctx.moveTo(diverX - 8, diverY - 10);
+  ctx.lineTo(diverX + 8, diverY - 10);
+  ctx.lineTo(diverX + 7, diverY + 8);
+  ctx.lineTo(diverX - 7, diverY + 8);
+  ctx.closePath();
   ctx.fill();
-  ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)';
-  ctx.lineWidth = 1;
+  ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.12)' : 'rgba(0,0,0,0.08)';
+  ctx.lineWidth = 0.5;
   ctx.stroke();
 
-  // Body
-  ctx.strokeStyle = bodyColor;
-  ctx.lineWidth = 3;
+  // Jumpsuit stripe (center zipper)
+  ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.1)';
+  ctx.lineWidth = 0.8;
+  ctx.setLineDash([2,3]);
   ctx.beginPath();
   ctx.moveTo(diverX, diverY - 10);
-  ctx.lineTo(diverX, diverY + 10);
-  ctx.stroke();
-
-  // Arms (up if freefall, different if parachute deployed)
-  if(isPhase2){
-    // Arms up holding lines
-    ctx.beginPath();
-    ctx.moveTo(diverX - 3, diverY - 6);
-    ctx.lineTo(diverX - 16, diverY - 22);
-    ctx.moveTo(diverX + 3, diverY - 6);
-    ctx.lineTo(diverX + 16, diverY - 22);
-    ctx.stroke();
-  } else {
-    // Arms out (spread-eagle freefall)
-    ctx.beginPath();
-    ctx.moveTo(diverX - 3, diverY - 4);
-    ctx.lineTo(diverX - 20, diverY + 2);
-    ctx.moveTo(diverX + 3, diverY - 4);
-    ctx.lineTo(diverX + 20, diverY + 2);
-    ctx.stroke();
-  }
-
-  // Legs
-  ctx.beginPath();
-  ctx.moveTo(diverX - 2, diverY + 10);
-  ctx.lineTo(diverX - 8, diverY + 24);
-  ctx.moveTo(diverX + 2, diverY + 10);
-  ctx.lineTo(diverX + 8, diverY + 24);
-  ctx.stroke();
-
-  // Speed indicator arc near skydiver
-  const arcR = 12 + speedRatio * 14;
-  ctx.beginPath();
-  ctx.arc(diverX + 16, diverY - 16, arcR, 0, Math.PI * 2);
-  ctx.strokeStyle = `rgba(${isPhase2 ? '255,179,71' : '0,212,255'},0.15)`;
-  ctx.lineWidth = 1;
-  ctx.setLineDash([2,3]);
+  ctx.lineTo(diverX, diverY + 8);
   ctx.stroke();
   ctx.setLineDash([]);
 
-  // Speed text above
+  // === ARMS ===
+  if(isPhase2){
+    // Arms up — holding risers (gripping)
+    ctx.strokeStyle = suitColor;
+    ctx.lineWidth = 3;
+    // Left arm
+    ctx.beginPath();
+    ctx.moveTo(diverX - 6, diverY - 6);
+    ctx.quadraticCurveTo(diverX - 14, diverY - 20, diverX - 10, diverY - 30);
+    ctx.stroke();
+    // Right arm
+    ctx.beginPath();
+    ctx.moveTo(diverX + 6, diverY - 6);
+    ctx.quadraticCurveTo(diverX + 14, diverY - 20, diverX + 10, diverY - 30);
+    ctx.stroke();
+    // Gloves
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.arc(diverX - 10, diverY - 31, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(diverX + 10, diverY - 31, 3, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    // Freefall arms — spread-eagle with slight upward sweep
+    ctx.strokeStyle = suitColor;
+    ctx.lineWidth = 3;
+    // Left arm
+    ctx.beginPath();
+    ctx.moveTo(diverX - 7, diverY - 4);
+    ctx.quadraticCurveTo(diverX - 18, diverY - 12, diverX - 26, diverY - 4);
+    ctx.stroke();
+    // Right arm
+    ctx.beginPath();
+    ctx.moveTo(diverX + 7, diverY - 4);
+    ctx.quadraticCurveTo(diverX + 18, diverY - 12, diverX + 26, diverY - 4);
+    ctx.stroke();
+    // Gloves
+    ctx.fillStyle = '#f59e0b';
+    ctx.beginPath();
+    ctx.arc(diverX - 26, diverY - 4, 3, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(diverX + 26, diverY - 4, 3, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  // === Harness straps (visible in parachute mode) ===
+  if(isPhase2){
+    ctx.strokeStyle = isDark() ? '#94a3b8' : '#555';
+    ctx.lineWidth = 1.2;
+    // Chest strap
+    ctx.beginPath();
+    ctx.moveTo(diverX - 7, diverY - 4);
+    ctx.quadraticCurveTo(diverX, diverY - 8, diverX + 7, diverY - 4);
+    ctx.stroke();
+    // Leg straps
+    ctx.beginPath();
+    ctx.moveTo(diverX - 5, diverY + 4);
+    ctx.lineTo(diverX - 7, diverY + 12);
+    ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(diverX + 5, diverY + 4);
+    ctx.lineTo(diverX + 7, diverY + 12);
+    ctx.stroke();
+  }
+
+  // === HEAD / HELMET ===
+  const headY = diverY - 24;
+
+  // Helmet dome
+  ctx.fillStyle = '#e2e8f0';
+  ctx.beginPath();
+  ctx.arc(diverX, headY, 11, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = isDark() ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.12)';
+  ctx.lineWidth = 1;
+  ctx.stroke();
+
+  // Helmet top stripe
+  ctx.fillStyle = suitColor;
+  ctx.beginPath();
+  ctx.arc(diverX, headY - 3, 11, Math.PI * 1.1, Math.PI * 1.9, false);
+  ctx.lineWidth = 2.5;
+  ctx.stroke();
+
+  // === GOGGLES ===
+  // Goggle strap
+  ctx.strokeStyle = '#444';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.moveTo(diverX - 12, headY - 2);
+  ctx.lineTo(diverX + 12, headY - 2);
+  ctx.stroke();
+
+  // Left goggle
+  ctx.fillStyle = isDark() ? '#0f172a' : '#1e293b';
+  ctx.beginPath();
+  ctx.ellipse(diverX - 5, headY - 1, 4.5, 3.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#888';
+  ctx.lineWidth = 0.8;
+  ctx.stroke();
+  // Reflection in left goggle
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(diverX - 6, headY - 3, 1.5, 1, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Right goggle
+  ctx.fillStyle = isDark() ? '#0f172a' : '#1e293b';
+  ctx.beginPath();
+  ctx.ellipse(diverX + 5, headY - 1, 4.5, 3.5, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.strokeStyle = '#888';
+  ctx.lineWidth = 0.8;
+  ctx.stroke();
+  // Reflection in right goggle
+  ctx.fillStyle = 'rgba(255,255,255,0.25)';
+  ctx.beginPath();
+  ctx.ellipse(diverX + 4, headY - 3, 1.5, 1, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // === SMILE ===
+  ctx.strokeStyle = isDark() ? '#c0847a' : '#a06050';
+  ctx.lineWidth = 1.2;
+  ctx.beginPath();
+  ctx.arc(diverX, headY + 5, 3, 0.15, Math.PI - 0.15);
+  ctx.stroke();
+
+  // Cheek blush (cute!)
+  ctx.fillStyle = isDark() ? 'rgba(251,113,133,0.2)' : 'rgba(251,113,133,0.15)';
+  ctx.beginPath();
+  ctx.ellipse(diverX - 7, headY + 3, 3, 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.ellipse(diverX + 7, headY + 3, 3, 2, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // === ALTIMETER (wrist gadget) ===
+  ctx.fillStyle = isDark() ? '#94a3b8' : '#64748b';
+  ctx.fillRect(diverX + 14, diverY - 10, 4, 5);
+  ctx.fillStyle = isDark() ? '#38bdf8' : '#2563eb';
+  ctx.fillRect(diverX + 15, diverY - 9, 2, 3);
+
+  // === SPEED TRAIL / MOTION LINES ===
+  if(speedRatio > 0.3){
+    ctx.strokeStyle = isDark() ? `rgba(255,255,255,${0.08 + speedRatio * 0.08})` : `rgba(100,100,255,${0.06 + speedRatio * 0.06})`;
+    ctx.lineWidth = 1;
+    for(let i = 0; i < 4 + Math.floor(speedRatio * 3); i++){
+      const ly = diverY + 5 + i * 7 - speedRatio * 5;
+      const lxOffset = (i % 2 === 0 ? 8 : -8) + Math.sin(currentT * 3 + i) * 4;
+      ctx.beginPath();
+      ctx.moveTo(diverX + lxOffset, ly);
+      ctx.lineTo(diverX + lxOffset + (isPhase2 ? 6 : 10 - speedRatio * 3), ly - 4);
+      ctx.stroke();
+    }
+  }
+
+  // === SPEED INDICATOR RING ===
+  const ringR = 16 + speedRatio * 12;
+  ctx.beginPath();
+  ctx.arc(diverX + 20, diverY - 22, ringR, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(${isPhase2 ? '255,179,71' : '0,212,255'},0.12)`;
+  ctx.lineWidth = 1.2;
+  ctx.setLineDash([3,4]);
+  ctx.stroke();
+  ctx.setLineDash([]);
+
+  // === SPEED TEXT ===
   ctx.fillStyle = isDark() ? '#e2e8f0' : '#334155';
   ctx.font = 'bold 11px JetBrains Mono';
   ctx.textAlign = 'center';
-  ctx.fillText(currentV.toFixed(1) + ' m/s', diverX, diverY - 34 - (isPhase2 ? 20 : 0));
+  ctx.textBaseline = 'bottom';
+  ctx.fillText(currentV.toFixed(1) + ' m/s', diverX, diverY - 44 - (isPhase2 ? 24 : 0));
 
-  // Phase indicator on animation
+  // === PHASE INDICATOR ===
   ctx.font = '9px Inter';
   ctx.textAlign = 'left';
+  ctx.textBaseline = 'bottom';
   if(!isPhase2){
     ctx.fillStyle = '#00d4ff';
-    ctx.fillText('🔴 Freefall', 8, H - 2);
+    ctx.fillText('🔴 Freefall', 6, H - 2);
   } else {
     ctx.fillStyle = '#ffb347';
-    ctx.fillText('🟠 Parachute Deployed', 8, H - 2);
+    ctx.fillText('🟠 Parachute Deployed', 6, H - 2);
   }
 
-  // Update height display
+  // Update DOM
   document.getElementById('heightDisplayAnim').textContent = totalDist.toFixed(0);
   document.getElementById('speedDisplayAnim').textContent = currentV.toFixed(1);
 }
