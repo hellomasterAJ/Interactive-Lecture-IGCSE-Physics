@@ -282,7 +282,7 @@ function vAt(t){
   } else {
     // Phase 2: exponential decay from v_deploy towards vt2
     const vDeploy = vAt(td);
-    const tau2 = getTau2();
+    const tau2 = getTau2Eff();
     return state.vt2 + (vDeploy - state.vt2) * Math.exp(-(t - td) / tau2);
   }
 }
