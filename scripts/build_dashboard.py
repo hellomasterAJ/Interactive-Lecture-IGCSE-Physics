@@ -41,7 +41,7 @@ def discover_lectures(output_dir: Path) -> list[dict]:
     for jf in json_files:
         try:
             data = json.loads(jf.read_text(encoding='utf-8'))
-            stem = jf.stem  # e.g. topic1_motion_v1
+            stem = jf.stem  # e.g. topic12_motion_v1
 
             # Deduplicate by stem
             if stem in seen:

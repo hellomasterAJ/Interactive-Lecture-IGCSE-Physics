@@ -5,11 +5,11 @@ build.py — InteractiveLecture Build System
 Pipeline: lecture.md → rendered HTML → PDF export
 
 Usage:
-    python build.py lectures/topic1_motion.md
-    python build.py lectures/topic1_motion.md --no-pdf
-    python build.py lectures/topic1_motion.md --outdir custom_output/
-    python build.py lectures/topic1_motion.md --version 2
-    python build.py lectures/topic1_motion.md --preview     # Open in browser
+    python build.py lectures/topic12_motion.md
+    python build.py lectures/topic12_motion.md --no-pdf
+    python build.py lectures/topic12_motion.md --outdir custom_output/
+    python build.py lectures/topic12_motion.md --version 2
+    python build.py lectures/topic12_motion.md --preview     # Open in browser
 """
 
 from __future__ import annotations
@@ -206,11 +206,11 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python build.py lectures/topic1_motion.md
-  python build.py lectures/topic1_motion.md --no-pdf
-  python build.py lectures/topic1_motion.md --preview
-  python build.py lectures/topic1_motion.md --version 2
-  python build.py lectures/topic1_motion.md --outdir ~/Desktop/output
+  python build.py lectures/topic12_motion.md
+  python build.py lectures/topic12_motion.md --no-pdf
+  python build.py lectures/topic12_motion.md --preview
+  python build.py lectures/topic12_motion.md --version 2
+  python build.py lectures/topic12_motion.md --outdir ~/Desktop/output
         """,
     )
     parser.add_argument("input", help="Path to the .md lecture file")

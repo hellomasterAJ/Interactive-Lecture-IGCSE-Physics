@@ -272,7 +272,7 @@ el.appendChild(container);
 
 ```
 ~/InteractiveLecture/
-├── scientists/              ← Bio library
+├── references/scientists/   ← Bio library
 ├── graphs/                  ← Interactive HTML files
 ├── lectures/                ← Lecture.md source files
 ├── scripts/                 ← Build system (build.py, parse_lecture.py, pdf_export.py)

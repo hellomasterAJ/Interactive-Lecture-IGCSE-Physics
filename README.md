@@ -26,7 +26,7 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── parse_lecture.py   ← Markdown parser
 │   ├── pdf_export.py      ← Playwright → A4 PDF
 │   └── templates/         ← Jinja2 HTML templates
-└── scientists/            ← Scientist Bio Library
+└── references/scientists/ ← Scientist Bio Library
 ```
 
 ## 🚀 Quick Start
@@ -34,10 +34,10 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 ```bash
 # Build all lectures
 cd ~/InteractiveLecture
-python3 scripts/build.py lectures/topic1_motion.md
+python3 scripts/build.py lectures/topic12_motion.md
 
 # Build with preview
-python3 scripts/build.py lectures/topic1_motion.md --preview
+python3 scripts/build.py lectures/topic12_motion.md --preview
 
 # Generate dashboard
 python3 scripts/build_dashboard.py --open

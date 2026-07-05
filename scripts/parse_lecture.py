@@ -10,7 +10,7 @@ Parses a Lecture.md file with the following structure:
 Usage:
     from parse_lecture import parse_lecture, Lecture
 
-    lecture = parse_lecture("lectures/topic1_motion.md")
+    lecture = parse_lecture("lectures/topic12_motion.md")
     print(lecture.title)
     for section in lecture.sections:
         print(section.heading, section.type)
