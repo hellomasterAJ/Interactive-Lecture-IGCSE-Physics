@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Micrometer Screw Gauge</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;font-family:Arial,sans-serif;background:#004054;color:#fff}
+body.light{background:#e8e4dc;color:#222}
+body.mid{background:#3a3a36;color:#ddd}
+
+#myCanvas{position:fixed;top:0;left:0;width:100%;height:100%;display:block}
+#gui{position:fixed;top:48px;right:12px;z-index:10;max-height:calc(100vh-60px);overflow-y:auto;font-size:13px}
+#gui .tp-dfwv{min-width:200px;max-width:260px}
+
+.header{position:fixed;top:0;left:0;right:0;height:40px;z-index:20;display:flex;align-items:center;padding:0 14px;gap:10px;background:rgba(0,40,54,.85);backdrop-filter:blur(6px)}
+body.light .header{background:rgba(220,210,200,.85)}
+body.mid .header{background:rgba(50,50,46,.85)}
+.header h1{font-size:14px;font-weight:600;color:#ffa500}
+.header label{font-size:11px;color:#ccc;display:flex;align-items:center;gap:4px}
+body.light .header label{color:#555}
+body.mid .header label{color:#aaa}
+.header select,.header button{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);border-radius:4px;padding:3px 8px;font-size:11px;cursor:pointer}
+body.light .header select,body.light .header button{background:rgba(0,0,0,.08);color:#333;border:1px solid rgba(0,0,0,.15)}
+body.mid .header select,body.mid .header button{background:rgba(0,0,0,.15);color:#ddd;border:1px solid rgba(255,255,255,.15)}
+.header select option{background:#004054;color:#fff}
+body.light .header select option{background:#e8e4dc;color:#222}
+body.mid .header select option{background:#3a3a36;color:#ddd}
+
+.header .aux-info{font-size:11px;color:#ffa500;margin-left:auto;font-weight:600}
+body.light .header .aux-info{color:#d48030}
+body.mid .header .aux-info{color:#d4a84a}
+
+#modeInfo{position:fixed;bottom:12px;left:50%;transform:translateX(-50%);z-index:20;background:rgba(0,0,0,.7);color:#ffe;padding:6px 16px;border-radius:8px;font-size:12px;display:none;text-align:center;max-width:400px;border:1px solid rgba(255,165,0,.3)}
+body.light #modeInfo{background:rgba(240,235,225,.9);color:#333;border-color:rgba(200,130,50,.4)}
+
+.mode-pill{position:fixed;top:46px;left:50%;transform:translateX(-50%);z-index:15;background:rgba(0,40,54,.8);border:1px solid rgba(255,165,0,.4);border-radius:20px;padding:3px 14px;font-size:11px;color:#ffa500;display:none}
+body.light .mode-pill{background:rgba(240,235,225,.9);color:#d48030}
+body.mid .mode-pill{background:rgba(50,50,46,.9);color:#d4a84a}
+
+#magLens{position:fixed;width:300px;height:300px;border-radius:50%;border:3px solid #ffa500;pointer-events:none;z-index:30;display:none;box-shadow:0 0 25px rgba(255,165,0,.4),inset 0 0 15px rgba(0,0,0,.3);overflow:hidden;background:transparent}
+#magLens canvas{width:100%;height:100%;border-radius:50%}
+#magLabel{position:absolute;bottom:-20px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.8);color:#ffa500;font-size:10px;font-family:monospace;padding:2px 8px;border-radius:4px;white-space:nowrap;border:1px solid #ffa500}
+</style>
+</head>
+<body>
+<div class="header">
+<h1>🔬 Micrometer Screw Gauge</h1>
+<label>Mode:
+<select id="modeSelect"><option value="free">Free</option><option value="tutorial">Tutorial</option><option value="practice">Practice</option><option value="exam">Exam</option></select></label>
+<label>Theme:
+<select id="themeSelect"><option value="dark">Dark</option><option value="mid">Mid</option><option value="light">Light</option></select></label>
+<button id="resetBtn">↺ Reset</button>
+<span class="aux-info" id="auxInfo">0.000 mm</span>
+</div>
+
+<canvas id="myCanvas"></canvas>
+<div id="gui"></div>
+<div class="mode-pill" id="modePill">Free Mode</div>
+<div id="modeInfo"></div>
+<div id="magLens"><canvas id="magCanvas"></canvas><div id="magLabel">0.000 mm</div></div>
+
+<script src="https://maheshkurmi.github.io/experiments/tweakpane3.js"></script>
+<script>
+// ═══════ PARAMETERS ═══════
+let canvas, ctx;
+let xOffset=20, yOffset=45, dragMode=0; //0=none,1=world,2=vernier,3=object
+let mx=0, my=0;
+let magOn=false, magCanvas, magCtx, magZoom=3;
+let loaded=0;
+const toLoad=4; // skip logo
+
+// Images (local files — downloaded from reference)
+const imgBase=new Image(); imgBase.src='micrometer_assets/micrometer_base.png'; imgBase.onload=itemLoaded;
+const imgSpindle=new Image(); imgSpindle.src='micrometer_assets/spindle.png'; imgSpindle.onload=itemLoaded;
+const imgThimble=new Image(); imgThimble.src='micrometer_assets/thimble.png'; imgThimble.onload=itemLoaded;
+const imgTexture=new Image(); imgTexture.src='micrometer_assets/texture9.png'; imgTexture.onload=itemLoaded;
+let textPattern=null,gradient=null;
+
+// Mode state
+let mode='free', tutorialStep=-1, practiceTarget=0, practiceRevealed=false;
+let examQ=[], examIdx=0, examScore=0, examTime=0, examTimer=null;
+
+// Constants (from reference)
+const scaleOriginX=539, scaleOriginY=100;
+const spindleOriginX=200, spindleOriginY=79;
+const thimbleY1=49, thimbleY2=40, thimbleY3=31;
+const thimbleX1=0, thimbleX2=40, thimbleX3=440;
+const mainScaleLengthPixels=200;
+const majorTickLen=20, minorTickLen=10;
+const vMajorTickLen=30, vMinorTickLen=18;
+
+// Gauge vars (window globals for tweakpane)
+window.mainScaleDiv=30;
+window.msdPix=mainScaleLengthPixels/mainScaleDiv;
+window.msdVal=0.5;
+window.csd=50;
+window.msr=0; window.csr=0; window.zeroError=0;
+window.displayInfo=false;
+window.objW=25;
+window.randomZeroError=true;
+window.randomMSD=true;
+window.randomCSD=true;
+window.randomObjW=true;
+window.scale=1; // initial, will be auto-set
+let obj={x:0,y:0,w:30,h:100,state:1};
+
+let tickSound;
+
+function itemLoaded(){
+  loaded++;
+  if(loaded>=toLoad)init();
+  else paint();
+}
+
+function randItem(arr){return arr[Math.floor(Math.random()*arr.length)];}
+const R_SIZES=[0.10,0.12,0.15,0.18,0.20,0.25,0.30,0.35,0.40,0.45,0.50,0.55,0.60,0.65,0.70,0.75,0.80,0.85,0.90,0.95,1.00,1.05,1.10,1.15,1.20,1.25,1.30,1.40,1.50,1.55,1.60,1.70,1.75,1.80,1.90,2.00,2.50,3.00,3.50,4.00,4.50,5.00,5.50,6.00,6.50,7.00,7.50,8.00,8.50,9.00,9.50,10.00];
+
+function init(){
+  canvas=document.getElementById('myCanvas');
+  ctx=canvas.getContext('2d');
+  resize();
+  
+  // Tweakpane GUI
+  const pane=new Tweakpane.Pane({container:document.getElementById('gui'),title:'Micrometer Settings'});
+  const tab=pane.addTab({pages:[{title:'Device'},{title:'Problem'}]});
+  
+  tab.pages[0].addInput(window,'msdVal',{label:'MSD (mm/rev)',min:0.05,max:2,step:0.5}).on('change',paint);
+  tab.pages[0].addInput(window,'mainScaleDiv',{label:'MSD Count',min:10,max:50,step:10}).on('change',()=>{msdPix=mainScaleLengthPixels/mainScaleDiv;paint();});
+  let csCtrl=tab.pages[0].addInput(window,'csd',{label:'CSD Count',min:25,max:100,step:25});
+  csCtrl.on('change',paint);
+  let zeCtrl=tab.pages[0].addInput(window,'zeroError',{label:'Zero Error (div)',min:-99,max:99,step:1});
+  zeCtrl.on('change',paint);
+  tab.pages[0].addInput(window,'displayInfo',{label:'Show Values'}).on('change',paint);
+  
+  const pf=tab.pages[1].addFolder({title:'Randomize'});
+  pf.addInput(window,'randomZeroError',{label:'Zero Error'});
+  pf.addInput(window,'randomMSD',{label:'MSD Count'});
+  pf.addInput(window,'randomCSD',{label:'CSD Count'});
+  pf.addInput(window,'randomObjW',{label:"Object's Size"});
+  tab.pages[1].addButton({title:'Create Problem'}).on('click',createProblem);
+  
+  tab.pages[0].addInput(window,'scale',{label:'Zoom',min:.3,max:3,step:.1}).on('change',paint);
+  
+  // Double-click to toggle magnifier
+  canvas.ondblclick=function(){magOn=!magOn;document.getElementById('magLens').style.display=magOn?'block':'none';};
+  magCanvas=document.getElementById('magCanvas');
+  magCtx=magCanvas.getContext('2d');
+
+  // Events
+  canvas.onmousedown=mousePressed;
+  canvas.onmousemove=function(e){
+    mouseDragged(e);
+    if(magOn)updateMag(e);
+  };
+  canvas.onmouseup=mouseReleased;
+  canvas.onwheel=function(e){e.preventDefault();rotateVernier(e.deltaY>0?-1:1);};
+  window.addEventListener('resize',resize);
+  document.addEventListener('keydown',function(e){
+    if(e.key==='ArrowUp'||e.key==='ArrowRight'){rotateVernier(1);e.preventDefault();}
+    if(e.key==='ArrowDown'||e.key==='ArrowLeft'){rotateVernier(-1);e.preventDefault();}
+    if(e.key==='r'){msr=0;csr=0;setObjState(1);paint();}
+  });
+  
+  paint();
+}
+
+function resize(){
+  canvas.width=window.innerWidth*devicePixelRatio;
+  canvas.height=window.innerHeight*devicePixelRatio;
+  canvas.style.width=window.innerWidth+'px';
+  canvas.style.height=window.innerHeight+'px';
+  // Auto-fit: base image is 1200px wide, keep margin for GUI (~260px) + header (~40px)
+  var fitScale=Math.min((window.innerWidth-280)/1500, (window.innerHeight-60)/700, 1.2);
+  if(!window._scaleSet){window.scale=Math.max(0.3,fitScale);window._scaleSet=true;}
+  paint();
+}
+
+function mod(a,n){return((a%n)+n)%n;}
+
+function getMSR(){return Math.floor((msr*csd+csr+zeroError)/csd);}
+function getCSR(){return mod(csr+zeroError,csd);}
+function getZE(){return(zeroError/csd)*msdVal;}
+function getRawR(){return(msr+csr/csd)*msdVal;}
+function getCorrR(){return getRawR();}
+function getMeasR(){return getCorrR()+getZE();}
+
+function rotateVernier(div){
+  if(msr>=mainScaleDiv&&div>0)return;
+  if(msr===0&&csr===0&&div<0)return;
+  
+  csr+=div;
+  if(csr<0){csr=csd+csr;msr--;}
+  else if(csr>=csd){csr-=csd;msr++;}
+  
+  if(getRawR()<=0){msr=0;csr=0;}
+  if(getRawR()>=mainScaleDiv*msdVal){msr=mainScaleDiv;csr=0;}
+  
+  if(obj.state===2){
+    let v=(msr+csr/csd)*msdPix;
+    if(v<objW){
+      msr=Math.floor(objW/msdPix);
+      csr=Math.floor((objW/msdPix-msr)*csd);
+    }
+  }
+  update();
+}
+
+function update(){
+  msdPix=mainScaleLengthPixels/mainScaleDiv;
+  if(obj.state===2){
+    let v=(msr+csr/csd)*msdPix;
+    if(v<objW){msr=Math.floor(objW/msdPix);csr=Math.floor((objW/msdPix-msr)*csd);}
+  }
+  paint();
+}
+
+function setObjState(s){obj.state=s;}
+
+function createProblem(){
+  if(this.randomZeroError)zeroError=Math.round(2*csd*(Math.random()-.5));
+  if(this.randomMSD)mainScaleDiv=10*(1+Math.round(4*Math.random()));
+  if(this.randomCSD)csd=25*(1+Math.round(Math.random()*3));
+  if(this.randomObjW)objW=mainScaleLengthPixels*(1+5*Math.random())/10;
+  obj.state=1;obj.w=objW;
+  obj.x=20;obj.y=20;
+  rotateVernier(0);
+}
+
+function paint(){
+  if(!ctx||loaded<toLoad)return;
+  const dpr=devicePixelRatio;
+  
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.fillStyle=(()=>{if(mode==='light')return'#e8e4dc';if(mode==='mid')return'#3a3a36';return'#004054'})()||'#004054';
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+  
+  ctx.scale(scale*dpr,scale*dpr);
+  ctx.translate(xOffset,yOffset);
+  ctx.save();
+  
+  // 1. Draw spindle (underneath)
+  let shift=(msr+csr/csd)*msdPix;
+  ctx.drawImage(imgSpindle,spindleOriginX+shift,spindleOriginY);
+  
+  // 2. Draw base (frame, anvil, sleeve)
+  ctx.drawImage(imgBase,0,0);
+  
+  // 3. Draw main scale ruler
+  ctx.translate(scaleOriginX,scaleOriginY);
+  ctx.fillStyle='#000';ctx.strokeStyle='#000';ctx.lineWidth=1.5;
+  let x=-msdPix*zeroError/csd, y=0, tl=0;
+  ctx.font='12pt sans-serif';
+  
+  for(let i=0;i<=mainScaleDiv;i++){
+    tl=(i%5===0)?majorTickLen:minorTickLen;
+    if(mainScaleDiv>20&&i%2===1)tl=-minorTickLen;
+    drawLine(x,y,x,y-tl);
+    if(i%10===0)outStr(x,y-tl-3,(i*msdVal).toFixed(1),1,2);
+    x+=msdPix;
+  }
+  ctx.restore();ctx.save();
+  
+  // Info text
+  ctx.fillStyle='rgb(156,172,156)';ctx.font='12pt sans-serif';
+  outStr(300,465,'1 MSD = pitch = '+msdVal+'mm',1,1);
+  
+  // 4. Draw thimble + circular scale
+  let N=csd/4, R=scaleOriginY-thimbleY1;
+  ctx.drawImage(imgThimble,scaleOriginX+shift,thimbleY3);
+  
+  // Texture pattern for circular scale
+  if(!textPattern&&imgTexture.complete)textPattern=ctx.createPattern(imgTexture,'repeat');
+  
+  let offsetY=(msr*csd+csr)*R*Math.PI/N/2;
+  let s=1;
+  if(textPattern){
+    ctx.fillStyle=textPattern;
+    ctx.scale(s,s);
+    ctx.translate(scaleOriginX+shift+thimbleX2+49,scaleOriginY+offsetY/s);
+    R=scaleOriginY-thimbleY3;
+    ctx.fillRect(0,-(R+offsetY)/s,(thimbleX3-thimbleX2-153)/s,2*R/s);
+    ctx.restore();ctx.save();
+  }
+  
+  // Gradient overlay on thimble
+  if(!gradient){
+    gradient=ctx.createLinearGradient(thimbleX2,thimbleY3,thimbleX2,thimbleY3+2*R);
+    gradient.addColorStop(0,'#000');
+    gradient.addColorStop(.5,'rgb(184,203,184)');
+    gradient.addColorStop(1,'#000');
+  }
+  x=scaleOriginX+shift;
+  ctx.globalAlpha=.6;ctx.fillStyle=gradient;
+  ctx.fillRect(x+thimbleX2+49,thimbleY3,(thimbleX3-thimbleX2-153),2*R);
+  ctx.globalAlpha=1;
+  
+  // Draw circular scale ticks
+  ctx.fillStyle='#000';ctx.strokeStyle='#000';ctx.lineWidth=1.5;
+  x=scaleOriginX+shift;y=scaleOriginY;
+  ctx.font='10pt sans-serif';
+  R=scaleOriginY-thimbleY1;
+  let dth=Math.PI/2/N;
+  
+  drawLine(x,thimbleY1-1,x,thimbleY1+2*R+1);
+  
+  for(let i=0;i<N;i++){
+    let sinTh=Math.sin(i*dth);
+    if(sinTh>.7)ctx.globalAlpha=1-3*(sinTh-.7);
+    let dy1=R*sinTh;
+    let dy2=dy1*(R+4)/R;
+    y=scaleOriginY-dy1;
+    let divPos=mod(csr+zeroError+i,csd);
+    let tl2=vMinorTickLen;
+    if(divPos%5===0){
+      tl2=vMajorTickLen;
+      dy2=dy1*(R+8)/R;
+      if(i<N-2)outStr(x+thimbleX2+4,scaleOriginY-dy2,divPos.toString(),0,1);
+    }
+    drawLine(x,y,x+tl2,scaleOriginY-dy2);
+    if(i===0)continue;
+    
+    dy2=dy1*(R+4)/R;
+    y=scaleOriginY+dy1;
+    divPos=mod(csr+zeroError-i,csd);
+    tl2=vMinorTickLen;
+    if(divPos%5===0){
+      tl2=vMajorTickLen;
+      dy2=dy1*(R+8)/R;
+      if(i<N-2)outStr(x+thimbleX2+4,scaleOriginY+dy2,divPos.toString(),0,1);
+    }
+    drawLine(x,y,x+tl2,scaleOriginY+dy2);
+  }
+  ctx.globalAlpha=1;
+  ctx.restore();
+  
+  // Draw object
+  if(obj.state>0){
+    let grd=ctx.createLinearGradient(obj.x,obj.y,obj.x+obj.w,obj.y);
+    grd.addColorStop(0,'rgb(120,120,120)');
+    grd.addColorStop(.5,'rgb(220,230,210)');
+    grd.addColorStop(1,'rgb(120,120,120)');
+    ctx.fillStyle=grd;
+    ctx.fillRect(obj.x+1,obj.y,obj.w,obj.h);
+    ctx.strokeStyle='#000';ctx.lineWidth=1.5;
+    ctx.strokeRect(obj.x+1,obj.y,obj.w,obj.h);
+  }
+  
+  if(displayInfo)drawInfo();
+  ctx.resetTransform();
+  
+  // Update reading
+  let cr=getCorrR();
+  document.getElementById('auxInfo').textContent=cr.toFixed(3)+' mm';
+  
+  // Mode overlay
+  updateMode();
+}
+
+function drawInfo(){
+  ctx.lineWidth=1.5;ctx.fillStyle='#fff';ctx.strokeStyle='#fff';
+  let x=scaleOriginX-msdPix*zeroError/csd+getMSR()*msdPix;
+  let y=scaleOriginY+2+minorTickLen;
+  let as=5;
+  drawArrow(x,y,x,y+50,as,as,true,false);
+  outStr(x,y+53,getMSR()+' MSD = '+getMSR()*msdVal.toFixed(3),1,0);
+  
+  let gp=msdPix*(msr+csr/csd);
+  x=scaleOriginX+gp+thimbleX2;y=scaleOriginY;
+  drawArrow(x,y,x+40,y,as,as,true,false);
+  outStr(x+47,y,getCSR()+' CSD = '+(msdVal*getCSR()/csd).toFixed(4),0,1);
+  
+  x=spindleOriginX-1;y=spindleOriginY-20;
+  drawArrow(x-30,y,x,y,as,as,false,true);
+  x=spindleOriginX+gp+3;y=spindleOriginY-20;
+  drawArrow(x,y,x+30,y,as,as,true,false);
+  
+  let mr=getMeasR(), cr=getCorrR(), ze=getZE();
+  y=spindleOriginY-42;x=spindleOriginX+gp/2;
+  let prec=csd%3===0||csd%7===0?3:2;
+  if(ze===0)outStr(x,y,cr.toFixed(prec)+'mm',1,1);
+  else if(ze>0)outStr(x,y,mr.toFixed(prec)+' - '+ze.toFixed(prec)+' = '+cr.toFixed(prec),1,1);
+  else outStr(x,y,mr.toFixed(prec)+' + '+(-ze).toFixed(prec)+' = '+cr.toFixed(prec),1,1);
+}
+
+function drawLine(x1,y1,x2,y2){ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2,y2);ctx.stroke();}
+function drawArrow(x0,y0,x1,y1,aW,aL,start,end){
+  let dx=x1-x0,dy=y1-y0,ang=Math.atan2(dy,dx),len=Math.sqrt(dx*dx+dy*dy);
+  ctx.save();ctx.translate(x0,y0);ctx.rotate(ang);
+  ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(len,0);
+  if(start){ctx.moveTo(aL,-aW);ctx.lineTo(0,0);ctx.lineTo(aL,aW);}
+  if(end){ctx.moveTo(len-aL,-aW);ctx.lineTo(len,0);ctx.lineTo(len-aL,aW);}
+  ctx.stroke();ctx.restore();
+}
+function outStr(x,y,s,xa,ya){
+  let fm=ctx.measureText(s),h=10;
+  if(ya===0)y+=h;else if(ya===1)y+=h/2;
+  if(xa===0)ctx.fillText(s,x+3,y);
+  else if(xa===1||xa===2)ctx.fillText(s,x-fm.width/2,y);
+}
+
+// ═══ MOUSE ═══
+function getMouse(e){return[e.clientX,e.clientY];}
+
+function mousePressed(e){
+  let m=getMouse(e);
+  let x=m[0]/scale-xOffset,y=m[1]/scale-yOffset;
+  let shift=scaleOriginX+(msr+csr/csd)*msdPix;
+  if(x>shift+thimbleX2&&x<shift+thimbleX3&&y>thimbleY3&&y<thimbleY3+2*(scaleOriginY-thimbleY3))dragMode=2;
+  else if(obj.state>0&&x>obj.x&&x<obj.x+obj.w&&y>obj.y&&y<obj.y+obj.h){dragMode=3;obj.state=1;}
+  else dragMode=1;
+  mx=m[0];my=m[1];e.preventDefault();
+}
+
+function mouseReleased(e){
+  if(dragMode===3){
+    if(Math.abs(obj.x-spindleOriginX)<200&&Math.abs(obj.y-scaleOriginY+obj.h/2)<obj.h/2+50){
+      obj.x=spindleOriginX;obj.y=scaleOriginY-obj.h/2;obj.state=2;
+    }
+    update();
+  }
+  dragMode=0;
+}
+
+function mouseDragged(e){
+  if(dragMode===0)return;
+  let m=getMouse(e);
+  let dx=(m[0]-mx)/scale,dy=(m[1]-my)/scale;
+  mx=m[0];my=m[1];
+  if(dragMode===1){xOffset+=dx;yOffset+=dy;paint();}
+  else if(dragMode===3){obj.x+=dx;obj.y+=dy;paint();}
+  else if(dragMode===2&&Math.abs(dy)>.3){rotateVernier(Math.round(dy));}
+}
+
+// ═══ MODES ═══
+function updateMode(){
+  let rd=getCorrR();
+  document.getElementById('auxInfo').textContent=rd.toFixed(3)+' mm';
+  
+  if(mode==='practice'&&!practiceRevealed){
+    document.getElementById('modePill').textContent='✏️ Practice: target = '+practiceTarget.toFixed(2)+'mm';
+  }
+}
+
+function startTutorial(){
+  // Simple overlay tutorial
+  const steps=[
+    '🔬 This is a Micrometer Screw Gauge — used for precise 0.01mm measurements.',
+    'The C-shaped FRAME holds the ANVIL (left) and SPINDLE (right).',
+    'Place an object between the Anvil and Spindle using the Problem Creator (GUI).',
+    'Rotate the THIMBLE by dragging on the thimble area or using ↑↓ keys (or scroll wheel).',
+    'Read the SLEEVE scale (mm). Then read the THIMBLE circular scale (0.01mm).',
+    'Total = Sleeve Reading + (Thimble Div × Least Count). Adjust for Zero Error.',
+    'Try Practice Mode or Exam Mode to test your skills!'
+  ];
+  let si=0;
+  function showStep(){
+    if(si>=steps.length){document.getElementById('modeInfo').style.display='none';return;}
+    let el=document.getElementById('modeInfo');
+    el.style.display='block';
+    el.innerHTML=steps[si]+'<br><br><button onclick="window.tNext()" style="background:rgba(255,165,0,.3);border:1px solid orange;color:#fff;padding:4px 16px;border-radius:4px;cursor:pointer;font-size:12px">Next →</button>';
+  }
+  window.tNext=function(){si++;showStep();};
+  si=0;showStep();
+}
+
+function startPractice(){
+  practiceTarget=R_SIZES[Math.floor(Math.random()*R_SIZES.length)];
+  practiceRevealed=false;
+  msr=0;csr=0;
+  document.getElementById('modePill').style.display='block';
+  document.getElementById('modePill').textContent='✏️ Measure: ??? mm';
+  document.getElementById('auxInfo').style.color='#ff0';
+  setTimeout(function(){
+    if(mode!=='practice')return;
+    let diff=Math.abs(getCorrR()-practiceTarget);
+    if(diff<.02){
+      document.getElementById('modePill').textContent='✅ Perfect! Target was '+practiceTarget.toFixed(2)+'mm';
+      practiceRevealed=true;
+    }
+  },100);
+}
+
+function startExam(){
+  examQ=R_SIZES.sort(()=>Math.random()-.5).slice(0,10);
+  examIdx=0;examScore=0;examTime=0;
+  examTimer=setInterval(()=>{examTime++;},1000);
+  msr=0;csr=0;showExamQ();
+}
+
+function showExamQ(){
+  if(examIdx>=examQ.length){endExam();return;}
+  document.getElementById('modePill').style.display='block';
+  document.getElementById('modePill').textContent='📝 Q'+(examIdx+1)+'/10: Measure '+examQ[examIdx].toFixed(2)+'mm';
+  msr=0;csr=0;paint();
+}
+
+function endExam(){
+  clearInterval(examTimer);
+  document.getElementById('modePill').textContent='📝 Done! Score: '+examScore+'/10 in '+examTime+'s';
+}
+
+// ═══ MAGNIFIER ═══
+function updateMag(e){
+  var rect=canvas.getBoundingClientRect();
+  var mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  var lens=document.getElementById('magLens');
+  lens.style.left=(e.clientX-150)+'px';
+  lens.style.top=(e.clientY-150)+'px';
+  
+  // Magnifier canvas sizing
+  var dpr=devicePixelRatio||1;
+  var mw=300*dpr, mh=300*dpr;
+  if(magCanvas.width!==mw){magCanvas.width=mw;magCanvas.height=mh;}
+  
+  // Source area: 100x100 physical pixels, zoomed 3x into 300x300
+  var sw=100*dpr, sh=100*dpr;
+  var sx=mx*dpr-sw/2, sy=my*dpr-sh/2;
+  
+  magCtx.clearRect(0,0,mw,mh);
+  // Clip circle
+  magCtx.save();
+  magCtx.beginPath();
+  magCtx.arc(mw/2, mh/2, mw/2, 0, Math.PI*2);
+  magCtx.clip();
+  // Draw zoomed content
+  magCtx.drawImage(canvas, Math.max(0,sx), Math.max(0,sy), sw, sh, 0, 0, mw, mh);
+  // Grid overlay
+  magCtx.strokeStyle='rgba(255,165,0,0.3)';magCtx.lineWidth=0.5;
+  for(var i=0;i<10;i++){
+    magCtx.beginPath();magCtx.moveTo(i*mw/10,0);magCtx.lineTo(i*mw/10,mh);magCtx.stroke();
+    magCtx.beginPath();magCtx.moveTo(0,i*mh/10);magCtx.lineTo(mw,i*mh/10);magCtx.stroke();
+  }
+  magCtx.restore();
+  
+  // Label
+  document.getElementById('magLabel').textContent=getCorrR().toFixed(3)+' mm';
+}
+
+// ═══ RESIZE ═══
+document.addEventListener('DOMContentLoaded',function(){
+  // Init will be called when images load
+  // But setup UI now
+  document.getElementById('resetBtn').onclick=function(){msr=0;csr=0;obj.state=1;obj.x=20;obj.y=20;paint();};
+  
+  document.getElementById('modeSelect').onchange=function(){
+    mode=this.value;
+    document.getElementById('modePill').style.display='none';
+    document.getElementById('modeInfo').style.display='none';
+    if(mode==='tutorial')startTutorial();
+    else if(mode==='practice')startPractice();
+    else if(mode==='exam')startExam();
+  };
+  
+  document.getElementById('themeSelect').onchange=function(){
+    let v=this.value;
+    document.body.className='';
+    if(v==='light')document.body.className='light';
+    if(v==='mid')document.body.className='mid';
+    paint();
+  };
+});
+
+// Periodically check practice mode
+setInterval(function(){
+  if(mode==='practice'&&!practiceRevealed){
+    let diff=Math.abs(getCorrR()-practiceTarget);
+    if(diff<.02&&getCorrR()>0){
+      practiceRevealed=true;
+      document.getElementById('modePill').textContent='✅ Correct! Target = '+practiceTarget.toFixed(2)+'mm';
+    }
+  }
+},500);
+</script>
+</body>
+</html>
