@@ -147,7 +147,7 @@ body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);transit
       <canvas id="animCanvas" width="400" height="400"></canvas>
       <div class="legend-row" style="margin-top:4px">
         <span class="legend-item"><span class="legend-swatch" style="background:#00d4ff"></span> Height: <span id="heightDisplayAnim">—</span> m</span>
-        <span class="legend-item"><span class="legend-swatch" style="background:var(--amber)"></span> v = <span id="speedDisplayAnim" style="font-family:'JetBrains Mono',monospace">0</span> m/s</span>
+        <span class="legend-item"><span class="legend-swatch" style="background:var(--amber)"></span> v = <span id="speedDisplayAnim" style="font-family:'JetBrains Mono',monospace">0</span> m/s = <span id="speedDisplayKMH" style="font-family:'JetBrains Mono',monospace">0</span> km/h</span>
       </div>
     </div>
 
@@ -1212,6 +1212,7 @@ function drawAnim(){
   // Update DOM
   document.getElementById('heightDisplayAnim').textContent = totalDist.toFixed(0);
   document.getElementById('speedDisplayAnim').textContent = currentV.toFixed(1);
+  document.getElementById('speedDisplayKMH').textContent = (currentV * 3.6).toFixed(0);
 }
 
 function drawCloud(ctx, cx, cy, scale, seed){
