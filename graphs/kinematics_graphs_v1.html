@@ -96,6 +96,39 @@
     --line-color: #a55a3a; --shade: rgba(165,90,58,0.05);
     --green: #5a7a4a; --rose: #a03a3a; --violet: #6a4d7a;
   }
+  /* ── HAUS Academy (light: cream + gold + ink) ── */
+  .theme-haus {
+    --bg: #F4EEE0; --card: #FFFFFF; --border: #E4DAC4;
+    --text: #1A1712; --text-dim: #5B5344; --text-muted: #948A74;
+    --accent: #A9820F; --accent-glow: rgba(169,130,15,0.12);
+    --grid: #EBE3D0; --graph-bg: #FCFAF2;
+    --line-color: #A9820F; --shade: rgba(169,130,15,0.06);
+    --green: #4E7A3F; --rose: #B5502E; --violet: #8A6D3B;
+  }
+  /* HAUS Day: push brand yellow + black for stronger identity */
+  .theme-haus .top-bar h1,.theme-haus .top-bar h1 span{color:#1A1712;}
+  .theme-haus .badge-top{background:#F4C01E;color:#1A1712;border-color:#1A1712;}
+  .theme-haus .tab.active{background:#F4C01E;color:#1A1712;}
+  .theme-haus .mode-btn.active{background:#F4C01E;border-color:#1A1712;color:#1A1712;}
+  .theme-haus .ctrl-btn.primary{background:#F4C01E;color:#1A1712;border-color:#1A1712;}
+  .theme-haus .ctrl-btn.random{background:rgba(244,192,30,0.22);border-color:#C79A12;color:#7A5E00;}
+  .theme-haus .card-title,.theme-haus .anim-label{color:#1A1712;}
+  /* ── HAUS Night (dark: charcoal + brand gold) ── */
+  .theme-hausnight {
+    --bg: #14110C; --card: #201C15; --border: #3A3327;
+    --text: #FBFAF7; --text-dim: #D9D3C6; --text-muted: #9E9583;
+    --accent: #F4C01E; --accent-glow: rgba(244,192,30,0.12);
+    --grid: #211D15; --graph-bg: #0E0B07;
+    --line-color: #F4C01E; --shade: rgba(244,192,30,0.06);
+    --green: #A6B36A; --rose: #D68B57; --violet: #CBAA6A;
+  }
+  /* HAUS Night: keep text white, reserve gold as accent only */
+  .theme-hausnight .top-bar h1{color:#FBFAF7;}
+  .theme-hausnight .top-bar h1 span{color:#FBFAF7;}
+  .theme-hausnight .card-title{color:#EDE8DC;}
+  .theme-hausnight .anim-label{color:#EDE8DC;}
+  .theme-hausnight .stat-item .stat-value{color:#FBFAF7;}
+  .theme-hausnight .stat-item{background:#2A251C;}
   *{margin:0;padding:0;box-sizing:border-box;}
   body {
     background: var(--bg); color: var(--text);
@@ -105,6 +138,10 @@
   }
   .container{max-width:1300px;width:100%;}
   .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;}
+  .brand-lockup{display:flex;align-items:center;gap:14px;}
+  .brand-logo-box{display:inline-flex;align-items:center;border-radius:8px;transition:background 0.3s,padding 0.3s;}
+  .brand-logo{height:34px;width:auto;display:block;}
+  body.logo-dark .brand-logo-box{background:#F4C01E;padding:5px 11px;}
   .top-bar h1{font-size:1.3rem;font-weight:700;}
   .top-bar h1 span{color:var(--accent);}
   .theme-btn{
@@ -192,6 +229,9 @@
   .ctrl-btn.primary:hover{opacity:0.85;}
   .ctrl-btn.random{background:rgba(167,139,250,0.12);border-color:var(--violet);color:var(--violet);}
   .ctrl-btn.random:hover{background:rgba(167,139,250,0.2);}
+  /* HAUS themes: keep Random on-palette (gold), not violet */
+  .theme-haus .ctrl-btn.random,.theme-hausnight .ctrl-btn.random{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+  .theme-haus .ctrl-btn.random:hover,.theme-hausnight .ctrl-btn.random:hover{background:var(--accent-glow);opacity:0.82;}
 
   .graph-card{
     background:var(--card);border:1px solid var(--border);
@@ -393,16 +433,19 @@
 <div class="container">
 
 <div class="top-bar">
-  <h1>📊 <span>Kinematics Graphs of Horizontal Motion</span> <span class="badge-top">v1.2.0</span></h1>
+  <div class="brand-lockup">
+    <span class="brand-logo-box"><img class="brand-logo" src="assets/HAUS_logo_black.png" alt="HAUS Academy"></span>
+    <h1><span>Kinematics Graphs of Horizontal Motion</span> <span class="badge-top">v1.2.0</span></h1>
+  </div>
   <select class="theme-select" onchange="setTheme(this.value)">
       <option value="dark">🌙 Classic Dark</option>
+      <option value="hausnight">⌂ HAUS Night</option>
       <option value="vintage">📜 Vintage Dark</option>
       <option value="neon">🌃 Cyberpunk Neon</option>
       <option value="cosmic">🌌 Cosmic Void</option>
-      <option value="onedark">💎 One Dark</option>
       <option value="light">☀️ Classic Light</option>
+      <option value="haus">⌂ HAUS Day</option>
       <option value="clay">🏺 Warm Clay</option>
-      <option value="warm">🌅 Warm Taupe</option>
       <option value="sage">🌿 Soft Sage</option>
       <option value="mist">🌫️ Mist Blue</option>
     </select>
@@ -538,12 +581,14 @@ const animScene = document.getElementById('animScene');
 
 // ===== THEME =====
 function setTheme(name) {
-  const themeClasses = ['theme-neon','theme-vintage','theme-cosmic','theme-onedark','theme-light','theme-warm','theme-sage','theme-mist','theme-clay'];
+  const themeClasses = ['theme-neon','theme-vintage','theme-cosmic','theme-onedark','theme-light','theme-warm','theme-sage','theme-mist','theme-clay','theme-haus','theme-hausnight'];
   document.body.classList.remove(...themeClasses);
   if(name !== 'dark') document.body.classList.add('theme-' + name);
   state.theme = name;
+  document.body.classList.toggle('logo-dark', isDark());
+  drawGraph();
 }
-function isDark() { return state.theme === 'dark' || state.theme === 'neon' || state.theme === 'vintage' || state.theme === 'cosmic' || state.theme === 'onedark'; }
+function isDark() { return state.theme === 'dark' || state.theme === 'neon' || state.theme === 'vintage' || state.theme === 'cosmic' || state.theme === 'onedark' || state.theme === 'hausnight'; }
 
 function niceStep(range, targetTicks) {
   if(range <= 0) return 1;
@@ -679,12 +724,17 @@ function drawGraph() {
   const gW = W - pad.left - pad.right, gH = H - pad.top - pad.bottom;
   const lineColor = getLineColor();
   const lineRgb = getLineColorRgb();
+  const cs = getComputedStyle(document.body);
+  const cGraphBg = cs.getPropertyValue('--graph-bg').trim() || (isDark()?'#0a0f1a':'#ffffff');
+  const cGrid = cs.getPropertyValue('--grid').trim() || (isDark()?'#1e293b':'#e2e8f0');
+  const cAxis = cs.getPropertyValue('--text-muted').trim() || (isDark()?'#475569':'#94a3b8');
+  const cTick = cs.getPropertyValue('--text-dim').trim() || (isDark()?'#94a3b8':'#64748b');
 
-  ctx.fillStyle = isDark() ? '#0a0f1a' : '#ffffff';
+  ctx.fillStyle = cGraphBg;
   ctx.fillRect(0,0,W,H);
 
   // Grid
-  ctx.strokeStyle = isDark() ? '#1e293b' : '#e2e8f0';
+  ctx.strokeStyle = cGrid;
   ctx.lineWidth = 0.5;
   for(let i=0;i<=10;i++){
     const x=pad.left+(i/10)*gW,y=pad.top+(i/10)*gH;
@@ -693,7 +743,7 @@ function drawGraph() {
   }
 
   // Axes
-  ctx.strokeStyle = isDark()?'#475569':'#94a3b8';
+  ctx.strokeStyle = cAxis;
   ctx.lineWidth=1.5;
   ctx.beginPath();ctx.moveTo(pad.left,pad.top);ctx.lineTo(pad.left,pad.top+gH);ctx.lineTo(pad.left+gW,pad.top+gH);ctx.stroke();
 
@@ -706,7 +756,7 @@ function drawGraph() {
   const yRange=yMax-yMin;
   const yCenter=pad.top+gH-((0-yMin)/yRange)*gH;
 
-  ctx.fillStyle=isDark()?'#94a3b8':'#64748b';
+  ctx.fillStyle=cTick;
   ctx.font='10px Inter,sans-serif';
   ctx.textAlign='center';ctx.textBaseline='top';
   for(let i=0;i<=10;i++){
@@ -729,7 +779,7 @@ function drawGraph() {
     // Zero tick + dashed line
     if(yCenter>=pad.top&&yCenter<=pad.top+gH){
       ctx.fillText('0',pad.left-7,yCenter);
-      ctx.strokeStyle=isDark()?'rgba(148,163,184,0.2)':'rgba(100,116,139,0.2)';
+      ctx.strokeStyle=cGrid;
       ctx.lineWidth=1;ctx.setLineDash([3,3]);
       ctx.beginPath();ctx.moveTo(pad.left,yCenter);ctx.lineTo(pad.left+gW,yCenter);ctx.stroke();
       ctx.setLineDash([]);
@@ -742,7 +792,7 @@ function drawGraph() {
     }
   }
 
-  ctx.fillStyle=isDark()?'#cbd5e1':'#334155';
+  ctx.fillStyle=cTick;
   ctx.font='10px Inter,sans-serif';
   ctx.textAlign='center';ctx.textBaseline='top';
   ctx.fillText('Time / s',pad.left+gW/2,H-8);
@@ -778,7 +828,7 @@ function drawGraph() {
     const last=points[points.length-1];
     ctx.beginPath();ctx.arc(last.x,last.y,5,0,Math.PI*2);
     ctx.fillStyle=lineColor;ctx.fill();
-    ctx.strokeStyle=isDark()?'#0f172a':'#ffffff';ctx.lineWidth=2;ctx.stroke();
+    ctx.strokeStyle=cGraphBg;ctx.lineWidth=2;ctx.stroke();
     ctx.setLineDash([4,4]);
     ctx.strokeStyle=lineRgb+'0.25)';ctx.lineWidth=1;
     ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(last.x,baseY);ctx.stroke();
@@ -878,7 +928,10 @@ function randomMode(){
   state.speed=speed;state.initPos=pos;state.initAccel=accel;
   document.getElementById('speedSlider').value=speed;document.getElementById('speedVal').textContent=speed.toFixed(1);
   document.getElementById('posSlider').value=pos;document.getElementById('posVal').textContent=pos.toFixed(1);
-  document.getElementById('accelSlider').value=accel;document.getElementById('accelVal').textContent=accel.toFixed(1);
+  const accelSlider=document.getElementById('accelSlider');
+  if(accelSlider){accelSlider.value=accel;}
+  const accelVal=document.getElementById('accelVal');
+  if(accelVal){accelVal.textContent=accel.toFixed(1);}
   setMode(mode);
 }
 
@@ -971,8 +1024,9 @@ function switchTab(type){
 }
 
 function init(){
-  // Set theme selector to default (dark)
+  // Set theme selector to default (Classic Dark)
   document.querySelector('.theme-select').value = 'dark';
+  setTheme('dark');
   // Generate trees — fill entire viewport
   const treeLayer=document.getElementById('treeLayer');
   if(treeLayer){
