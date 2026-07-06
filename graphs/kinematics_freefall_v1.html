@@ -807,18 +807,16 @@ function updateG(v){state.g=parseFloat(v);document.getElementById('gVal').textCo
 
 function setScenario(s){
   const scenarios={
-    'earth':{y0:0,u:0,g:-9.8,name:'Earth'},
-    'moon':{y0:0,u:0,g:-1.6,name:'Moon'},
-    'mars':{y0:0,u:0,g:-3.7,name:'Mars'},
-    'custom':{y0:0,u:0,g:null,name:'Custom'}
+    'earth':{g:-9.8,name:'Earth'},
+    'moon':{g:-1.6,name:'Moon'},
+    'mars':{g:-3.7,name:'Mars'},
+    'custom':{g:null,name:'Custom'}
   };
   const sc=scenarios[s];
   if(!sc)return;
-  state.y0=sc.y0;state.u=sc.u;
-  if(sc.g !== null){state.g=sc.g;}
-  document.getElementById('posSlider').value=sc.y0;document.getElementById('posVal').textContent=sc.y0;
-  document.getElementById('velSlider').value=sc.u;document.getElementById('velVal').textContent=sc.u;
+  // Only change gravity — keep user's y0 and u intact
   if(sc.g !== null){
+    state.g=sc.g;
     document.getElementById('gSlider').value=sc.g;
     document.getElementById('gVal').textContent=sc.g.toFixed(1);
   }

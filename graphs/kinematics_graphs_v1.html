@@ -240,6 +240,7 @@
   .card-title{
     font-size:0.7rem;font-weight:600;text-transform:uppercase;
     letter-spacing:0.08em;color:var(--text-muted);margin-bottom:12px;
+    min-height:1.6em;line-height:1.6;overflow:hidden;
   }
   .graph-row{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;}
   @media(max-width:900px){.graph-row{grid-template-columns:1fr;}}
@@ -395,6 +396,7 @@
   .desc-box{
     background:var(--card);border:1px solid var(--border);
     border-radius:10px;padding:12px 16px;margin-top:10px;
+    min-height:4.2em;
   }
   .desc-box h3{
     font-size:0.75rem;font-weight:600;color:var(--accent);
@@ -463,24 +465,27 @@
   <button class="mode-btn m-cspeed active" data-mode="constant" onclick="setMode('constant')">→ Constant Speed</button>
   <button class="mode-btn m-iaccel" data-mode="incr-speed" onclick="setMode('incr-speed')">↗ Increasing Speed</button>
   <button class="mode-btn m-idecel" data-mode="decr-speed" onclick="setMode('decr-speed')">↘ Decreasing Speed</button>
-  <button class="mode-btn m-caccel" data-mode="const-accel" onclick="setMode('const-accel')">↗ Constant Acceleration</button>
-  <button class="mode-btn m-cdecel" data-mode="const-decel" onclick="setMode('const-decel')">↘ Constant Deceleration</button>
+  <span style="display:flex;align-items:center;gap:4px;margin-left:8px;font-size:0.65rem;color:var(--text-dim);font-family:'JetBrains Mono',monospace;font-weight:500;">Acceleration:
+    <select id="accelDropdown" onchange="onAccelDropdownChange(this.value)" style="background:var(--card);color:var(--text);border:1px solid var(--border);border-radius:5px;padding:3px 6px;font-size:0.62rem;font-family:'JetBrains Mono',monospace;cursor:pointer;outline:none;">
+      <option value="zero">Zero</option>
+    </select>
+  </span>
 </div>
 
 <!-- Sliders + Action buttons combined row -->
 <div class="action-row">
   <div class="slider-group">
     <label>Init Position</label>
-    <input type="range" id="posSlider" min="0" max="100" value="0" step="1" oninput="updateInitPos(this.value)">
+    <input type="range" id="posSlider" min="0" max="10" value="0" step="0.5" oninput="updateInitPos(this.value)">
     <span class="slider-val" id="posVal">0</span>
   </div>
   <div class="slider-group">
     <label>Init Speed</label>
-    <input type="range" id="speedSlider" min="0" max="20" value="8" step="0.5" oninput="updateSpeed(this.value)">
-    <span class="slider-val" id="speedVal">8.0</span>
+    <input type="range" id="speedSlider" min="0" max="10" value="5" step="0.5" oninput="updateSpeed(this.value)">
+    <span class="slider-val" id="speedVal">5.0</span>
   </div>
-  <button class="ctrl-btn random" onclick="randomMode()">🎲 Random</button>
   <button class="ctrl-btn" onclick="resetAnimation()">↺ Reset</button>
+  <button class="ctrl-btn random" onclick="randomMode()">🎲 Random</button>
   <button class="ctrl-btn primary" id="playBtn" onclick="togglePlay()">▶ Play</button>
 </div>
 
@@ -562,9 +567,10 @@
 const state = {
   mode: 'constant',
   playing: false,
-  speed: 8,
+  speed: 5,
   initPos: 0,
-  initAccel: 2,
+  initAccel: 1,     // magnitude used as 1 m/s² (sign determined by mode)
+  accelPattern: 'zero',  // 'zero','constant','increase','decrease'
   time: 0,
   maxTime: 10,
   dt: 0.04,
@@ -603,99 +609,171 @@ function niceStep(range, targetTicks) {
   return nice * magnitude;
 }
 
-// Physics engine — 6 modes
+// Physics engine — acceleration sign based on mode
 function getAccelSign(mode) {
   switch(mode) {
     case 'rest':
     case 'constant':
       return 0;
     case 'incr-speed':
-    case 'const-accel':
       return 1;   // positive acceleration
     case 'decr-speed':
-    case 'const-decel':
       return -1;  // negative acceleration (deceleration)
     default: return 0;
   }
 }
 
-// For const-accel mode, initial speed = 0 (starts from rest)
-function getInitSpeedForMode(mode) {
-  if (mode === 'const-accel') return 0;
-  return state.speed;
+// Returns jerk (rate of change of acceleration) — constant per mode
+// constant: j=0, increase: j=+0.5, decrease: j=-0.5
+function getJerk() {
+  const sign = getAccelSign(state.mode);
+  if (sign === 0) return 0;
+  const ap = state.accelPattern;
+  if (ap === 'constant') return 0;
+  if (ap === 'increase') return 0.5;
+  if (ap === 'decrease') return -0.5;
+  return 0;
 }
 
-// Returns a(t) at given time — constant for all these modes
+// Returns a(t) at given time — a(t) = a₀ + j·t
 function getAccelAt(t) {
   const sign = getAccelSign(state.mode);
   if (sign === 0) return 0;
-  return state.initAccel * sign;
+  const a0 = state.initAccel * sign;
+  const j = getJerk();
+  return a0 + j * t;
 }
 
-// Returns v(t) at given time
+// Returns v(t) at given time — v(t) = u + a₀·t + ½·j·t²
 function getSpeedAt(t) {
   if (state.mode === 'rest') return 0;
-  const u = getInitSpeedForMode(state.mode);
+  const u = state.speed;
   const sign = getAccelSign(state.mode);
   if (sign === 0) return u;
-  const v = u + state.initAccel * sign * t;
-  return Math.max(0, v);
+  const a0 = state.initAccel * sign;
+  const j = getJerk();
+  return u + a0*t + 0.5*j*t*t;
 }
 
-// Returns s(t) at given time
+// Returns s(t) at given time — s(t) = s₀ + u·t + ½·a₀·t² + ⅙·j·t³
 function getDistance(t) {
   if (state.mode === 'rest') return state.initPos;
-  const u = getInitSpeedForMode(state.mode);
+  const u = state.speed;
   const sign = getAccelSign(state.mode);
-  if (sign === 0) return state.initPos + u * t;
-  const s = state.initPos + u * t + 0.5 * sign * state.initAccel * t * t;
-  return Math.max(state.initPos, s);
+  if (sign === 0) return state.initPos + u*t;
+  const a0 = state.initAccel * sign;
+  const j = getJerk();
+  return state.initPos + u*t + 0.5*a0*t*t + (1/6)*j*t*t*t;
+}
+
+function getStopTime() {
+  // Returns first time t>0 where v(t)=0, or state.maxTime if speed never reaches 0
+  if (state.mode === 'rest') return 0;
+  const sign = getAccelSign(state.mode);
+  if (sign === 0) return state.maxTime; // constant speed → never stops
+  const u = state.speed;
+  const a0 = state.initAccel * sign;
+  const j = getJerk();
+  let tStop = Infinity;
+  if (j !== 0) {
+    const disc = a0*a0 - 2*j*u;
+    if (disc >= 0) {
+      const sqrtD = Math.sqrt(disc);
+      const t1 = (-a0 + sqrtD) / j;
+      const t2 = (-a0 - sqrtD) / j;
+      if (t1 > 0.001 && t1 < state.maxTime) tStop = Math.min(tStop, t1);
+      if (t2 > 0.001 && t2 < state.maxTime) tStop = Math.min(tStop, t2);
+    }
+  } else if (a0 < 0) {
+    const t = -u / a0;
+    if (t > 0.001 && t <= state.maxTime) tStop = t;
+  }
+  return tStop === Infinity ? state.maxTime : tStop;
+}
+
+function getTheoreticalMaxSpeed() {
+  if (state.mode === 'rest') return 0;
+  if (state.mode === 'constant') return state.speed;
+  const sign = getAccelSign(state.mode);
+  if (sign === 0) return state.speed;
+  const tStop = getStopTime();
+  const j = getJerk();
+  const a0 = state.initAccel * sign;
+  
+  // Check boundaries [0, tStop] + where a(t)=0 (peak of speed if within range)
+  let maxV = Math.max(getSpeedAt(0), getSpeedAt(tStop));
+  if (j !== 0) {
+    const tPeak = -a0 / j;  // where a(t)=0, i.e. speed is at an extremum
+    if (tPeak > 0.001 && tPeak < tStop) maxV = Math.max(maxV, getSpeedAt(tPeak));
+  }
+  return maxV;
 }
 
 function getMaxDist() {
-  // For deceleration modes, peak is where speed reaches 0, not at maxTime
-  const mode=state.mode;
-  if(mode==='decr-speed'||mode==='const-decel'){
-    const u=state.speed;
-    const a=state.initAccel;
-    if(a<=0)return state.initPos;
-    const tStop=u/a;  // time when speed=0
-    if(tStop<=0)return state.initPos;
-    // s = initPos + u*tStop - 0.5*a*tStop² = initPos + 0.5*u²/a
-    return state.initPos+0.5*u*u/a;
+  if (state.mode === 'rest') return state.initPos;
+  const u = state.speed;
+  const sign = getAccelSign(state.mode);
+  if (sign === 0) return state.initPos + u * state.maxTime;
+  
+  const a0 = state.initAccel * sign;
+  const j = getJerk();
+  const tStop = getStopTime();
+  
+  // Distance peaks where v=0 (turning point) within [0, tStop]
+  let candidateT = [0, tStop];
+  
+  if (j !== 0) {
+    const disc = a0*a0 - 2*j*u;
+    if (disc >= 0) {
+      const sqrtD = Math.sqrt(disc);
+      const t1 = (-a0 + sqrtD) / j;
+      const t2 = (-a0 - sqrtD) / j;
+      if (t1 > 0.001 && t1 < tStop) candidateT.push(t1);
+      if (t2 > 0.001 && t2 < tStop) candidateT.push(t2);
+    }
+  } else if (a0 < 0) {
+    const tStop2 = -u / a0;
+    if (tStop2 > 0.001 && tStop2 < tStop) candidateT.push(tStop2);
   }
-  const maxT=state.maxTime;
-  return getDistance(maxT);
+  
+  let maxD = 0;
+  for (const t of candidateT) {
+    const d = getDistance(t);
+    if (d > maxD) maxD = d;
+  }
+  return Math.max(state.initPos, maxD);
 }
 
 function getYMaxGraph() {
   if (state.graphType === 'dist-time') {
-    if (state.history.length === 0) return Math.max(getMaxDist() * 1.15, 10);
-    const maxD = Math.max(...state.history.map(p => p.d), 1);
-    return Math.max(maxD * 1.15, getMaxDist() * 1.1, 10);
+    const maxD = getMaxDist();
+    return Math.max(maxD * 1.15, 10);
   } else if (state.graphType === 'speed-time') {
-    if (state.history.length === 0) return Math.max(state.speed * 1.3, 8);
-    const maxV = Math.max(...state.history.map(p => getSpeedAt(p.t)), 1);
+    const maxV = getTheoreticalMaxSpeed();
     return Math.max(maxV * 1.2, 8);
-  } else {
-    const a = getAccelAt(0);
-    const mode = state.mode;
-    if (mode === 'incr-speed' || mode === 'const-accel') {
-      // Check max acceleration in history
-      if (state.history.length > 1) {
-        const maxA = Math.max(...state.history.map(p => getAccelAt(p.t)), a);
-        return { top: Math.max(maxA * 1.5, 0.5), bottom: 0 };
-      }
-      return { top: Math.max(a * 1.5, 0.5), bottom: 0 };
-    } else if (mode === 'decr-speed' || mode === 'const-decel') {
-      if (state.history.length > 1) {
-        const minA = Math.min(...state.history.map(p => getAccelAt(p.t)), a);
-        return { top: 0, bottom: Math.min(minA * 1.5, -0.3) };
-      }
-      return { top: 0, bottom: Math.min(a * 1.5, -0.3) };
-    } else {
-      return { top: 0.5, bottom: -0.5 };
+  } else { // accel-time — find min & max across [0, tStop]
+    const sign = getAccelSign(state.mode);
+    if (sign === 0) return { top: 0.5, bottom: -0.5 };
+    
+    const tStop = getStopTime();
+    let candT = [0, tStop];
+    const j = getJerk();
+    if (j !== 0) {
+      const a0 = state.initAccel * sign;
+      const tZero = -a0 / j;
+      if (tZero > 0.001 && tZero < tStop) candT.push(tZero);
     }
+    
+    let maxA = -Infinity, minA = Infinity;
+    for (const t of candT) {
+      const val = getAccelAt(t);
+      if (val > maxA) maxA = val;
+      if (val < minA) minA = val;
+    }
+    
+    const yTop = Math.max(maxA * 1.5, 0.5);
+    const yBot = Math.min(minA * 1.5, -0.5);
+    return { top: yTop, bottom: yBot };
   }
 }
 
@@ -747,7 +825,7 @@ function drawGraph() {
   ctx.lineWidth=1.5;
   ctx.beginPath();ctx.moveTo(pad.left,pad.top);ctx.lineTo(pad.left,pad.top+gH);ctx.lineTo(pad.left+gW,pad.top+gH);ctx.stroke();
 
-  const xMax=state.maxTime;
+  const xMax=getStopTime();
   const rawYMax=getYMaxGraph();
   const isAccel=state.graphType==='accel-time';
   let yMax,yMin;
@@ -875,27 +953,19 @@ function updateAnimation(){
     cloudLayer.style.transition='transform 0.1s linear';
   }
   
-  if(t>=0&&t<=state.maxTime)state.history.push({t,d});
+  if(t>=0&&t<=getStopTime())state.history.push({t,d});
   drawGraph();
 }
 function animationLoop(){
   if(!state.playing)return;
-  
-  // Stop if speed reaches 0 (deceleration cases)
-  if(state.time>0&&getSpeedAt(state.time)<=0){
-    pauseAnimation();
-    updateAnimation();
-    updateSentence();
-    return;
-  }
-  
+  const tStop=getStopTime();
   state.time+=state.dt;
-  if(state.time>state.maxTime){state.time=state.maxTime;pauseAnimation();updateAnimation();updateSentence();return;}
+  if(state.time>=tStop){state.time=tStop;pauseAnimation();updateAnimation();updateSentence();return;}
   updateAnimation();updateSentence();state.animId=requestAnimationFrame(animationLoop);
 }
 function togglePlay(){if(state.playing)pauseAnimation();else startAnimation();}
 function startAnimation(){
-  if(state.time>=state.maxTime)resetAnimation();
+  if(state.time>=getStopTime()||state.history.length===0)resetAnimation();
   state.playing=true;
   document.getElementById('playBtn').textContent='⏸ Pause';
   document.getElementById('playBtn').className='ctrl-btn';
@@ -914,25 +984,71 @@ function setMode(mode){
   pauseAnimation();resetAnimation();
   document.querySelectorAll('.mode-btn').forEach(b=>b.classList.remove('active'));
   document.querySelector(`.mode-btn[data-mode="${mode}"]`).classList.add('active');
+  updateAccelDropdown();
+  updateDescription();updateSentence();
+}
+
+function updateAccelDropdown(){
+  const dd=document.getElementById('accelDropdown');
+  const val=dd.value;
+  // Save previous selection if it's a valid option for the new mode
+  const isRestOrConstant=state.mode==='rest'||state.mode==='constant';
+  if(isRestOrConstant){
+    dd.innerHTML='<option value="zero">Zero</option>';
+    state.accelPattern='zero';
+  } else {
+    dd.innerHTML='<option value="constant">Constant</option><option value="increase">Increase</option><option value="decrease">Decrease</option>';
+    if(val==='zero'||!['constant','increase','decrease'].includes(val)) {
+      dd.value='constant';
+      state.accelPattern='constant';
+    } else {
+      dd.value=val;
+      state.accelPattern=val;
+    }
+  }
+}
+
+function onAccelDropdownChange(val){
+  state.accelPattern=val;
+  pauseAnimation();resetAnimation();
   updateDescription();updateSentence();
 }
 function updateSpeed(val){state.speed=parseFloat(val);document.getElementById('speedVal').textContent=parseFloat(val).toFixed(1);if(!state.playing)resetAnimation();}
 function updateInitPos(val){state.initPos=parseFloat(val);document.getElementById('posVal').textContent=parseFloat(val).toFixed(1);if(!state.playing)resetAnimation();}
 
 function randomMode(){
-  const modes=['rest','constant','incr-speed','decr-speed','const-accel','const-decel'];
-  const mode=modes[Math.floor(Math.random()*modes.length)];
-  const speed=parseFloat((Math.random()*18+2).toFixed(1));
-  const pos=parseFloat((Math.random()*80).toFixed(0));
-  const accel=parseFloat((Math.random()*4+0.5).toFixed(1));
-  state.speed=speed;state.initPos=pos;state.initAccel=accel;
-  document.getElementById('speedSlider').value=speed;document.getElementById('speedVal').textContent=speed.toFixed(1);
-  document.getElementById('posSlider').value=pos;document.getElementById('posVal').textContent=pos.toFixed(1);
-  const accelSlider=document.getElementById('accelSlider');
-  if(accelSlider){accelSlider.value=accel;}
-  const accelVal=document.getElementById('accelVal');
-  if(accelVal){accelVal.textContent=accel.toFixed(1);}
-  setMode(mode);
+  // Step 1: Randomly pick one of 8 scenarios (equal probability)
+  const scenarios=[
+    {mode:'rest',       pattern:'zero'},
+    {mode:'constant',   pattern:'zero'},
+    {mode:'incr-speed', pattern:'constant'},
+    {mode:'incr-speed', pattern:'increase'},
+    {mode:'incr-speed', pattern:'decrease'},
+    {mode:'decr-speed', pattern:'constant'},
+    {mode:'decr-speed', pattern:'increase'},
+    {mode:'decr-speed', pattern:'decrease'},
+  ];
+  const pick=scenarios[Math.floor(Math.random()*scenarios.length)];
+  
+  // Step 2: Random x (0–10), random v (0–10)
+  const pos=parseFloat((Math.random()*10).toFixed(1));
+  const speed=parseFloat((Math.random()*10).toFixed(1));
+  state.initPos=pos;
+  state.speed=speed;
+  document.getElementById('posSlider').value=pos;
+  document.getElementById('posVal').textContent=pos.toFixed(1);
+  document.getElementById('speedSlider').value=speed;
+  document.getElementById('speedVal').textContent=speed.toFixed(1);
+  
+  // Set mode (handles dropdown + animation reset)
+  setMode(pick.mode);
+  // Override dropdown to match the selected pattern
+  const dd=document.getElementById('accelDropdown');
+  if(pick.pattern!=='zero'){
+    dd.innerHTML='<option value="constant">Constant</option><option value="increase">Increase</option><option value="decrease">Decrease</option>';
+    dd.value=pick.pattern;
+    state.accelPattern=pick.pattern;
+  }
 }
 
 // ===== SENTENCES =====
