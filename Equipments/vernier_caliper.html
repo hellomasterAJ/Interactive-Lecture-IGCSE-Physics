@@ -306,9 +306,13 @@ function drawBeam(p) {
   ctx.fillStyle = metal(0, BEAM_T, 0, BEAM_B, true);
   ctx.strokeStyle = "#5a636d"; ctx.lineWidth = 1;
   rr(x0, BEAM_T, x1 - x0, BEAM_B - BEAM_T, 3); ctx.fill(); ctx.stroke();
-  // beam top highlight
+  // beam top highlight + brushed texture
   ctx.fillStyle = "rgba(255,255,255,.35)";
   ctx.fillRect(x0 + 2, BEAM_T + 2, x1 - x0 - 4, 3);
+  ctx.save(); rr(x0, BEAM_T, x1 - x0, BEAM_B - BEAM_T, 3); ctx.clip();
+  ctx.strokeStyle = "rgba(255,255,255,.04)"; ctx.lineWidth = 1;
+  for (let y = BEAM_T + 3; y < BEAM_B; y += 3) { ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke(); }
+  ctx.restore();
   // brand
   ctx.font = "italic 700 11px Georgia,serif"; ctx.fillStyle = "#4a5560";
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -336,40 +340,87 @@ function drawMainScale(p) {
   ctx.fillText("mm", OX + 152 * p + 18, 130);
 }
 
-/* ── jaw shapes (angular, stepped — like a real Mitutoyo) ──
+/* ── jaw shapes (faceted + lit, modeled on the reference simulator) ──
    dir = -1 for the fixed jaws (body extends left of the face)
    dir = +1 for the sliding jaws (body extends right of the face) */
 function drawOutsideJaw(faceX, dir) {
-  const d = dir;
-  ctx.strokeStyle = "#59636d"; ctx.lineWidth = 1;
-  ctx.fillStyle = metal(faceX, 0, faceX + d * 60, 0);
-  ctx.beginPath();
-  ctx.moveTo(faceX, BEAM_B);
-  ctx.lineTo(faceX, 394);                                // measuring face (flat)
-  ctx.quadraticCurveTo(faceX, 406, faceX + d * 12, 407); // rounded tip
-  ctx.lineTo(faceX + d * 20, 402);
-  ctx.lineTo(faceX + d * 40, 300);                       // straight taper
-  ctx.lineTo(faceX + d * 48, 238);
-  ctx.lineTo(faceX + d * 58, 220);                       // step near the beam
-  ctx.lineTo(faceX + d * 58, BEAM_B);
-  ctx.closePath(); ctx.fill(); ctx.stroke();
-  // face edge line (crisp measuring edge)
-  ctx.strokeStyle = "rgba(40,48,58,.45)";
-  ctx.beginPath(); ctx.moveTo(faceX, BEAM_B + 4); ctx.lineTo(faceX, 392); ctx.stroke();
+  const d = dir, f = faceX;
+  const path = () => {
+    ctx.beginPath();
+    ctx.moveTo(f, BEAM_B);
+    ctx.lineTo(f, 396);                    // measuring face (dead flat)
+    ctx.lineTo(f + d * 6, 404);            // sharp tip chamfer
+    ctx.lineTo(f + d * 18, 404);           // flat tip bottom
+    ctx.lineTo(f + d * 34, 348);           // 45° bevel cut up to the blade
+    ctx.lineTo(f + d * 44, 268);           // taper
+    ctx.lineTo(f + d * 50, 228);
+    ctx.lineTo(f + d * 62, 214);           // shoulder step near the beam
+    ctx.lineTo(f + d * 62, BEAM_B);
+    ctx.closePath();
+  };
+  // body with drop shadow (light from upper-left)
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,.45)"; ctx.shadowBlur = 10;
+  ctx.shadowOffsetX = d * 5; ctx.shadowOffsetY = 4;
+  const g = ctx.createLinearGradient(f, 0, f + d * 62, 0);
+  g.addColorStop(0, "#e9eef2"); g.addColorStop(.25, "#cad2d9");
+  g.addColorStop(.7, "#96a0aa"); g.addColorStop(1, "#5e6973");
+  ctx.fillStyle = g; path(); ctx.fill();
+  ctx.restore();
+  // details, clipped to the blade
+  ctx.save(); path(); ctx.clip();
+  const x0 = Math.min(f, f + d * 70), x1 = Math.max(f, f + d * 70);
+  ctx.strokeStyle = "rgba(255,255,255,.05)"; ctx.lineWidth = 1;   // brushed metal
+  for (let y = BEAM_B + 2; y < 406; y += 3) { ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke(); }
+  const hg = ctx.createLinearGradient(f, 0, f + d * 8, 0);        // polished measuring face
+  hg.addColorStop(0, "rgba(255,255,255,.85)"); hg.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = hg; ctx.fillRect(Math.min(f, f + d * 8), BEAM_B + 4, 8, 392 - BEAM_B);
+  ctx.fillStyle = "rgba(255,255,255,.28)";                        // ground step near the tip
+  ctx.fillRect(Math.min(f, f + d * 13), 342, 13, 62);
+  ctx.strokeStyle = "rgba(30,38,48,.4)";
+  ctx.beginPath(); ctx.moveTo(f + d * 13, 342); ctx.lineTo(f + d * 13, 404); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(f, 342); ctx.lineTo(f + d * 13, 342); ctx.stroke();
+  ctx.strokeStyle = "rgba(255,255,255,.4)";                       // bright bevel facet
+  ctx.beginPath(); ctx.moveTo(f + d * 18, 402); ctx.lineTo(f + d * 34, 348); ctx.stroke();
+  ctx.strokeStyle = "rgba(20,28,38,.3)";                          // shadow under the shoulder step
+  ctx.beginPath(); ctx.moveTo(f + d * 50, 229); ctx.lineTo(f + d * 62, 215); ctx.stroke();
+  ctx.restore();
+  // crisp outline
+  ctx.strokeStyle = "#454f59"; ctx.lineWidth = 1; path(); ctx.stroke();
 }
 function drawInsideJaw(faceX, dir) {
-  const d = dir;
-  ctx.strokeStyle = "#59636d"; ctx.lineWidth = 1;
-  ctx.fillStyle = metal(faceX, 0, faceX + d * 30, 0);
-  ctx.beginPath();
-  ctx.moveTo(faceX, BEAM_T);
-  ctx.lineTo(faceX, 34);                                 // face straight up
-  ctx.lineTo(faceX + d * 5, 29);                         // knife tip
-  ctx.lineTo(faceX + d * 13, 38);
-  ctx.lineTo(faceX + d * 13, 80);                        // narrow finger
-  ctx.lineTo(faceX + d * 30, 88);                        // step out to wide base
-  ctx.lineTo(faceX + d * 30, BEAM_T);
-  ctx.closePath(); ctx.fill(); ctx.stroke();
+  const d = dir, f = faceX;
+  const path = () => {
+    ctx.beginPath();
+    ctx.moveTo(f, BEAM_T);
+    ctx.lineTo(f, 46);                     // inner face straight up
+    ctx.lineTo(f + d * 6, 30);             // sharp chevron tip
+    ctx.lineTo(f + d * 14, 46);
+    ctx.lineTo(f + d * 14, 84);            // narrow finger
+    ctx.lineTo(f + d * 32, 94);            // step out to the foot
+    ctx.lineTo(f + d * 32, BEAM_T);
+    ctx.closePath();
+  };
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,.4)"; ctx.shadowBlur = 8;
+  ctx.shadowOffsetX = d * 4; ctx.shadowOffsetY = 3;
+  const g = ctx.createLinearGradient(f, 0, f + d * 32, 0);
+  g.addColorStop(0, "#e9eef2"); g.addColorStop(.4, "#c3cbd3"); g.addColorStop(1, "#6a747e");
+  ctx.fillStyle = g; path(); ctx.fill();
+  ctx.restore();
+  ctx.save(); path(); ctx.clip();
+  const x0 = Math.min(f, f + d * 34), x1 = Math.max(f, f + d * 34);
+  ctx.strokeStyle = "rgba(255,255,255,.05)"; ctx.lineWidth = 1;   // brushed metal
+  for (let y = 30; y < BEAM_T; y += 3) { ctx.beginPath(); ctx.moveTo(x0, y); ctx.lineTo(x1, y); ctx.stroke(); }
+  const hg = ctx.createLinearGradient(f, 0, f + d * 6, 0);        // polished inner face
+  hg.addColorStop(0, "rgba(255,255,255,.9)"); hg.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = hg; ctx.fillRect(Math.min(f, f + d * 6), 34, 6, BEAM_T - 34);
+  ctx.strokeStyle = "rgba(255,255,255,.55)";                      // bright tip bevel
+  ctx.beginPath(); ctx.moveTo(f, 46); ctx.lineTo(f + d * 6, 30); ctx.stroke();
+  ctx.strokeStyle = "rgba(20,28,38,.3)";                          // shadow under the foot step
+  ctx.beginPath(); ctx.moveTo(f + d * 14, 84); ctx.lineTo(f + d * 32, 94); ctx.stroke();
+  ctx.restore();
+  ctx.strokeStyle = "#454f59"; ctx.lineWidth = 1; path(); ctx.stroke();
 }
 function drawFixedJaws(p)   { drawOutsideJaw(OX, -1); drawInsideJaw(OX, -1); }
 function drawSlidingJaws(p) {
@@ -394,17 +445,25 @@ function drawSlider(p, o) {
   ctx.strokeStyle = "#59636d"; ctx.lineWidth = 1;
   rr(sx0, 76, sx1 - sx0, BEAM_T - 76 + 2, 3); ctx.fill(); ctx.stroke();
   ctx.fillStyle = "rgba(255,255,255,.3)"; ctx.fillRect(sx0 + 2, 78, sx1 - sx0 - 4, 2.5);
-  // knurled thumb screw
-  const scx = sx1 - 42;
-  ctx.fillStyle = metal(scx - 14, 0, scx + 14, 0);
+  // knurled thumb screw — wide & flat, sitting on a short neck (no stub on top)
+  const scx = sx1 - 56;
+  ctx.fillStyle = metal(scx - 6, 0, scx + 6, 0);         // neck down to the slider body
   ctx.strokeStyle = "#59636d";
-  rr(scx - 13, 46, 26, 30, 3); ctx.fill(); ctx.stroke();
-  ctx.strokeStyle = "rgba(50,58,68,.55)"; ctx.lineWidth = 1;
-  for (let i = -10; i <= 10; i += 3) {
-    ctx.beginPath(); ctx.moveTo(scx + i, 48); ctx.lineTo(scx + i, 74); ctx.stroke();
+  ctx.fillRect(scx - 6, 66, 12, 12); ctx.strokeRect(scx - 6, 66, 12, 12);
+  ctx.save();                                            // flat knurled knob
+  ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 6; ctx.shadowOffsetY = 3;
+  const kg = ctx.createLinearGradient(scx - 26, 0, scx + 26, 0);
+  kg.addColorStop(0, "#78828c"); kg.addColorStop(.5, "#dae0e6"); kg.addColorStop(1, "#6d7781");
+  ctx.fillStyle = kg;
+  rr(scx - 26, 45, 52, 22, 4); ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = "#4c565f"; rr(scx - 26, 45, 52, 22, 4); ctx.stroke();
+  ctx.strokeStyle = "rgba(40,48,58,.5)"; ctx.lineWidth = 1;   // knurling
+  for (let i = -23; i <= 23; i += 3) {
+    ctx.beginPath(); ctx.moveTo(scx + i, 47); ctx.lineTo(scx + i, 65); ctx.stroke();
   }
-  ctx.fillStyle = metal(scx - 5, 0, scx + 5, 0);
-  ctx.fillRect(scx - 4, 40, 8, 6);
+  ctx.fillStyle = "rgba(255,255,255,.35)";               // top highlight
+  ctx.fillRect(scx - 24, 46.5, 48, 2);
 
   // vernier plate (below the junction)
   ctx.fillStyle = metal(0, JUNC, 0, PLATE_B, true);
