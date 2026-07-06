@@ -56,6 +56,9 @@ h1{font-size:20px;font-weight:700;margin-bottom:2px}
 .clamp-pill{position:absolute;bottom:84px;right:12px;font-size:11px;color:var(--green);background:rgba(22,27,34,.85);
   border:1px solid var(--green);border-radius:14px;padding:3px 10px;display:none;pointer-events:none}
 .clamp-pill.warn{color:var(--accent);border-color:var(--accent)}
+.obj-chip{position:absolute;top:8px;left:12px;font-size:12px;font-weight:600;color:var(--text);
+  background:rgba(22,27,34,.85);border:1px solid var(--border);border-radius:8px;padding:3px 10px;pointer-events:none}
+.obj-chip b{color:var(--blue);font-family:ui-monospace,Menlo,monospace}
 
 /* ── Badges ── */
 .badges{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
@@ -155,6 +158,7 @@ h1{font-size:20px;font-weight:700;margin-bottom:2px}
     <canvas id="cv"></canvas>
     <div class="zoom-pill" id="zoomPill">🔍 Zoom: OFF</div>
     <div class="lc-chip" id="lcChip">LC = 0.01 mm</div>
+    <div class="obj-chip" id="objChip">–</div>
     <div class="hint">Drag thimble · Click RATCHET to close<br>Drag objects into the gap<br>⌨ ←/→ fine step (Shift = 0.5 mm)<br>Double-click to zoom</div>
     <div class="clamp-pill" id="clampPill">✓ In contact</div>
   </div>
@@ -275,24 +279,33 @@ let W = 0, H = 0;
 function resize() {
   const r = cv.getBoundingClientRect(), dpr = window.devicePixelRatio || 1;
   W = r.width; H = r.height;
+  layout();
   cv.width = W * dpr; cv.height = H * dpr;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   draw();
 }
 window.addEventListener("resize", resize);
 
-/* geometry (CSS px) — anatomy follows a real 0–25 mm outside micrometer */
-const AX = 156, AY = 168, TL = 112;      // anvil face x · instrument axis y · thimble length
-/* two horizontal scales: the sleeve scale gets big px/mm for readability,
-   the gap/objects use a smaller one so objects stay in proportion */
-const pxmm = () => clamp((W - AX - 215) / 40.5, 6.5, 18.5); // sleeve scale px per mm
-const gpx  = () => pxmm() * 0.62;                           // gap px per mm
-const sleeveFront = () => AX + RANGE * gpx() + 26;
-const SL0 = () => sleeveFront() + 16;    // main-scale zero
-const thimbleX = () => SL0() + obs() * pxmm();
+/* geometry (CSS px) — proportions follow a real 0–25 mm outside micrometer.
+   Every part shares ONE honest px-per-mm (Kv): the gap, the sleeve scale and
+   all diameters/lengths (spindle ⌀6.5 · sleeve ⌀11 · thimble ⌀19×36 · ratchet ⌀9). */
+let Kv = 8, AX = 138, AY = 104;                    // set by layout()
+function layout() {
+  Kv = clamp(0.8 * Math.min((W - 45) / 131, (H - 204) / 43.5), 4.2, 6.6);
+  // centre the instrument in the free area above the tray
+  AX = 24 + 14 * Kv + Math.max(0, (W - 45 - 131 * Kv) / 2);
+  AY = 26 + 9.5 * Kv + Math.max(0, (H - 172 - 26 - 40.7 * Kv) / 2);
+}
+const pxmm = () => Kv, gpx = () => Kv;             // px per mm (drawing + drag)
+const bossX   = () => AX + 27 * Kv;                // spindle guide boss (right arm)
+const sleeveX = () => bossX() + 12 * Kv;           // sleeve tube start
+const SL0     = () => sleeveX() + 3 * Kv;          // main-scale zero
+const thimbleX = () => SL0() + obs() * Kv;         // thimble reading edge
+const THL     = () => 36 * Kv;                     // thimble length
+const sleeveFront = () => bossX();                 // gap ends here (drop-zone limit)
 const trayY = () => H - 172;
 
-function zoomCenter() { return [W / 2, H * 0.40]; }
+function zoomCenter() { return [W / 2, H * 0.38]; }
 function toWorld(mx, my) {
   if (!S.zoom) return [mx, my];
   const f = S.zoomF, [cxs, cys] = zoomCenter();
@@ -332,190 +345,221 @@ function draw() {
   ctx.restore();
 }
 
-/* ── C-frame ── */
+/* ── C-frame with left arm, guide boss support and spec plaque ── */
 function drawFrame(p) {
-  const sf = sleeveFront();
+  const bx = bossX(), armX = AX - 8 * p;           // anvil stub spans armX..AX
   const band = () => {
     ctx.beginPath();
-    ctx.moveTo(AX - 46, AY + 34);
-    ctx.bezierCurveTo(AX - 46, AY + 196, sf + 54, AY + 196, sf + 54, AY + 34);
-    ctx.lineTo(sf + 14, AY + 34);
-    ctx.bezierCurveTo(sf + 14, AY + 152, AX - 6, AY + 152, AX - 6, AY + 34);
+    ctx.moveTo(armX - 6 * p, AY + 4 * p);
+    ctx.bezierCurveTo(armX - 6 * p, AY + 40 * p, bx + 12 * p, AY + 40 * p, bx + 12 * p, AY + 5.5 * p);
+    ctx.lineTo(bx + 3 * p, AY + 5.5 * p);
+    ctx.bezierCurveTo(bx + 3 * p, AY + 28 * p, armX, AY + 28 * p, armX, AY + 4 * p);
     ctx.closePath();
   };
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,.45)"; ctx.shadowBlur = 12; ctx.shadowOffsetX = 4; ctx.shadowOffsetY = 5;
-  const g = ctx.createLinearGradient(0, AY + 20, 0, AY + 196);
-  g.addColorStop(0, "#88919b"); g.addColorStop(.4, "#a9b2bb"); g.addColorStop(1, "#525c66");
+  const g = ctx.createLinearGradient(0, AY, 0, AY + 40 * p);
+  g.addColorStop(0, "#79828c"); g.addColorStop(.45, "#9aa3ad"); g.addColorStop(1, "#4d565f");
   ctx.fillStyle = g; band(); ctx.fill();
   ctx.restore();
-  ctx.strokeStyle = "#454f59"; ctx.lineWidth = 1; band(); ctx.stroke();
-  // anvil arm (carries the anvil) + sleeve support
-  ctx.fillStyle = metal(AX - 46, 0, AX - 6, 0);
-  rr(AX - 46, AY - 30, 40, 66, 5); ctx.fill();
-  ctx.strokeStyle = "#454f59"; rr(AX - 46, AY - 30, 40, 66, 5); ctx.stroke();
-  ctx.fillStyle = metal(0, AY + 20, 0, AY + 38);
-  ctx.fillRect(sf + 14, AY + 20, 40, 16);
-  ctx.strokeRect(sf + 14, AY + 20, 40, 16);
-  // range engraving on the lower band
-  const bx = (AX + sf) / 2;
+  ctx.strokeStyle = "#3f4954"; ctx.lineWidth = 1; band(); ctx.stroke();
+  // left arm block (carries the anvil)
+  ctx.fillStyle = metal(armX - 6 * p, 0, armX, 0);
+  rr(armX - 6 * p, AY - 5 * p, 6 * p, 11 * p, 1.5 * p); ctx.fill();
+  ctx.strokeStyle = "#3f4954"; rr(armX - 6 * p, AY - 5 * p, 6 * p, 11 * p, 1.5 * p); ctx.stroke();
+  // spec plaque — small black plate on the lower arc, like a real frame
+  const pcx = armX + (bx + 12 * p - armX) * 0.46, pcy = AY + 26.4 * p;
+  rr(pcx - 5.5 * p, pcy - 2.4 * p, 11 * p, 4.8 * p, 1.6 * p);
+  ctx.fillStyle = "#101216"; ctx.fill();
+  ctx.strokeStyle = "#2c313a"; ctx.stroke();
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.font = "600 9.5px Arial"; ctx.fillStyle = "#434d58";
-  ctx.fillText("0–25 mm · 0.01 mm", bx, AY + 138);
+  ctx.font = `700 ${Math.max(7.5, 1.5 * p)}px Arial`; ctx.fillStyle = "#dfe3e8";
+  ctx.fillText("0–25 mm", pcx, pcy - 1.15 * p);
+  ctx.fillText("0.01 mm", pcx, pcy + 1.35 * p);
 }
 
-/* ── anvil (fixed) ── */
+/* ── anvil (fixed stub, ⌀6.5 mm) ── */
 function drawAnvil() {
+  const p = Kv;
   ctx.save();
-  ctx.shadowColor = "rgba(0,0,0,.4)"; ctx.shadowBlur = 6; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 3;
-  ctx.fillStyle = metal(AX - 30, 0, AX, 0, true);
-  rr(AX - 30, AY - 26, 30, 52, 3); ctx.fill();
-  ctx.restore();
-  const hg = ctx.createLinearGradient(AX - 5, 0, AX, 0);   // polished measuring face
-  hg.addColorStop(0, "rgba(255,255,255,0)"); hg.addColorStop(1, "rgba(255,255,255,.9)");
-  ctx.fillStyle = hg; ctx.fillRect(AX - 5, AY - 24, 5, 48);
-  ctx.strokeStyle = "#454f59"; ctx.lineWidth = 1;
-  rr(AX - 30, AY - 26, 30, 52, 3); ctx.stroke();
-}
-
-/* ── spindle (moving) ── */
-function drawSpindle(p) {
-  const gx = AX + S.opening * gpx(), sf = sleeveFront();
-  ctx.save();
-  ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 5; ctx.shadowOffsetY = 3;
-  const g = ctx.createLinearGradient(0, AY - 15, 0, AY + 15);
-  g.addColorStop(0, "#79838d"); g.addColorStop(.35, "#e6ebf0"); g.addColorStop(1, "#6a747e");
+  ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 5; ctx.shadowOffsetY = 2;
+  const g = ctx.createLinearGradient(0, AY - 3.25 * p, 0, AY + 3.25 * p);
+  g.addColorStop(0, "#8d97a1"); g.addColorStop(.4, "#e9edf1"); g.addColorStop(1, "#6f7983");
   ctx.fillStyle = g;
-  ctx.fillRect(gx, AY - 15, sf + 8 - gx, 30);
+  ctx.fillRect(AX - 8 * p, AY - 3.25 * p, 8 * p, 6.5 * p);
   ctx.restore();
-  const hg = ctx.createLinearGradient(gx, 0, gx + 5, 0);   // polished measuring face
-  hg.addColorStop(0, "rgba(255,255,255,.9)"); hg.addColorStop(1, "rgba(255,255,255,0)");
-  ctx.fillStyle = hg; ctx.fillRect(gx, AY - 13, 5, 26);
+  const hg = ctx.createLinearGradient(AX - 4, 0, AX, 0);
+  hg.addColorStop(0, "rgba(255,255,255,0)"); hg.addColorStop(1, "rgba(255,255,255,.9)");
+  ctx.fillStyle = hg; ctx.fillRect(AX - 4, AY - 3 * p, 4, 6 * p);
   ctx.strokeStyle = "#454f59"; ctx.lineWidth = 1;
-  ctx.strokeRect(gx, AY - 15, sf + 8 - gx, 30);
-  // lock-nut ring at the sleeve mouth
-  ctx.fillStyle = metal(0, AY - 19, 0, AY + 19);
-  rr(sf, AY - 19, 9, 38, 2); ctx.fill();
-  ctx.strokeStyle = "#454f59"; rr(sf, AY - 19, 9, 38, 2); ctx.stroke();
+  ctx.strokeRect(AX - 8 * p, AY - 3.25 * p, 8 * p, 6.5 * p);
 }
 
-/* ── sleeve: barrel + main scale (mm above datum, half-mm below) ── */
-function drawSleeve(p) {
-  const sf = sleeveFront(), s0 = SL0(), tx = thimbleX();
-  const { msr } = reading();
+/* ── spindle (moving, ⌀6.5 mm) + guide boss with lock screw ── */
+function drawSpindle(p) {
+  const gx = AX + S.opening * p, bx = bossX();
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,.3)"; ctx.shadowBlur = 4; ctx.shadowOffsetY = 2;
+  const g = ctx.createLinearGradient(0, AY - 3.25 * p, 0, AY + 3.25 * p);
+  g.addColorStop(0, "#79838d"); g.addColorStop(.35, "#eef2f6"); g.addColorStop(1, "#6a747e");
+  ctx.fillStyle = g;
+  ctx.fillRect(gx, AY - 3.25 * p, bx - gx + 2 * p, 6.5 * p);
+  ctx.restore();
+  const hg = ctx.createLinearGradient(gx, 0, gx + 4, 0);
+  hg.addColorStop(0, "rgba(255,255,255,.9)"); hg.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = hg; ctx.fillRect(gx, AY - 3 * p, 4, 6 * p);
+  ctx.strokeStyle = "#454f59"; ctx.lineWidth = 1;
+  ctx.strokeRect(gx, AY - 3.25 * p, bx - gx + 2 * p, 6.5 * p);
+  // guide boss
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 6; ctx.shadowOffsetY = 3;
-  const g = ctx.createLinearGradient(0, AY - 27, 0, AY + 27);
-  g.addColorStop(0, "#98a2ac"); g.addColorStop(.4, "#eef2f5"); g.addColorStop(1, "#7d8791");
+  ctx.fillStyle = metal(0, AY - 6.5 * p, 0, AY + 6.5 * p, true);
+  rr(bx, AY - 6.5 * p, 12 * p, 13 * p, 2.2 * p); ctx.fill();
+  ctx.restore();
+  ctx.strokeStyle = "#454f59"; rr(bx, AY - 6.5 * p, 12 * p, 13 * p, 2.2 * p); ctx.stroke();
+  // lock screw
+  ctx.fillStyle = "#39424c";
+  ctx.beginPath(); ctx.arc(bx + 6 * p, AY, 1.9 * p, 0, 7); ctx.fill();
+  ctx.strokeStyle = "#232a32";
+  ctx.beginPath(); ctx.arc(bx + 6 * p, AY, 1.9 * p, 0, 7); ctx.stroke();
+  ctx.strokeStyle = "#8d97a1"; ctx.lineWidth = Math.max(1, .45 * p);
+  ctx.beginPath(); ctx.moveTo(bx + 4.8 * p, AY + 1.2 * p); ctx.lineTo(bx + 7.2 * p, AY - 1.2 * p); ctx.stroke();
+  ctx.lineWidth = 1;
+}
+
+/* ── sleeve (⌀11 mm): main scale — mm above datum, half-mm below ── */
+function drawSleeve(p) {
+  const sx = sleeveX(), s0 = SL0(), tx = thimbleX();
+  const { msr } = reading();
+  const R = 5.5 * p;
+  ctx.save();
+  ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 6; ctx.shadowOffsetY = 3;
+  const g = ctx.createLinearGradient(0, AY - R, 0, AY + R);
+  g.addColorStop(0, "#98a2ac"); g.addColorStop(.4, "#f0f3f6"); g.addColorStop(1, "#7d8791");
   ctx.fillStyle = g;
-  rr(sf + 9, AY - 27, tx + 14 - sf - 9, 54, 4); ctx.fill();
+  rr(sx, AY - R, tx + 10 - sx, 2 * R, 3); ctx.fill();
   ctx.restore();
   ctx.strokeStyle = "#454f59"; ctx.lineWidth = 1;
-  rr(sf + 9, AY - 27, tx + 14 - sf - 9, 54, 4); ctx.stroke();
+  rr(sx, AY - R, tx + 10 - sx, 2 * R, 3); ctx.stroke();
   // datum line
-  ctx.strokeStyle = "#222b36"; ctx.lineWidth = 1.3;
-  ctx.beginPath(); ctx.moveTo(s0 - 8, AY); ctx.lineTo(tx - 2, AY); ctx.stroke();
+  ctx.strokeStyle = "#222b36"; ctx.lineWidth = Math.max(1, p / 7);
+  ctx.beginPath(); ctx.moveTo(s0 - 1.5 * p, AY); ctx.lineTo(tx - 2, AY); ctx.stroke();
   // ticks
-  const lw = Math.max(0.7, Math.min(1.1, p / 7));
+  const lw = Math.max(0.7, Math.min(1.2, p / 7));
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   for (let mm = 0; mm <= RANGE; mm++) {
     const x = s0 + mm * p;
     if (x > tx - 2.5) break;
     const isMSR = S.guide && Math.abs(mm - msr) < 1e-9;
     ctx.strokeStyle = isMSR ? "#c98800" : "#222b36";
-    ctx.lineWidth = isMSR ? Math.max(1.3, lw * 1.4) : lw;
+    ctx.lineWidth = isMSR ? Math.max(1.4, lw * 1.5) : lw;
     if (isMSR) { ctx.shadowColor = "#ffb700"; ctx.shadowBlur = 5; }
-    ctx.beginPath(); ctx.moveTo(x, AY - 1); ctx.lineTo(x, AY - (mm % 5 === 0 ? 13 : 9)); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, AY - 1); ctx.lineTo(x, AY - (mm % 5 === 0 ? 2.6 : 1.8) * p); ctx.stroke();
     ctx.shadowBlur = 0;
     if (mm % 5 === 0) {
-      ctx.font = "700 10px Arial"; ctx.fillStyle = isMSR ? "#c98800" : "#222b36";
-      ctx.fillText(mm, x, AY - 19.5);
+      ctx.font = `700 ${Math.max(8, 1.7 * p)}px Arial`;
+      ctx.fillStyle = isMSR ? "#c98800" : "#222b36";
+      ctx.fillText(mm, x, AY - 3.9 * p);
     }
   }
-  for (let mm = 0; mm < RANGE; mm++) {                     // half-mm marks BELOW the datum
+  for (let mm = 0; mm < RANGE; mm++) {                 // half-mm marks BELOW the datum
     const x = s0 + (mm + 0.5) * p;
     if (x > tx - 2.5) break;
     const isMSR = S.guide && Math.abs(mm + 0.5 - msr) < 1e-9;
     ctx.strokeStyle = isMSR ? "#c98800" : "#222b36";
-    ctx.lineWidth = isMSR ? Math.max(1.3, lw * 1.4) : lw;
+    ctx.lineWidth = isMSR ? Math.max(1.4, lw * 1.5) : lw;
     if (isMSR) { ctx.shadowColor = "#ffb700"; ctx.shadowBlur = 5; }
-    ctx.beginPath(); ctx.moveTo(x, AY + 1); ctx.lineTo(x, AY + 10); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x, AY + 1); ctx.lineTo(x, AY + 1.8 * p); ctx.stroke();
     ctx.shadowBlur = 0;
   }
 }
 
-/* ── thimble + circular scale + ratchet ── */
+/* ── thimble (⌀19 × 36 mm) + circular scale + ratchet (⌀9 mm) ── */
 function drawThimble(p) {
-  const tx = thimbleX(), o = obs();
+  const tx = thimbleX(), o = obs(), R = 9.5 * p, L = THL();
   const { csr } = reading();
-  // body
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,.45)"; ctx.shadowBlur = 9; ctx.shadowOffsetX = 3; ctx.shadowOffsetY = 4;
-  const g = ctx.createLinearGradient(0, AY - 38, 0, AY + 38);
-  g.addColorStop(0, "#6f7983"); g.addColorStop(.3, "#dfe5ea"); g.addColorStop(.5, "#f0f4f7");
+  const g = ctx.createLinearGradient(0, AY - R, 0, AY + R);
+  g.addColorStop(0, "#6f7983"); g.addColorStop(.3, "#e0e6eb"); g.addColorStop(.5, "#f2f5f8");
   g.addColorStop(.7, "#cfd6dc"); g.addColorStop(1, "#5f6973");
   ctx.fillStyle = g;
-  rr(tx, AY - 38, TL, 76, 7); ctx.fill();
+  rr(tx, AY - R, L, 2 * R, 2.5 * p); ctx.fill();
   ctx.restore();
   // bevel shading at the reading edge
-  const bg = ctx.createLinearGradient(tx, 0, tx + 18, 0);
+  const bg = ctx.createLinearGradient(tx, 0, tx + 3 * p, 0);
   bg.addColorStop(0, "rgba(30,38,48,.30)"); bg.addColorStop(1, "rgba(30,38,48,0)");
-  ctx.fillStyle = bg; ctx.fillRect(tx, AY - 38, 18, 76);
+  ctx.fillStyle = bg; ctx.fillRect(tx, AY - R, 3 * p, 2 * R);
   // circular scale — cylindrical projection about the axis
-  const csrF = (((o % PITCH) + PITCH) % PITCH) / LC;       // 0..50 float, works for negative obs
+  const csrF = (((o % PITCH) + PITCH) % PITCH) / LC;
   ctx.textBaseline = "middle"; ctx.textAlign = "left";
+  const fs = Math.max(8, 1.45 * p);
   for (let d = 0; d < NDIV; d++) {
-    let dd = d - csrF; dd -= Math.round(dd / NDIV) * NDIV; // wrap to ±25
+    let dd = d - csrF; dd -= Math.round(dd / NDIV) * NDIV;
     const th = dd * 2 * Math.PI / NDIV;
     if (Math.abs(th) > 1.35) continue;
-    const y = AY - 38 * Math.sin(th) * 0.94;
+    const y = AY - R * Math.sin(th) * 0.94;
     const a = Math.cos(th);
     if (a < 0.1) continue;
     const hit = S.guide && d === ((csr % NDIV) + NDIV) % NDIV && Math.abs(th) < 0.05;
     ctx.strokeStyle = hit ? "#ffb700" : `rgba(34,43,54,${(0.25 + 0.75 * a).toFixed(2)})`;
-    ctx.lineWidth = hit ? 1.7 : 1;
+    ctx.lineWidth = hit ? 1.8 : Math.max(1, p / 7);
     if (hit) { ctx.shadowColor = "#ffb700"; ctx.shadowBlur = 6; }
-    ctx.beginPath(); ctx.moveTo(tx + 3, y); ctx.lineTo(tx + 3 + (d % 5 === 0 ? 13 : 8), y); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(tx + 0.4 * p, y); ctx.lineTo(tx + 0.4 * p + (d % 5 === 0 ? 2.1 : 1.3) * p, y); ctx.stroke();
     ctx.shadowBlur = 0;
     if (d % 5 === 0 && a > 0.3) {
-      ctx.font = "700 9px Arial";
+      ctx.font = `700 ${fs}px Arial`;
       ctx.fillStyle = hit ? "#c98800" : `rgba(34,43,54,${(0.2 + 0.8 * a).toFixed(2)})`;
-      ctx.fillText(d, tx + 20, y);
+      ctx.fillText(d, tx + 3 * p, y);
     }
   }
-  // knurling on the grip half (spins while the ratchet animates)
-  const off = S.spin ? (Date.now() / 14) % 4 : 0;
-  ctx.strokeStyle = "rgba(40,48,58,.45)"; ctx.lineWidth = 1;
-  for (let x = tx + 58 + off; x < tx + TL - 4; x += 4) {
-    ctx.beginPath(); ctx.moveTo(x, AY - 34); ctx.lineTo(x, AY + 34); ctx.stroke();
+  // knurled grip — diamond cross-hatch like a real thimble (spins with the ratchet)
+  const gx0 = tx + 14 * p, step = 0.62 * p, sh = 2 * R * 0.55;
+  const off = S.spin ? (Date.now() / 14) % step : 0;
+  ctx.save();
+  rr(tx, AY - R, L, 2 * R, 2.5 * p); ctx.clip();
+  ctx.beginPath(); ctx.rect(gx0, AY - R, tx + L - gx0, 2 * R); ctx.clip();
+  ctx.strokeStyle = "rgba(40,48,58,.30)"; ctx.lineWidth = 1;
+  for (let x = gx0 - sh + off; x < tx + L; x += step) {
+    ctx.beginPath(); ctx.moveTo(x, AY - R); ctx.lineTo(x + sh, AY + R); ctx.stroke();
   }
-  ctx.fillStyle = "rgba(255,255,255,.35)";
-  ctx.fillRect(tx + 4, AY - 36, TL - 8, 3);
+  for (let x = gx0 + off; x < tx + L + sh; x += step) {
+    ctx.beginPath(); ctx.moveTo(x, AY - R); ctx.lineTo(x - sh, AY + R); ctx.stroke();
+  }
+  ctx.restore();
+  // subtle sheen on the smooth scale band only
+  ctx.fillStyle = "rgba(255,255,255,.3)";
+  ctx.fillRect(tx + 3, AY - R + 2, 11 * p, 2.5);
   ctx.strokeStyle = "#454f59"; ctx.lineWidth = 1;
-  rr(tx, AY - 38, TL, 76, 7); ctx.stroke();
+  rr(tx, AY - R, L, 2 * R, 2.5 * p); ctx.stroke();
 
   /* ratchet stop */
-  const rx = tx + TL;
-  ctx.fillStyle = metal(0, AY - 15, 0, AY + 15);
-  rr(rx, AY - 15, 7, 30, 2); ctx.fill();
-  ctx.strokeStyle = "#454f59"; rr(rx, AY - 15, 7, 30, 2); ctx.stroke();
+  const rx = tx + L;
+  ctx.fillStyle = metal(0, AY - 3 * p, 0, AY + 3 * p);
+  rr(rx, AY - 3 * p, 1.6 * p, 6 * p, 2); ctx.fill();
+  ctx.strokeStyle = "#454f59"; rr(rx, AY - 3 * p, 1.6 * p, 6 * p, 2); ctx.stroke();
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 5; ctx.shadowOffsetY = 3;
-  const rg = ctx.createLinearGradient(0, AY - 14, 0, AY + 14);
-  rg.addColorStop(0, "#77818b"); rg.addColorStop(.4, "#dbe1e7"); rg.addColorStop(1, "#616b75");
+  const rg = ctx.createLinearGradient(0, AY - 4.5 * p, 0, AY + 4.5 * p);
+  rg.addColorStop(0, "#77818b"); rg.addColorStop(.4, "#dde3e9"); rg.addColorStop(1, "#616b75");
   ctx.fillStyle = rg;
-  rr(rx + 7, AY - 14, 34, 28, 5); ctx.fill();
+  rr(rx + 1.6 * p, AY - 4.5 * p, 11 * p, 9 * p, 1.6 * p); ctx.fill();
   ctx.restore();
-  ctx.strokeStyle = "rgba(40,48,58,.5)"; ctx.lineWidth = 1;
-  for (let x = rx + 10 + (S.spin ? (Date.now() / 9) % 3.2 : 0); x < rx + 39; x += 3.2) {
-    ctx.beginPath(); ctx.moveTo(x, AY - 12); ctx.lineTo(x, AY + 12); ctx.stroke();
+  const rstep = 0.55 * p, rsh = 9 * p * 0.55;
+  const roff = S.spin ? (Date.now() / 9) % rstep : 0;
+  ctx.save();
+  rr(rx + 1.6 * p, AY - 4.5 * p, 11 * p, 9 * p, 1.6 * p); ctx.clip();
+  ctx.strokeStyle = "rgba(40,48,58,.35)"; ctx.lineWidth = 1;
+  for (let x = rx + 1.6 * p - rsh + roff; x < rx + 12.6 * p; x += rstep) {
+    ctx.beginPath(); ctx.moveTo(x, AY - 4.5 * p); ctx.lineTo(x + rsh, AY + 4.5 * p); ctx.stroke();
   }
-  ctx.strokeStyle = "#454f59"; rr(rx + 7, AY - 14, 34, 28, 5); ctx.stroke();
-  ctx.fillStyle = metal(0, AY - 10, 0, AY + 10);
-  rr(rx + 41, AY - 10, 6, 20, 2); ctx.fill();
-  ctx.strokeStyle = "#454f59"; rr(rx + 41, AY - 10, 6, 20, 2); ctx.stroke();
-  ctx.font = "600 8px Arial"; ctx.fillStyle = "#59636e"; ctx.textAlign = "center";
-  ctx.fillText("RATCHET", rx + 24, AY + 26);
+  for (let x = rx + 1.6 * p + roff; x < rx + 12.6 * p + rsh; x += rstep) {
+    ctx.beginPath(); ctx.moveTo(x, AY - 4.5 * p); ctx.lineTo(x - rsh, AY + 4.5 * p); ctx.stroke();
+  }
+  ctx.restore();
+  ctx.strokeStyle = "#454f59"; rr(rx + 1.6 * p, AY - 4.5 * p, 11 * p, 9 * p, 1.6 * p); ctx.stroke();
+  ctx.font = "600 8.5px Arial"; ctx.fillStyle = "#59636e"; ctx.textAlign = "center";
+  ctx.fillText("RATCHET", rx + 7 * p, AY + 6.3 * p);
 }
 
 /* ── objects ── */
@@ -559,26 +603,50 @@ function drawWire(cx, cy, w, hh) {
   rr(cx - w / 2, cy - hh, w, hh * 2, Math.min(3, w / 2)); ctx.stroke();
 }
 function drawBolt(cx, cy, w, hh) {
-  // vertical bolt — shank (measured) between the faces, head above
+  // vertical bolt — threaded shank (measured) between the faces, hex head above
+  const shTop = cy - hh * 0.42, shH = hh * 1.42;
   const g = ctx.createLinearGradient(cx - w / 2, 0, cx + w / 2, 0);
   g.addColorStop(0, "#727c86"); g.addColorStop(.45, "#d8dee4"); g.addColorStop(1, "#5f6973");
   ctx.fillStyle = g;
-  rr(cx - w / 2, cy - hh * 0.42, w, hh * 1.42, 2); ctx.fill();
-  ctx.strokeStyle = "#3f4954"; ctx.lineWidth = 1;
-  rr(cx - w / 2, cy - hh * 0.42, w, hh * 1.42, 2); ctx.stroke();
-  ctx.strokeStyle = "rgba(40,48,58,.4)";                  // threads
-  for (let y = cy + hh * 0.08; y < cy + hh * 0.97; y += 3.5) {
-    ctx.beginPath(); ctx.moveTo(cx - w / 2 + 1, y); ctx.lineTo(cx + w / 2 - 1, y + 1.6); ctx.stroke();
+  rr(cx - w / 2, shTop, w, shH, 2); ctx.fill();
+  // threads: dark groove + light crest pairs
+  ctx.save(); rr(cx - w / 2, shTop, w, shH, 2); ctx.clip();
+  const tp = Math.max(3.2, w * 0.22);
+  for (let y = shTop + 4; y < cy + hh; y += tp) {
+    ctx.strokeStyle = "rgba(30,38,48,.45)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(cx - w / 2, y); ctx.lineTo(cx + w / 2, y + tp * 0.4); ctx.stroke();
+    ctx.strokeStyle = "rgba(255,255,255,.5)";
+    ctx.beginPath(); ctx.moveTo(cx - w / 2, y + tp * 0.42); ctx.lineTo(cx + w / 2, y + tp * 0.82); ctx.stroke();
   }
-  const hw = w * 0.9 + 10, hy = cy - hh * 0.42;           // hex head (side view)
-  const hg2 = ctx.createLinearGradient(0, hy - 20, 0, hy);
-  hg2.addColorStop(0, "#e2e7ec"); hg2.addColorStop(1, "#8b95a0");
+  ctx.restore();
+  ctx.strokeStyle = "#3f4954"; ctx.lineWidth = 1;
+  rr(cx - w / 2, shTop, w, shH, 2); ctx.stroke();
+  // hex head, side view: three vertical facets + top chamfer + washer face
+  const headW = w * 1.75 + 3, headH = Math.max(9, w * 0.62);
+  const hx = cx - headW / 2, hy = shTop - headH;
+  const hg2 = ctx.createLinearGradient(hx, 0, hx + headW, 0);
+  hg2.addColorStop(0, "#8b95a0"); hg2.addColorStop(.5, "#e8edf1"); hg2.addColorStop(1, "#79838d");
   ctx.fillStyle = hg2;
-  ctx.beginPath();
-  ctx.moveTo(cx - hw / 2 + 3, hy - 20); ctx.lineTo(cx + hw / 2 - 3, hy - 20);
-  ctx.lineTo(cx + hw / 2, hy); ctx.lineTo(cx - hw / 2, hy); ctx.closePath();
-  ctx.fill();
-  ctx.strokeStyle = "#3f4954"; ctx.stroke();
+  rr(hx, hy, headW, headH, 1.5); ctx.fill();
+  ctx.save(); rr(hx, hy, headW, headH, 1.5); ctx.clip();
+  const f1 = hx + headW * 0.27, f2 = hx + headW * 0.73;   // facet edges
+  ctx.fillStyle = "rgba(20,28,38,.16)";                   // side facets darker
+  ctx.fillRect(hx, hy, f1 - hx, headH); ctx.fillRect(f2, hy, hx + headW - f2, headH);
+  ctx.strokeStyle = "rgba(30,38,48,.5)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(f1, hy); ctx.lineTo(f1, hy + headH); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(f2, hy); ctx.lineTo(f2, hy + headH); ctx.stroke();
+  const cg = ctx.createLinearGradient(f1, 0, f2, 0);      // bright centre facet
+  cg.addColorStop(0, "rgba(255,255,255,0)"); cg.addColorStop(.5, "rgba(255,255,255,.4)"); cg.addColorStop(1, "rgba(255,255,255,0)");
+  ctx.fillStyle = cg; ctx.fillRect(f1, hy, f2 - f1, headH);
+  ctx.fillStyle = "rgba(30,38,48,.28)";                   // top chamfer shading
+  ctx.fillRect(hx, hy, headW, Math.max(2, headH * 0.16));
+  ctx.fillStyle = "rgba(255,255,255,.55)";                // chamfer catch-light
+  ctx.fillRect(hx + 1, hy + Math.max(2, headH * 0.16), headW - 2, 1.2);
+  ctx.fillStyle = "rgba(30,38,48,.35)";                   // washer face under the head
+  ctx.fillRect(hx, hy + headH - 1.5, headW, 1.5);
+  ctx.restore();
+  ctx.strokeStyle = "#3f4954"; ctx.lineWidth = 1;
+  rr(hx, hy, headW, headH, 1.5); ctx.stroke();
 }
 function drawPaper(cx, cy, w, hh) {
   const g = ctx.createLinearGradient(cx - w / 2, 0, cx + w / 2, 0);
@@ -604,13 +672,8 @@ function drawObjIcon(type, cx, cy, w, hh) {
 
 function drawGapObject(p) {
   if (!S.obj) return;
-  const w = S.obj.size * gpx(), cx = AX + w / 2;
-  drawObjIcon(S.obj.type, cx, AY, w, 68);
-  ctx.font = "600 12px Arial"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.fillStyle = "rgba(230,237,243,.9)";
-  const o = OBJ[S.obj.type];
-  const ly = AY - Math.max(104, w / 2 + 18);
-  ctx.fillText(o.label + " · " + (S.reveal ? fmt(S.obj.size) + " mm" : "? mm"), cx, ly);
+  const w = S.obj.size * p, cx = AX + w / 2;
+  drawObjIcon(S.obj.type, cx, AY, w, 8.5 * p);
 }
 
 /* ── tray ── */
@@ -654,10 +717,8 @@ function drawDropZone(p) {
   const gw = S.opening * gpx();
   ctx.strokeStyle = "rgba(88,166,255,.75)"; ctx.lineWidth = 1.5; ctx.setLineDash([6, 5]);
   ctx.fillStyle = "rgba(88,166,255,.07)";
-  rr(AX - 14, AY - 92, gw + 28, 184, 10); ctx.fill(); ctx.stroke();
+  rr(AX - 14, AY - 88, gw + 28, 176, 10); ctx.fill(); ctx.stroke();
   ctx.setLineDash([]);
-  ctx.font = "600 10.5px Arial"; ctx.textAlign = "center"; ctx.fillStyle = "rgba(88,166,255,.85)";
-  ctx.fillText("drop here", AX + gw / 2, AY - 104);
 }
 function drawGhost() {
   if (!oDrag) return;
@@ -708,6 +769,9 @@ function updateUI() {
   $("zoomPill").textContent = S.zoom ? "🔍 Zoom: ON — double-click to exit" : "🔍 Zoom: OFF";
   $("zoomPill").classList.toggle("on", S.zoom);
   if (S.obj) $("objVal").textContent = S.reveal ? fmt(S.obj.size) + " mm" : "? mm";
+  $("objChip").innerHTML = S.obj
+    ? OBJ[S.obj.type].label + " · <b>" + (S.reveal ? fmt(S.obj.size) + " mm" : "? mm") + "</b>"
+    : "No object — drag one from the tray";
   draw();
 }
 function syncSlider() {
@@ -730,8 +794,8 @@ function syncSlider() {
 let sDrag = false, dragX = 0, dragStart = 0, lastHalf = 0, oDrag = null;
 
 function hitRatchet(wx, wy) {
-  const tx = thimbleX();
-  return wx >= tx + TL - 4 && wx <= tx + TL + 52 && Math.abs(wy - AY) <= 22;
+  const p = pxmm(), rx = thimbleX() + THL();
+  return wx >= rx - 6 && wx <= rx + 13 * p && Math.abs(wy - AY) <= 5 * p + 4;
 }
 function hitTrayObject(wx, wy) {
   for (const s of traySlots()) {

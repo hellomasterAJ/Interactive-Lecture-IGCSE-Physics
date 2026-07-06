@@ -590,7 +590,7 @@
       </div>
       <div class="ctrl-row">
         <button class="ctrl-btn primary" id="playBtn" onclick="togglePlay()">▶ Play</button>
-        <button class="ctrl-btn" onclick="resetAnim()">↺ Reset</button>
+        <button class="ctrl-btn" onclick="fullReset()">↺ Reset</button>
         <button class="ctrl-btn random" onclick="randomScenario()">🎲 Random</button>
       </div>
     </div>
@@ -613,7 +613,7 @@ const state={
   y0:0, u:0, g:-9.8,
   time:0, maxTime:10, dt:0.04,
   playing:false, animId:null,
-  history:[], theme:'dark'
+  history:[], theme:'dark', scenario:'earth'
 };
 const scene=document.getElementById('scene');
 const apple=document.getElementById('appleContainer');
@@ -689,12 +689,20 @@ function drawOneGraph(canvasId,type){
     ctx.beginPath();ctx.moveTo(pad.left,zy);ctx.lineTo(pad.left+gW,zy);ctx.stroke();
   }
 
-  // Labels
+  // Labels — nice step ticks
+  function niceStep(range,target){
+    if(range<=0)return 1;
+    const rough=range/target,mag=Math.pow(10,Math.floor(Math.log10(rough))),norm=rough/mag;
+    return (norm<1.5?1:norm<3.5?2:norm<7.5?5:10)*mag;
+  }
+  const xStep=niceStep(xMax,8);
+  const xMaxNice=Math.ceil(xMax/xStep)*xStep;
+  const ntX=Math.round(xMaxNice/xStep);
   ctx.fillStyle=tickC;ctx.font='8px Inter,sans-serif';
   ctx.textAlign='center';ctx.textBaseline='top';
-  for(let i=0;i<=8;i++){
-    const xv=(i/8)*xMax;const x=pad.left+(i/8)*gW;
-    ctx.fillText(xv.toFixed(1),x,pad.top+gH+5);
+  for(let i=0;i<=ntX;i++){
+    const xv=i*xStep;const x=pad.left+(xv/xMaxNice)*gW;
+    ctx.fillText(xv%1===0?xv.toFixed(0):xv.toFixed(1),x,pad.top+gH+5);
   }
   ctx.textAlign='right';ctx.textBaseline='middle';
   const nt=5;
@@ -801,20 +809,23 @@ function togglePlay(){
   state.animId=requestAnimationFrame(loop);
 }
 function resetAnim(){pauseStop();state.time=0;state.history=[];updateAnim();}
+function fullReset(){resetAnim();state.y0=0;state.u=0;document.getElementById('posSlider').value=0;document.getElementById('posVal').textContent='0';document.getElementById('velSlider').value=0;document.getElementById('velVal').textContent='0';}
 
 function updatePos(v){state.y0=parseFloat(v);document.getElementById('posVal').textContent=v;if(!state.playing)resetAnim();}
 function updateVel(v){state.u=parseFloat(v);document.getElementById('velVal').textContent=v;if(!state.playing)resetAnim();}
 function updateG(v){state.g=parseFloat(v);document.getElementById('gVal').textContent=v;if(!state.playing)resetAnim();}
 
 function setScenario(s){
+  state.scenario=s;
   const scenarios={
-    'earth':{g:-9.8,name:'Earth'},
-    'moon':{g:-1.6,name:'Moon'},
-    'mars':{g:-3.7,name:'Mars'},
-    'custom':{g:null,name:'Custom'}
+    'earth':{g:-9.8, maxT:10, name:'Earth'},
+    'moon':{g:-1.6, maxT:20, name:'Moon'},
+    'mars':{g:-3.7, maxT:12, name:'Mars'},
+    'custom':{g:null, maxT:20, name:'Custom'}
   };
   const sc=scenarios[s];
   if(!sc)return;
+  state.maxTime=sc.maxT;
   // Only change gravity — keep user's y0 and u intact
   if(sc.g !== null){
     state.g=sc.g;
@@ -828,14 +839,18 @@ function setScenario(s){
 }
 
 function randomScenario(){
+  // Switch to Custom mode so the button visually highlights
+  setScenario('custom');
+  // Still create fresh random values
   const y0=Math.floor(Math.random()*100-50);
   const u=Math.floor(Math.random()*50-25);
-  const g=parseFloat((Math.random()*19+1).toFixed(1)) * -1;
-  state.y0=y0;state.u=u;state.g=g;
+  state.y0=y0;state.u=u;
   document.getElementById('posSlider').value=y0;document.getElementById('posVal').textContent=y0;
   document.getElementById('velSlider').value=u;document.getElementById('velVal').textContent=u;
+  // Randomise g as well since we're on Custom
+  const g=parseFloat((Math.random()*19+1).toFixed(1))*-1;
+  state.g=g;
   document.getElementById('gSlider').value=g;document.getElementById('gVal').textContent=g.toFixed(1);
-  document.querySelectorAll('.scenario-btn').forEach(b=>b.classList.remove('active'));
   resetAnim();
 }
 
