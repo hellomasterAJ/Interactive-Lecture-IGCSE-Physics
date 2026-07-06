@@ -26,7 +26,13 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── parse_lecture.py   ← Markdown parser
 │   ├── pdf_export.py      ← Playwright → A4 PDF
 │   └── templates/         ← Jinja2 HTML templates
-└── references/scientists/ ← Scientist Bio Library
+├── Equipments/            ← Virtual lab instruments
+│   └── vernier_caliper.html   ← Vernier Caliper Simulator 📏
+├── references/
+│   ├── scientists/        ← Scientist Bio Library
+│   ├── terminology/       ← Physics terminology
+│   └── historical-milestones/ ← Newton's apple, Tower of Pisa, ...
+└── Junkyard/              ← Retired prototypes (old micrometer sim)
 ```
 
 ## 🚀 Quick Start
@@ -91,6 +97,21 @@ python3 -m playwright install chromium
 Educational use — HAUS Academy
 
 ## 📋 Changelog
+
+### 6 July 2026 — Vernier Caliper Simulator (`Equipments/vernier_caliper.html`)
+
+| # | การเปลี่ยนแปลง | รายละเอียด |
+|---|---------------|-----------|
+| 1 | **สร้าง Vernier Caliper Simulator** | Canvas ล้วน ไม่ใช้รูปภาพ — สเกล vernier วาดใหม่ตาม LC ที่เลือก (10/20/50 ขีด) |
+| 2 | **โหมดการใช้งาน** | Simulate / Practice (เฉลยละเอียด + คะแนน) / Quiz (5 ข้อ + ดาว) |
+| 3 | **ระดับความยาก** | Simple (LC 0.1 mm) / Advance (LC 0.1 / 0.05 / 0.02 mm) |
+| 4 | **Zoom แบบ double-click** | ขยาย 4× รอบตำแหน่ง vernier zero, ESC/pill ออกได้, ลากต่อได้ขณะซูม |
+| 5 | **Zero Error ±5 div** | การ์ด Observed − ZE = Corrected รองรับ ZE ลบ (−(N−i)×LC) |
+| 6 | **Workpiece + Guide toggle** | วัตถุหนีบระหว่างปากจับ, แถบทอง coincidence เปิด/ปิดได้ |
+| 7 | **ความสมจริง** | ขาหนีบ chisel-point มี bevel/แสง-เงา/brushed texture, เม็ดมะยมกว้าง-แบนตามของจริง |
+| 8 | **Toolbar 2 แถวคงที่** | LC pills ล็อกจาง ๆ ตอน Simple — layout ไม่ขยับข้ามโหมด |
+| 9 | **ย้าย micrometer ไป Junkyard/** | เลิกใช้เวอร์ชันเก่าที่พึ่งรูปภาพ |
+| 10 | **เพิ่ม historical-milestones** | Newton's apple, Tower of Pisa experiment ใน references/ |
 
 ### 4 July 2026 — 10-Theme System (All Graphs)
 
