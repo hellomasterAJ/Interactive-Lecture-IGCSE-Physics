@@ -146,9 +146,10 @@
   .container{max-width:1400px;width:100%;}
   .top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px;}
   .brand-lockup{display:flex;align-items:center;gap:12px;}
-  .brand-logo-box{display:inline-flex;align-items:center;border-radius:8px;transition:background 0.3s,padding 0.3s;}
+  .brand-logo-box{display:inline-flex;align-items:center;border-radius:8px;padding:4px 10px;transition:background 0.3s;}
   .brand-logo{height:30px;width:auto;display:block;}
-  body.logo-dark .brand-logo-box{background:#F4C01E;padding:4px 10px;}
+  body.logo-dark .brand-logo-box{background:#F4C01E;}
+  body:not(.logo-dark) .brand-logo-box{background:transparent;}
   .top-bar h1{font-size:1.2rem;font-weight:700;}
   .top-bar h1 span{color:var(--accent);}
   .badge-top{
