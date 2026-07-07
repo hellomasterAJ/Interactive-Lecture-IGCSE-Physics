@@ -40,14 +40,15 @@
 --green:#4E7A3F;  --rose:#B5502E;  --violet:#8A6D3B;
 ```
 
-### HAUS Night — `.theme-hausnight` (มืด: ถ่าน + ทองแบรนด์)
+### HAUS Night — `.theme-hausnight` (มืด: ถ่านกลาง + ทองแบรนด์ + ขาวสว่าง)
 ```
---bg:#14110C;  --card:#201C15;  --border:#3A3327;
---text:#F3ECDD;  --text-dim:#B7AB93;  --text-muted:#83795F;
---accent:#F4C01E;  --accent-glow:rgba(244,192,30,0.12);
---grid:#211D15;  --graph-bg:#0E0B07;
---line-color:#F4C01E;  --shade:rgba(244,192,30,0.06);
---green:#A6B36A;  --rose:#D68B57;  --violet:#CBAA6A;
+--bg:#1a1c20;  --card:#26282d;  --border:#3a3c42;
+--text:#FFFFFF;  --text-dim:#e0e2e8;  --text-muted:#a8aab2;
+--accent:#F4C01E;  --accent-glow:rgba(244,192,30,0.10);
+--grid:#2a2c32;  --graph-bg:#121418;
+--line-speed / --line-v / --line-color:#F4C01E;  --shade:rgba(244,192,30,0.06);
+--green:#A6B36A;  --rose:#D68B57;  --violet:#CBAA6A;  --amber:#F4C01E;
+--blue:#5FB0C4;  --orange:#D68B57;
 ```
 
 > Random button และปุ่มต่างๆ ในธีม HAUS ถูก override ให้ใช้ **ทอง** แทนม่วง เพื่อความกลมกลืน

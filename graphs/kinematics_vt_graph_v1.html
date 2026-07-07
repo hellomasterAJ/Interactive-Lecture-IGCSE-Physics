@@ -183,10 +183,10 @@
 }
 /* ── HAUS Night (dark: charcoal + brand gold + white) ── */
 .theme-hausnight {
-  --bg: #14110C; --card: #201C15; --border: #3A3327;
-  --text: #FBFAF7; --text-dim: #D9D3C6; --text-muted: #9E9583;
-  --accent: #F4C01E; --accent-glow: rgba(244,192,30,0.12);
-  --grid: #211D15; --graph-bg: #0E0B07;
+  --bg: #1a1c20; --card: #26282d; --border: #3a3c42;
+  --text: #FFFFFF; --text-dim: #e0e2e8; --text-muted: #a8aab2;
+  --accent: #F4C01E; --accent-glow: rgba(244,192,30,0.10);
+  --grid: #2a2c32; --graph-bg: #121418;
   --line-v: #5FB0C4;
   --green: #A6B36A; --rose: #D68B57; --violet: #CBAA6A;
   --amber: #F4C01E; --blue: #5FB0C4; --orange: #D68B57;
@@ -194,11 +194,11 @@
   --shade-tri: rgba(214,139,87,0.10);
   --shade-amber: rgba(244,192,30,0.10);
   --shade-trap: rgba(166,179,106,0.08);
-  --katex-color: #FBFAF7;
+  --katex-color: #e0e2e8;
 }
 .theme-haus .top-bar h1,.theme-haus .top-bar h1 span{color:#1A1712;}
 .theme-haus .badge-top,.theme-haus .ctrl-btn.primary{background:#F4C01E;color:#1A1712;border-color:#1A1712;}
-.theme-hausnight .top-bar h1,.theme-hausnight .top-bar h1 span{color:#FBFAF7;}
+.theme-hausnight .top-bar h1,.theme-hausnight .top-bar h1 span{color:#FFFFFF;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
   background: var(--bg); color: var(--text);
@@ -1250,20 +1250,37 @@ function updateDescription() {
 
 // ===== GRAPH DRAWING =====
 function drawAll() {
-  ctx.clearRect(0, 0, W, H);
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.clientWidth || 780;
+  const cssH = Math.round(cssW * (400 / 780));
+  if (canvas.width !== Math.round(cssW * dpr) || canvas.height !== Math.round(cssH * dpr)) {
+    canvas.width = Math.round(cssW * dpr);
+    canvas.height = Math.round(cssH * dpr);
+  }
+  canvas.style.height = cssH + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const W = cssW, H = cssH;
   const isD = isDark();
-  const bg = isD ? '#0a0f1a' : '#e8e2d7';
+  const cs = getComputedStyle(document.body);
+  const bg = cs.getPropertyValue('--graph-bg').trim() || (isD ? '#0a0f1a' : '#e8e2d7');
   ctx.fillStyle = bg;
   ctx.fillRect(0, 0, W, H);
 
-  if(state.mode === 'uniform') drawUniformGraph();
-  else drawNonuniformGraph();
+  if (state.mode === 'uniform') drawUniformGraph(W, H, cs, isD);
+  else drawNonuniformGraph(W, H, cs, isD);
 }
 
-function drawUniformGraph() {
+function drawUniformGraph(W, H, cs, isD) {
   const {u, a, t} = state;
   const v = getFinalV(u, a, t);
-  const isD = isDark();
+
+  // Colors from CSS variables
+  const gridC = cs.getPropertyValue('--grid').trim() || (isD ? '#1e293b' : '#c9c2b5');
+  const axisC = cs.getPropertyValue('--text-muted').trim() || (isD ? '#475569' : '#8c8578');
+  const tickC = cs.getPropertyValue('--text-dim').trim() || (isD ? '#94a3b8' : '#635d52');
+  const labelC = cs.getPropertyValue('--text').trim() || (isD ? '#cbd5e1' : '#2d2a24');
+  const graphBg = cs.getPropertyValue('--graph-bg').trim() || (isD ? '#0a0f1a' : '#e8e2d7');
+  const lineColor = cs.getPropertyValue('--line-v').trim() || (isD ? '#22d3ee' : '#0f766e');
 
   // Determine Y range
   let maxV = Math.max(u, v, 0) * 1.2;
@@ -1278,7 +1295,7 @@ function drawUniformGraph() {
   let yMin = minV;
 
   const xMax = Math.max(t * 1.15, 6);
-  const pad = {top: 22, right: 18, bottom: 28, left: 48};
+  const pad = {top: 18, right: 16, bottom: 32, left: 38};
   const gW = W - pad.left - pad.right;
   const gH = H - pad.top - pad.bottom;
 
@@ -1286,7 +1303,7 @@ function drawUniformGraph() {
   function yPos(vv) { return pad.top + gH - ((vv - yMin) / (yMax - yMin)) * gH; }
 
   // Grid — nice round steps
-  ctx.strokeStyle = isD ? '#1e293b' : '#c9c2b5';
+  ctx.strokeStyle = gridC;
   ctx.lineWidth = 0.4;
   const xStep = niceStep(xMax, 8);
   const xTicks = Math.floor(xMax / xStep);
@@ -1309,7 +1326,7 @@ function drawUniformGraph() {
   }
 
   // Axes
-  ctx.strokeStyle = isD ? '#475569' : '#8c8578';
+  ctx.strokeStyle = axisC;
   ctx.lineWidth = 1.2;
   ctx.beginPath();
   ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top+gH);
@@ -1319,32 +1336,32 @@ function drawUniformGraph() {
   // Zero line
   const zy = yPos(0);
   if(zy >= pad.top && zy <= pad.top+gH) {
-    ctx.strokeStyle = isD ? '#334155' : '#bdb5a8';
+    ctx.strokeStyle = axisC;
     ctx.lineWidth = 0.8;
     ctx.beginPath(); ctx.moveTo(pad.left, zy); ctx.lineTo(pad.left+gW, zy); ctx.stroke();
   }
 
-  // Axis labels
-  ctx.fillStyle = isD ? '#94a3b8' : '#635d52';
-  ctx.font = '11px Inter, sans-serif';
+  // Axis labels — nice step ticks
+  ctx.fillStyle = tickC;
+  ctx.font = '8px Inter, sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
   for(let i = 0; i <= xTicks; i++) {
     const xv = i * xStep;
     if(xv > xMax + 0.01) break;
-    ctx.fillText(xv.toFixed(xv % 1 === 0 ? 0 : 1), xPos(xv), pad.top+gH+6);
+    ctx.fillText(xv.toFixed(xv % 1 === 0 ? 0 : 1), xPos(xv), pad.top+gH+5);
   }
   ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
   for(let i = 0; i <= yTicks; i++) {
     const yv = yMin + i * yStep;
     const y = yPos(yv);
-    if(y >= pad.top-3 && y <= pad.top+gH+3) ctx.fillText(yv.toFixed(yv % 1 === 0 ? 0 : 1), pad.left-6, y);
+    if(y >= pad.top-3 && y <= pad.top+gH+3) ctx.fillText(yv.toFixed(yv % 1 === 0 ? 0 : 1), pad.left-4, y);
   }
 
   // Axis titles
-  ctx.fillStyle = isD ? '#cbd5e1' : '#2d2a24';
+  ctx.fillStyle = labelC;
   ctx.font = '11px Inter, sans-serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  ctx.fillText('Time / s', pad.left+gW/2, H-6);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('Time / s', pad.left+gW/2, H-9);
   ctx.save();
   ctx.translate(14, pad.top+gH/2);
   ctx.rotate(-Math.PI/2);
@@ -1491,16 +1508,16 @@ function drawUniformGraph() {
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
       ctx.fillText('½(u+v)·t', (x0+x1)/2, (zyZero + avgV_y)/2);
 
-      // Also show the average velocity line label
+      // Also show the average velocity line label — placed right of y-axis
       ctx.fillStyle = getCSS('amber');
       ctx.font = '10px JetBrains Mono, monospace';
-      ctx.textAlign = 'right'; ctx.textBaseline = 'bottom';
-      ctx.fillText(`½(u+v) = ${avgV.toFixed(1)}`, Math.max(x0 - 4, 0), avgV_y - 3);
+      ctx.textAlign = 'left'; ctx.textBaseline = 'bottom';
+      ctx.fillText(`½(u+v) = ${avgV.toFixed(1)}`, pad.left + 4, avgV_y - 3);
     }
   }
 
   // Draw the VT line itself (on top of shading)
-  ctx.strokeStyle = isD ? '#22d3ee' : '#0f766e';
+  ctx.strokeStyle = lineColor;
   ctx.lineWidth = 2.5;
   ctx.beginPath();
   ctx.moveTo(x0, y0);
@@ -1547,12 +1564,19 @@ function drawUniformGraph() {
   ctx.restore();
 }
 
-function drawNonuniformGraph() {
-  const isD = isDark();
+function drawNonuniformGraph(W, H, cs, isD) {
   const tMax = getNuTMax();
-  const pad = {top: 22, right: 18, bottom: 28, left: 48};
+  const pad = {top: 18, right: 16, bottom: 32, left: 38};
   const gW = W - pad.left - pad.right;
   const gH = H - pad.top - pad.bottom;
+
+  // Colors from CSS variables
+  const gridC = cs.getPropertyValue('--grid').trim() || (isD ? '#1e293b' : '#c9c2b5');
+  const axisC = cs.getPropertyValue('--text-muted').trim() || (isD ? '#475569' : '#8c8578');
+  const tickC = cs.getPropertyValue('--text-dim').trim() || (isD ? '#94a3b8' : '#635d52');
+  const labelC = cs.getPropertyValue('--text').trim() || (isD ? '#cbd5e1' : '#2d2a24');
+  const lineColor = cs.getPropertyValue('--line-v').trim() || (isD ? '#22d3ee' : '#0f766e');
+  const graphBg = cs.getPropertyValue('--graph-bg').trim() || (isD ? '#0a0f1a' : '#e8e2d7');
 
   // Find Y range
   const samples = 200;
@@ -1582,7 +1606,7 @@ function drawNonuniformGraph() {
   function yPos(vv) { return pad.top + gH - ((vv - yMin) / (yMax - yMin)) * gH; }
 
   // Grid — nice round steps
-  ctx.strokeStyle = isD ? '#1e293b' : '#c9c2b5';
+  ctx.strokeStyle = gridC;
   ctx.lineWidth = 0.4;
   for(let i = 0; i <= xTicks; i++) {
     const xv = i * xStep;
@@ -1595,37 +1619,37 @@ function drawNonuniformGraph() {
   }
 
   // Axes
-  ctx.strokeStyle = isD ? '#475569' : '#8c8578';
+  ctx.strokeStyle = axisC;
   ctx.lineWidth = 1.2;
   ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top+gH); ctx.lineTo(pad.left+gW, pad.top+gH); ctx.stroke();
 
   // Zero line
   const zy = yPos(0);
   if(zy >= pad.top && zy <= pad.top+gH) {
-    ctx.strokeStyle = isD ? '#334155' : '#bdb5a8';
+    ctx.strokeStyle = axisC;
     ctx.lineWidth = 0.8;
     ctx.beginPath(); ctx.moveTo(pad.left, zy); ctx.lineTo(pad.left+gW, zy); ctx.stroke();
   }
 
   // Axis labels
-  ctx.fillStyle = isD ? '#94a3b8' : '#635d52';
-  ctx.font = '11px Inter, sans-serif';
+  ctx.fillStyle = tickC;
+  ctx.font = '8px Inter, sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'top';
   for(let i = 0; i <= xTicks; i++) {
     const xv = i * xStep;
     if(xv > tMax) break;
-    ctx.fillText(xv.toFixed(xv%1===0?0:1), xPos(xv), pad.top+gH+6);
+    ctx.fillText(xv.toFixed(xv%1===0?0:1), xPos(xv), pad.top+gH+5);
   }
   ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
   for(let i = 0; i <= yTicks; i++) {
     const yv = yMin + i * yStep;
     const y = yPos(yv);
-    if(y >= pad.top-3 && y <= pad.top+gH+3) ctx.fillText(yv.toFixed(yv%1===0?0:1), pad.left-6, y);
+    if(y >= pad.top-3 && y <= pad.top+gH+3) ctx.fillText(yv.toFixed(yv%1===0?0:1), pad.left-4, y);
   }
-  ctx.fillStyle = isD ? '#cbd5e1' : '#2d2a24';
+  ctx.fillStyle = labelC;
   ctx.font = '11px Inter, sans-serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
-  ctx.fillText('Time / s', pad.left+gW/2, H-6);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('Time / s', pad.left+gW/2, H-9);
   ctx.save(); ctx.translate(14, pad.top+gH/2); ctx.rotate(-Math.PI/2);
   ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
   ctx.fillText('Velocity / (m/s)', 0, 0); ctx.restore();
@@ -1670,7 +1694,7 @@ function drawNonuniformGraph() {
   }
 
   // Draw the curve
-  ctx.strokeStyle = isD ? '#22d3ee' : '#0f766e';
+  ctx.strokeStyle = lineColor;
   ctx.lineWidth = 2.5;
   ctx.beginPath();
   for(let i = 0; i <= samples; i++) {
@@ -1698,7 +1722,7 @@ function drawNonuniformGraph() {
       const yScale = gH / (yMax - yMin);  // px per m/s on y
       const slopePx = -aPt * yScale / xScale;  // slope in pixel coords
       const angle = Math.atan(slopePx);
-      const len = 80;
+      const len = 120;  // 15% longer than previous 104
       const dx = len * Math.cos(angle);
       const dy = len * Math.sin(angle);
       ctx.strokeStyle = '#fb7185'; ctx.lineWidth = 1.5;

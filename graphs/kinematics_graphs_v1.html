@@ -115,20 +115,20 @@
   .theme-haus .card-title,.theme-haus .anim-label{color:#1A1712;}
   /* ── HAUS Night (dark: charcoal + brand gold) ── */
   .theme-hausnight {
-    --bg: #14110C; --card: #201C15; --border: #3A3327;
-    --text: #FBFAF7; --text-dim: #D9D3C6; --text-muted: #9E9583;
-    --accent: #F4C01E; --accent-glow: rgba(244,192,30,0.12);
-    --grid: #211D15; --graph-bg: #0E0B07;
+    --bg: #1a1c20; --card: #26282d; --border: #3a3c42;
+    --text: #FFFFFF; --text-dim: #e0e2e8; --text-muted: #a8aab2;
+    --accent: #F4C01E; --accent-glow: rgba(244,192,30,0.10);
+    --grid: #2a2c32; --graph-bg: #121418;
     --line-color: #F4C01E; --shade: rgba(244,192,30,0.06);
     --green: #A6B36A; --rose: #D68B57; --violet: #CBAA6A;
   }
   /* HAUS Night: keep text white, reserve gold as accent only */
-  .theme-hausnight .top-bar h1{color:#FBFAF7;}
-  .theme-hausnight .top-bar h1 span{color:#FBFAF7;}
+  .theme-hausnight .top-bar h1{color:#FFFFFF;}
+  .theme-hausnight .top-bar h1 span{color:#FFFFFF;}
   .theme-hausnight .card-title{color:#EDE8DC;}
   .theme-hausnight .anim-label{color:#EDE8DC;}
-  .theme-hausnight .stat-item .stat-value{color:#FBFAF7;}
-  .theme-hausnight .stat-item{background:#2A251C;}
+  .theme-hausnight .stat-item .stat-value{color:#FFFFFF;}
+  .theme-hausnight .stat-item{background:#2a2c32;}
   *{margin:0;padding:0;box-sizing:border-box;}
   body {
     background: var(--bg); color: var(--text);
@@ -798,119 +798,141 @@ function getLineColorRgb(){
 
 // ===== DRAW GRAPH =====
 function drawGraph() {
-  const W = canvas.width, H = canvas.height;
-  const pad = { top: 28, right: 18, bottom: 38, left: 50 };
+  const c = document.getElementById('graphCanvas');
+  const ctx = c.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = c.clientWidth || 520;
+  const cssH = Math.round(cssW * (300 / 520));
+  if (c.width !== Math.round(cssW * dpr) || c.height !== Math.round(cssH * dpr)) {
+    c.width = Math.round(cssW * dpr);
+    c.height = Math.round(cssH * dpr);
+  }
+  c.style.height = cssH + 'px';
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  const W = cssW, H = cssH;
+  const isD = isDark();
+  const cs = getComputedStyle(document.body);
+  const cGraphBg = cs.getPropertyValue('--graph-bg').trim() || (isD ? '#0a0f1a' : '#ffffff');
+  const cGrid = cs.getPropertyValue('--grid').trim() || (isD ? '#1e293b' : '#e2e8f0');
+  const cAxis = cs.getPropertyValue('--text-muted').trim() || (isD ? '#475569' : '#94a3b8');
+  const cTick = cs.getPropertyValue('--text-dim').trim() || (isD ? '#94a3b8' : '#64748b');
+  const cLabel = cs.getPropertyValue('--text').trim() || (isD ? '#cbd5e1' : '#2d2a24');
+
+  ctx.fillStyle = cGraphBg;
+  ctx.fillRect(0, 0, W, H);
+
+  const pad = { top: 18, right: 16, bottom: 32, left: 38 };
   const gW = W - pad.left - pad.right, gH = H - pad.top - pad.bottom;
   const lineColor = getLineColor();
   const lineRgb = getLineColorRgb();
-  const cs = getComputedStyle(document.body);
-  const cGraphBg = cs.getPropertyValue('--graph-bg').trim() || (isDark()?'#0a0f1a':'#ffffff');
-  const cGrid = cs.getPropertyValue('--grid').trim() || (isDark()?'#1e293b':'#e2e8f0');
-  const cAxis = cs.getPropertyValue('--text-muted').trim() || (isDark()?'#475569':'#94a3b8');
-  const cTick = cs.getPropertyValue('--text-dim').trim() || (isDark()?'#94a3b8':'#64748b');
 
-  ctx.fillStyle = cGraphBg;
-  ctx.fillRect(0,0,W,H);
+  // Grid — nice step ticks
+  const xMax = getStopTime();
+  const rawYMax = getYMaxGraph();
+  const isAccel = state.graphType === 'accel-time';
+  let yMax, yMin;
+  if (isAccel) { yMax = rawYMax.top; yMin = rawYMax.bottom; }
+  else { yMax = rawYMax; yMin = 0; }
+  const yRange = yMax - yMin;
+  const yCenter = pad.top + gH - ((0 - yMin) / yRange) * gH;
 
-  // Grid
   ctx.strokeStyle = cGrid;
-  ctx.lineWidth = 0.5;
-  for(let i=0;i<=10;i++){
-    const x=pad.left+(i/10)*gW,y=pad.top+(i/10)*gH;
-    ctx.beginPath();ctx.moveTo(x,pad.top);ctx.lineTo(x,pad.top+gH);ctx.stroke();
-    ctx.beginPath();ctx.moveTo(pad.left,y);ctx.lineTo(pad.left+gW,y);ctx.stroke();
+  ctx.lineWidth = 0.4;
+  for (let i = 0; i <= 8; i++) {
+    const x = pad.left + (i / 8) * gW, y = pad.top + (i / 8) * gH;
+    ctx.beginPath(); ctx.moveTo(x, pad.top); ctx.lineTo(x, pad.top + gH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left + gW, y); ctx.stroke();
   }
 
   // Axes
   ctx.strokeStyle = cAxis;
-  ctx.lineWidth=1.5;
-  ctx.beginPath();ctx.moveTo(pad.left,pad.top);ctx.lineTo(pad.left,pad.top+gH);ctx.lineTo(pad.left+gW,pad.top+gH);ctx.stroke();
+  ctx.lineWidth = 1.2;
+  ctx.beginPath(); ctx.moveTo(pad.left, pad.top); ctx.lineTo(pad.left, pad.top + gH); ctx.lineTo(pad.left + gW, pad.top + gH); ctx.stroke();
 
-  const xMax=getStopTime();
-  const rawYMax=getYMaxGraph();
-  const isAccel=state.graphType==='accel-time';
-  let yMax,yMin;
-  if(isAccel){yMax=rawYMax.top;yMin=rawYMax.bottom;}
-  else{yMax=rawYMax;yMin=0;}
-  const yRange=yMax-yMin;
-  const yCenter=pad.top+gH-((0-yMin)/yRange)*gH;
-
-  ctx.fillStyle=cTick;
-  ctx.font='10px Inter,sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='top';
-  for(let i=0;i<=10;i++){
-    const x=pad.left+(i/10)*gW;
-    ctx.fillText(((i/10)*xMax).toFixed(1),x,pad.top+gH+7);
+  // Zero line
+  if (isAccel && yCenter >= pad.top && yCenter <= pad.top + gH) {
+    ctx.strokeStyle = cAxis;
+    ctx.lineWidth = 0.8;
+    ctx.setLineDash([3, 3]);
+    ctx.beginPath(); ctx.moveTo(pad.left, yCenter); ctx.lineTo(pad.left + gW, yCenter); ctx.stroke();
+    ctx.setLineDash([]);
   }
-  ctx.textAlign='right';ctx.textBaseline='middle';
-  if(isAccel){
-    const aStep=niceStep(Math.max(yMax,-yMin),4);
-    // Positive ticks
-    for(let val=aStep;val<=yMax+0.001;val+=aStep){
-      const y=pad.top+gH-((val-yMin)/yRange)*gH;
-      if(y>=pad.top-5&&y<=pad.top+gH+5)ctx.fillText(val%1===0?val.toFixed(0):val.toFixed(1),pad.left-7,y);
+
+  // Axis labels — nice step ticks (X: niceStep, Y: niceStep)
+  const xStep = niceStep(xMax, 8);
+  const xMaxNice = Math.ceil(xMax / xStep) * xStep;
+  const ntX = Math.round(xMaxNice / xStep);
+  ctx.fillStyle = cTick;
+  ctx.font = '10px Inter, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+  for (let i = 0; i <= ntX; i++) {
+    const xv = i * xStep;
+    if (xv > xMaxNice + 0.01) break;
+    ctx.fillText(xv.toFixed(xv % 1 === 0 ? 0 : 1), pad.left + (xv / xMaxNice) * gW, pad.top + gH + 5);
+  }
+  ctx.textAlign = 'right'; ctx.textBaseline = 'middle';
+  if (isAccel) {
+    const aStep = niceStep(Math.max(yMax, -yMin), 4);
+    for (let val = aStep; val <= yMax + 0.001; val += aStep) {
+      const y = pad.top + gH - ((val - yMin) / yRange) * gH;
+      if (y >= pad.top - 3 && y <= pad.top + gH + 3) ctx.fillText(val % 1 === 0 ? val.toFixed(0) : val.toFixed(1), pad.left - 4, y);
     }
-    // Negative ticks
-    for(let val=-aStep;val>=yMin-0.001;val-=aStep){
-      const y=pad.top+gH-((val-yMin)/yRange)*gH;
-      if(y>=pad.top-5&&y<=pad.top+gH+5)ctx.fillText(val%1===0?val.toFixed(0):val.toFixed(1),pad.left-7,y);
+    for (let val = -aStep; val >= yMin - 0.001; val -= aStep) {
+      const y = pad.top + gH - ((val - yMin) / yRange) * gH;
+      if (y >= pad.top - 3 && y <= pad.top + gH + 3) ctx.fillText(val % 1 === 0 ? val.toFixed(0) : val.toFixed(1), pad.left - 4, y);
     }
-    // Zero tick + dashed line
-    if(yCenter>=pad.top&&yCenter<=pad.top+gH){
-      ctx.fillText('0',pad.left-7,yCenter);
-      ctx.strokeStyle=cGrid;
-      ctx.lineWidth=1;ctx.setLineDash([3,3]);
-      ctx.beginPath();ctx.moveTo(pad.left,yCenter);ctx.lineTo(pad.left+gW,yCenter);ctx.stroke();
-      ctx.setLineDash([]);
-    }
+    if (yCenter >= pad.top && yCenter <= pad.top + gH) ctx.fillText('0', pad.left - 4, yCenter);
   } else {
-    const yStep=niceStep(yMax,8);
-    for(let yv=0;yv<=yMax+0.001;yv+=yStep){
-      const y=pad.top+gH-(yv/yMax)*gH;
-      ctx.fillText(yv%1===0?yv.toFixed(0):yv.toFixed(1),pad.left-7,y);
+    const yStep = niceStep(yMax, 8);
+    for (let yv = 0; yv <= yMax + 0.001; yv += yStep) {
+      const y = pad.top + gH - (yv / yMax) * gH;
+      if (y >= pad.top - 3 && y <= pad.top + gH + 3) ctx.fillText(yv % 1 === 0 ? yv.toFixed(0) : yv.toFixed(1), pad.left - 4, y);
     }
   }
 
-  ctx.fillStyle=cTick;
-  ctx.font='10px Inter,sans-serif';
-  ctx.textAlign='center';ctx.textBaseline='top';
-  ctx.fillText('Time / s',pad.left+gW/2,H-8);
-  ctx.textAlign='center';ctx.textBaseline='bottom';
-  ctx.save();ctx.translate(12,pad.top+gH/2);ctx.rotate(-Math.PI/2);
-  const yLabels={'dist-time':'Distance / m','speed-time':'Speed / (m/s)','accel-time':'Acceleration / (m/s²)'};
-  ctx.fillText(yLabels[state.graphType]||'Quantity',0,0);ctx.restore();
+  // Axis titles
+  ctx.fillStyle = cLabel;
+  ctx.font = '11px Inter, sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.fillText('Time / s', pad.left + gW / 2, H - 9);
+  ctx.save(); ctx.translate(14, pad.top + gH / 2); ctx.rotate(-Math.PI / 2);
+  ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+  const yLabels = {'dist-time': 'Distance / m', 'speed-time': 'Speed / (m/s)', 'accel-time': 'Acceleration / (m/s²)'};
+  ctx.fillText(yLabels[state.graphType] || 'Quantity', 0, 0);
+  ctx.restore();
 
-  if(state.history.length<2)return;
+  if (state.history.length < 2) return;
 
-  const yValues=state.history.map(p=>{
-    if(state.graphType==='dist-time')return getDistance(p.t);
-    if(state.graphType==='speed-time')return getSpeedAt(p.t);
+  const yValues = state.history.map(p => {
+    if (state.graphType === 'dist-time') return getDistance(p.t);
+    if (state.graphType === 'speed-time') return getSpeedAt(p.t);
     return getAccelAt(p.t);
   });
-  const points=yValues.map((yv,i)=>{
+  const points = yValues.map((yv, i) => {
     let y;
-    if(isAccel)y=pad.top+gH-((yv-yMin)/yRange)*gH;
-    else y=pad.top+gH-(yv/yMax)*gH;
-    return{x:pad.left+(state.history[i].t/xMax)*gW,y:y};
+    if (isAccel) y = pad.top + gH - ((yv - yMin) / yRange) * gH;
+    else y = pad.top + gH - (yv / yMax) * gH;
+    return { x: pad.left + (state.history[i].t / xMax) * gW, y: y };
   });
 
-  const baseY=isAccel?yCenter:pad.top+gH;
-  ctx.fillStyle=isDark()?'rgba(251,191,36,0.05)':'rgba(217,119,6,0.04)';
-  ctx.beginPath();ctx.moveTo(points[0].x,baseY);
-  points.forEach(p=>ctx.lineTo(p.x,p.y));
-  ctx.lineTo(points[points.length-1].x,baseY);ctx.closePath();ctx.fill();
+  const baseY = isAccel ? yCenter : pad.top + gH;
+  ctx.fillStyle = isDark() ? 'rgba(251,191,36,0.05)' : 'rgba(217,119,6,0.04)';
+  ctx.beginPath(); ctx.moveTo(points[0].x, baseY);
+  points.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.lineTo(points[points.length - 1].x, baseY); ctx.closePath(); ctx.fill();
 
-  ctx.strokeStyle=lineColor;ctx.lineWidth=2.5;
-  ctx.beginPath();points.forEach((p,i)=>{if(i===0)ctx.moveTo(p.x,p.y);else ctx.lineTo(p.x,p.y);});ctx.stroke();
+  ctx.strokeStyle = lineColor; ctx.lineWidth = 2.5;
+  ctx.beginPath(); points.forEach((p, i) => { if (i === 0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y); });
+  ctx.stroke();
 
-  if(points.length>0){
-    const last=points[points.length-1];
-    ctx.beginPath();ctx.arc(last.x,last.y,5,0,Math.PI*2);
-    ctx.fillStyle=lineColor;ctx.fill();
-    ctx.strokeStyle=cGraphBg;ctx.lineWidth=2;ctx.stroke();
-    ctx.setLineDash([4,4]);
-    ctx.strokeStyle=lineRgb+'0.25)';ctx.lineWidth=1;
-    ctx.beginPath();ctx.moveTo(last.x,last.y);ctx.lineTo(last.x,baseY);ctx.stroke();
+  if (points.length > 0) {
+    const last = points[points.length - 1];
+    ctx.beginPath(); ctx.arc(last.x, last.y, 5, 0, Math.PI * 2);
+    ctx.fillStyle = lineColor; ctx.fill();
+    ctx.strokeStyle = cGraphBg; ctx.lineWidth = 2; ctx.stroke();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = lineRgb + '0.25)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(last.x, baseY); ctx.stroke();
     ctx.setLineDash([]);
   }
 }
