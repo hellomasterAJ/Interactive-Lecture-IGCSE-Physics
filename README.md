@@ -15,23 +15,27 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 ├── output/                ← Generated: HTML + PDF + JSON
 │   └── dashboard.html     ← Lecture index (auto-generated)
 ├── graphs/                ← Interactive graph HTML files
-│   ├── kinematics_graphs_v1.html       ← Horizontal Motion 🚗
-│   ├── kinematics_freefall_v1.html     ← Free Fall 🍎
-│   ├── kinematics_stopping_v1.html     ← Stopping Distance 🚘
-│   ├── kinematics_vt_graph_v1.html     ← Advanced VT Graph 📈
-│   └── kinematics_terminal_velocity_v1.html ← Terminal Velocity Skydive 🪂
+│   ├── kinematics_1_horizontal_graphs.html      ← Horizontal Motion 🚗
+│   ├── kinematics_2_horizontal_graph_stopping_d.html ← Stopping Distance 🚘
+│   ├── kinematics_3_vertical_graphs_freefall.html    ← Free Fall 🍎
+│   ├── kinematics_4_vertical_graphs_terminal_v.html  ← Terminal Velocity Skydive 🪂
+│   └── kinematics_5_advanced_velocity_time_graphs.html ← Advanced VT Graph 📈
+├── simulations/           ← Interactive physics simulations (ไม่ใช่กราฟ)
+│   ├── Measurement_1_vernier_caliper.html            ← Vernier Caliper 📏
+│   ├── Measurement_2_micrometer_screw_gauge.html     ← Micrometer Screw Gauge 🔧
+│   └── Measurement_3_balance_newtonmeter.html        ← Mass vs Weight (Balance & Newtonmeter) ⚖️
 ├── scripts/               ← Build system (Python)
 │   ├── build.py           ← Main: python build.py lecture.md
 │   ├── build_dashboard.py ← Dashboard generator
 │   ├── parse_lecture.py   ← Markdown parser
 │   ├── pdf_export.py      ← Playwright → A4 PDF
 │   └── templates/         ← Jinja2 HTML templates
-├── Equipments/            ← Virtual lab instruments
-│   └── vernier_caliper.html   ← Vernier Caliper Simulator 📏
+├── Equipments/            ← ⏳ Legacy (กำลังย้ายไป simulations/)
 ├── references/
 │   ├── scientists/        ← Scientist Bio Library
 │   ├── terminology/       ← Physics terminology
-│   └── historical-milestones/ ← Newton's apple, Tower of Pisa, ...
+│   ├── historical-milestones/ ← Newton's apple, Tower of Pisa, ...
+│   └── physical-quantity/ ← In-depth reference per physical quantity (time, length, mass, ...)
 └── Junkyard/              ← Retired prototypes (old micrometer sim)
 ```
 
@@ -57,21 +61,26 @@ python3 -m playwright install chromium
 
 ## 📖 Lectures (Topic 1 Complete)
 
-| # | Topic | Interactive Graph |
-|---|-------|:--------:|
-| 1.1 | Physical Quantities & Measurement | ❌ |
-| 1.2 | Motion — Kinematics | ✅ Horizontal, Free-fall, Stopping, Advanced VT, Terminal Velocity Skydive 🪂 |
-| 1.3 | Mass and Weight | ❌ |
-| 1.4 | Density | ❌ |
-| 1.5 | Forces (Hooke's Law) | ❌ |
-| 1.6 | Effects of Forces (Moments, Pressure) | ❌ |
-| 1.7 | Energy, Work & Power | ❌ |
-| 1.8 | Energy Resources | ❌ |
+| # | Topic | Interactive Graph | Simulation |
+|---|-------|:--------:|:--------:|
+|| 1.1 | Physical Quantities & Measurement | ❌ | ✅ Vernier Caliper, Micrometer |
+|| 1.2 | Motion — Kinematics | ✅ Horizontal, Free-fall, Stopping, Advanced VT, Terminal Velocity 🪂 | ❌ |
+|| 1.3 | Mass and Weight | ❌ | ❌ |
+|| 1.4 | Density | ❌ | ❌ |
+|| 1.5 | Forces (Hooke's Law) | ❌ | ❌ |
+|| 1.6 | Effects of Forces (Moments, Pressure) | ❌ | ❌ |
+|| 1.7 | Energy, Work & Power | ❌ | ❌ |
+|| 1.8 | Energy Resources | ❌ | ❌ |
+
+> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี: 📏 Vernier Caliper (Topic 1.1), 🔧 Micrometer Screw Gauge (Topic 1.1)
 
 ## 🎯 Features
 
 - **5-part lecture structure**: 📜 History → 🌍 Nature → ⚛️ Theory → 📊 Graphs → ✍️ Examples
-- **Interactive graphs**: Real-time animation with Canvas + SVG (horizontal motion 🚗, free fall 🍎, stopping distance 🚘, advanced VT graph 📈, terminal velocity skydive 🪂)
+- **Interactive graphs**: Real-time animation with Canvas 2D (horizontal motion 🚗, free fall 🍎, stopping distance 🚘, advanced VT graph 📈, terminal velocity skydive 🪂)
+- **Interactive physics simulations**: Virtual lab instruments และ interactive phenomena ที่ไม่ต้องใช้กราฟ
+  - 📏 **Vernier Caliper** — 3 modes (Simulate/Practice/Quiz), 3 difficulty levels, zoom double-click, zero error ±5 div, workpiece clamping
+  - 🔧 **Micrometer Screw Gauge** — 0–25 mm, LC 0.01 mm, drag-to-rotate thimble, sleeve + thimble scale, magnifier overlay, tutorial animation, practice/exam mode, 3 themes
 - **SUVAT proofs**: 5 visual area proofs (v=u+at, s=ut+½at², s=vt-½at², s=½(u+v)t, v²=u²+2as)
 - **Non-uniform scenarios**: Terminal Velocity 🪂, Rocket Launch 🚀, Harmonic Motion 〰️ with gradient & trapezoidal analysis
 - **2-phase Skydive simulation**: Freefall (tanh model, a=g→Vt₁) + Parachute deployment (drag multiplier→Vt₂) with force arrows (Weight ↓ / Drag ↑), animated skydiver, moving clouds, airplane background
@@ -97,6 +106,16 @@ python3 -m playwright install chromium
 Educational use — HAUS Academy
 
 ## 📋 Changelog
+
+### 7 July 2026 — Simulations Directory + README Update
+
+| # | การเปลี่ยนแปลง | รายละเอียด |
+|---|---------------|-----------|
+| 1 | **สร้าง `simulations/`** | directory ใหม่สำหรับ interactive simulations ที่ไม่ใช่กราฟ (virtual lab instruments, phenomena) |
+| 2 | **rename → Measurement_*** | `vernier_caliper_v1.html` → `Measurement_1_vernier_caliper.html`, `micrometer_screw_gauge_v1.html` → `Measurement_2_micrometer_scraw_gauge.html` |
+| 3 | **อัปเดต README structure** | แก้ชื่อไฟล์กราฟให้ตรง + เพิ่ม `simulations/` + เปลี่ยน `Equipments/` เป็น Legacy |
+| 4 | **เพิ่ม Simulation column** | ใน Lecture table — แยก Graph vs Simulation ชัดเจน |
+| 5 | **อัปเดต Features** | เพิ่มรายละเอียด Simulation (Vernier Caliper, Micrometer) |
 
 ### 6 July 2026 — Vernier Caliper Simulator (`Equipments/vernier_caliper.html`)
 
