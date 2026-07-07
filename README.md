@@ -65,14 +65,14 @@ python3 -m playwright install chromium
 |---|-------|:--------:|:--------:|
 || 1.1 | Physical Quantities & Measurement | ❌ | ✅ Vernier Caliper, Micrometer |
 || 1.2 | Motion — Kinematics | ✅ Horizontal, Free-fall, Stopping, Advanced VT, Terminal Velocity 🪂 | ❌ |
-|| 1.3 | Mass and Weight | ❌ | ❌ |
+|| 1.3 | Mass and Weight | ❌ | ✅ Balance & Newtonmeter ⚖️ |
 || 1.4 | Density | ❌ | ❌ |
 || 1.5 | Forces (Hooke's Law) | ❌ | ❌ |
 || 1.6 | Effects of Forces (Moments, Pressure) | ❌ | ❌ |
 || 1.7 | Energy, Work & Power | ❌ | ❌ |
 || 1.8 | Energy Resources | ❌ | ❌ |
 
-> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี: 📏 Vernier Caliper (Topic 1.1), 🔧 Micrometer Screw Gauge (Topic 1.1)
+> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี: 📏 Vernier Caliper (Topic 1.1), 🔧 Micrometer Screw Gauge (Topic 1.1), ⚖️ Balance & Newtonmeter (Topic 1.3)
 
 ## 🎯 Features
 
@@ -81,6 +81,7 @@ python3 -m playwright install chromium
 - **Interactive physics simulations**: Virtual lab instruments และ interactive phenomena ที่ไม่ต้องใช้กราฟ
   - 📏 **Vernier Caliper** — 3 modes (Simulate/Practice/Quiz), 3 difficulty levels, zoom double-click, zero error ±5 div, workpiece clamping
   - 🔧 **Micrometer Screw Gauge** — 0–25 mm, LC 0.01 mm, drag-to-rotate thimble, sleeve + thimble scale, magnifier overlay, tutorial animation, practice/exam mode, 3 themes
+  - ⚖️ **Balance & Newtonmeter (Mass vs Weight)** — ลาก masses (100 g–2 kg, ซ้อนได้ 5 ชิ้น) ขึ้นเครื่องชั่งดิจิทัล (g/kg) หรือแขวน spring balance (N), 4 ดาว (Earth/Moon/Mars/Jupiter), Simple (g=10, Earth เท่านั้น) ⇄ Location (g จริงต่อดาว), Newtonmeter range 0–5/0–10/Auto + over-range warning, force arrow W=mg, 3 modes (Simulate/Practice/Quiz)
 - **SUVAT proofs**: 5 visual area proofs (v=u+at, s=ut+½at², s=vt-½at², s=½(u+v)t, v²=u²+2as)
 - **Non-uniform scenarios**: Terminal Velocity 🪂, Rocket Launch 🚀, Harmonic Motion 〰️ with gradient & trapezoidal analysis
 - **2-phase Skydive simulation**: Freefall (tanh model, a=g→Vt₁) + Parachute deployment (drag multiplier→Vt₂) with force arrows (Weight ↓ / Drag ↑), animated skydiver, moving clouds, airplane background
@@ -106,6 +107,18 @@ python3 -m playwright install chromium
 Educational use — HAUS Academy
 
 ## 📋 Changelog
+
+### 7 July 2026 — Mass vs Weight Simulator (`simulations/Measurement_3_balance_newtonmeter.html`)
+
+| # | การเปลี่ยนแปลง | รายละเอียด |
+|---|---------------|-----------|
+| 1 | **สร้าง Balance & Newtonmeter Simulator** | Canvas ล้วน — masses ทองเหลือง 5 ขนาด (100 g–2 kg) ลากวางบนจานชั่งดิจิทัล (อ่าน g/kg) หรือแขวน newtonmeter (อ่าน N พร้อมสปริงเด้ง) |
+| 2 | **4 ดาว** | Earth / Moon / Mars / Jupiter — balance อ่านเท่าเดิมทุกดวง, newtonmeter เปลี่ยนตาม g; ฉากหลังเปลี่ยนตามดาว (เห็นโลกจากดวงจันทร์ 🌍, ดาวเสาร์จากดาวพฤหัส 🪐) |
+| 3 | **ปุ่ม Level toggle เดียว** | Simple (ทอง, g=10, ล็อกที่โลก) ⇄ Location (เขียวมิ้นต์, g จริง 9.81/1.62/3.72/24.79 เลือกดาวได้) |
+| 4 | **Newtonmeter range** | 0–5 N / 0–10 N / **Auto** (ปรับ scale อัตโนมัติตั้งแต่ตอนหยิบก้อน ก่อนแขวน ให้ max ≥ น้ำหนักเสมอ) + เตือน OVER RANGE เมื่อเกิน scale ในโหมด manual |
+| 5 | **วางซ้อนได้ 5 ชิ้น** | drop zone ขยายตามความสูงกอง (แก้บั๊กปล่อยเหนือยอดกองแล้วเด้งกลับ), ก้อนชิดกันสวยงาม |
+| 6 | **3 โหมด** | Simulate / Practice (โจทย์ W=mg, m=W/g, ย้ายดาว-มวลไม่เปลี่ยน พร้อมเฉลยละเอียด + คะแนน) / Quiz (5 ข้อ + ดาว + ตารางผล) |
+| 7 | **UI** | Force arrow W=mg, formula panel แทนค่าสด, HAUS logo มุมขวา toolbar, Labels ย้ายขึ้นแถวบน, ปุ่ม Reset |
 
 ### 7 July 2026 — Simulations Directory + README Update
 
