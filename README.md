@@ -30,13 +30,12 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── parse_lecture.py   ← Markdown parser
 │   ├── pdf_export.py      ← Playwright → A4 PDF
 │   └── templates/         ← Jinja2 HTML templates
-├── Equipments/            ← ⏳ Legacy (กำลังย้ายไป simulations/)
+├── Junkyard/              ← Retired prototypes (vernier caliper, micrometer, old micrometer sim)
 ├── references/
 │   ├── scientists/        ← Scientist Bio Library
-│   ├── terminology/       ← Physics terminology
-│   ├── historical-milestones/ ← Newton's apple, Tower of Pisa, ...
-│   └── physical-quantity/ ← In-depth reference per physical quantity (time, length, mass, ...)
-└── Junkyard/              ← Retired prototypes (old micrometer sim)
+│   ├── terminology/       ← Physics terminology (15 terms)
+│   ├── historical-milestones/ ← 14 key experiments & discoveries (Torricelli → Atomic Bomb)
+│   └── physical-quantity/ ← 18 in-depth reference files per physical quantity
 ```
 
 ## 🚀 Quick Start
