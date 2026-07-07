@@ -293,11 +293,11 @@ let Kv = 8, AX = 138, AY = 104;                    // set by layout()
 function layout() {
   Kv = clamp(0.8 * Math.min((W - 45) / 131, (H - 204) / 43.5), 4.2, 6.6);
   // centre the instrument in the free area above the tray
-  AX = 24 + 14 * Kv + Math.max(0, (W - 45 - 131 * Kv) / 2);
-  AY = 26 + 9.5 * Kv + Math.max(0, (H - 172 - 26 - 40.7 * Kv) / 2);
+  AX = 24 + 14 * Kv + Math.max(0, (W - 45 - 129.5 * Kv) / 2);
+  AY = 26 + 8 * Kv + Math.max(0, (H - 172 - 26 - 42.5 * Kv) / 2);
 }
 const pxmm = () => Kv, gpx = () => Kv;             // px per mm (drawing + drag)
-const bossX   = () => AX + 27 * Kv;                // spindle guide boss (right arm)
+const bossX   = () => AX + 25.5 * Kv;              // spindle guide boss (right arm)
 const sleeveX = () => bossX() + 12 * Kv;           // sleeve tube start
 const SL0     = () => sleeveX() + 3 * Kv;          // main-scale zero
 const thimbleX = () => SL0() + obs() * Kv;         // thimble reading edge
@@ -333,8 +333,8 @@ function draw() {
     ctx.translate(cxs - thimbleX() * f, cys - AY * f);
     ctx.scale(f, f);
   }
+  drawAnvil();          // first — the frame arm overlaps it, so the stub sits inside the mount
   drawFrame(p);
-  drawAnvil();
   drawSpindle(p);
   drawGapObject(p);
   drawSleeve(p);
@@ -345,37 +345,47 @@ function draw() {
   ctx.restore();
 }
 
-/* ── C-frame with left arm, guide boss support and spec plaque ── */
+/* ── C-frame: one continuous tangent-smooth silhouette.
+   The anvil mount is part of the outline (rounded cap, top-left) and the
+   right arm slides up BEHIND the guide boss, so both junctions stay seamless. ── */
 function drawFrame(p) {
-  const bx = bossX(), armX = AX - 8 * p;           // anvil stub spans armX..AX
-  const band = () => {
+  const bx = bossX();
+  const oL = AX - 14 * p, iL = AX - 5 * p;         // outer/inner edge of the left arm
+  const cbx = AX + 11 * p;                         // bottom centre x
+  const path = () => {
     ctx.beginPath();
-    ctx.moveTo(armX - 6 * p, AY + 4 * p);
-    ctx.bezierCurveTo(armX - 6 * p, AY + 40 * p, bx + 12 * p, AY + 40 * p, bx + 12 * p, AY + 5.5 * p);
-    ctx.lineTo(bx + 3 * p, AY + 5.5 * p);
-    ctx.bezierCurveTo(bx + 3 * p, AY + 28 * p, armX, AY + 28 * p, armX, AY + 4 * p);
+    ctx.moveTo(oL + 2 * p, AY - 5.5 * p);                                // anvil-mount top
+    ctx.quadraticCurveTo(oL, AY - 5.5 * p, oL, AY - 3.5 * p);            // rounded corner
+    ctx.lineTo(oL, AY + 2 * p);                                          // left arm, outer
+    ctx.bezierCurveTo(oL, AY + 26 * p, AX + 2 * p, AY + 34.5 * p,
+                      cbx, AY + 34.5 * p);                               // outer sweep down
+    ctx.bezierCurveTo(AX + 20 * p, AY + 34.5 * p, bx + 12 * p, AY + 26 * p,
+                      bx + 12 * p, AY + 2 * p);                          // outer sweep up → behind boss
+    ctx.lineTo(bx + 2.5 * p, AY + 2 * p);                                // hidden under the boss
+    ctx.bezierCurveTo(bx + 2.5 * p, AY + 22 * p, AX + 18 * p, AY + 26 * p,
+                      cbx, AY + 26 * p);                                 // inner throat, right half
+    ctx.bezierCurveTo(AX + 4 * p, AY + 26 * p, iL, AY + 22 * p,
+                      iL, AY + 6 * p);                                   // inner throat, left half
+    ctx.lineTo(iL, AY - 3.5 * p);                                        // up the mount side
+    ctx.quadraticCurveTo(iL, AY - 5.5 * p, iL - 2 * p, AY - 5.5 * p);    // rounded corner
     ctx.closePath();
   };
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,.45)"; ctx.shadowBlur = 12; ctx.shadowOffsetX = 4; ctx.shadowOffsetY = 5;
-  const g = ctx.createLinearGradient(0, AY, 0, AY + 40 * p);
-  g.addColorStop(0, "#79828c"); g.addColorStop(.45, "#9aa3ad"); g.addColorStop(1, "#4d565f");
-  ctx.fillStyle = g; band(); ctx.fill();
+  const g = ctx.createLinearGradient(0, AY - 5.5 * p, 0, AY + 34.5 * p);
+  g.addColorStop(0, "#8b949e"); g.addColorStop(.4, "#a4adb6"); g.addColorStop(1, "#4d565f");
+  ctx.fillStyle = g; path(); ctx.fill();
   ctx.restore();
-  ctx.strokeStyle = "#3f4954"; ctx.lineWidth = 1; band(); ctx.stroke();
-  // left arm block (carries the anvil)
-  ctx.fillStyle = metal(armX - 6 * p, 0, armX, 0);
-  rr(armX - 6 * p, AY - 5 * p, 6 * p, 11 * p, 1.5 * p); ctx.fill();
-  ctx.strokeStyle = "#3f4954"; rr(armX - 6 * p, AY - 5 * p, 6 * p, 11 * p, 1.5 * p); ctx.stroke();
-  // spec plaque — small black plate on the lower arc, like a real frame
-  const pcx = armX + (bx + 12 * p - armX) * 0.46, pcy = AY + 26.4 * p;
-  rr(pcx - 5.5 * p, pcy - 2.4 * p, 11 * p, 4.8 * p, 1.6 * p);
+  ctx.strokeStyle = "#3f4954"; ctx.lineWidth = 1; path(); ctx.stroke();
+  // spec plaque — small black plate centred on the lower arc
+  const pcx = cbx, pcy = AY + 30.25 * p;
+  rr(pcx - 7 * p, pcy - 3.15 * p, 14 * p, 6.3 * p, 2 * p);
   ctx.fillStyle = "#101216"; ctx.fill();
   ctx.strokeStyle = "#2c313a"; ctx.stroke();
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
-  ctx.font = `700 ${Math.max(7.5, 1.5 * p)}px Arial`; ctx.fillStyle = "#dfe3e8";
-  ctx.fillText("0–25 mm", pcx, pcy - 1.15 * p);
-  ctx.fillText("0.01 mm", pcx, pcy + 1.35 * p);
+  ctx.font = `700 ${Math.max(8.5, 1.9 * p)}px Arial`; ctx.fillStyle = "#dfe3e8";
+  ctx.fillText("0–25 mm", pcx, pcy - 1.5 * p);
+  ctx.fillText("0.01 mm", pcx, pcy + 1.6 * p);
 }
 
 /* ── anvil (fixed stub, ⌀6.5 mm) ── */
@@ -410,20 +420,21 @@ function drawSpindle(p) {
   ctx.fillStyle = hg; ctx.fillRect(gx, AY - 3 * p, 4, 6 * p);
   ctx.strokeStyle = "#454f59"; ctx.lineWidth = 1;
   ctx.strokeRect(gx, AY - 3.25 * p, bx - gx + 2 * p, 6.5 * p);
-  // guide boss
+  // guide boss — width matches the frame arm below it (right edge fixed at the sleeve)
+  const bw = 10.75 * p, bx0 = bx + 12 * p - bw, scx = bx0 + bw / 2;
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 6; ctx.shadowOffsetY = 3;
-  ctx.fillStyle = metal(0, AY - 6.5 * p, 0, AY + 6.5 * p, true);
-  rr(bx, AY - 6.5 * p, 12 * p, 13 * p, 2.2 * p); ctx.fill();
+  ctx.fillStyle = metal(0, AY - 6 * p, 0, AY + 6 * p, true);
+  rr(bx0, AY - 6 * p, bw, 12 * p, 2.1 * p); ctx.fill();
   ctx.restore();
-  ctx.strokeStyle = "#454f59"; rr(bx, AY - 6.5 * p, 12 * p, 13 * p, 2.2 * p); ctx.stroke();
-  // lock screw
+  ctx.strokeStyle = "#454f59"; rr(bx0, AY - 6 * p, bw, 12 * p, 2.1 * p); ctx.stroke();
+  // lock screw (unchanged size, centred in the boss)
   ctx.fillStyle = "#39424c";
-  ctx.beginPath(); ctx.arc(bx + 6 * p, AY, 1.9 * p, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(scx, AY, 1.9 * p, 0, 7); ctx.fill();
   ctx.strokeStyle = "#232a32";
-  ctx.beginPath(); ctx.arc(bx + 6 * p, AY, 1.9 * p, 0, 7); ctx.stroke();
+  ctx.beginPath(); ctx.arc(scx, AY, 1.9 * p, 0, 7); ctx.stroke();
   ctx.strokeStyle = "#8d97a1"; ctx.lineWidth = Math.max(1, .45 * p);
-  ctx.beginPath(); ctx.moveTo(bx + 4.8 * p, AY + 1.2 * p); ctx.lineTo(bx + 7.2 * p, AY - 1.2 * p); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(scx - 1.2 * p, AY + 1.2 * p); ctx.lineTo(scx + 1.2 * p, AY - 1.2 * p); ctx.stroke();
   ctx.lineWidth = 1;
 }
 
@@ -431,7 +442,7 @@ function drawSpindle(p) {
 function drawSleeve(p) {
   const sx = sleeveX(), s0 = SL0(), tx = thimbleX();
   const { msr } = reading();
-  const R = 5.5 * p;
+  const R = 6 * p;
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,.35)"; ctx.shadowBlur = 6; ctx.shadowOffsetY = 3;
   const g = ctx.createLinearGradient(0, AY - R, 0, AY + R);
@@ -443,7 +454,7 @@ function drawSleeve(p) {
   rr(sx, AY - R, tx + 10 - sx, 2 * R, 3); ctx.stroke();
   // datum line
   ctx.strokeStyle = "#222b36"; ctx.lineWidth = Math.max(1, p / 7);
-  ctx.beginPath(); ctx.moveTo(s0 - 1.5 * p, AY); ctx.lineTo(tx - 2, AY); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(s0 - 1.5 * p, AY); ctx.lineTo(tx - 0.5, AY); ctx.stroke();
   // ticks
   const lw = Math.max(0.7, Math.min(1.2, p / 7));
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
@@ -476,48 +487,66 @@ function drawSleeve(p) {
 
 /* ── thimble (⌀19 × 36 mm) + circular scale + ratchet (⌀9 mm) ── */
 function drawThimble(p) {
-  const tx = thimbleX(), o = obs(), R = 9.5 * p, L = THL();
+  const tx = thimbleX(), o = obs(), R = 8 * p, L = THL();
+  const r0 = 6.1 * p, BL = 2.6 * p, rc = 2.2 * p;  // cone flush with the sleeve, compact bevel
   const { csr } = reading();
+  const body = () => {                              // silhouette: cone frustum + cylinder
+    ctx.beginPath();
+    ctx.moveTo(tx, AY - r0);
+    ctx.lineTo(tx + BL, AY - R);                    // bevel slope, top
+    ctx.lineTo(tx + L - rc, AY - R);
+    ctx.arcTo(tx + L, AY - R, tx + L, AY - R + rc, rc);
+    ctx.lineTo(tx + L, AY + R - rc);
+    ctx.arcTo(tx + L, AY + R, tx + L - rc, AY + R, rc);
+    ctx.lineTo(tx + BL, AY + R);
+    ctx.lineTo(tx, AY + r0);                        // bevel slope, bottom
+    ctx.closePath();
+  };
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,.45)"; ctx.shadowBlur = 9; ctx.shadowOffsetX = 3; ctx.shadowOffsetY = 4;
   const g = ctx.createLinearGradient(0, AY - R, 0, AY + R);
   g.addColorStop(0, "#6f7983"); g.addColorStop(.3, "#e0e6eb"); g.addColorStop(.5, "#f2f5f8");
   g.addColorStop(.7, "#cfd6dc"); g.addColorStop(1, "#5f6973");
-  ctx.fillStyle = g;
-  rr(tx, AY - R, L, 2 * R, 2.5 * p); ctx.fill();
+  ctx.fillStyle = g; body(); ctx.fill();
   ctx.restore();
-  // bevel shading at the reading edge
-  const bg = ctx.createLinearGradient(tx, 0, tx + 3 * p, 0);
-  bg.addColorStop(0, "rgba(30,38,48,.30)"); bg.addColorStop(1, "rgba(30,38,48,0)");
-  ctx.fillStyle = bg; ctx.fillRect(tx, AY - R, 3 * p, 2 * R);
-  // circular scale — cylindrical projection about the axis
+  // tilted-face shading on the cone + seam where it meets the cylinder
+  ctx.save(); body(); ctx.clip();
+  const bg = ctx.createLinearGradient(tx, 0, tx + BL, 0);
+  bg.addColorStop(0, "rgba(30,38,48,.28)"); bg.addColorStop(1, "rgba(30,38,48,.04)");
+  ctx.fillStyle = bg; ctx.fillRect(tx, AY - R, BL, 2 * R);
+  ctx.strokeStyle = "rgba(30,38,48,.25)"; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(tx + BL, AY - R); ctx.lineTo(tx + BL, AY + R); ctx.stroke();
+  ctx.restore();
+  // circular scale — ticks lie ON the cone, so they follow its slope
   const csrF = (((o % PITCH) + PITCH) % PITCH) / LC;
+  const rAt = x => r0 + (R - r0) * (x - tx) / BL;   // cone radius at x
   ctx.textBaseline = "middle"; ctx.textAlign = "left";
   const fs = Math.max(8, 1.45 * p);
   for (let d = 0; d < NDIV; d++) {
     let dd = d - csrF; dd -= Math.round(dd / NDIV) * NDIV;
     const th = dd * 2 * Math.PI / NDIV;
-    if (Math.abs(th) > 1.35) continue;
-    const y = AY - R * Math.sin(th) * 0.94;
-    const a = Math.cos(th);
-    if (a < 0.1) continue;
+    if (Math.abs(th) > Math.PI / 2) continue;      // draw the full visible half-turn
+    const sn = Math.sin(th) * 0.97, a = Math.cos(th);
+    if (a < 0.02) continue;
     const hit = S.guide && d === ((csr % NDIV) + NDIV) % NDIV && Math.abs(th) < 0.05;
+    const x0 = tx, x1 = tx + (d % 5 === 0 ? 2.15 : 1.5) * p;  // ticks start AT the reading edge
     ctx.strokeStyle = hit ? "#ffb700" : `rgba(34,43,54,${(0.25 + 0.75 * a).toFixed(2)})`;
     ctx.lineWidth = hit ? 1.8 : Math.max(1, p / 7);
     if (hit) { ctx.shadowColor = "#ffb700"; ctx.shadowBlur = 6; }
-    ctx.beginPath(); ctx.moveTo(tx + 0.4 * p, y); ctx.lineTo(tx + 0.4 * p + (d % 5 === 0 ? 2.1 : 1.3) * p, y); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(x0, AY - rAt(x0) * sn); ctx.lineTo(x1, AY - rAt(x1) * sn); ctx.stroke();
     ctx.shadowBlur = 0;
     if (d % 5 === 0 && a > 0.3) {
       ctx.font = `700 ${fs}px Arial`;
       ctx.fillStyle = hit ? "#c98800" : `rgba(34,43,54,${(0.2 + 0.8 * a).toFixed(2)})`;
-      ctx.fillText(d, tx + 3 * p, y);
+      ctx.fillText(d, tx + 3.5 * p, AY - R * sn);
     }
   }
   // knurled grip — diamond cross-hatch like a real thimble (spins with the ratchet)
   const gx0 = tx + 14 * p, step = 0.62 * p, sh = 2 * R * 0.55;
   const off = S.spin ? (Date.now() / 14) % step : 0;
   ctx.save();
-  rr(tx, AY - R, L, 2 * R, 2.5 * p); ctx.clip();
+  body(); ctx.clip();
   ctx.beginPath(); ctx.rect(gx0, AY - R, tx + L - gx0, 2 * R); ctx.clip();
   ctx.strokeStyle = "rgba(40,48,58,.30)"; ctx.lineWidth = 1;
   for (let x = gx0 - sh + off; x < tx + L; x += step) {
@@ -527,11 +556,8 @@ function drawThimble(p) {
     ctx.beginPath(); ctx.moveTo(x, AY - R); ctx.lineTo(x - sh, AY + R); ctx.stroke();
   }
   ctx.restore();
-  // subtle sheen on the smooth scale band only
-  ctx.fillStyle = "rgba(255,255,255,.3)";
-  ctx.fillRect(tx + 3, AY - R + 2, 11 * p, 2.5);
   ctx.strokeStyle = "#454f59"; ctx.lineWidth = 1;
-  rr(tx, AY - R, L, 2 * R, 2.5 * p); ctx.stroke();
+  body(); ctx.stroke();
 
   /* ratchet stop */
   const rx = tx + L;
