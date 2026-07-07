@@ -166,6 +166,39 @@
   --shade-trap: rgba(152,195,121,0.08);
   --katex-color: #abb2bf;
 }
+/* ── HAUS Academy (light: cream + gold + ink) ── */
+.theme-haus {
+  --bg: #F4EEE0; --card: #FFFFFF; --border: #E4DAC4;
+  --text: #1A1712; --text-dim: #5B5344; --text-muted: #948A74;
+  --accent: #A9820F; --accent-glow: rgba(169,130,15,0.12);
+  --grid: #EBE3D0; --graph-bg: #FCFAF2;
+  --line-v: #2A6F5E;
+  --green: #4E7A3F; --rose: #B5502E; --violet: #8A6D3B;
+  --amber: #A9820F; --blue: #4A7AB8; --orange: #A87A4A;
+  --shade-rect: rgba(78,122,63,0.10);
+  --shade-tri: rgba(181,80,46,0.10);
+  --shade-amber: rgba(169,130,15,0.10);
+  --shade-trap: rgba(78,122,63,0.08);
+  --katex-color: #1A1712;
+}
+/* ── HAUS Night (dark: charcoal + brand gold + white) ── */
+.theme-hausnight {
+  --bg: #14110C; --card: #201C15; --border: #3A3327;
+  --text: #FBFAF7; --text-dim: #D9D3C6; --text-muted: #9E9583;
+  --accent: #F4C01E; --accent-glow: rgba(244,192,30,0.12);
+  --grid: #211D15; --graph-bg: #0E0B07;
+  --line-v: #5FB0C4;
+  --green: #A6B36A; --rose: #D68B57; --violet: #CBAA6A;
+  --amber: #F4C01E; --blue: #5FB0C4; --orange: #D68B57;
+  --shade-rect: rgba(166,179,106,0.10);
+  --shade-tri: rgba(214,139,87,0.10);
+  --shade-amber: rgba(244,192,30,0.10);
+  --shade-trap: rgba(166,179,106,0.08);
+  --katex-color: #FBFAF7;
+}
+.theme-haus .top-bar h1,.theme-haus .top-bar h1 span{color:#1A1712;}
+.theme-haus .badge-top,.theme-haus .ctrl-btn.primary{background:#F4C01E;color:#1A1712;border-color:#1A1712;}
+.theme-hausnight .top-bar h1,.theme-hausnight .top-bar h1 span{color:#FBFAF7;}
 *{margin:0;padding:0;box-sizing:border-box;}
 body{
   background: var(--bg); color: var(--text);
@@ -407,13 +440,13 @@ body{
     </div>
     <select class="theme-select" onchange="setTheme(this.value)">
       <option value="dark">🌙 Classic Dark</option>
+      <option value="hausnight">⌂ HAUS Night</option>
       <option value="vintage">📜 Vintage Dark</option>
       <option value="neon">🌃 Cyberpunk Neon</option>
       <option value="cosmic">🌌 Cosmic Void</option>
-      <option value="onedark">💎 One Dark</option>
       <option value="light">☀️ Classic Light</option>
+      <option value="haus">⌂ HAUS Day</option>
       <option value="clay">🏺 Warm Clay</option>
-      <option value="warm">🌅 Warm Taupe</option>
       <option value="sage">🌿 Soft Sage</option>
       <option value="mist">🌫️ Mist Blue</option>
     </select>
@@ -595,7 +628,7 @@ const ctx = canvas.getContext('2d');
 const W = canvas.width, H = canvas.height;
 
 // ===== HELPERS =====
-function isDark() { return state.theme === 'dark' || state.theme === 'neon' || state.theme === 'vintage' || state.theme === 'cosmic'; }
+function isDark() { return state.theme === 'dark' || state.theme === 'neon' || state.theme === 'vintage' || state.theme === 'cosmic' || state.theme === 'onedark' || state.theme === 'hausnight'; }
 
 // Nice step for axis ticks: rounds to 1, 2, 5 × 10^n
 function niceStep(range, targetTicks) {
@@ -663,13 +696,12 @@ function getNuTMax() { return getNuSc().tMax; }
 
 // ===== THEME =====
 function setTheme(name) {
-  const themeClasses = ['theme-neon','theme-vintage','theme-cosmic','theme-onedark','theme-warm','theme-sage','theme-light','theme-mist','theme-clay'];
+  const themeClasses = ['theme-neon','theme-vintage','theme-cosmic','theme-onedark','theme-warm','theme-sage','theme-light','theme-mist','theme-clay','theme-haus','theme-hausnight'];
   document.body.classList.remove(...themeClasses);
   if(name !== 'dark') document.body.classList.add('theme-' + name);
   state.theme = name;
   drawAll();
 }
-
 // ===== MODE SWITCHING =====
 function switchMode(mode) {
   state.mode = mode;

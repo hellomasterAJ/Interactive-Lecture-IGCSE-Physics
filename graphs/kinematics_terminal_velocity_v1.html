@@ -22,6 +22,11 @@ body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);transit
 .theme-warm{--bg:#f0ebe0;--card:#faf5ec;--border:#e0d8ca;--text:#3a3530;--text-dim:#8a8270;--accent:#c97b4a;--line-v:#b87a3a;--green:#5a8f4a;--rose:#c44a5a;--amber:#c4943a;--blue:#4a7ab8;--orange:#c46838;--shade1:rgba(201,123,74,0.06);--shade2:rgba(201,123,74,0.12);--phase1:rgba(74,122,184,0.08);--phase2:rgba(196,148,58,0.08);--katex-color:#3a3530}
 .theme-sage{--bg:#e8ece0;--card:#f4f7ef;--border:#d2dac8;--text:#2d3828;--text-dim:#7a8a6a;--accent:#4a7a5a;--line-v:#6a9a7a;--green:#4a8a5a;--rose:#b85a6a;--amber:#b89a4a;--blue:#4a7ab8;--orange:#b87a4a;--shade1:rgba(74,122,90,0.06);--shade2:rgba(74,122,90,0.12);--phase1:rgba(74,122,184,0.08);--phase2:rgba(184,154,74,0.08);--katex-color:#2d3828}
 .theme-mist{--bg:#e8edf0;--card:#f4f7fa;--border:#ccd4dc;--text:#2a3038;--text-dim:#6a7a8a;--accent:#4a7a9a;--line-v:#5a8aaa;--green:#4a8a6a;--rose:#a85a6a;--amber:#a88a4a;--blue:#4a7ab8;--orange:#a87a4a;--shade1:rgba(74,122,154,0.06);--shade2:rgba(74,122,154,0.12);--phase1:rgba(74,122,184,0.08);--phase2:rgba(168,138,74,0.08);--katex-color:#2a3038}
+.theme-haus{--bg:#F4EEE0;--card:#FFFFFF;--border:#E4DAC4;--text:#1A1712;--text-dim:#5B5344;--accent:#A9820F;--line-v:#2A6F5E;--green:#4E7A3F;--rose:#B5502E;--amber:#A9820F;--blue:#4A7AB8;--orange:#A87A4A;--shade1:rgba(169,130,15,0.08);--shade2:rgba(169,130,15,0.12);--phase1:rgba(74,122,184,0.08);--phase2:rgba(169,130,15,0.08);--katex-color:#1A1712}
+.theme-hausnight{--bg:#14110C;--card:#201C15;--border:#3A3327;--text:#FBFAF7;--text-dim:#D9D3C6;--accent:#F4C01E;--line-v:#5FB0C4;--green:#A6B36A;--rose:#D68B57;--amber:#F4C01E;--blue:#5FB0C4;--orange:#D68B57;--shade1:rgba(244,192,30,0.08);--shade2:rgba(244,192,30,0.12);--phase1:rgba(86,182,194,0.12);--phase2:rgba(244,192,30,0.08);--katex-color:#FBFAF7}
+.theme-haus .title-bar h1,.theme-haus .title-bar h1 span{color:#1A1712;}
+.theme-haus .badge-top,.theme-haus .ctrl-btn.primary{background:#F4C01E;color:#1A1712;border-color:#1A1712;}
+.theme-hausnight .title-bar h1,.theme-hausnight .title-bar h1 span{color:#FBFAF7;}
 
 .layout{max-width:1060px;width:100%;display:flex;flex-direction:column;gap:12px}
 /* Title Bar */
@@ -110,13 +115,13 @@ body{font-family:Inter,sans-serif;background:var(--bg);color:var(--text);transit
     <h1>🪂 Terminal Velocity <span>Skydive V–T Graph</span></h1>
     <select class="theme-select" onchange="setTheme(this.value)">
       <option value="dark">🌙 Classic Dark</option>
+      <option value="hausnight">⌂ HAUS Night</option>
       <option value="vintage">📜 Vintage Dark</option>
       <option value="neon">🌃 Cyberpunk Neon</option>
       <option value="cosmic">🌌 Cosmic Void</option>
-      <option value="onedark">💎 One Dark</option>
       <option value="light">☀️ Classic Light</option>
+      <option value="haus">⌂ HAUS Day</option>
       <option value="clay">🏺 Warm Clay</option>
-      <option value="warm">🌅 Warm Taupe</option>
       <option value="sage">🌿 Soft Sage</option>
       <option value="mist">🌫️ Mist Blue</option>
     </select>
@@ -256,7 +261,7 @@ const state = {
 
 // ===== THEME =====
 function setTheme(name){
-  const tc = ['theme-neon','theme-vintage','theme-cosmic','theme-onedark','theme-light','theme-warm','theme-sage','theme-mist','theme-clay'];
+  const tc = ['theme-neon','theme-vintage','theme-cosmic','theme-onedark','theme-light','theme-warm','theme-sage','theme-mist','theme-clay','theme-haus','theme-hausnight'];
   document.body.classList.remove(...tc);
   if(name !== 'dark') document.body.classList.add('theme-' + name);
   state.theme = name;
@@ -264,7 +269,7 @@ function setTheme(name){
   drawAnim();
 }
 function isDark(){
-  return state.theme === 'dark' || state.theme === 'neon' || state.theme === 'vintage' || state.theme === 'cosmic' || state.theme === 'onedark';
+  return state.theme === 'dark' || state.theme === 'neon' || state.theme === 'vintage' || state.theme === 'cosmic' || state.theme === 'onedark' || state.theme === 'hausnight';
 }
 
 // ===== PHYSICS =====
