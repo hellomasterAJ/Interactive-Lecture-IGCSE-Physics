@@ -52,8 +52,8 @@
           "description": "Aristotle categorised all motion into two types: natural motion (objects seeking their proper place) and violent motion (motion requiring an external force). This classification dominated physics for nearly 2,000 years.",
           "myth_vs_fact": "This was not a controlled experiment. Aristotle relied on everyday observation and logical reasoning. His conclusions (e.g., heavier objects fall faster) were reasonable based on casual observation, but he never tested for the role of air resistance.",
           "title_th": "Classification of Motion (การจำแนกประเภทการเคลื่อนที่)",
-          "desc_th": "Aristotle (อริสโตเติล) จำแนกการเคลื่อนที่ที่ี่ั้งหมดเป็น 2 ประเภท: การเคลื่อนที่ตามธรรมชาติ (วัตถุหาที่ี่ี่อยููู่่่ตามธรรมชาติของตน) และการเคลื่อนที่แบบรุนแรง (การเคลื่อนที่ที่ี่ี่ต้องใช้แรงภายนอก) การจำแนกันี้ครอบงำฟิสิกส์์์นานเกือบ 2,000 ปี",
-          "myth_th": "นี่ไม่ใช่การที่ี่ดลองที่ี่ี่มีการควบคุม Aristotle (อริสโตเติล) อาศัยการสังเกตในชีวิตประจำวันและการใช้เหตุผลเชิงตรรกะ ข้อสรุปของเข้า (เช่น วัตถุที่ี่ี่หนักกว่าตกลงเร็วกว่า) มีเหตุผลจ้ากการสังเกตที่ี่ั่วไป แต่่่เข้าไม่เคยที่ี่ดสอบบที่ี่บาที่ี่ของแรงต้านอากาศ"
+          "desc_th": "Aristotle (อริสโตเติล) จำแนกการเคลื่อนที่ทั้งหมดเป็น 2 ประเภท: การเคลื่อนที่ตามธรรมชาติ (วัตถุหาที่อยู่ตามธรรมชาติของตน) และการเคลื่อนที่แบบรุนแรง (การเคลื่อนที่ที่ต้องใช้แรงภายนอก) การจำแนกนี้ครอบงำฟิสิกส์นานเกือบ 2,000 ปี",
+          "myth_th": "นี่ไม่ใช่การทดลองที่มีการควบคุม Aristotle (อริสโตเติล) อาศัยการสังเกตในชีวิตประจำวันและการใช้เหตุผลเชิงตรรกะ ข้อสรุปของเขา (เช่น วัตถุที่หนักกว่าตกลงเร็วกว่า) มีเหตุผลจากการสังเกตทั่วไป แต่เขาไม่เคยทดสอบบทบาทของแรงต้านอากาศ"
         }
       ],
       "rating": {
@@ -156,9 +156,9 @@
           "year": "c. 250 BC",
           "description": "King Hiero II suspected a goldsmith had mixed silver into a golden crown. Archimedes needed to detect the impurity without damaging the crown. Stepping into a bath, he noticed water level rise and realised the volume of water displaced equals the volume of the submerged object — allowing him to measure the crown's density.",
           "myth_vs_fact": "The core story is widely accepted. The 'running naked through the streets' detail may be embellishment by later Roman writers. The experiment itself is scientifically valid: use displacement to measure volume, then density to detect impurity.",
-          "title_th": "The Golden Crown — Eureka! (มงกุฎที่ี่ี่องคำ — ยูเรก้า!)",
-          "desc_th": "กษัตริย์ Hiero II (เฮียโรที่ี่ี่ี่ 2) ที่ี่ี่รงสงสัยว่าช่างที่ี่ี่องเจือเงินลงในมงกุฎที่ี่ี่องคำ Archimedes (อาร์คิมิดีส) ต้องตรวจสอบโดยไม่ที่ี่ี่ำให้มงกุฎเสียหาย เมื่อก้าวลงอ่างอาบน้ำ เข้าสังเกตระดับน้ำสูงขึ้นและตระหนักว่าปริมาตรน้ำที่ี่ี่ี่ถูกแที่ี่ี่นที่ี่ี่ี่เที่ี่ี่่ากับปริมาตรของวัตถุที่ี่ี่ี่จม — ที่ี่ี่ำให้วัดคว่ามหนาแน่นของมงกุฎได้",
-          "myth_th": "เรื่องหลักเป็นที่ี่ี่ี่ยอมรับอยููู่่่่างกว้างขว่าง รายละเอียด 'วิ่งเปลือยููู่่่บนถนน' อาจเป็นัการเสริมแต่่่่งโดยนักเขียนโรมันยุคหลัง การที่ี่ี่ดลองนั้นใช้ได้ที่ี่ี่างวิที่ี่ี่ยาศาสตร์: ใช้การแที่ี่ี่นที่ี่ี่ี่วัดปริมาตรแล้วใช้คว่ามหนาแน่นตรวจสอบสิ่งเจือปีน"
+          "title_th": "The Golden Crown — Eureka! (มงกุฎทองคำ — ยูเรก้า!)",
+          "desc_th": "กษัตริย์ Hiero II (เฮียโรที่ 2) ทรงสงสัยว่าช่างทองเจือเงินลงในมงกุฎทองคำ Archimedes (อาร์คิมิดีส) ต้องตรวจสอบโดยไม่ทำให้มงกุฎเสียหาย เมื่อก้าวลงอ่างอาบน้ำ เขาสังเกตระดับน้ำสูงขึ้นและตระหนักว่าปริมาตรน้ำที่ถูกแทนที่เท่ากับปริมาตรของวัตถุที่จม — ทำให้วัดความหนาแน่นของมงกุฎได้",
+          "myth_th": "เรื่องหลักเป็นที่ยอมรับอย่างกว้างขวาง รายละเอียด 'วิ่งเปลือยบนถนน' อาจเป็นการเสริมแต่งโดยนักเขียนโรมันยุคหลัง การทดลองนั้นใช้ได้ทางวิทยาศาสตร์: ใช้การแทนที่วัดปริมาตรแล้วใช้ความหนาแน่นตรวจสอบสิ่งเจือปน"
         },
         {
           "title": "The Lever — Moving a Ship",
@@ -166,8 +166,8 @@
           "description": "Archimedes reportedly single-handedly pulled a fully loaded cargo ship onto land using a compound pulley system, demonstrating the mechanical advantage of levers and pulleys. He is quoted as saying: 'Give me a place to stand, and I shall move the Earth.'",
           "myth_vs_fact": "The ship story is recorded by contemporary historians (Plutarch) and is considered credible. A well-designed compound pulley system could indeed enable one person to move a very heavy load.",
           "title_th": "The Lever — Moving a Ship (คาน — การเคลื่อนย้ายเรือ)",
-          "desc_th": "Archimedes (อาร์คิมิดีส) กล่าวกันว่าดึงเรือบรรที่ี่ีุ่กสินค้าที่ี่ี่ี่เต็มลำขึ้นมาบนบกเพียงคนเดียวโดยใช้ระบบรอกผสม แสดงให้เห็นข้อได้เปรียบเชิงกลของคานและรอก เข้าได้กล่าวว่า: \"ขอจุดยืนให้ฉันสักแห่ง แล้วฉันจะเคลื่อนโลกที่ี่ี่ั้งใบ\"",
-          "myth_th": "เรื่องนี้ถูกบันที่ี่ี่ึกโดยนักประวัติศาสตร์ร่วมสมัย (Plutarch) และถือว่าน่าเชื่อถือ ระบบรอกที่ี่ี่ี่ออกแบบดีสามารถที่ี่ี่ำให้คนคนเดียวเคลื่อนย้ายของหนักมากได้จริง"
+          "desc_th": "Archimedes (อาร์คิมิดีส) กล่าวกันว่าดึงเรือบรรทุกสินค้าที่เต็มลำขึ้นมาบนบกเพียงคนเดียวโดยใช้ระบบรอกผสม แสดงให้เห็นข้อได้เปรียบเชิงกลของคานและรอก เขาได้กล่าวว่า: \"ขอจุดยืนให้ฉันสักแห่ง แล้วฉันจะเคลื่อนโลกทั้งใบ\"",
+          "myth_th": "เรื่องนี้ถูกบันทึกโดยนักประวัติศาสตร์ร่วมสมัย (Plutarch) และถือว่าน่าเชื่อถือ ระบบรอกที่ออกแบบดีสามารถทำให้คนคนเดียวเคลื่อนย้ายของหนักมากได้จริง"
         }
       ],
       "rating": {
