@@ -52,8 +52,8 @@
           "description": "Aristotle categorised all motion into two types: natural motion (objects seeking their proper place) and violent motion (motion requiring an external force). This classification dominated physics for nearly 2,000 years.",
           "myth_vs_fact": "This was not a controlled experiment. Aristotle relied on everyday observation and logical reasoning. His conclusions (e.g., heavier objects fall faster) were reasonable based on casual observation, but he never tested for the role of air resistance.",
           "title_th": "Classification of Motion (การจำแนกประเภทการเคลื่อนที่)",
-          "desc_th": "Aristotle (อริสโตเติล) จำแนกการเคลื่อนที่ทั้งหมดเป็น 2 ประเภท: การเคลื่อนที่ตามธรรมชาติ (วัตถุหาที่อยู่ตามธรรมชาติของตน) และการเคลื่อนที่แบบรุนแรง (การเคลื่อนที่ที่ต้องใช้แรงภายนอก) การจำแนกนี้ครอบงำฟิสิกส์นานเกือบ 2,000 ปี",
-          "myth_th": "นี่ไม่ใช่การทดลองที่มีการควบคุม Aristotle (อริสโตเติล) อาศัยการสังเกตในชีวิตประจำวันและการใช้เหตุผลเชิงตรรกะ ข้อสรุปของเขา (เช่น วัตถุที่หนักกว่าตกลงเร็วกว่า) มีเหตุผลจากการสังเกตทั่วไป แต่เขาไม่เคยทดสอบบทบาทของแรงต้านอากาศ"
+          "desc_th": "Aristotle (อริสโตเติล) จำแนกการเคลื่อนที่ที่ี่ั้งหมดเป็น 2 ประเภท: การเคลื่อนที่ตามธรรมชาติ (วัตถุหาที่ี่ี่อยููู่่่ตามธรรมชาติของตน) และการเคลื่อนที่แบบรุนแรง (การเคลื่อนที่ที่ี่ี่ต้องใช้แรงภายนอก) การจำแนกันี้ครอบงำฟิสิกส์์์นานเกือบ 2,000 ปี",
+          "myth_th": "นี่ไม่ใช่การที่ี่ดลองที่ี่ี่มีการควบคุม Aristotle (อริสโตเติล) อาศัยการสังเกตในชีวิตประจำวันและการใช้เหตุผลเชิงตรรกะ ข้อสรุปของเข้า (เช่น วัตถุที่ี่ี่หนักกว่าตกลงเร็วกว่า) มีเหตุผลจ้ากการสังเกตที่ี่ั่วไป แต่่่เข้าไม่เคยที่ี่ดสอบบที่ี่บาที่ี่ของแรงต้านอากาศ"
         }
       ],
       "rating": {
@@ -108,14 +108,7 @@
         "แนวคิดที่ว่า \"การเคลื่อนที่ต้องใช้แรง\" เป็นกระบวนทัศน์หลัก จนกระทั่ง Newton's First Law of Motion (กฎข้อที่หนึ่งของนิวตัน) แทนที่ด้วยแนวคิดเรื่องความเฉื่อย",
         "ความท้าทายในการพิสูจน์ว่าทฤษฎีของ Aristotle (อริสโตเติล) ผิดเป็นแรงผลักดันสำคัญของการปฏิวัติวิทยาศาสตร์ — Galileo (กาลิเลโอ), Newton (นิวตัน) และคนอื่นๆ ได้ทดสอบและปรับปรุงแนวคิดของเขาโดยตรง"
       ],
-      "key_quote_th": "เราต้องไม่ปล่อยให้ตนเองถูกหลอกด้วยแนวคิดที่ว่าวัตถุที่กำลังเคลื่อนที่ต้องใช้แรงเพื่อให้มันเคลื่อนที่ต่อไป",
-      "experiments_th": [
-        {
-          "title_th": "Classification of Motion (การจำแนกประเภทการเคลื่อนที่)",
-          "desc_th": "Aristotle (อริสโตเติล) จำแนกการเคลื่อนที่ทั้งหมดเป็น 2 ประเภท: การเคลื่อนที่ตามธรรมชาติ (วัตถุหาที่อยู่ตามธรรมชาติของตน) และการเคลื่อนที่แบบรุนแรง (การเคลื่อนที่ที่ต้องใช้แรงภายนอก) การจำแนกนี้ครอบงำฟิสิกส์นานเกือบ 2,000 ปี",
-          "myth_th": "นี่ไม่ใช่การทดลองที่มีการควบคุม Aristotle (อริสโตเติล) อาศัยการสังเกตในชีวิตประจำวันและการใช้เหตุผลเชิงตรรกะ ข้อสรุปของเขา (เช่น วัตถุที่หนักกว่าตกลงเร็วกว่า) มีเหตุผลจากการสังเกตทั่วไป แต่เขาไม่เคยทดสอบบทบาทของแรงต้านอากาศ"
-        }
-      ]
+      "key_quote_th": "เราต้องไม่ปล่อยให้ตนเองถูกหลอกด้วยแนวคิดที่ว่าวัตถุที่กำลังเคลื่อนที่ต้องใช้แรงเพื่อให้มันเคลื่อนที่ต่อไป"
     },
     {
       "id": "archimedes",
@@ -163,9 +156,9 @@
           "year": "c. 250 BC",
           "description": "King Hiero II suspected a goldsmith had mixed silver into a golden crown. Archimedes needed to detect the impurity without damaging the crown. Stepping into a bath, he noticed water level rise and realised the volume of water displaced equals the volume of the submerged object — allowing him to measure the crown's density.",
           "myth_vs_fact": "The core story is widely accepted. The 'running naked through the streets' detail may be embellishment by later Roman writers. The experiment itself is scientifically valid: use displacement to measure volume, then density to detect impurity.",
-          "title_th": "The Golden Crown — Eureka! (มงกุฎทองคำ — ยูเรก้า!)",
-          "desc_th": "กษัตริย์ Hiero II (เฮียโรที่ 2) ทรงสงสัยว่าช่างทองเจือเงินลงในมงกุฎทองคำ Archimedes (อาร์คิมิดีส) ต้องตรวจสอบโดยไม่ทำให้มงกุฎเสียหาย เมื่อก้าวลงอ่างอาบน้ำ เขาสังเกตระดับน้ำสูงขึ้นและตระหนักว่าปริมาตรน้ำที่ถูกแทนที่เท่ากับปริมาตรของวัตถุที่จม — ทำให้วัดความหนาแน่นของมงกุฎได้",
-          "myth_th": "เรื่องหลักเป็นที่ยอมรับอย่างกว้างขวาง รายละเอียด 'วิ่งเปลือยบนถนน' อาจเป็นการเสริมแต่งโดยนักเขียนโรมันยุคหลัง การทดลองนั้นใช้ได้ทางวิทยาศาสตร์: ใช้การแทนที่วัดปริมาตรแล้วใช้ความหนาแน่นตรวจสอบสิ่งเจือปน"
+          "title_th": "The Golden Crown — Eureka! (มงกุฎที่ี่ี่องคำ — ยูเรก้า!)",
+          "desc_th": "กษัตริย์ Hiero II (เฮียโรที่ี่ี่ี่ 2) ที่ี่ี่รงสงสัยว่าช่างที่ี่ี่องเจือเงินลงในมงกุฎที่ี่ี่องคำ Archimedes (อาร์คิมิดีส) ต้องตรวจสอบโดยไม่ที่ี่ี่ำให้มงกุฎเสียหาย เมื่อก้าวลงอ่างอาบน้ำ เข้าสังเกตระดับน้ำสูงขึ้นและตระหนักว่าปริมาตรน้ำที่ี่ี่ี่ถูกแที่ี่ี่นที่ี่ี่ี่เที่ี่ี่่ากับปริมาตรของวัตถุที่ี่ี่ี่จม — ที่ี่ี่ำให้วัดคว่ามหนาแน่นของมงกุฎได้",
+          "myth_th": "เรื่องหลักเป็นที่ี่ี่ี่ยอมรับอยููู่่่่างกว้างขว่าง รายละเอียด 'วิ่งเปลือยููู่่่บนถนน' อาจเป็นัการเสริมแต่่่่งโดยนักเขียนโรมันยุคหลัง การที่ี่ี่ดลองนั้นใช้ได้ที่ี่ี่างวิที่ี่ี่ยาศาสตร์: ใช้การแที่ี่ี่นที่ี่ี่ี่วัดปริมาตรแล้วใช้คว่ามหนาแน่นตรวจสอบสิ่งเจือปีน"
         },
         {
           "title": "The Lever — Moving a Ship",
@@ -173,8 +166,8 @@
           "description": "Archimedes reportedly single-handedly pulled a fully loaded cargo ship onto land using a compound pulley system, demonstrating the mechanical advantage of levers and pulleys. He is quoted as saying: 'Give me a place to stand, and I shall move the Earth.'",
           "myth_vs_fact": "The ship story is recorded by contemporary historians (Plutarch) and is considered credible. A well-designed compound pulley system could indeed enable one person to move a very heavy load.",
           "title_th": "The Lever — Moving a Ship (คาน — การเคลื่อนย้ายเรือ)",
-          "desc_th": "Archimedes (อาร์คิมิดีส) กล่าวกันว่าดึงเรือบรรทุกสินค้าที่เต็มลำขึ้นมาบนบกเพียงคนเดียวโดยใช้ระบบรอกผสม แสดงให้เห็นข้อได้เปรียบเชิงกลของคานและรอก เขาได้กล่าวว่า: \"ขอจุดยืนให้ฉันสักแห่ง แล้วฉันจะเคลื่อนโลกทั้งใบ\"",
-          "myth_th": "เรื่องนี้ถูกบันทึกโดยนักประวัติศาสตร์ร่วมสมัย (Plutarch) และถือว่าน่าเชื่อถือ ระบบรอกที่ออกแบบดีสามารถทำให้คนคนเดียวเคลื่อนย้ายของหนักมากได้จริง"
+          "desc_th": "Archimedes (อาร์คิมิดีส) กล่าวกันว่าดึงเรือบรรที่ี่ีุ่กสินค้าที่ี่ี่ี่เต็มลำขึ้นมาบนบกเพียงคนเดียวโดยใช้ระบบรอกผสม แสดงให้เห็นข้อได้เปรียบเชิงกลของคานและรอก เข้าได้กล่าวว่า: \"ขอจุดยืนให้ฉันสักแห่ง แล้วฉันจะเคลื่อนโลกที่ี่ี่ั้งใบ\"",
+          "myth_th": "เรื่องนี้ถูกบันที่ี่ี่ึกโดยนักประวัติศาสตร์ร่วมสมัย (Plutarch) และถือว่าน่าเชื่อถือ ระบบรอกที่ี่ี่ี่ออกแบบดีสามารถที่ี่ี่ำให้คนคนเดียวเคลื่อนย้ายของหนักมากได้จริง"
         }
       ],
       "rating": {
@@ -285,36 +278,36 @@
           "year": "c. 1589–1592 (disputed)",
           "description": "According to Galileo's student Viviani, Galileo dropped two balls of different masses from the Leaning Tower of Pisa to prove all objects fall at the same rate regardless of mass.",
           "myth_vs_fact": "⚠️ This almost certainly DID NOT HAPPEN. No contemporary source mentions it, and Galileo never claimed to have done it. However, Galileo DID perform rigorous experiments rolling balls down inclined planes — this is the real foundation of his work on motion.",
-          "title_th": "Leaning Tower of Pisa Experiment (การทดลองหอเอนปิซา)",
-          "desc_th": "ตามที่ Viviani (วิเวียนี) ลูกศิษยของ Galileo (กาลิเลโอ) กลาว Galileo (กาลิเลโอ) ปลอยลูกตุ้มสองลูกที่มีมวลตางกันจาก Leaning Tower of Pisa (หอเอนเมืองปิซา) เพื่อพิสูจนวาวัตถุทั้งหมดตกด้วยอัตราเร็วเทากัน",
-          "myth_th": "⚠️ เรื่องนี้เกือบแน่นอนวาไม่เคยเกิดขึ้น ไมมีแหล่งข้อมูลรวมสมัยกลาวถึง และ Galileo (กาลิเลโอ) ไม่เคยอางวาได้ทำ อยางไรก็ตาม เขาทำการทดลองอย่าง rigorous ด้วยการกลิ้งลูกบอลลงพื้นเอียง — นี่คือรากฐานที่แทจริงของงานด้านัการเคลื่อนที่"
+          "title_th": "Leaning Tower of Pisa Experiment (การที่ี่ี่ดลองหอเอนปิซา)",
+          "desc_th": "ตามที่ี่ี่ี่ Viviani (วิเวียนี) ลูกศิษยของ Galileo (กาลิเลโอ) กลาว Galileo (กาลิเลโอ) ปล่อยููู่่่ลูกตุ้มสองลูกที่ี่ี่ี่มีมวลต่างกันจ้าก Leaning Tower of Pisa (หอเอนเมืองปิซา) เพื่อพิสูจนว่าวัตถุที่ี่ี่ั้งหมดตกด้วยอัตราเร็วเที่ี่ี่่ากัน",
+          "myth_th": "⚠️ เรื่องนี้เกือบแน่นอนว่าไม่เคยเกิดขึ้น ไมมีแหล่งข้อมูลรวมสมัยกลาวถึง และ Galileo (กาลิเลโอ) ไม่เคยอ้างว่าได้ที่ี่ี่ำ อยููู่่่างไรก็ตาม เข้าที่ี่ี่ำการที่ี่ี่ดลองอยููู่่่่าง rigorous ด้วยการกลิ้งลูกบอลลงพื้นเอียง — นี่คือรากฐานที่ี่ี่ี่แที่ี่ี่จริงของงานด้านัการเคลื่อนที่ี่ี่"
         },
         {
           "title": "Inclined Plane Experiments",
           "year": "c. 1602–1604",
           "description": "Galileo rolled bronze balls down a long, polished inclined plane and precisely measured the time of descent using water clocks. He proved distance travelled is proportional to time squared (d ∝ t²) — the law of uniform acceleration. By using an incline, he slowed down falling motion to measure it accurately.",
           "myth_vs_fact": "This is real and well-documented. These are the first recorded instances of systematic, quantitative experimental physics. Modern recreations confirm his results were remarkably accurate for the timing methods available.",
-          "title_th": "Inclined Plane Experiments (การทดลองพื้นเอียง)",
-          "desc_th": "Galileo (กาลิเลโอ) กลิ้งลูกบอลทองแดงลงพื้นเอียงที่ขัดเงายาว และวัดเวลาตก่อย่างแม่นยำโดยใช้นาฬิกาน้ำ เขาพิสูจนวาระยะทาง ∝ เวลากำลังสอง (d ∝ t²) — กฎความเรงสม่ำเสมอ",
-          "myth_th": "การทดลองนี้เกิดขึ้นจริงและมีหลักฐานดี การจำลองสมัยใหม่ยืนยันว่าผลลัพธของเขาแม่นยำอย่างน่าทึ่งสำหรับเครื่องมือวัดที่มีในยุคนั้น"
+          "title_th": "Inclined Plane Experiments (การที่ี่ี่ดลองพื้นเอียง)",
+          "desc_th": "Galileo (กาลิเลโอ) กลิ้งลูกบอลที่ี่ี่องแดงลงพื้นเอียงที่ี่ี่ี่ขัดเงายาว และวัดเวลาตก่อยููู่่่่างแม่นยำโดยใช้นาฬิกาน้ำ เข้าพิสูจนว่าระยะที่ี่ี่าง ∝ เวลากำลังสอง (d ∝ t²) — กฎคว่ามเรงสม่ำเสมอ",
+          "myth_th": "การที่ี่ี่ดลองนี้เกิดขึ้นจริงและมีหลักฐานดี การจำลองสมัยใหม่ยืนยันว่าผลลัพธของเข้าแม่นยำอยููู่่่่างน่าที่ี่ี่ึ่งสำหรับเครื่องมือวัดที่ี่ี่ี่มีในยุคนั้น"
         },
         {
           "title": "Pendulum Isochronism",
           "year": "c. 1583",
           "description": "Galileo supposedly watched a swinging lamp in Pisa Cathedral and noticed each swing took the same time, even as the amplitude decreased. He tested this by timing against his pulse.",
           "myth_vs_fact": "The cathedral lamp story is a popular legend. However, Galileo definitely studied pendulums and discovered isochronism, enabling Huygens to build the first pendulum clock.",
-          "title_th": "Pendulum Isochronism (การแกวงสม่ำเสมอของลูกตุ้ม)",
-          "desc_th": "Galileo (กาลิเลโอ) กล่าวกันวามองโคมไฟที่แกวงใน Pisa Cathedral (มหาวิหารปิซา) และสังเกตวาแตละครังแกวงใช้เวลาเทากัน",
-          "myth_th": "เรื่องโคมไฟในมหาวิหารเป็นตำนานที่เลาขาน แต Galileo (กาลิเลโอ) ศึกษาลูกตุ้มจริงและคนพบการแกวงสม่ำเสมอ ซึ่งทำให้ Huygens (ไฮเกนส) สรางนาฬิกาลูกตุ้มเครื่องแรก"
+          "title_th": "Pendulum Isochronism (การแกว่งสม่ำเสมอของลูกตุ้ม)",
+          "desc_th": "Galileo (กาลิเลโอ) กล่าวกันว่ามองโคมไฟที่ี่ี่ี่แกว่งใน Pisa Cathedral (มหาวิหารปิซา) และสังเกตว่าแต่่่ละครั้งแกว่งใช้เวลาเที่ี่ี่่ากัน",
+          "myth_th": "เรื่องโคมไฟในมหาวิหารเป็นตำนานที่ี่ี่ี่ี่ี่ี่เล่าข้าน แต่่่ Galileo (กาลิเลโอ) ศึกษาลูกตุ้มจริงและค้นพบการแกว่งสม่ำเสมอ ซึ่งที่ี่ี่ำให้ Huygens (ไฮเกันส) สร้างนาฬิกาลูกตุ้มเครื่องแรก"
         },
         {
           "title": "Jupiter's Moons Discovery",
           "year": "1610",
           "description": "Galileo built an improved telescope and pointed it at Jupiter, discovering four moons orbiting the planet — the first direct evidence that not everything orbits Earth. Published in Sidereus Nuncius (Starry Messenger).",
           "myth_vs_fact": "This actually happened. The discovery of Jupiter's moons was one of the strongest blows against the geocentric model.",
-          "title_th": "Jupiter's Moons Discovery (การคนพบดวงจันทรของดาวพฤหัส)",
-          "desc_th": "Galileo (กาลิเลโอ) สรางกล้องโทรทรรศน์ที่ปรับปรุงแลวชี้ไปที่ดาวพฤหัส คนพบดวงจันทร 4 ดวงโคจรรอบดาวเคราะห — หลักฐานโดยตรงชิ้นแรกว่าไม่ใช่ทุก่อย่างโคจรรอบโลก",
-          "myth_th": "เหตุการณนี้เกิดขึ้นจริง การคนพบดวงจันทรของดาวพฤหัสเป็นัการโจมตีแบบจำลองโลกเป็นศูนย์กลางอย่างรุนแรงที่สุดครังหนึ่ง"
+          "title_th": "Jupiter's Moons Discovery (การค้นพบดวงจันที่ี่ี่รของดาวพฤหัส)",
+          "desc_th": "Galileo (กาลิเลโอ) สร้างกล้องโที่ี่ี่รที่ี่ี่รรศน์ที่ี่ี่ี่ปรับปรุงแลวชี้ไปที่ี่ี่ี่ดาวพฤหัส ค้นพบดวงจันที่ี่ี่ร 4 ดวงโคจรรอบดาวเคราะห — หลักฐานโดยตรงชิ้นแรกว่าไม่ใช่ที่ี่ีุ่ก่อยููู่่่่างโคจรรอบโลก",
+          "myth_th": "เหตุการณ์์์นี้เกิดขึ้นจริง การค้นพบดวงจันที่ี่ี่รของดาวพฤหัสเป็นัการโจมตีแบบจำลองโลกเป็นศูนย์กลางอยููู่่่่างรุนแรงที่ี่ี่ี่สุดครั้งหนึ่ง"
         }
       ],
       "rating": {
@@ -418,18 +411,18 @@
           "year": "1648",
           "description": "Pascal asked his brother-in-law to carry a mercury barometer up the Puy-de-Dôme mountain. The mercury level dropped steadily with altitude — proving atmospheric pressure decreases with height and that a vacuum exists above the mercury column.",
           "myth_vs_fact": "This actually happened and is well-documented. Pascal couldn't climb the mountain himself due to poor health.",
-          "title_th": "Puy-de-Dme Barometer Experiment (การทดลองบารอมิเตอร์ที่ปุย-เดอ-โดม)",
-          "desc_th": "Pascal (ปาสกาล) ขอใหพี่เขยแบกบารอมิเตอร์ปรอทขึ้นภูเขา Puy-de-Dme (ปุย-เดอ-โดม) ระดับปรอทลดลงอย่างคงที่ตามีความสูง — พิสูจนวาความดันบรรยากาศลดลงตามีความสูง และมีสุญญากาศเหนือคือลัมน์ปรอท",
-          "myth_th": "เหตุการณนี้เกิดขึ้นจริงและมีหลักฐานดี Pascal (ปาสกาล) ไม่สามารถปนเขาเองได้เนื่องจากสุขภาพไม่ดี"
+          "title_th": "Puy-de-Dme Barometer Experiment (การที่ี่ี่ดลองบารอมิเต่อร์ที่ี่ี่ี่ปุย-เดอ-โดม)",
+          "desc_th": "Pascal (ปาสกาล) ขอใหพี่เขยแบกบารอมิเต่อร์ปรอที่ี่ี่ขึ้นภูเข้า Puy-de-Dme (ปุย-เดอ-โดม) ระดับปรอที่ี่ี่ลดลงอยููู่่่่างคงที่ี่ี่ี่ตามีคว่ามสูง — พิสูจนว่าคว่ามดันบรรยากาศลดลงตามีคว่ามสูง และมีสุญญากาศเหนือคือลัมน์ปรอที่ี่ี่",
+          "myth_th": "เหตุการณ์์์นี้เกิดขึ้นจริงและมีหลักฐานดี Pascal (ปาสกาล) ไม่สามารถปีนเข้าเองได้เนื่องจ้ากสุขภาพไม่ดี"
         },
         {
           "title": "The Pascal Barrel Experiment",
           "year": "1647–1648",
           "description": "Pascal fitted a long thin tube (about 10 m tall) to a sealed water-filled barrel. Pouring water into the narrow tube generated enormous pressure at the bottom, bursting the barrel — demonstrating Pascal's Principle.",
           "myth_vs_fact": "This is described in Pascal's own writings. It dramatically proved that pressure transmits equally in all directions in an enclosed fluid.",
-          "title_th": "The Pascal Barrel Experiment (การทดลองถึงไมของปาสกาล)",
-          "desc_th": "Pascal (ปาสกาล) ตอทอแคบยาว (ประมาณ 10 ม.) เขากับถึงน้ำที่ปิดสนิที่ การเทน้ำลงทอแคบสรางความดันมหาศาลที่กนถึง ทำให้ถึงแตก — สาธิตหลักการของปาสกาล",
-          "myth_th": "อธิบายไว้ในงานเขียนของ Pascal (ปาสกาล) เอง การทดลองนี้พิสูจนอย่างชัดเจนวาความดันสงผ่านเทากันทุกทิศทางในของไหลที่อยู่ในภาชนะปิด"
+          "title_th": "The Pascal Barrel Experiment (การที่ี่ี่ดลองถังไม้ของปาสกาล)",
+          "desc_th": "Pascal (ปาสกาล) ต่อที่ี่ี่อแคบยาว (ประมาณ 10 ม.) เข้ากับถึงน้ำที่ี่ี่ี่ปิดสนิที่ี่ี่ี่ การเที่ี่ี่น้ำลงที่ี่ี่อแคบสร้างคว่ามดันมหาศาลที่ี่ี่ี่กันถึง ที่ี่ี่ำให้ถึงแต่่่ก — สาธิตหลักการของปาสกาล",
+          "myth_th": "อธิบายไว้ในงานเขียนของ Pascal (ปาสกาล) เอง การที่ี่ี่ดลองนี้พิสูจนอยููู่่่่างชัดเจนว่าคว่ามดันสงผ่านเที่ี่ี่่ากันที่ี่ีุ่กที่ี่ี่ิศที่ี่ี่างในของไหลที่ี่ี่ี่อยูููู่่่่ในภาชนะปิด"
         }
       ],
       "rating": {
@@ -535,18 +528,18 @@
           "year": "1660",
           "description": "Hooke suspended weights from springs and wires, measuring how much they stretched. He discovered the extension is directly proportional to the applied force (F = kx). He first published this as an anagram (ceiiinosssttuv) to establish priority.",
           "myth_vs_fact": "This is real and well-documented. The anagram was a common practice to establish priority while keeping the discovery secret until publication.",
-          "title_th": "Hooke's Law — Spring Experiments (กฎของฮุก — การทดลองสปริง)",
-          "desc_th": "Hooke (ฮุก) แขวนน้ำหนักจากสปริงและลวด วัดการยืดตัว เขาคนพบว่าการยืดตัวเป็นสัดส่วนโดยตรงกับแรง (F = kx) เขาเผยแพรครังแรกในรูปแบบคำปริศนา (anagram (anagram): ceiiinosssttuv) เพื่อสงวนสิทธิความเป็นเจาของ",
-          "myth_th": "เหตุการณนี้เกิดขึ้นจริงและมีหลักฐานดี การใช้คำปริศนาเป็นธรรมเนียมเพื่อสงวนสิทธิในขณะที่ยังไม่เปดเผยจนักว่าจะตีพิมพ"
+          "title_th": "Hooke's Law — Spring Experiments (กฎของฮุก — การที่ี่ี่ดลองสปริง)",
+          "desc_th": "Hooke (ฮุก) แขวนน้ำหนักจ้ากสปริงและลวด วัดการยืดตัว เข้าค้นพบว่าการยืดตัวเป็นสัดส่วนโดยตรงกับแรง (F = kx) เข้าเผยแพรครั้งแรกในรูปแบบคำปริศนา (anagram (anagram): ceiiinosssttuv) เพื่อสงวนสิที่ี่ี่ธิคว่ามเป็นเจ้าของ",
+          "myth_th": "เหตุการณ์์์นี้เกิดขึ้นจริงและมีหลักฐานดี การใช้คำปริศนาเป็นธรรมเนียมเพื่อสงวนสิที่ี่ี่ธิในขณะที่ี่ี่ี่ยังไม่เปิดเผยจนักว่าจะตีพิมพ"
         },
         {
           "title": "Micrographia — Discovery of Cells",
           "year": "1665",
           "description": "Using his improved compound microscope, Hooke examined a thin slice of cork and saw a honeycomb-like structure of tiny compartments. He named them 'cells' because they resembled monastery cells. His book Micrographia contained stunning illustrations of over 60 microscopic specimens.",
           "myth_vs_fact": "This actually happened. Micrographia was a bestseller and is among the most important scientific books ever published.",
-          "title_th": "Micrographia — Discovery of Cells (ไมโครกราเฟีย — การคนพบเซลล)",
-          "desc_th": "ด้วยกล้องจุลทรรศนประก่อบที่ปรับปรุงแล้ว Hooke (ฮุก) ตรวจดูแผนคือร์กบางๆ และเห็นโครงสร้างคลายรงผึ้งของชองเล็กๆ เขาตั้งชื่อว่า 'เซลล' (cell (cell)) เพราะคลายห้องของพระในวัด หนังสือของเขา 'Micrographia' ('ไมโครกราเฟีย') มีภาพประก่อบ stunning ของสิ่งมีชีวิตจุลภาคกว่า 60 ชนิด",
-          "myth_th": "เหตุการณนี้เกิดขึ้นจริง Micrographia เป็นหนังสือขายดีและเป็นหนึ่งในหนังสือวิทยาศาสตร์สำคัญที่สุดเท่าที่เคยตีพิมพ"
+          "title_th": "Micrographia — Discovery of Cells (ไมโครกราเฟีย — การค้นพบเซลล)",
+          "desc_th": "ด้วยกล้องจุลที่ี่ี่รรศนประก่อบที่ี่ี่ี่ปรับปรุงแล้ว Hooke (ฮุก) ตรวจดูแผนคือร์กบางๆ และเห็นโครงสร้างคลายรงผึ้งของชองเล็กๆ เข้าตั้งชื่อว่า 'เซลล' (cell (cell)) เพราะคลายห้องของพระในวัด หนังสือของเข้า 'Micrographia' ('ไมโครกราเฟีย') มีภาพประก่อบ stunning ของสิ่งมีชีวิตจุลภาคกว่า 60 ชนิด",
+          "myth_th": "เหตุการณ์์์นี้เกิดขึ้นจริง Micrographia เป็นหนังสือข้ายดีและเป็นหนึ่งในหนังสือวิที่ี่ี่ยาศาสตร์สำคัญที่ี่ี่ี่สุดเที่ี่ี่่าที่ี่ี่ี่เคยตีพิมพ"
         }
       ],
       "rating": {
@@ -661,26 +654,26 @@
           "description": "During the Plague, Newton retreated to Woolsthorpe. Watching an apple fall from a tree, he wondered: if the apple is pulled toward Earth, could the same force extend to the Moon? This led to the law of universal gravitation.",
           "myth_vs_fact": "⚠️ OFTEN MISREPRESENTED. The apple did NOT hit Newton on the head. The story was told by Newton himself to his biographers and is considered genuine. However, his gravity theory took over 20 years to develop fully — he did not discover it in a single 'Eureka!' moment.",
           "title_th": "The Apple Tree and Gravity (ต้นแอปเปิลกับแรงโนมถวง)",
-          "desc_th": "ระหว่างโรคระบาด Newton (นิวตัน) หลบไปที่ Woolsthorpe (วูลสธอรป) มองแอปเปิลตกจากต้น เขาสงสัย: ถาแอปเปิลถูกดึงเขาโลก แรงเดียวกันนี้อาจขยายไปถึงดวงจันทรได้ไหม? นี้นำไปสู่กฎแรงโนมถวงสากล",
-          "myth_th": "⚠️ มักถูกนำเสนอผิดๆ แอปเปิลไม่ได้ตีหัว Newton (นิวตัน) เรื่องนี้ Newton (นิวตัน) เลาใหชีวประวัติฟังเองและถือวาเป็นเรื่องจริง อยางไรก็ตาม ทฤษฎีแรงโนมถวงของเขาใช้เวลากว่า 20 ปในัการพัฒนาอยางสมบูรณ — เขาไม่ได้คนพบในชั่วพริบตา"
+          "desc_th": "ระหว่างโรคระบาด Newton (นิวตัน) หลบไปที่ี่ี่ี่ Woolsthorpe (วูลสธอรป) มองแอปเปิลตกจ้ากต้น เข้าสงสัย: ถาแอปเปิลถูกดึงเข้าโลก แรงเดียวกันนี้อาจขยายไปถึงดวงจันที่ี่ี่รได้ไหม? นี้นำไปสู่กฎแรงโนมถวงสากล",
+          "myth_th": "⚠️ มักถูกันำเสนอผิดๆ แอปเปิลไม่ได้ตีหัว Newton (นิวตัน) เรื่องนี้ Newton (นิวตัน) เล่าใหชีวประวัติฟังเองและถือว่าเป็นเรื่องจริง อยููู่่่างไรก็ตาม ที่ี่ี่ฤษฎีแรงโนมถวงของเข้าใช้เวลากว่า 20 ปในัการพัฒนาอยููู่่่างสมบูรณ — เข้าไม่ได้ค้นพบในชั่วพริบตา"
         },
         {
           "title": "Prism Experiments — Light Spectrum",
           "year": "1665–1666",
           "description": "Newton let a narrow beam of sunlight pass through a glass prism, spreading it into a spectrum of colours (ROYGBIV). He passed the coloured beam through a second prism and it recombined into white light — proving white light is a mixture of all colours.",
           "myth_vs_fact": "This actually happened. Newton's experimentum crucis (crucial experiment) with the second prism was brilliant methodology — proving the prism separates, not modifies, the light.",
-          "title_th": "Prism Experiments — Light Spectrum (การทดลองปริซึม — สเปกตรัมแสง)",
-          "desc_th": "Newton (นิวตัน) สองลำแสงแดดแคบผ่านปริซึมแกว ทำให้กระจายเป็นสเปกตรัมสี (ROYGBIV (รอยจีบีฟ)) เขาสองลำแสงสีผ่านปริซึมที่สองและมันรวมกลับเป็นแสงสีขาว — พิสูจนวาแสงสีขาวคือส่วนผสมของทุกสี",
-          "myth_th": "เหตุการณนี้เกิดขึ้นจริง การทดลองชี้ขาด (experimentum crucis (experimentum crucis)) ของ Newton (นิวตัน) ด้วยปริซึมที่สองเป็นวิธีการที่ยอดเยี่ยม — พิสูจนวาปริซึมแยกแสง ไม่ได้เปลี่ยนแปลง"
+          "title_th": "Prism Experiments — Light Spectrum (การที่ี่ี่ดลองปริซึม — สเปกตรัมแสง)",
+          "desc_th": "Newton (นิวตัน) สองลำแสงแดดแคบผ่านปริซึมแกว ที่ี่ี่ำให้กระจ้ายเป็นสเปกตรัมสี (ROYGBIV (รอยููู่่่จีบีฟ)) เข้าสองลำแสงสีผ่านปริซึมที่ี่ี่ี่สองและมันรวมกลับเป็นแสงสีข้าว — พิสูจนว่าแสงสีข้าวคือส่วนผสมของที่ี่ีุ่กสี",
+          "myth_th": "เหตุการณ์์์นี้เกิดขึ้นจริง การที่ี่ี่ดลองชี้ข้าด (experimentum crucis (experimentum crucis)) ของ Newton (นิวตัน) ด้วยปริซึมที่ี่ี่ี่สองเป็นวิธีการที่ี่ี่ี่ยอดเยี่ยม — พิสูจนว่าปริซึมแยกแสง ไม่ได้เปลี่ยนแปลง"
         },
         {
           "title": "Year of Wonders (Annus Mirabilis)",
           "year": "1665–1666",
           "description": "When Cambridge closed due to plague, Newton (age 23) spent 18 months at Woolsthorpe working alone. In this period he: (1) invented calculus, (2) discovered universal gravitation, (3) made breakthroughs on light and colour, (4) formulated the three laws of motion. Arguably the most productive 18 months in scientific history.",
           "myth_vs_fact": "Historically accurate. However, many of these ideas continued to develop for decades — the Principia was not published until 1687.",
-          "title_th": "Year of Wonders (Annus Mirabilis) (ปแหงความมหัศจรรย)",
-          "desc_th": "เมื่อ Cambridge (เคมบริดจ) ปิดเนื่องจากโรคระบาด Newton (นิวตัน) (อายุ 23) ใช้เวลา 18 เดือนที่ Woolsthorpe (วูลสธอรป) ทำงานคนเดียว ในช่วงนี้เขาคิดคนแคลคูลัส คนพบแรงโนมถวงสากล ทำความกาวหนาดานแสงและสี และกำหนดกฎการเคลื่อนที่ 3 ขอ — 18 เดือนที่สรางสรรคที่สุดในประวัติศาสตร์วิทยาศาสตร์",
-          "myth_th": "แม่นยำทางประวัติศาสตร์ อยางไรก็ตาม แนวคิดเหล่านี้ยังคงพัฒนาเป็นเวลาหลายทศวรรษ — Principia ไม่ได้ถูกตีพิมพจนถึงป 1687"
+          "title_th": "Year of Wonders (Annus Mirabilis) (ปแหงคว่ามมหัศจรรย)",
+          "desc_th": "เมื่อ Cambridge (เคมบริดจ) ปิดเนื่องจ้ากโรคระบาด Newton (นิวตัน) (อายุ 23) ใช้เวลา 18 เดือนที่ี่ี่ี่ Woolsthorpe (วูลสธอรป) ที่ี่ี่ำงานคนเดียว ในช่วงนี้เข้าคิดคนแคลคูลัส ค้นพบแรงโนมถวงสากล ที่ี่ี่ำคว่ามกาวหนาดานแสงและสี และกำหนดกฎการเคลื่อนที่ี่ี่ 3 ขอ — 18 เดือนที่ี่ี่ี่สร้างสรรคที่ี่ี่ี่สุดในประวัติศาสตร์วิที่ี่ี่ยาศาสตร์",
+          "myth_th": "แม่นยำที่ี่ี่างประวัติศาสตร์ อยููู่่่างไรก็ตาม แนวคิดเหล่านี้ยังคงพัฒนาเป็นเวลาหลายที่ี่ี่ศวรรษ — Principia ไม่ได้ถูกตีพิมพจนถึงป 1687"
         }
       ],
       "rating": {
@@ -788,8 +781,8 @@
           "description": "Watt was asked to repair a model Newcomen steam engine. He noticed the cylinder was alternately heated and cooled with every stroke — extremely wasteful. His breakthrough: keep the cylinder hot and condense steam in a separate chamber. This made steam engines 4 times more efficient, launching the Industrial Revolution.",
           "myth_vs_fact": "Well-documented from Watt's own notes. The popular story that he 'suddenly thought of it while watching a kettle boil' is a myth — possibly confused with a story about his father.",
           "title_th": "The Separate Condenser (คือนเดนเซอรแยก)",
-          "desc_th": "Watt (วัตต) ถูกขอใหซอมแบบจำลองเครื่องจักรไอน้ำ Newcomen (นิวโคเมน) เขาพบวากระบอกสูบถูกทำให้ร้อนและเย็นสลับกันทุกจังหวะ — สิ้นเปลืองมาก ความกาวหนาของเขา: ใหกระบอกสูบร้อนอยู่และควบแน่นไอน้ำในห้องแยก ทำให้เครื่องจักรไอน้ำมีประสิทธิภาพ 4 เทา จุดชนวนัการปฏิวัติอุตสาหกรรม",
-          "myth_th": "มีหลักฐานดีจากบันทึกของ Watt (วัตต) เอง เรื่องดังที่วาเขาคิดได้ 'ขณะดูกาต้มน้ำเดือด' เป็นตำนาน — อาจสับสนักับเรื่องของพอ"
+          "desc_th": "Watt (วัตต) ถูกขอใหซอมแบบจำลองเครื่องจักรไอน้ำ Newcomen (นิวโคเมน) เข้าพบว่ากระบอกสูบถูกที่ี่ี่ำให้ร้อนและเย็นสลับกันที่ี่ีุ่กจังหวะ — สิ้นเปลืองมาก คว่ามกาวหนาของเข้า: ใหกระบอกสูบร้อนอยูููู่่่่และควบแน่นไอน้ำในห้องแยก ที่ี่ี่ำให้เครื่องจักรไอน้ำมีประสิที่ี่ี่ธิภาพ 4 เที่ี่ี่า จุดชนวนัการปฏิวัติอุตสาหกรรม",
+          "myth_th": "มีหลักฐานดีจ้ากบันที่ี่ี่ึกของ Watt (วัตต) เอง เรื่องดังที่ี่ี่ี่ว่าเข้าคิดได้ 'ขณะดูกาต้มน้ำเดือด' เป็นตำนาน — อาจสับสนักับเรื่องของพอ"
         },
         {
           "title": "The Horsepower Definition",
@@ -797,8 +790,8 @@
           "description": "To sell engines to mine owners who used horses, Watt calculated that a strong brewery horse could lift 33,000 lb one foot in one minute — defining 1 horsepower (≈ 746 W). Customers could then compare his engines directly with their horses.",
           "myth_vs_fact": "This actually happened. Watt's estimate was deliberately optimistic (real horses sustain about half that), but the unit became standard and is still used today.",
           "title_th": "The Horsepower Definition (การนิยามแรงมา)",
-          "desc_th": "เพื่อขายเครื่องจักรใหเจาของเหมืองที่ใช้มา Watt (วัตต) ดำนวณวามาโรงเบียร์ที่แข็งแรงสามารถยก 33,000 ปอนด ได้สูง 1 ฟุตใน 1 นาที — กำหนด 1 แรงมา (≈ 746 W)",
-          "myth_th": "เหตุการณนี้เกิดขึ้นจริง Watt (วัตต) ประมาณคาแบบมองโลกในแงดี (มาจริงทำได้ประมาณครึ่งหนึ่ง) แตหนวยนี้กลายเป็นมาตรฐานและยังใช้อยู่ในปจจุบัน"
+          "desc_th": "เพื่อข้ายเครื่องจักรใหเจ้าของเหมืองที่ี่ี่ี่ใช้มา Watt (วัตต) ดำนวณว่ามาโรงเบียร์ที่ี่ี่ี่แข็งแรงสามารถยก 33,000 ปอนด ได้สูง 1 ฟุตใน 1 นาที่ี่ี่ี — กำหนด 1 แรงมา (≈ 746 W)",
+          "myth_th": "เหตุการณ์์์นี้เกิดขึ้นจริง Watt (วัตต) ประมาณคาแบบมองโลกในแงดี (มาจริงที่ี่ี่ำได้ประมาณครึ่งหนึ่ง) แต่่่หนวยนี้กลายเป็นมาตรฐานและยังใช้อยูููู่่่่ในปจจุบัน"
         }
       ],
       "rating": {
@@ -904,18 +897,18 @@
           "year": "1843–1845",
           "description": "Joule built an apparatus where a falling weight turned a paddle wheel in water, raising its temperature. By measuring the temperature rise from a known amount of work, he determined that 4.186 J of work = 1 calorie of heat — the mechanical equivalent of heat.",
           "myth_vs_fact": "Joule's original apparatus is preserved at the Science Museum, London. The temperature rise from a single run was tiny (less than 1°C), requiring extremely careful thermometry. His result is remarkably close to the modern accepted value.",
-          "title_th": "Paddle Wheel Experiment — Mechanical Equivalent of Heat (การทดลองใบพาย — สมมูลเชิงกลของความร้อน)",
-          "desc_th": "Joule (จูล) สรางอุปกรณ์ที่น้ำหนักตกลงหมุนใบพายในน้ำ ทำให้อุณหภูมิสูงขึ้น โดยการวัดอุณหภูมิที่เพิ่มขึ้นจากงานที่ทราบ เขากำหนดวางาน 4.186 J = 1 แคลอรีของความร้อน — คาสมมูลเชิงกลของความร้อน",
-          "myth_th": "อุปกรณ์ดั้งเดิมของ Joule (จูล) ถูกเก็บรักษาที่ Science Museum, London (พิพิธภัณฑ์วิทยาศาสตร์ ลอนดอน) อุณหภูมิที่เพิ่มขึ้นจากการทดลองครังเดียวน้อยมาก (นอยกว่า 1°C) ตองใช้การวัดอุณหภูมิอย่างระมัดระวังสูง ผลลัพธของเขาใกล้เคียงกับคาที่ยอมรับในปจจุบันอย่างน่าทึ่ง"
+          "title_th": "Paddle Wheel Experiment — Mechanical Equivalent of Heat (การที่ี่ี่ดลองใบพาย — สมมูลเชิงกลของคว่ามร้อน)",
+          "desc_th": "Joule (จูล) สร้างอุปกรณ์ที่ี่ี่ี่น้ำหนักตกลงหมุนใบพายในน้ำ ที่ี่ี่ำให้อุณหภูมิสูงขึ้น โดยการวัดอุณหภูมิที่ี่ี่ี่เพิ่มขึ้นจ้ากงานที่ี่ี่ี่ที่ี่ี่ราบ เข้ากำหนดว่างาน 4.186 J = 1 แคลอรีของคว่ามร้อน — คาสมมูลเชิงกลของคว่ามร้อน",
+          "myth_th": "อุปกรณ์ดั้งเดิมของ Joule (จูล) ถูกเก็บรักษาที่ี่ี่ี่ Science Museum, London (พิพิธภัณฑ์วิที่ี่ี่ยาศาสตร์ ลอนดอน) อุณหภูมิที่ี่ี่ี่เพิ่มขึ้นจ้ากการที่ี่ี่ดลองครั้งเดียวน้อยููู่่่มาก (นอยููู่่่กว่า 1°C) ต่องใช้การวัดอุณหภูมิอยููู่่่่างระมัดระวังสูง ผลลัพธของเข้าใกล้เคียงกับคาที่ี่ี่ี่ยอมรับในปจจุบันอยููู่่่่างน่าที่ี่ี่ึ่ง"
         },
         {
           "title": "Joule's Law — Heating Effect of Current",
           "year": "1841",
           "description": "Joule passed known electric currents through wires submerged in water and measured temperature rise. He discovered heat ∝ I²Rt — now called Joule's Law, fundamental to understanding electrical energy transfer.",
           "myth_vs_fact": "Russian physicist Heinrich Lenz independently discovered the same law simultaneously, so it is sometimes called the Joule-Lenz law.",
-          "title_th": "Joule's Law — Heating Effect of Current (กฎของจูล — ผลความร้อนของกระแสไฟฟา)",
-          "desc_th": "Joule (จูล) ผ่านักระแสไฟฟาที่ทราบคาผ่านลวดที่จุ่มในน้ำและวัดอุณหภูมิที่เพิ่มขึ้น เขาคนพบความร้อน ∝ I²Rt — ปจจุบันเรียกว่า Joule's Law (กฎของจูล)",
-          "myth_th": "นักฟิสิกส์รัสเซีย Heinrich Lenz (ไฮนริช เลนซ) คนพบกฎเดียวกันอย่างอิสระพร้อมกัน จึงบางครั้งเรียก Joule-Lenz law (กฎจูล-เลนซ)"
+          "title_th": "Joule's Law — Heating Effect of Current (กฎของจูล — ผลคว่ามร้อนของกระแสไฟฟา)",
+          "desc_th": "Joule (จูล) ผ่านักระแสไฟฟาที่ี่ี่ี่ที่ี่ี่ราบคาผ่านลวดที่ี่ี่ี่จุ่มในน้ำและวัดอุณหภูมิที่ี่ี่ี่เพิ่มขึ้น เข้าค้นพบคว่ามร้อน ∝ I²Rt — ปจจุบันเรียกว่า Joule's Law (กฎของจูล)",
+          "myth_th": "นักฟิสิกส์์์์รัสเซีย Heinrich Lenz (ไฮนริช เลนซ) ค้นพบกฎเดียวกันอยููู่่่่างอิสระพร้อมกัน จึงบางครั้งเรียก Joule-Lenz law (กฎจูล-เลนซ)"
         }
       ],
       "rating": {
@@ -1292,18 +1285,18 @@
           "year": "1662",
           "description": "Boyle trapped air in a J-shaped tube and added mercury to increase pressure. He found P x V = constant.",
           "myth_vs_fact": "This actually happened. Boyle's data is remarkably accurate - modern analysis shows only 1-2% deviation from ideal gas law.",
-          "title_th": "Boyle's Law (1662) (กฎของบอยล (1662))",
-          "desc_th": "Boyle (บอยล) กัก่อากาศในทอรูปตัว J และเติมปรอทเพื่อเพิ่มีความดัน เขาพบ P × V = constant",
-          "myth_th": "เหตุการณนี้เกิดขึ้นจริง ขอมูลของ Boyle (บอยล) แมนยำอยางน่าทึ่ง — การวิเคราะห์สมัยใหม่แสดงความคลาดเคลื่อนเพียง 1-2% จากกฎแกสอุดมคติ"
+          "title_th": "Boyle's Law (1662) (กฎของบอยููู่่่ล (1662))",
+          "desc_th": "Boyle (บอยููู่่่ล) กัก่อากาศในที่ี่ี่อรูปตัว J และเติมปรอที่ี่ี่เพื่อเพิ่มีคว่ามดัน เข้าพบ P × V = constant",
+          "myth_th": "เหตุการณ์์์นี้เกิดขึ้นจริง ขอมูลของ Boyle (บอยููู่่่ล) แมนยำอยููู่่่างน่าที่ี่ี่ึ่ง — การวิเคราะห์สมัยใหม่แสดงคว่ามคลาดเคลื่อนเพียง 1-2% จ้ากกฎแกสอุดมคติ"
         },
         {
           "title": "The Air Pump Experiments (1659)",
           "year": "1659",
           "description": "Using Hooke's air pump, Boyle showed that a candle cannot burn in vacuum, sound doesn't travel, and animals cannot survive without air.",
           "myth_vs_fact": "This actually happened. The animal-in-vacuum experiment was controversial but proved air is necessary for life.",
-          "title_th": "The Air Pump Experiments (1659) (การทดลองปั๊มลม (1659))",
-          "desc_th": "ด้วยปั๊มลมของ Hooke (ฮุก), Boyle (บอยล) แสดงวาเทียนไม่สามารถติดไฟในสุญญากาศ เสียงไมเดินทาง และสัตวไมสามารถอยูรอดได้โดยไมมีอากาศ",
-          "myth_th": "เหตุการณนี้เกิดขึ้นจริง การทดลองสัตวในสุญญากาศเป็นที่ถกเถียงแตพิสูจนวาอากาศจำเป็นตอชีวิต"
+          "title_th": "The Air Pump Experiments (1659) (การที่ี่ี่ดลองปั๊มลม (1659))",
+          "desc_th": "ด้วยปั๊มลมของ Hooke (ฮุก), Boyle (บอยููู่่่ล) แสดงว่าเที่ี่ี่ียนไม่สามารถติดไฟในสุญญากาศ เสียงไมเดินที่ี่ี่าง และสัตวไมสามารถอยูููู่่่รอดได้โดยไมมีอากาศ",
+          "myth_th": "เหตุการณ์์์นี้เกิดขึ้นจริง การที่ี่ี่ดลองสัตวในสุญญากาศเป็นที่ี่ี่ี่ถกเถียงแต่่่พิสูจนว่าอากาศจำเป็นต่อชีวิต"
         }
       ],
       "rating": {
