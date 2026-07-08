@@ -1011,13 +1011,19 @@
           "title": "Mercury Thermometer (1714)",
           "year": "1714",
           "description": "Fahrenheit replaced alcohol with mercury in a sealed glass tube. Mercury's uniform expansion and wide liquid range made it vastly superior to alcohol thermometers.",
-          "myth_vs_fact": "This actually happened. Modern reproductions show Fahrenheit's thermometers were accurate to within 1 C - remarkable for hand-blown glass."
+          "myth_vs_fact": "This actually happened. Modern reproductions show Fahrenheit's thermometers were accurate to within 1 C - remarkable for hand-blown glass.",
+          "title_th": "Mercury Thermometer (1714) (เทอร์โมมิเตอร์ปรอท (1714))",
+          "desc_th": "Fahrenheit (ฟาเรนไฮต์) เปลี่ยนจากแอลกอฮอล์เป็นปรอทในหลอดแก้วปิด การขยายตัวที่สม่ำเสมอและช่วงสถานะของเหลวที่กว้างของปรอททำให้เหนือกว่าเทอร์โมมิเตอร์แอลกอฮอล์อย่างมาก",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง การจำลองสมัยใหม่แสดงว่าเทอร์โมมิเตอร์ของ Fahrenheit (ฟาเรนไฮต์) มีความแม่นยำภายใน 1°C — น่าทึ่งสำหรับแก้วที่เป่าด้วยมือ"
         },
         {
           "title": "The Fahrenheit Scale (1724)",
           "year": "1724",
           "description": "Fahrenheit defined his scale using 0 F = freezing brine, 32 F = freezing water, 96 F = body temperature. Later recalibrated to 32 F and 212 F for water boiling.",
-          "myth_vs_fact": "Body temperature was originally 96 F to allow the scale to be divided into 12 increments of 8 degrees. Modern body temperature averages 98.6 F due to refined measurement."
+          "myth_vs_fact": "Body temperature was originally 96 F to allow the scale to be divided into 12 increments of 8 degrees. Modern body temperature averages 98.6 F due to refined measurement.",
+          "title_th": "The Fahrenheit Scale (1724) (สเกลฟาเรนไฮต์ (1724))",
+          "desc_th": "Fahrenheit (ฟาเรนไฮต์) กำหนดสเกลของเขาโดยใช้ 0°F = จุดเยือกแข็งของน้ำเกลือ, 32°F = จุดเยือกแข็งของน้ำ, 96°F = อุณหภูมิร่างกาย ต่อมาเทียบมาตรฐานใหม่เป็น 32°F และ 212°F สำหรับจุดเดือดของน้ำ",
+          "myth_th": "อุณหภูมิร่างกายเดิมคือ 96°F เพื่อให้สเกลแบ่งเป็น 12 ช่วงเพิ่มขึ้นทีละ 8 องศา อุณหภูมิร่างกายสมัยใหม่เฉลี่ย 98.6°F เนื่องจากการวัดที่แม่นยำขึ้น"
         }
       ],
       "rating": {
@@ -1053,7 +1059,28 @@
         "summary_en": "Invented the mercury thermometer and the Fahrenheit scale still used in the United States today.",
         "personality_th": "เด็กกำพร้าต้องเรียนทำธุรกิจแต่หันมาเป่าแก้วทำเทอร์โมมิเตอร์, เดินทางทั่วยุโรป, ไม่ยอมเปิดเผยเทคนิคการผลิต",
         "personality_en": "Orphaned at 15, sent to learn business but chose to blow glass instead. Travelled across Europe learning from master craftsmen. Kept his manufacturing techniques secret — a stubborn craftsman who changed how we measure temperature."
-      }
+      },
+      "summary_th": "Daniel Fahrenheit (ดาเนียล ฟาเรนไฮต์) ผู้ประดิษฐ์เทอร์โมมิเตอร์ปรอทและสเกลฟาเรนไฮต์ที่ยังใช้ในสหรัฐอเมริกา",
+      "biography_th": [
+        "Daniel Gabriel Fahrenheit (ดาเนียล กาเบรียล ฟาเรนไฮต์) เกิดในปี 1686 ที่ Danzig (ดานซิก) บิดามารดาเสียชีวิตเมื่อเขาอายุ 15 ปี เขาถูกส่งไป Amsterdam (อัมสเตอร์ดัม) เพื่อเรียนรู้ธุรกิจ",
+        "แทนที่จะเป็นพ่อค้า Fahrenheit (ฟาเรนไฮต์) กลับหลงใหลการทำเครื่องมือ เขาเดินทางทั่วยุโรปเรียนรู้จากช่างเป่าแก้วที่มีฝีมือที่สุด รวมถึง Olaus Romer (โอเลาส์ เรอเมอร์) ใน Copenhagen (โคเปนเฮเกน)",
+        "ความก้าวหน้าของเขามาในปี 1714 เมื่อเขาประดิษฐ์เทอร์โมมิเตอร์ปรอท ปรอทขยายตัวอย่างสม่ำเสมอ ไม่ติดแก้ว และทำงานได้ตั้งแต่ -39 ถึง 357°C นี่คือเทอร์โมมิเตอร์ที่เชื่อถือได้เครื่องแรก",
+        "Fahrenheit (ฟาเรนไฮต์) สร้างสเกลของเขาโดยให้ 0°F เป็นจุดเยือกแข็งของน้ำเกลือ 32°F เป็นจุดเยือกแข็งของน้ำ และ 96°F เป็นอุณหภูมิร่างกาย (ต่อมาเปลี่ยนเป็น 98.6°F)",
+        "เขาเก็บเทคนิคการผลิตเป็นความลับ เทอร์โมมิเตอร์ของเขากลายเป็นมาตรฐานทั่วยุโรปและยังคงใช้ในสหรัฐอเมริกาจนถึงปัจจุบัน"
+      ],
+      "contributions_th": [
+        "ประดิษฐ์เทอร์โมมิเตอร์ปรอท — อุปกรณ์วัดอุณหภูมิที่แม่นยำเครื่องแรก",
+        "สร้างสเกลอุณหภูมิฟาเรนไฮต์ (°F) ที่ยังใช้ในสหรัฐอเมริกา",
+        "สาธิตว่าของเหลวต่างชนิดมีจุดเดือดต่างกัน และจุดเดือดเปลี่ยนแปลงตามความดันบรรยากาศ",
+        "พัฒนาเทคนิคการทำแก้วและการเทียบมาตรฐานที่แม่นยำสำหรับการผลิตเทอร์โมมิเตอร์"
+      ],
+      "legacy_th": [
+        "สเกลฟาเรนไฮต์ยังคงเป็นสเกลที่ใช้ในชีวิตประจำวันในสหรัฐอเมริกาและอีกหลายประเทศ",
+        "เทอร์โมมิเตอร์ปรอทเป็นมาตรฐานทองคำนานกว่า 250 ปี",
+        "เทคนิคการเทียบมาตรฐานของเขากำหนดมาตรฐานสำหรับการวัดอุณหภูมิทั้งหมด",
+        "สเกลฟาเรนไฮต์ฝังรากลึกในวัฒนธรรมอเมริกัน — สภาพอากาศ การทำอาหาร การแพทย์"
+      ],
+      "key_quote_th": "เทอร์โมมิเตอร์เป็นเครื่องมือที่มีประโยชน์ที่สุดเท่าที่เคยประดิษฐ์มาเพื่อความก้าวหน้าของความรู้ทางธรรมชาติ"
     },
     {
       "id": "celsius",
@@ -1099,13 +1126,19 @@
           "title": "The Celsius Scale (1742)",
           "year": "1742",
           "description": "Celsius proposed a 100-degree scale with 0 at boiling and 100 at freezing - deliberately opposite to today's convention.",
-          "myth_vs_fact": "The inverted scale is well-documented. Who reversed it is debated: Linnaeus or Christin. Celsius died before the modern orientation became standard."
+          "myth_vs_fact": "The inverted scale is well-documented. Who reversed it is debated: Linnaeus or Christin. Celsius died before the modern orientation became standard.",
+          "title_th": "The Celsius Scale (1742) (สเกลเซลเซียส (1742))",
+          "desc_th": "Celsius (เซลเซียส) เสนอสเกล 100 องศาโดยให้ 0 ที่จุดเดือดและ 100 ที่จุดเยือกแข็ง — จงใจให้ตรงกันข้ามกับที่ใช้ในปัจจุบัน",
+          "myth_th": "สเกลที่กลับด้านมีหลักฐานชัดเจน ใครเป็นผู้กลับด้านยังเป็นที่ถกเถียง: Linnaeus (ลินเนียส) หรือ Christin (คริสแต็ง) Celsius (เซลเซียส) เสียชีวิตก่อนที่สเกลแบบปัจจุบันจะกลายเป็นมาตรฐาน"
         },
         {
           "title": "Measuring Earth's Shape (1736-1737)",
           "year": "1736",
           "description": "Celsius joined an expedition to Lapland to measure a meridian degree. Results proved Newton's theory that Earth is flattened at the poles.",
-          "myth_vs_fact": "This actually happened. The expedition confirmed Newton's prediction and settled a major scientific dispute."
+          "myth_vs_fact": "This actually happened. The expedition confirmed Newton's prediction and settled a major scientific dispute.",
+          "title_th": "Measuring Earth's Shape (1736-1737) (การวัดรูปร่างของโลก (1736-1737))",
+          "desc_th": "Celsius (เซลเซียส) ร่วมเดินทางสำรวจไปยัง Lapland (แลปแลนด์) เพื่อวัดระยะของเส้นเมริเดียนหนึ่งองศา ผลลัพธ์พิสูจน์ทฤษฎีของ Newton (นิวตัน) ที่ว่าโลกแบนที่ขั้ว",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง การสำรวจยืนยันการทำนายของ Newton (นิวตัน) และยุติข้อโต้แย้งทางวิทยาศาสตร์ครั้งสำคัญ"
         }
       ],
       "rating": {
@@ -1141,7 +1174,28 @@
         "summary_en": "Created the Celsius temperature scale — the global standard for everyday and scientific measurement.",
         "personality_th": "นักดาราศาสตร์ที่วัดอุณหภูมิเป็นงานอดิเรก, เกิดในตระกูลอาจารย์มหาวิทยาลัย, ตายด้วยวัณโรคตอน 42 ปี",
         "personality_en": "An astronomer who measured temperature as a side hobby, born into a family of professors, fundraised to build Sweden's best observatory, died of tuberculosis at 42."
-      }
+      },
+      "summary_th": "Anders Celsius (อันเดอร์ส เซลเซียส) ผู้สร้างสเกลอุณหภูมิเซลเซียส — มาตรฐานสากลสำหรับการวัดในชีวิตประจำวันและวิทยาศาสตร์",
+      "biography_th": [
+        "Anders Celsius (อันเดอร์ส เซลเซียส) เกิดในปี 1701 ที่ Uppsala (อุปซอลา), Sweden (สวีเดน) ในครอบครัวนักวิชาการ",
+        "เขาเป็นศาสตราจารย์ด้านดาราศาสตร์ที่ Uppsala University (มหาวิทยาลัยอุปซอลา) เมื่ออายุ 29 ปี เขาร่วมเดินทางสำรวจเพื่อวัดรูปร่างของโลกที่ Lapland (แลปแลนด์)",
+        "ในปี 1741 เขาก่อตั้ง Uppsala Astronomical Observatory (หอดูดาวอุปซอลา) ด้วยการระดมทุนของตนเอง",
+        "ในปี 1742 Celsius (เซลเซียส) เสนอสเกลโดยให้ 0 ที่จุดเดือด และ 100 ที่จุดเยือกแข็ง — ตรงกันข้ามกับสเกลที่ใช้ในปัจจุบัน!",
+        "สเกลถูกกลับด้านหลังจากเขาเสียชีวิตโดย Carl Linnaeus (คาร์ล ลินเนียส) หรือ Jean-Pierre Christin (ฌ็อง-ปีแยร์ คริสแต็ง) Celsius (เซลเซียส) เสียชีวิตด้วยวัณโรคเมื่ออายุ 42 ปี"
+      ],
+      "contributions_th": [
+        "สร้างสเกลอุณหภูมิเซนติเกรด (ปัจจุบันคือเซลเซียส) — สเกลอุณหภูมิที่ใช้แพร่หลายที่สุดในโลก",
+        "สร้าง Uppsala Astronomical Observatory (หอดูดาวอุปซอลา) ศูนย์วิทยาศาสตร์สำคัญแห่งศตวรรษที่ 18",
+        "ร่วมเดินทางสำรวจเพื่อวัดรูปร่างของโลกที่ Lapland (แลปแลนด์) (1736-1737)",
+        "ศึกษาแสงเหนือ (aurora borealis) อย่างเป็นระบบ"
+      ],
+      "legacy_th": [
+        "สเกลเซลเซียสเป็นสเกลอุณหภูมิมาตรฐานที่ใช้โดยเกือบทุกประเทศบนโลก",
+        "ในวิทยาศาสตร์ เซลเซียสใช้ควบคู่กับเคลวิน — การเปลี่ยนแปลง 1°C เท่ากับ 1 K",
+        "สเกลของเขาทำให้การวัดอุณหภูมิเป็นธรรมชาติ: 0 = จุดเยือกแข็ง, 100 = จุดเดือด",
+        "ชื่อของเขาปรากฏบนเทอร์โมมิเตอร์และพยากรณ์อากาศทั่วโลกทุกวัน"
+      ],
+      "key_quote_th": "วิธีที่ดีที่สุดในการส่งเสริมวิทยาศาสตร์คือการจัดหาเครื่องมือและความมุ่งมั่นที่จะใช้มัน"
     },
     {
       "id": "kelvin",
@@ -1188,19 +1242,28 @@
           "title": "Absolute Temperature Scale (1848)",
           "year": "1848",
           "description": "Thomson proposed a temperature scale based purely on Carnot's theory - independent of any substance. Zero = temperature where a perfect heat engine has zero efficiency.",
-          "myth_vs_fact": "This actually happened. Thomson published 'On an Absolute Thermometric Scale' at age 24. The Kelvin scale was adopted as the SI unit in 1954."
+          "myth_vs_fact": "This actually happened. Thomson published 'On an Absolute Thermometric Scale' at age 24. The Kelvin scale was adopted as the SI unit in 1954.",
+          "title_th": "Absolute Temperature Scale (1848) (สเกลอุณหภูมิสมบูรณ์ (1848))",
+          "desc_th": "Thomson (ทอมสัน) เสนอสเกลอุณหภูมิที่อิงกับทฤษฎีของ Carnot (การ์โน) ล้วนๆ — ไม่ขึ้นกับสารใดสารหนึ่ง ศูนย์ = อุณหภูมิที่เครื่องยนต์ความร้อนสมบูรณ์แบบมีประสิทธิภาพเป็นศูนย์",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Thomson (ทอมสัน) ตีพิมพ์ 'On an Absolute Thermometric Scale' เมื่ออายุ 24 ปี สเกลเคลวินถูกนำมาใช้เป็นหน่วย SI (เอสไอ) ในปี 1954"
         },
         {
           "title": "Joule-Thomson Effect (1852)",
           "year": "1852",
           "description": "Thomson and Joule forced gas through a porous plug and found it cools as it expands without doing work - leading to modern refrigeration.",
-          "myth_vs_fact": "This actually happened. The Joule-Thomson effect is still used in practical refrigeration and gas liquefaction."
+          "myth_vs_fact": "This actually happened. The Joule-Thomson effect is still used in practical refrigeration and gas liquefaction.",
+          "title_th": "Joule-Thomson Effect (1852) (ปรากฏการณ์จูล-ทอมสัน (1852))",
+          "desc_th": "Thomson (ทอมสัน) และ Joule (จูล) อัดแก๊สผ่านจุกพรุนและพบว่ามันเย็นลงเมื่อขยายตัวโดยไม่ทำงาน — นำไปสู่ระบบทำความเย็นสมัยใหม่",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง ปรากฏการณ์ Joule-Thomson (จูล-ทอมสัน) ยังคงใช้ในการทำความเย็นและการทำให้แก๊สเป็นของเหลวในทางปฏิบัติ"
         },
         {
           "title": "Transatlantic Cable (1866)",
           "year": "1866",
           "description": "Thomson was chief scientific advisor for the first transatlantic telegraph cable. He invented the mirror galvanometer to detect the faint signal after 3,000 km.",
-          "myth_vs_fact": "This actually happened. Thomson's mathematical analysis of signal transmission was essential to the cable's success."
+          "myth_vs_fact": "This actually happened. Thomson's mathematical analysis of signal transmission was essential to the cable's success.",
+          "title_th": "Transatlantic Cable (1866) (สายเคเบิลข้ามแอตแลนติก (1866))",
+          "desc_th": "Thomson (ทอมสัน) เป็นที่ปรึกษาทางวิทยาศาสตร์หลักสำหรับสายเคเบิลโทรเลขข้ามมหาสมุทรแอตแลนติกเส้นแรก เขาประดิษฐ์ mirror galvanometer (กระจกกัลวาโนมิเตอร์) เพื่อตรวจจับสัญญาณที่อ่อนมากหลังจากเดินทาง 3,000 กม.",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง การวิเคราะห์ทางคณิตศาสตร์ของ Thomson (ทอมสัน) เกี่ยวกับการส่งสัญญาณเป็นสิ่งจำเป็นต่อความสำเร็จของสายเคเบิล"
         }
       ],
       "rating": {
@@ -1236,7 +1299,28 @@
         "summary_en": "Established absolute zero and the Kelvin scale — and laid transatlantic telegraph cables across the ocean.",
         "personality_th": "เด็กอัจฉริยะเข้าเรียนมหาวิทยาลัยตอน 10 ขวบ, เป็นอาจารย์ 53 ปีที่ Glasgow, ปฏิเสธทฤษฎี Darwin, บอกรังสีเอกซ์เป็นเรื่องหลอกลวง, ทั้งอัจฉริยะและดื้อรั้นในคนเดียวกัน",
         "personality_en": "Child prodigy entered university at 10, professor for 53 years, rejected Darwin's theory, called X-rays a hoax, both brilliant and stubborn in equal measure."
-      }
+      },
+      "summary_th": "William Thomson (Lord Kelvin) (วิลเลียม ทอมสัน (ลอร์ดเคลวิน)) ผู้กำหนดศูนย์สัมบูรณ์และสเกลเคลวิน — และวางสายเคเบิลโทรเลขข้ามมหาสมุทรแอตแลนติก",
+      "biography_th": [
+        "William Thomson (วิลเลียม ทอมสัน) เกิดในปี 1824 ที่ Belfast (เบลฟาสต์) บิดาของเขาเป็นศาสตราจารย์คณิตศาสตร์ William เข้าเรียนที่ Glasgow University (มหาวิทยาลัยกลาสโกว์) เมื่ออายุเพียง 10 ปี — เด็กอัจฉริยะ",
+        "เมื่ออายุเพียง 22 ปี เขากลายเป็นศาสตราจารย์ด้านปรัชญาธรรมชาติที่ Glasgow University (มหาวิทยาลัยกลาสโกว์) — ดำรงตำแหน่งนาน 53 ปี",
+        "เขากำหนดแนวคิดศูนย์สัมบูรณ์ (0 K = -273.15°C) และสเกลอุณหภูมิเทอร์โมไดนามิกส์ — ซึ่งไม่ขึ้นกับสารใดสารหนึ่ง",
+        "เขายังนำโครงการวางสายเคเบิลโทรเลขข้ามมหาสมุทรแอตแลนติกเส้นแรก (1866) โดยประดิษฐ์ mirror galvanometer (กระจกกัลวาโนมิเตอร์) เขาได้รับบรรดาศักดิ์อัศวินและเป็น Baron Kelvin (บารอนเคลวิน)",
+        "แม้จะอัจฉริยะ เขาปฏิเสธทฤษฎีของ Darwin (ดาร์วิน) เรียกรังสีเอกซ์ว่าเป็นเรื่องหลอกลวง และประมาณอายุของโลกต่ำเกินไป"
+      ],
+      "contributions_th": [
+        "กำหนดศูนย์สัมบูรณ์ (-273.15°C) และสเกลอุณหภูมิสมบูรณ์ (เคลวิน)",
+        "กำหนด Second Law of Thermodynamics (กฎข้อที่สองของอุณหพลศาสตร์) (ร่วมกับ Clausius (คลอเซียส))",
+        "พัฒนา Joule-Thomson effect (ปรากฏการณ์จูล-ทอมสัน) ร่วมกับ James Joule (เจมส์ จูล)",
+        "ประดิษฐ์ mirror galvanometer (กระจกกัลวาโนมิเตอร์) และ siphon recorder (เครื่องบันทึกแบบไซฟอน) สำหรับโทรเลข"
+      ],
+      "legacy_th": [
+        "หน่วย SI (เอสไอ) ของอุณหภูมิ — Kelvin (K) (เคลวิน (เค)) — ตั้งชื่อตามเขา",
+        "ศูนย์สัมบูรณ์ (0 K) คืออุณหภูมิต่ำสุดที่เป็นไปได้ เป็นรากฐานสำคัญของฟิสิกส์",
+        "งานสายเคเบิลข้ามแอตแลนติกของเขาทำให้การสื่อสารระหว่างยุโรป-อเมริกาแบบทันทีเป็นไปได้",
+        "โรงไฟฟ้าและระบบทำความเย็นสมัยใหม่ทั้งหมดทำงานบนหลักการเทอร์โมไดนามิกส์ของเขา"
+      ],
+      "key_quote_th": "เมื่อคุณสามารถวัดสิ่งที่คุณพูดถึงและแสดงมันเป็นตัวเลข คุณก็รู้บางอย่างเกี่ยวกับมัน"
     },
     {
       "id": "boyle",
@@ -1399,13 +1483,19 @@
           "title": "Charles' Law (1787)",
           "year": "1787",
           "description": "Charles filled flasks with different gases and heated them. He found all gases expand by the same fraction for the same temperature increase at constant pressure.",
-          "myth_vs_fact": "Charles discovered this but never published. Gay-Lussac published it in 1802, which is why some textbooks call it Gay-Lussac's Law."
+          "myth_vs_fact": "Charles discovered this but never published. Gay-Lussac published it in 1802, which is why some textbooks call it Gay-Lussac's Law.",
+          "title_th": "Charles' Law (1787) (กฎของชาร์ล (1787))",
+          "desc_th": "Charles (ชาร์ล) เติมขวดด้วยแก๊สต่างชนิดและให้ความร้อน เขาพบว่าแก๊สทั้งหมดขยายตัวด้วยเศษส่วนเท่ากันสำหรับอุณหภูมิที่เพิ่มขึ้นเท่ากันที่ความดันคงที่",
+          "myth_th": "Charles (ชาร์ล) ค้นพบสิ่งนี้แต่ไม่เคยตีพิมพ์ Gay-Lussac (เก-ลูสัก) ตีพิมพ์ในปี 1802 ซึ่งเป็นสาเหตุที่บางตำราเรียกมันว่ากฎของเก-ลูสัก"
         },
         {
           "title": "First Hydrogen Balloon (1783)",
           "year": "1783",
           "description": "Charles built a rubber-coated silk balloon filled with hydrogen. It flew 25 km. Villagers attacked it with pitchforks thinking it was a monster.",
-          "myth_vs_fact": "This happened. Hydrogen production took 3 days using 250 kg of iron filings and 500 litres of acid."
+          "myth_vs_fact": "This happened. Hydrogen production took 3 days using 250 kg of iron filings and 500 litres of acid.",
+          "title_th": "First Hydrogen Balloon (1783) (บอลลูนไฮโดรเจนลูกแรก (1783))",
+          "desc_th": "Charles (ชาร์ล) สร้างบอลลูนผ้าไหมเคลือบยางที่เติมไฮโดรเจน มันบินได้ 25 กม. ชาวบ้านโจมตีมันด้วยคราดคิดว่ามันเป็นสัตว์ประหลาด",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้น การผลิตไฮโดรเจนใช้เวลา 3 วัน โดยใช้ตะไบเหล็ก 250 กก. และกรด 500 ลิตร"
         }
       ],
       "rating": {
@@ -1441,7 +1531,28 @@
         "summary_en": "Discovered Charles' Law of gas volume and temperature — and flew the first hydrogen balloon.",
         "personality_th": "เคยเป็นเสมียนก่อนมาเป็นนักวิทยาศาสตร์, ไม่ตีพิมพ์กฎของชาร์ลเลยไม่ได้เครดิต, บอลลูนทำให้ชาวบ้านกลัวจนเอางามมาทิ่มแทง",
         "personality_en": "Former government clerk who became a scientist late in life, never published his famous law so Gay-Lussac got the credit, his balloon terrified villagers who attacked it with pitchforks!"
-      }
+      },
+      "summary_th": "Jacques Charles (ฌากส์ ชาร์ล) ผู้ค้นพบกฎของชาร์ล (V ∝ T) และบินด้วยบอลลูนไฮโดรเจนเป็นคนแรก",
+      "biography_th": [
+        "Jacques Charles (ฌากส์ ชาร์ล) เกิดในปี 1746 ที่ Beaugency (โบฌ็องซี), France (ฝรั่งเศส) เขาทำงานเป็นเสมียนรัฐบาลก่อนจะหันมาสนใจวิทยาศาสตร์",
+        "Charles (ชาร์ล) หลงใหลการบินด้วยบอลลูน เขาตระหนักว่าไฮโดรเจน — เบากว่าอากาศ 14 เท่า — จะเป็นแก๊สยกตัวที่ดีกว่าอากาศร้อน",
+        "เขาทำงานร่วมกับพี่น้อง Robert (โรแบร์) สร้างบอลลูนไฮโดรเจนลูกแรก เมื่อวันที่ 27 สิงหาคม 1783 มันบินได้ 25 กม. ก่อนที่ชาวบ้านจะโจมตีมันด้วยคราด — พวกเขาคิดว่ามันเป็นสัตว์ประหลาด",
+        "Charles (ชาร์ล) เองขึ้นบินในบอลลูนไฮโดรเจนเมื่อวันที่ 1 ธันวาคม 1783 ขึ้นไปถึง 550 ม. และลงจอดห่างออกไป 36 กม.",
+        "ในปี 1787 Charles (ชาร์ล) ค้นพบว่าปริมาตรแก๊สเป็นสัดส่วนกับอุณหภูมิ (V ∝ T) แต่ไม่ได้ตีพิมพ์ Gay-Lussac (เก-ลูสัก) ได้รับเครดิตอย่างเป็นทางการ"
+      ],
+      "contributions_th": [
+        "Charles' Law (กฎของชาร์ล): ที่ความดันคงที่ V1/T1 = V2/T2",
+        "สร้างบอลลูนไฮโดรเจนลูกแรก สาธิตฟิสิกส์ของก๊าซในทางปฏิบัติ",
+        "ประดิษฐ์เครื่องมือหลายชนิดรวมถึง megascope (เมกาสโคป) และ hydrometer (ไฮโดรมิเตอร์)",
+        "บุกเบิกการใช้ไฮโดรเจนเป็นแก๊สยกตัว — พื้นฐานของเรือเหาะทั้งหมดในอนาคต"
+      ],
+      "legacy_th": [
+        "Charles' Law (กฎของชาร์ล) สอนในทุกห้องเรียน IGCSE Physics (ฟิสิกส์ไอจีซีเอสอี)",
+        "การบินบอลลูนไฮโดรเจนของเขาจุดประกายจินตนาการของสาธารณชนและเปิดฉากการบิน",
+        "กฎของเขาเป็นสิ่งจำเป็นสำหรับการเข้าใจบอลลูนอากาศร้อนและเทอร์โมมิเตอร์แก๊ส",
+        "แม้ Gay-Lussac (เก-ลูสัก) จะตีพิมพ์อย่างเป็นทางการ แต่ชุมชนวิทยาศาสตร์ยกเครดิตให้ Charles (ชาร์ล)"
+      ],
+      "key_quote_th": "คนที่โจมตีบอลลูนของฉันคิดว่ามันเป็นสิ่งมีชีวิตจากดวงจันทร์"
     },
     {
       "id": "gay-lussac",
@@ -1487,13 +1598,19 @@
           "title": "Gas Expansion (1802)",
           "year": "1802",
           "description": "Gay-Lussac heated various gases and found all expand by 1/273 of their volume at 0 C for each 1 C increase - the universal gas expansion coefficient.",
-          "myth_vs_fact": "This happened. Charles discovered the same earlier but didn't publish. Gay-Lussac acknowledged Charles' priority."
+          "myth_vs_fact": "This happened. Charles discovered the same earlier but didn't publish. Gay-Lussac acknowledged Charles' priority.",
+          "title_th": "Gas Expansion (1802) (การขยายตัวของแก๊ส (1802))",
+          "desc_th": "Gay-Lussac (เก-ลูสัก) ให้ความร้อนแก่แก๊สหลายชนิดและพบว่าแก๊สทั้งหมดขยายตัว 1/273 ของปริมาตรที่ 0°C สำหรับทุก 1°C ที่เพิ่มขึ้น — สัมประสิทธิ์การขยายตัวสากลของแก๊ส",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้น Charles (ชาร์ล) ค้นพบสิ่งเดียวกันก่อนแต่ไม่ได้ตีพิมพ์ Gay-Lussac (เก-ลูสัก) ยอมรับความเป็นอันดับของ Charles (ชาร์ล)"
         },
         {
           "title": "Balloon Ascent to 7,000 m (1804)",
           "year": "1804",
           "description": "Gay-Lussac ascended alone to 7,000 m in a hot air balloon. He collected air samples and measured temperature (-9.5 C at altitude vs 27 C on ground).",
-          "myth_vs_fact": "This actually happened. No pressure suit, no oxygen, temperatures well below freezing. His precise measurements made this a landmark experiment."
+          "myth_vs_fact": "This actually happened. No pressure suit, no oxygen, temperatures well below freezing. His precise measurements made this a landmark experiment.",
+          "title_th": "Balloon Ascent to 7,000 m (1804) (การขึ้นบอลลูนสู่ 7,000 ม. (1804))",
+          "desc_th": "Gay-Lussac (เก-ลูสัก) ขึ้นไปคนเดียวถึง 7,000 ม. ในบอลลูนอากาศร้อน เขาเก็บตัวอย่างอากาศและวัดอุณหภูมิ (-9.5°C ที่สูง vs 27°C บนพื้น)",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง ไม่มีชุดป้องกันความดัน ไม่มีออกซิเจน อุณหภูมิต่ำกว่าจุดเยือกแข็ง การวัดที่แม่นยำของเขาทำให้การทดลองนี้เป็น landmark ทางวิทยาศาสตร์"
         }
       ],
       "rating": {
@@ -1529,7 +1646,28 @@
         "summary_en": "Discovered Gay-Lussac's Law of gas pressure and temperature — and ascended to 7,000 m in a balloon.",
         "personality_th": "ครอบครัวยากจนเพราะการปฏิวัติฝรั่งเศส, ขึ้นบอลลูน 7,000 ม. เกือบตาย, ค้นพบธาตุโบรอน",
         "personality_en": "His family lost everything in the French Revolution, ascended to 7,000 m in a balloon nearly dying from the cold, discovered the element boron — a fearless scientist who put his life on the line."
-      }
+      },
+      "summary_th": "Joseph Louis Gay-Lussac (โฌแซ็ฟ หลุยส์ เก-ลูสัก) ผู้ค้นพบกฎของเก-ลูสัก (P ∝ T) และสร้างสถิติบอลลูนสูง 7,000 ม.",
+      "biography_th": [
+        "Gay-Lussac (เก-ลูสัก) เกิดในปี 1778 ในตอนกลางของ France (ฝรั่งเศส) ครอบครัวของเขาสูญเสียทุกอย่างระหว่างการปฏิวัติฝรั่งเศส",
+        "ความอัจฉริยะของเขาทำให้ได้เรียนที่ Ecole Polytechnique (เอโกลโปลีเทคนิค) ใน Paris (ปารีส)",
+        "ในปี 1802 เขาตีพิมพ์ว่าแก๊สทั้งหมดขยายตัวเท่ากันตามอุณหภูมิ — กฎของเก-ลูสัก (ความดัน-อุณหภูมิ)",
+        "ในปี 1804 เขาขึ้นไปสูง 7,000 ม. ในบอลลูนเพื่อเก็บตัวอย่างอากาศ เขาเกือบเสียชีวิตจากความหนาวเย็น",
+        "เขายังค้นพบกฎสัดส่วนปริมาตรของแก๊สที่ทำปฏิกิริยาและค้นพบธาตุโบรอน"
+      ],
+      "contributions_th": [
+        "Gay-Lussac's Law (กฎของเก-ลูสัก): ที่ปริมาตรคงที่ P1/T1 = P2/T2",
+        "กฎสัดส่วนปริมาตร (Law of combining volumes): แก๊สที่ทำปฏิกิริยารวมกันในอัตราส่วนปริมาตรที่เป็นจำนวนเต็มอย่างง่าย",
+        "แสดงให้เห็นว่าแก๊สทั้งหมดขยายตัวสม่ำเสมอตามอุณหภูมิ — พื้นฐานของเทอร์โมมิเตอร์แก๊ส",
+        "วัดองค์ประกอบบรรยากาศและอุณหภูมิที่ระดับความสูง 7,000 ม."
+      ],
+      "legacy_th": [
+        "Gay-Lussac's Law (กฎของเก-ลูสัก) เป็นส่วนสำคัญของหลักสูตร IGCSE Physics (ฟิสิกส์ไอจีซีเอสอี)",
+        "กฎสัดส่วนปริมาตรของเขาสำคัญต่อการวางรากฐานทฤษฎีอะตอม",
+        "การทดลองบอลลูนที่กล้าหาญของเขาช่วยให้เข้าใจชั้นบรรยากาศ",
+        "ความก้าวหน้าทางเคมีอุตสาหกรรมของเขามีผลกระทบทางเศรษฐกิจมหาศาล"
+      ],
+      "key_quote_th": "นักวิทยาศาสตร์ต้องเต็มใจเสี่ยงทุกอย่างเพื่อเปิดเผยความจริงเกี่ยวกับธรรมชาติ"
     },
     {
       "id": "brown",
@@ -1574,13 +1712,19 @@
           "title": "Discovery of Brownian Motion (1827)",
           "year": "1827",
           "description": "Brown observed pollen grains jittering randomly in water. He then tested crushed rocks, soot, and Sphinx dust - all showed the same motion.",
-          "myth_vs_fact": "This happened. The Sphinx dust story is true - he tested a 3,000-year-old sample to disprove any 'living force' theory."
+          "myth_vs_fact": "This happened. The Sphinx dust story is true - he tested a 3,000-year-old sample to disprove any 'living force' theory.",
+          "title_th": "Discovery of Brownian Motion (1827) (การค้นพบการเคลื่อนที่แบบบราวน์ (1827))",
+          "desc_th": "Brown (บราวน์) สังเกตละอองเรณูกระเพื่อมแบบสุ่มในน้ำ จากนั้นเขาทดสอบหินบด เขม่า และฝุ่นสฟิงซ์ — ทั้งหมดแสดงการเคลื่อนที่แบบเดียวกัน",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้น เรื่องฝุ่นสฟิงซ์เป็นเรื่องจริง — เขาทดสอบตัวอย่างอายุ 3,000 ปีเพื่อหักล้างทฤษฎี 'พลังแห่งสิ่งมีชีวิต'"
         },
         {
           "title": "Discovery of the Cell Nucleus (1831)",
           "year": "1831",
           "description": "While examining orchid cells, Brown noticed a distinct spot inside each cell - the first observation of the cell nucleus.",
-          "myth_vs_fact": "This actually happened. The term 'nucleus' stuck and is one of the most important discoveries in cell biology."
+          "myth_vs_fact": "This actually happened. The term 'nucleus' stuck and is one of the most important discoveries in cell biology.",
+          "title_th": "Discovery of the Cell Nucleus (1831) (การค้นพบนิวเคลียสของเซลล์ (1831))",
+          "desc_th": "ขณะตรวจดูเซลล์กล้วยไม้ Brown (บราวน์) สังเกตเห็นจุดชัดเจนภายในแต่ละเซลล์ — การสังเกตนิวเคลียสของเซลล์ครั้งแรก",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง คําว่า 'nucleus' (นิวเคลียส) ติดอยู่และเป็นหนึ่งในการค้นพบที่สำคัญที่สุดในชีววิทยาเซลล์"
         }
       ],
       "rating": {
@@ -1616,7 +1760,27 @@
         "summary_en": "Discovered Brownian motion — random particle movement that later proved the existence of atoms.",
         "personality_th": "หมอเรือที่เก็บพืช 3,900 ชนิดในออสเตรเลีย, ค้นพบนิวเคลียสของเซลล์, ใช้ผงจากสฟิงซ์พิสูจน์การเคลื่อนที่",
         "personality_en": "A ship's surgeon who collected 3,900 plant species in Australia, discovered the cell nucleus, tested dust from a Sphinx statue to prove the motion wasn't alive — a scientist of meticulous thoroughness."
-      }
+      },
+      "summary_th": "Robert Brown (โรเบิร์ต บราวน์) นักพฤกษศาสตร์ผู้ค้นพบการเคลื่อนที่แบบบราวน์ — หลักฐานแรกของการมีอยู่ของอะตอม",
+      "biography_th": [
+        "Robert Brown (โรเบิร์ต บราวน์) เกิดในปี 1773 ที่ Montrose (มอนโทรส), Scotland (สกอตแลนด์) เขาเรียนแพทย์แต่ความหลงใหลที่แท้จริงคือพฤกษศาสตร์",
+        "เขาเข้าร่วมกองทัพเรืออังกฤษในฐานะศัลยแพทย์ เดินทางไป Australia (ออสเตรเลีย) บนเรือ HMS Investigator (เอชเอ็มเอส อินเวสติเกเตอร์) เขาจำแนกพืชกว่า 3,900 ชนิด",
+        "ในปี 1827 ขณะตรวจดูละอองเรณูในน้ำ เขาสังเกตเห็นการเคลื่อนที่แบบสุ่มอย่างต่อเนื่อง — แม้น้ำจะนิ่งสนิท",
+        "เขาทดสอบด้วยหินบด เขม่า และแม้แต่ฝุ่นจากรูปปั้นสฟิงซ์ ทุกอย่างแสดงการเคลื่อนที่แบบเดียวกัน — พิสูจน์ว่ามันไม่ใช่ 'พลังแห่งสิ่งมีชีวิต'",
+        "เขาไม่อธิบายปรากฏการณ์นี้ บทความของ Einstein (ไอน์สไตน์) ในปี 1905 ได้ให้ทฤษฎี: โมเลกุลชนกับอนุภาคแบบสุ่ม"
+      ],
+      "contributions_th": [
+        "ค้นพบการเคลื่อนที่แบบบราวน์ (Brownian motion) — การเคลื่อนที่แบบสุ่มของอนุภาคขนาดเล็กในของไหล",
+        "พิสูจน์ว่าการเคลื่อนที่แบบบราวน์ไม่ใช่สิ่งมีชีวิต — ใช้กับอนุภาคทั้งหมด",
+        "ให้หลักฐานการทดลองที่สำคัญสำหรับการมีอยู่ของอะตอม (ผ่านทฤษฎีของ Einstein (ไอน์สไตน์) ในปี 1905)"
+      ],
+      "legacy_th": [
+        "การเคลื่อนที่แบบบราวน์เป็นหลักฐานที่มองเห็นได้แรกของกิจกรรมของอะตอม",
+        "บทความของ Einstein (ไอน์สไตน์) ในปี 1905 เกี่ยวกับการเคลื่อนที่แบบบราวน์ยุติการถกเถียงว่าอะตอมมีอยู่จริงหรือไม่",
+        "คําว่า 'Brownian motion' (การเคลื่อนที่แบบบราวน์) ใช้ในฟิสิกส์ เคมี ชีววิทยา และการเงิน",
+        "การสังเกตอย่างพิถีพิถันของเขาเป็นแบบอย่างของวิธีการทางวิทยาศาสตร์"
+      ],
+      "key_quote_th": "เมื่อฉันเห็นการเคลื่อนที่เดียวกันในหินบดและฝุ่นโบราณ ฉันรู้ว่าต้องมีสาเหตุอื่น"
     },
     {
       "id": "carnot",
@@ -1663,13 +1827,19 @@
           "title": "Reflections on the Motive Power of Fire (1824)",
           "year": "1824",
           "description": "Carnot imagined an ideal engine operating between hot and cold reservoirs. The Carnot cycle has four stages: two isothermal and two adiabatic processes.",
-          "myth_vs_fact": "This was a pure thought experiment (Gedankenexperiment). Carnot never built a physical engine. His brilliance was imagining a perfect frictionless system."
+          "myth_vs_fact": "This was a pure thought experiment (Gedankenexperiment). Carnot never built a physical engine. His brilliance was imagining a perfect frictionless system.",
+          "title_th": "Reflections on the Motive Power of Fire (1824) (ภาพสะท้อนเกี่ยวกับพลังขับเคลื่อนของไฟ (1824))",
+          "desc_th": "Carnot (การ์โน) จินตนาการเครื่องยนต์ในอุดมคติที่ทำงานระหว่างแหล่งร้อนและแหล่งเย็น วัฏจักรการ์โนมี 4 ขั้นตอน: กระบวนการอุณหภูมิคงที่ 2 ขั้นตอนและกระบวนการแอดิอาแบติก 2 ขั้นตอน",
+          "myth_th": "นี่เป็นการทดลองทางความคิด (Gedankenexperiment) ล้วนๆ Carnot (การ์โน) ไม่เคยสร้างเครื่องยนต์จริง ความอัจฉริยะของเขาคือการจินตนาการระบบไร้แรงเสียดทานที่สมบูรณ์แบบ"
         },
         {
           "title": "Carnot Efficiency Formula",
           "year": "1824",
           "description": "Carnot showed max efficiency = 1 - Tc/Th. No engine can be 100% efficient unless Tc = 0 K.",
-          "myth_vs_fact": "Carnot stated this using 'caloric drop' theory. The modern formula with absolute temperature was developed by Kelvin later."
+          "myth_vs_fact": "Carnot stated this using 'caloric drop' theory. The modern formula with absolute temperature was developed by Kelvin later.",
+          "title_th": "Carnot Efficiency Formula (สูตรประสิทธิภาพการ์โน)",
+          "desc_th": "Carnot (การ์โน) แสดงว่าประสิทธิภาพสูงสุด = 1 − Tc/Th ไม่มีเครื่องยนต์ใดมีประสิทธิภาพ 100% นอกจาก Tc = 0 K",
+          "myth_th": "Carnot (การ์โน) กล่าวสิ่งนี้โดยใช้ทฤษฎี 'การลดลงของแคลอริก' สูตรสมัยใหม่ที่ใช้อุณหภูมิสัมบูรณ์ถูกพัฒนาโดย Kelvin (เคลวิน) ในภายหลัง"
         }
       ],
       "rating": {
@@ -1705,7 +1875,28 @@
         "summary_en": "The father of thermodynamics — one book at age 28 founded the science of heat engines.",
         "personality_th": "ลูกนักปฏิวัติฝรั่งเศส, ตายตอน 36 ด้วยอหิวาตกโรค, หนังสือถูกลืม 10 ปี, พี่ชายเผาหนังสือที่เหลือเพราะกลัวเนื้อหาการเมือง",
         "personality_en": "Son of a French revolutionary, died of cholera at 36, his book was ignored for 10 years, his brother burned his remaining papers fearing political content — one of the saddest losses in science history."
-      }
+      },
+      "summary_th": "Sadi Carnot (ซาดี การ์โน) บิดาแห่งอุณหพลศาสตร์ — หนังสือเล่มเดียวตอนอายุ 28 ก่อตั้งศาสตร์ของเครื่องยนต์ความร้อน",
+      "biography_th": [
+        "Sadi Carnot (ซาดี การ์โน) เกิดในปี 1796 ที่ Paris (ปารีส) เป็นบุตรของ Lazare Carnot (ลาซาร์ การ์โน) — ผู้นำการปฏิวัติฝรั่งเศสคนสำคัญ",
+        "เขาเข้าเรียนที่ Ecole Polytechnique (เอโกลโปลีเทคนิค) เมื่ออายุ 16 ปี และเป็นวิศวกรทหาร ความหลงใหลของเขาคือการเข้าใจเครื่องจักรไอน้ำ",
+        "ในปี 1824 เมื่ออายุ 28 ปี เขาตีพิมพ์ 'Reflections on the Motive Power of Fire' ('ภาพสะท้อนเกี่ยวกับพลังขับเคลื่อนของไฟ') — นำเสนอ Carnot cycle (วัฏจักรการ์โน): เครื่องยนต์ความร้อนในอุดมคติ",
+        "ความเข้าใจของเขา: ประสิทธิภาพขึ้นอยู่กับ**ผลต่างอุณหภูมิ**ระหว่างแหล่งร้อนและแหล่งเย็นเท่านั้น",
+        "เขาเสียชีวิตด้วยอหิวาตกโรคเมื่ออายุ 36 ปี งานของเขาถูกละเลยในช่วงชีวิต หลังจากเขาเสียชีวิต พี่ชายของเขาเผากระดาษที่เหลือเพราะกลัวแนวคิดการปฏิวัติ"
+      ],
+      "contributions_th": [
+        "พัฒนา Carnot cycle (วัฏจักรการ์โน) — เครื่องยนต์ความร้อนในอุดมคติที่มีประสิทธิภาพตามทฤษฎีสูงสุด",
+        "กำหนดแนวคิดของการผันกลับได้ (reversibility) ในกระบวนการทางอุณหพลศาสตร์",
+        "ก่อตั้ง Second Law of Thermodynamics (กฎข้อที่สองของอุณหพลศาสตร์)",
+        "แสดงว่าประสิทธิภาพของเครื่องยนต์ขึ้นอยู่กับผลต่างอุณหภูมิเท่านั้น"
+      ],
+      "legacy_th": [
+        "งานของ Carnot (การ์โน) เป็นรากฐานของอุณหพลศาสตร์ — เครื่องยนต์ ตู้เย็น และโรงไฟฟ้าทุกแห่งทำงานตามหลักการของเขา",
+        "ประสิทธิภาพการ์โน (Carnot efficiency: η = 1 − Tc/Th) คือประสิทธิภาพสูงสุดที่เป็นไปได้สำหรับเครื่องยนต์ความร้อนใดๆ",
+        "แนวคิดกระบวนการผันกลับได้ของเขานำ Clausius (คลอเซียส) และ Kelvin (เคลวิน) ไปสู่กฎข้อที่สอง",
+        "วิศวกรทุกคนที่ออกแบบเครื่องยนต์ใช้แนวคิดของ Carnot (การ์โน) แม้ในปัจจุบัน"
+      ],
+      "key_quote_th": "การรู้ขีดจำกัดของสิ่งที่เครื่องจักรสามารถทำได้ คือการเข้าใจธรรมชาติของความร้อนนั่นเอง"
     },
     {
       "id": "huygens",
