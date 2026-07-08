@@ -2,10 +2,10 @@
   "meta": {
     "title": "InteractiveLecture — Scientist Bio Library",
     "description": "Biographical references for CIE IGCSE Physics 0625 - All Topics 1-6: General Physics to Space Physics",
-    "version": "7.0.0",
+    "version": "7.2.0",
     "updated": "2026-07",
     "language": "en",
-    "features_added": "49 scientists - Complete Topics 1-6 including Astronomy, Astrophysics & Cosmology"
+    "features_added": "49 scientists - Topics 1-6 + partial Thai translations (9 scientists, Topics 1-2)"
   },
   "scientists": [
     {
@@ -50,7 +50,10 @@
           "title": "Classification of Motion",
           "year": "c. 350 BC",
           "description": "Aristotle categorised all motion into two types: natural motion (objects seeking their proper place) and violent motion (motion requiring an external force). This classification dominated physics for nearly 2,000 years.",
-          "myth_vs_fact": "This was not a controlled experiment. Aristotle relied on everyday observation and logical reasoning. His conclusions (e.g., heavier objects fall faster) were reasonable based on casual observation, but he never tested for the role of air resistance."
+          "myth_vs_fact": "This was not a controlled experiment. Aristotle relied on everyday observation and logical reasoning. His conclusions (e.g., heavier objects fall faster) were reasonable based on casual observation, but he never tested for the role of air resistance.",
+          "title_th": "Classification of Motion (การจำแนกประเภทการเคลื่อนที่)",
+          "desc_th": "Aristotle (อริสโตเติล) จำแนกการเคลื่อนที่ทั้งหมดเปน 2 ประเภท: การเคลื่อนที่ตามธรรมชาติ และการเคลื่อนที่แบบรุนแรง การจำแนกนี้ครอบงำฟิสิกสนานเกือบ 2,000 ป",
+          "myth_th": "ไม่ใช่การทดลองที่มีการควบคุม Aristotle (อริสโตเติล) อาศัยการสังเกตและการใช้เหตุผล ขอสรุปของเขา (เชน วัตถุหนักกว่าตกเร็วกว่า) มีเหตุผลจากการสังเกตทั่วไป แต่เขาไม่เคยทดสอบบทบาทของแรงตานอากาศ"
         }
       ],
       "rating": {
@@ -86,7 +89,26 @@
         "summary_en": "The philosopher who laid the foundations of science — his framework dominated Western thought for 2,000 years.",
         "personality_th": "สอนอเล็กซานเดอร์มหาราช ก่อตั้ง Lyceum 'รัก Plato แต่รักความจริงยิ่งกว่า' คำสอนครอบงำโลกตะวันตก 2,000 ปี แต่ก็ถูกมองว่าเป็นตัวถ่วงความก้าวหน้าทางวิทยาศาสตร์เช่นกัน — เป็นทั้งยอดคนและตัวร้ายในหน้าประวัติศาสตร์",
         "personality_en": "Tutored Alexander the Great, founded the Lyceum. \"Plato is my friend but truth is a greater friend.\" His teachings dominated for 2,000 years — both a genius and an obstacle to scientific progress."
-      }
+      },
+      "summary_th": "Aristotle (อริสโตเติล) วางรากฐานแรกของฟิสิกสด้วยทฤษฎีการเคลื่อนที่แบบธรรมชาติและแบบรุนแรง",
+      "biography_th": [
+        "Aristotle (อริสโตเติล) เกิดเมื่อ 384 ปกอนคริสตกาลที่ Stagira (สตากีรา) ทางตอนเหนือของกรีซ เขาศึกษาที่ Plato's Academy (สำนักของพลาโต) ใน Athens (เอเธนส) นาน 20 ปกอนจะกอตั้งโรงเรียนของตนเองที่ชื่อ Lyceum (ไลเซียม)",
+        "เขาเปนหนึ่งในนักปรัชญาที่ทรงอิทธิพลมากที่สุดในประวัติศาสตร์ตะวันตก เขียนเกี่ยวกับฟิสิกส ชีววิทยา จริยศาสตร์ การเมือง และอภิปรัชญา คำสอนของเขาครอบงำความคิดทางวิทยาศาสตร์นานเกือบ 2,000 ป",
+        "ในฟิสิกส Aristotle (อริสโตเติล) เสนอว่าการเคลื่อนที่ทั้งหมดแบงเปน 2 ประเภท การเคลื่อนที่ตามธรรมชาติ (วัตถุหาที่อยู่ของตน — ของหนักตกลง, ของเบาลอยขึ้น) และการเคลื่อนที่แบบรุนแรง (เกิดจากแรงภายนอก)",
+        "เขาแยงวาวัตถุที่หนักกว่าตกลงเร็วกวาวัตถุที่เบากว่า — ซึ่งตอมา Galileo (กาลิเลโอ) พิสูจนว่าผิด เขายังเชื่อว่าสุญญากาศไมมีอยู่จริง และตองใช้แรงเพื่อใหวัตถุเคลื่อนที่ตอไป"
+      ],
+      "contributions_th": [
+        "การจำแนกการเคลื่อนที่อย่างเปนระบบครั้งแรกเปนแบบธรรมชาติและแบบรุนแรง",
+        "แนวคิดเริ่มแรกเกี่ยวกับ aether (อีเทอร์) ในฐานะธาตุที่หาเหนือโลก",
+        "เปนผู้บุกเบิกการสังเกตเชิงประจักษ์ในฐานะวิธีการทำความเข้าใจธรรมชาติ",
+        "มีอิทธิพลตอการพัฒนาตรรกะและการใช้เหตุผลทางวิทยาศาสตร์"
+      ],
+      "legacy_th": [
+        "แมทฤษฎีฟิสิกสหลายอย่างของเขาจะถูกแทนที่โดย Galileo (กาลิเลโอ) และ Newton (นิวตัน) แต่วิธีการสังเกตและการจำแนกอย่างเปนระบบของ Aristotle (อริสโตเติล) ได้หล่อหลอมวิธีการทำวิทยาศาสตร์",
+        "แนวคิดที่วา 'การเคลื่อนที่ตองใช้แรง' เปนกระบวนทัศน์หลักจนกระทัง Newton's First Law (กฎขอที่หนึ่งของนิวตัน) แทนที่ด้วยแนวคิดความเฉื่อย",
+        "การท้าทายเพื่อพิสูจนทฤษฎีของ Aristotle (อริสโตเติล) ผิดเปนแรงผลักดันการปฏิวัติวิทยาศาสตร์ — Galileo (กาลิเลโอ), Newton (นิวตัน) และคนอื่นๆ ทดสอบและปรับปรุงแนวคิดของเขาโดยตรง"
+      ],
+      "key_quote_th": "เราตองไม่ปลอยใหตนเองถูกหลอกด้วยแนวคิดที่วาวัตถุที่กำลังเคลื่อนที่ตองใช้แรงเพื่อใหมันเคลื่อนที่ตอไป"
     },
     {
       "id": "archimedes",
@@ -133,13 +155,19 @@
           "title": "The Golden Crown — Eureka!",
           "year": "c. 250 BC",
           "description": "King Hiero II suspected a goldsmith had mixed silver into a golden crown. Archimedes needed to detect the impurity without damaging the crown. Stepping into a bath, he noticed water level rise and realised the volume of water displaced equals the volume of the submerged object — allowing him to measure the crown's density.",
-          "myth_vs_fact": "The core story is widely accepted. The 'running naked through the streets' detail may be embellishment by later Roman writers. The experiment itself is scientifically valid: use displacement to measure volume, then density to detect impurity."
+          "myth_vs_fact": "The core story is widely accepted. The 'running naked through the streets' detail may be embellishment by later Roman writers. The experiment itself is scientifically valid: use displacement to measure volume, then density to detect impurity.",
+          "title_th": "The Golden Crown — Eureka! (มงกุฎทองคำ — ยูเรก้า!)",
+          "desc_th": "กษัตริย Hiero II (เฮียโรที่ 2) ทรงสงสัยวาชางทองเจือเงินลงในมงกุฎทองคำ Archimedes (อารคิมิดีส) ตองตรวจสอบโดยไม่ทำให้มงกุฎเสียหาย เมื่อกาวลงอางอาบน้ำ เขาสังเกตระดับน้ำสูงขึ้นและตระหนักวาปริมาตรน้ำที่ถูกแทนที่เทากับปริมาตรของวัตถุที่จม — ทำให้วัดความหนาแน่นของมงกุฎได้",
+          "myth_th": "เรื่องหลักเปนที่ยอมรับอยางกวางขวาง รายละเอียด 'วิ่งเปลือยบนถนน' อาจเปนการเสริมแตงโดยนักเขียนโรมันยุคหลัง การทดลองนั้นใช้ได้ทางวิทยาศาสตร์: ใช้การแทนที่วัดปริมาตรแลวใช้ความหนาแน่นตรวจสอบสิ่งเจือปน"
         },
         {
           "title": "The Lever — Moving a Ship",
           "year": "c. 240 BC",
           "description": "Archimedes reportedly single-handedly pulled a fully loaded cargo ship onto land using a compound pulley system, demonstrating the mechanical advantage of levers and pulleys. He is quoted as saying: 'Give me a place to stand, and I shall move the Earth.'",
-          "myth_vs_fact": "The ship story is recorded by contemporary historians (Plutarch) and is considered credible. A well-designed compound pulley system could indeed enable one person to move a very heavy load."
+          "myth_vs_fact": "The ship story is recorded by contemporary historians (Plutarch) and is considered credible. A well-designed compound pulley system could indeed enable one person to move a very heavy load.",
+          "title_th": "The Lever — Moving a Ship (คาน — การเคลื่อนยายเรือ)",
+          "desc_th": "Archimedes (อารคิมิดีส) กล่าวกันวาดึงเรือบรรทุกสินค้าที่เต็มลำขึ้นมาบนบกเพียงคนเดียวโดยใช้ระบบรอกผสม แสดงใหเห็นขอไดเปรียบเชิงกลของคานและรอก",
+          "myth_th": "เรื่องนี้ถูกบันทึกโดยนักประวัติศาสตร์รวมสมัย (Plutarch) และถือวาน่าเชื่อถือ ระบบรอกที่ออกแบบดีสามารถทำให้คนคนเดียวเคลื่อนยายของหนักมากได้จริง"
         }
       ],
       "rating": {
@@ -175,7 +203,28 @@
         "summary_en": "The greatest scientist of antiquity — discovered buoyancy, levers, and the principle of the screw.",
         "personality_th": "ตำนาน 'ยูเรก้า!' วิ่งเปลือยบนถนน 'ง้างโลกทั้งใบ' ถูกทหารโรมันสังหารทั้งที่มีคำสั่งให้ไว้ชีวิต — ชีวิตน่าติดตามตั้งแต่ต้นจบ มีทั้งความอัจฉริยะ ความบ้าคลั่ง และจุดจบที่น่าสลด",
         "personality_en": "\"Eureka!\" — ran naked through the streets. \"Give me a place to stand and I shall move the Earth.\" Killed by a Roman soldier despite orders to spare him. A life of brilliance, madness, and tragic end."
-      }
+      },
+      "summary_th": "Archimedes (อารคิมิดีส) ค้นพบกฎแรงลอยตัวและหลักการของคาน — ฟิสิกสเชิงคณิตศาสตร์ยุคแรก",
+      "biography_th": [
+        "Archimedes (อารคิมิดีส) เกิดเมื่อ 287 ปกอนคริสตกาลในนครรัฐ Syracuse (ซีราคิวส) ของกรีก (ปัจจุบันคือ Sicily (ซิซิลี), Italy (อิตาลี)) เขาเปนนักคณิตศาสตร์ นักฟิสิกส วิศวกร และนักประดิษฐ",
+        "เขาศึกษาที่ Alexandria (อเล็กซานเดรีย), Egypt (อียิปต) — ศูนย์กลางปัญญาของโลกโบราณ — กอนกลับไปยัง Syracuse (ซีราคิวส) ซึ่งเขาใช้ชีวิตส่วนใหญ่",
+        "การค้นพบที่ดังที่สุดของเขาเกิดขึ้นเมื่อกาวลงอางอาบน้ำและสังเกตเห็นระดับน้ำสูงขึ้น เขาตระหนักว่าสามารถวัดปริมาตรของวัตถุรูปร่างไม่แน่นอนได้จากปริมาณน้ำที่ถูกแทนที่ ตำนานเลาวาเขาวิ่งเปลือยเปล่าตามถนนตะโกนวา 'ยูเรก้า!' (ฉันพบแล้ว!)",
+        "เขายังเปนวิศวกรอัจฉริยะ — ออกแบบเครื่องจักรสงคราม (หนังสติก, ปั้นจั่น) ที่ปองกัน Syracuse (ซีราคิวส) จากการรุกรานของโรมันนานถึง 3 ป เมื่อเมืองแตก ทหารโรมันคนหนึ่งสังหารเขาทั้งที่มีคำสั่งใหไวชีวิต"
+      ],
+      "contributions_th": [
+        "Archimedes' Principle (หลักการของอารคิมิดีส): แรงลอยตัวบนวัตถุเทากับน้ำหนักของของไหลที่ถูกแทนที่",
+        "Law of the Lever (กฎแหงคาน): อัตราสวนของแรงสมดุลกับอัตราสวนของระยะหางจากฟลครัม",
+        "คำนวณคา pi ได้อย่างแม่นยำ",
+        "พัฒนาแนวคิดเรื่องจุดศูนย์ถวง",
+        "Archimedes screw (สกรูของอารคิมิดีส) — ยังใช้อยู่ในปจจุบันสำหรับสูบน้ำ"
+      ],
+      "legacy_th": [
+        "Archimedes (อารคิมิดีส) ถือเปนนักวิทยาศาสตร์ที่ยิ่งใหญ่ที่สุดในสมัยโบราณและเปนนักคณิตศาสตร์ที่ยิ่งใหญ่ที่สุดคนหนึ่งตลอดกาล",
+        "หลักการแรงลอยตัวของเขาเปนสวนสำคัญของหลักสูตร IGCSE Physics (ฟิสิกส IGCSE) (ความหนาแน่นและการลอย/จม)",
+        "หลักการคานเปนรากฐานของเครื่องกลอย่างง่ายทั้งหมด — ตั้งแตกรรไกรถึงปั้นจั่น",
+        "Method of exhaustion (Method of exhaustion) ของเขาล้ำหน้าแคลคูลัสอินทิกรัลเกือบ 2,000 ป"
+      ],
+      "key_quote_th": "ขอจุดยืนใหฉันสักแหง แลวฉันจะเคลื่อนโลกทั้งใบ"
     },
     {
       "id": "galileo",
@@ -228,25 +277,37 @@
           "title": "Leaning Tower of Pisa Experiment",
           "year": "c. 1589–1592 (disputed)",
           "description": "According to Galileo's student Viviani, Galileo dropped two balls of different masses from the Leaning Tower of Pisa to prove all objects fall at the same rate regardless of mass.",
-          "myth_vs_fact": "⚠️ This almost certainly DID NOT HAPPEN. No contemporary source mentions it, and Galileo never claimed to have done it. However, Galileo DID perform rigorous experiments rolling balls down inclined planes — this is the real foundation of his work on motion."
+          "myth_vs_fact": "⚠️ This almost certainly DID NOT HAPPEN. No contemporary source mentions it, and Galileo never claimed to have done it. However, Galileo DID perform rigorous experiments rolling balls down inclined planes — this is the real foundation of his work on motion.",
+          "title_th": "Leaning Tower of Pisa Experiment (การทดลองหอเอนปิซา)",
+          "desc_th": "ตามที่ Viviani (วิเวียนี) ลูกศิษยของ Galileo (กาลิเลโอ) กลาว Galileo (กาลิเลโอ) ปลอยลูกตุ้มสองลูกที่มีมวลตางกันจาก Leaning Tower of Pisa (หอเอนเมืองปิซา) เพื่อพิสูจนวาวัตถุทั้งหมดตกด้วยอัตราเร็วเทากัน",
+          "myth_th": "⚠️ เรื่องนี้เกือบแน่นอนวาไม่เคยเกิดขึ้น ไมมีแหล่งข้อมูลรวมสมัยกลาวถึง และ Galileo (กาลิเลโอ) ไม่เคยอางวาได้ทำ อยางไรก็ตาม เขาทำการทดลองอย่าง rigorous ด้วยการกลิ้งลูกบอลลงพื้นเอียง — นี่คือรากฐานที่แทจริงของงานด้านการเคลื่อนที่"
         },
         {
           "title": "Inclined Plane Experiments",
           "year": "c. 1602–1604",
           "description": "Galileo rolled bronze balls down a long, polished inclined plane and precisely measured the time of descent using water clocks. He proved distance travelled is proportional to time squared (d ∝ t²) — the law of uniform acceleration. By using an incline, he slowed down falling motion to measure it accurately.",
-          "myth_vs_fact": "This is real and well-documented. These are the first recorded instances of systematic, quantitative experimental physics. Modern recreations confirm his results were remarkably accurate for the timing methods available."
+          "myth_vs_fact": "This is real and well-documented. These are the first recorded instances of systematic, quantitative experimental physics. Modern recreations confirm his results were remarkably accurate for the timing methods available.",
+          "title_th": "Inclined Plane Experiments (การทดลองพื้นเอียง)",
+          "desc_th": "Galileo (กาลิเลโอ) กลิ้งลูกบอลทองแดงลงพื้นเอียงที่ขัดเงายาว และวัดเวลาตกอย่างแม่นยำโดยใช้นาฬิกาน้ำ เขาพิสูจนวาระยะทาง ∝ เวลากำลังสอง (d ∝ t²) — กฎความเรงสม่ำเสมอ",
+          "myth_th": "การทดลองนี้เกิดขึ้นจริงและมีหลักฐานดี การจำลองสมัยใหม่ยืนยันว่าผลลัพธของเขาแม่นยำอย่างน่าทึ่งสำหรับเครื่องมือวัดที่มีในยุคนั้น"
         },
         {
           "title": "Pendulum Isochronism",
           "year": "c. 1583",
           "description": "Galileo supposedly watched a swinging lamp in Pisa Cathedral and noticed each swing took the same time, even as the amplitude decreased. He tested this by timing against his pulse.",
-          "myth_vs_fact": "The cathedral lamp story is a popular legend. However, Galileo definitely studied pendulums and discovered isochronism, enabling Huygens to build the first pendulum clock."
+          "myth_vs_fact": "The cathedral lamp story is a popular legend. However, Galileo definitely studied pendulums and discovered isochronism, enabling Huygens to build the first pendulum clock.",
+          "title_th": "Pendulum Isochronism (การแกวงสม่ำเสมอของลูกตุ้ม)",
+          "desc_th": "Galileo (กาลิเลโอ) กล่าวกันวามองโคมไฟที่แกวงใน Pisa Cathedral (มหาวิหารปิซา) และสังเกตวาแตละครังแกวงใช้เวลาเทากัน",
+          "myth_th": "เรื่องโคมไฟในมหาวิหารเปนตำนานที่เลาขาน แต Galileo (กาลิเลโอ) ศึกษาลูกตุ้มจริงและคนพบการแกวงสม่ำเสมอ ซึ่งทำให้ Huygens (ไฮเกนส) สรางนาฬิกาลูกตุ้มเครื่องแรก"
         },
         {
           "title": "Jupiter's Moons Discovery",
           "year": "1610",
           "description": "Galileo built an improved telescope and pointed it at Jupiter, discovering four moons orbiting the planet — the first direct evidence that not everything orbits Earth. Published in Sidereus Nuncius (Starry Messenger).",
-          "myth_vs_fact": "This actually happened. The discovery of Jupiter's moons was one of the strongest blows against the geocentric model."
+          "myth_vs_fact": "This actually happened. The discovery of Jupiter's moons was one of the strongest blows against the geocentric model.",
+          "title_th": "Jupiter's Moons Discovery (การคนพบดวงจันทรของดาวพฤหัส)",
+          "desc_th": "Galileo (กาลิเลโอ) สรางกล้องโทรทรรศน์ที่ปรับปรุงแลวชี้ไปที่ดาวพฤหัส คนพบดวงจันทร 4 ดวงโคจรรอบดาวเคราะห — หลักฐานโดยตรงชิ้นแรกว่าไม่ใช่ทุกอย่างโคจรรอบโลก",
+          "myth_th": "เหตุการณนี้เกิดขึ้นจริง การคนพบดวงจันทรของดาวพฤหัสเปนการโจมตีแบบจำลองโลกเปนศูนย์กลางอย่างรุนแรงที่สุดครังหนึ่ง"
         }
       ],
       "rating": {
@@ -282,7 +343,29 @@
         "summary_en": "The father of modern science — used experiments to overturn 2,000 years of Aristotelian physics.",
         "personality_th": "ตำนานโยนลูกตุ้มจากหอเอนปิซา (อาจไม่จริงแต่ทุกคนรู้จัก!), 'แต่มันก็ยังหมุนอยู่!' (e pur si muove), ถูกไต่สวนโดยศาลศาสนา, ถูกกักบริเวณจนตาย — เรื่องราวดราม่าที่ถูกเล่าขานในทุกห้องเรียนฟิสิกส์ สัญลักษณ์ของนักวิทยาศาสตร์ผู้กล้าสู้กับความเชื่อผิดๆ",
         "personality_en": "The Leaning Tower legend (probably never happened but everyone knows it!), \"And yet it moves\" (e pur si muove), tried by the Inquisition, placed under house arrest — the most dramatic story in all of science."
-      }
+      },
+      "summary_th": "Galileo Galilei (กาลิเลโอ กาลิเลอี) บิดาแหงวิทยาศาสตร์สมัยใหม่ — ใช้การทดลองเพื่อลมลางฟิสิกสของอริสโตเติลที่มีมา 2,000 ป",
+      "biography_th": [
+        "Galileo (กาลิเลโอ) เกิดที่ Pisa (ปิซา), Italy (อิตาลี) ในป 1564 เขาเรียนแพทยที่ University of Pisa (มหาวิทยาลัยปิซา) แต่เปลี่ยนไปเรียนคณิตศาสตร์และปรัชญาธรรมชาติ",
+        "เขาหลงใหลการเคลื่อนที่ ตามตำนาน เขาปลอยลูกตุ้มสองลูกที่มีมวลตางกันจาก Leaning Tower of Pisa (หอเอนเมืองปิซา) เพื่อแสดงว่าทั้งสองตกด้วยอัตราเร็วเทากัน — แมนักประวัติศาสตร์จะถกเถียงวาเรื่องนี้เกิดขึ้นจริงหรือไม่",
+        "สิ่งที่เขาทำจริงๆ คือการกลิ้งลูกบอลลงพื้นเอียง (inclined plane (inclined plane)) จับเวลาโดยใช้ชีพจรและตอมาใช้นาฬิกาน้ำ จากการทดลองนี้ เขาคนพบวาระยะทางเปนสัดสวนกับเวลายกกำลังสอง — กฎความเรงสม่ำเสมอ",
+        "เขายังหันกล้องโทรทรรศน์ขึ้นสู่ฟากฟ้าและคนพบดวงจันทรของดาวพฤหัส เฟสของดาวศุกร์ และภูเขาบนดวงจันทร การสังเกตเหล่านี้สนับสนุนแบบจำลองสุริยะเปนศูนย์กลาง (heliocentric (heliocentric)) ของ Copernicus (โคเปอรนิคัส) ซึ่งนำมาสู่ความขัดแยงกับคริสตจักรคาทอลิก",
+        "ในป 1633 คริสตจักรนำเขาขึ้นพิจารณาคดีขอหานอกรีต เขาถูกบังคับใหถอนคำกลาวอางและใช้ชีวิตที่เหลือภายใต้การกักบริเวณ — แต่เขาไม่เคยหยุดทำงาน"
+      ],
+      "contributions_th": [
+        "กำหนดกฎความเรงสม่ำเสมอ: ระยะทาง ∝ เวลายกกำลังสอง สำหรับวัตถุที่ตกอย่างอิสระ",
+        "สาธิตว่าวัตถุมวลตางกันตกด้วยอัตราเร็วเทากัน (เมื่อไม่มีแรงตานอากาศ)",
+        "เปนผู้บุกเบิกวิธีการทดลอง — ทดสอบทฤษฎีด้วยการทดลองที่วัดคาได้ ไม่ใช่เพียงตรรกะ",
+        "คนพบการแกวงของลูกตุ้มที่สม่ำเสมอ (คาบขึ้นอยู่กับความยาว ไม่ใช่แอมพลิจูด)",
+        "พัฒนาแนวคิดความเฉื่อย — วัตถุที่กำลังเคลื่อนที่จะเคลื่อนที่ตอไปหากไม่มีแรงมากระทำ (กอนนิวตัน)"
+      ],
+      "legacy_th": [
+        "Galileo (กาลิเลโอ) ถูกเรียกว่า 'บิดาแหงวิทยาศาสตร์สมัยใหม่' เพราะเขายืนกรานที่จะทดสอบแนวคิดผ่านการวัดและการทดลอง แทนที่จะพึ่งพาอำนาจ",
+        "การทดลองพื้นเอียงของเขาเปนบรรพบุรุษโดยตรงของฟิสิกสความโนมถวงสมัยใหม่ — ตั้งแตการเคลื่อนที่แบบโพรเจกไทลถึงวงโคจรดาวเทียม",
+        "สมการลูกตุ้มที่เขาคนพบยังคงใช้ในนาฬิกา เครื่องวัดแผนดินไหว และขอสอบฟิสิกสระดับ IGCSE (IGCSE)",
+        "ความขัดแยงกับคริสตจักรกลายเปนสัญลักษณ์ของการตอสูระหว่างวิทยาศาสตร์กับความเชื่อ ในป 1992 Vatican (วาติกัน) ยอมรับในที่สุดวาเขาถูกตอง"
+      ],
+      "key_quote_th": "จักรวาลถูกเขียนด้วยภาษาคณิตศาสตร์ และตัวอักษรของมันคือ สามเหลี่ยม วงกลม และรูปทรงเรขาคณิตอื่นๆ"
     },
     {
       "id": "pascal",
@@ -327,13 +410,19 @@
           "title": "Puy-de-Dôme Barometer Experiment",
           "year": "1648",
           "description": "Pascal asked his brother-in-law to carry a mercury barometer up the Puy-de-Dôme mountain. The mercury level dropped steadily with altitude — proving atmospheric pressure decreases with height and that a vacuum exists above the mercury column.",
-          "myth_vs_fact": "This actually happened and is well-documented. Pascal couldn't climb the mountain himself due to poor health."
+          "myth_vs_fact": "This actually happened and is well-documented. Pascal couldn't climb the mountain himself due to poor health.",
+          "title_th": "Puy-de-Dme Barometer Experiment (การทดลองบารอมิเตอร์ที่ปุย-เดอ-โดม)",
+          "desc_th": "Pascal (ปาสกาล) ขอใหพี่เขยแบกบารอมิเตอร์ปรอทขึ้นภูเขา Puy-de-Dme (ปุย-เดอ-โดม) ระดับปรอทลดลงอย่างคงที่ตามความสูง — พิสูจนวาความดันบรรยากาศลดลงตามความสูง และมีสุญญากาศเหนือคอลัมน์ปรอท",
+          "myth_th": "เหตุการณนี้เกิดขึ้นจริงและมีหลักฐานดี Pascal (ปาสกาล) ไม่สามารถปนเขาเองได้เนื่องจากสุขภาพไม่ดี"
         },
         {
           "title": "The Pascal Barrel Experiment",
           "year": "1647–1648",
           "description": "Pascal fitted a long thin tube (about 10 m tall) to a sealed water-filled barrel. Pouring water into the narrow tube generated enormous pressure at the bottom, bursting the barrel — demonstrating Pascal's Principle.",
-          "myth_vs_fact": "This is described in Pascal's own writings. It dramatically proved that pressure transmits equally in all directions in an enclosed fluid."
+          "myth_vs_fact": "This is described in Pascal's own writings. It dramatically proved that pressure transmits equally in all directions in an enclosed fluid.",
+          "title_th": "The Pascal Barrel Experiment (การทดลองถึงไมของปาสกาล)",
+          "desc_th": "Pascal (ปาสกาล) ตอทอแคบยาว (ประมาณ 10 ม.) เขากับถึงน้ำที่ปิดสนิท การเทน้ำลงทอแคบสรางความดันมหาศาลที่กนถึง ทำให้ถึงแตก — สาธิตหลักการของปาสกาล",
+          "myth_th": "อธิบายไว้ในงานเขียนของ Pascal (ปาสกาล) เอง การทดลองนี้พิสูจนอย่างชัดเจนวาความดันสงผานเทากันทุกทิศทางในของไหลที่อยู่ในภาชนะปิด"
         }
       ],
       "rating": {
@@ -369,7 +458,28 @@
         "summary_en": "A child prodigy who discovered the laws of pressure and fluids — and co-founded probability theory.",
         "personality_th": "เด็กอัจฉริยะที่คิดเรขาคณิตเองตอน 12 ขวบ, ประดิษฐ์เครื่องคำนวณตอน 19, แต่ละทิ้งวิทยาศาสตร์ไปหาศาสนาตอนปลายชีวิต — ชีวิตน่าสนใจแต่ไม่ถึงกับเป็นตำนานโด่งดังเท่าคนอื่น",
         "personality_en": "Discovered geometry on his own at 12, invented a calculating machine at 19, then abandoned science for religion and philosophy. A brilliant but short life that changed both physics and mathematics."
-      }
+      },
+      "summary_th": "Blaise Pascal (แบลส ปาสกาล) เด็กอัจฉริยะผู้คนพบกฎของความดันและกลศาสตร์ของไหลกอนอายุ 30",
+      "biography_th": [
+        "Blaise Pascal (แบลส ปาสกาล) เกิดที่ Clermont-Ferrand (แกลรมง-แฟรอง), France (ฝรั่งเศส) ในป 1623 เขาเปนเด็กอัจฉริยะ — อายุ 12 ปก็เข้าใจเรขาคณิตพื้นฐานเองได้ และตอน 16 ปเขียนตำราเกี่ยวกับภาคตัดกรวยที่ทำให้ Descartes (เดการต) ประทับใจ",
+        "ตอน 19 ป เขาประดิษฐ Pascaline (ปาสกาลีน) เครื่องคำนวณเชิงกลแรกของโลก เพื่อช่วยพอดำนวณภาษี",
+        "ในฟิสิกส Pascal (ปาสกาล) ศึกษาของไหลและความดัน เขาทดลองกับบารอมิเตอร์และใหพี่เขยแบกบารอมิเตอร์ขึ้นภูเขา Puy-de-Dme (ปุย-เดอ-โดม) เพื่อพิสูจนวาความดันบรรยากาศลดลงตามความสูง",
+        "การคนพบสำคัญที่สุด — Pascal's Principle (หลักการของปาสกาล) — กลาววาความดันที่กระทำตอของไหลในภาชนะปิดจะถูกสงตอไปทุกทิศทางเทากัน นี่คือรากฐานของระบบไฮดรอลิกส",
+        "ชวงปลายชีวิต เขาหันเหจากวิทยาศาสตร์ไปสู่ปรัชญาและศาสนา เขียนหนังสือดัง 'Penses' ('เพ็นเซ' (ความคิด)) เขาเสียชีวิตในป 1662 ด้วยวัยเพียง 39 ป"
+      ],
+      "contributions_th": [
+        "Pascal's Principle (หลักการของปาสกาล): ความดันที่กระทำตอของไหลในภาชนะปิดถูกสงตอไปทุกทิศทางเทากัน",
+        "สาธิตวาความดันบรรยากาศมีอยู่จริงและลดลงตามความสูง",
+        "ประดิษฐเครื่องอัดไฮดรอลิก (hydraulic press (hydraulic press)) — พื้นฐานของเบรกรถ ลิฟต และเครื่องจักรหนัก",
+        "บุกเบิกการศึกษาสุญญากาศ (vacuum (vacuum)) และความดันอากาศ (รวมกับ Torricelli (ตอริเชลลี))"
+      ],
+      "legacy_th": [
+        "หนวย SI (SI) ของความดัน — Pascal (Pa) (พาสคัล (Pa)) — ตั้งชื่อตามเขา",
+        "ทุกระบบไฮดรอลิก — จากเก้าอี้ทันตแพทยถึงรถขุด — อาศัย Pascal's Principle (หลักการของปาสกาล)",
+        "งานของเขาดานความดันและของไหลเปนสวนสำคัญของหลักสูตร IGCSE Physics (ฟิสิกส IGCSE) (หัวขอ 1.8 ความดัน)",
+        "เขายังเปนผู้รวมกอตั้งทฤษฎีความนาจะเปน (probability theory (probability theory)) ซึ่งมีประโยชน์ไกลเกินกว่าฟิสิกส"
+      ],
+      "key_quote_th": "สาเหตุเดียวของความทุกขของมนุษย์คือเขาไม่รู้จักอยู่อยางสงบในห้องของตน"
     },
     {
       "id": "hooke",
@@ -417,13 +527,19 @@
           "title": "Hooke's Law — Spring Experiments",
           "year": "1660",
           "description": "Hooke suspended weights from springs and wires, measuring how much they stretched. He discovered the extension is directly proportional to the applied force (F = kx). He first published this as an anagram (ceiiinosssttuv) to establish priority.",
-          "myth_vs_fact": "This is real and well-documented. The anagram was a common practice to establish priority while keeping the discovery secret until publication."
+          "myth_vs_fact": "This is real and well-documented. The anagram was a common practice to establish priority while keeping the discovery secret until publication.",
+          "title_th": "Hooke's Law — Spring Experiments (กฎของฮุก — การทดลองสปริง)",
+          "desc_th": "Hooke (ฮุก) แขวนน้ำหนักจากสปริงและลวด วัดการยืดตัว เขาคนพบว่าการยืดตัวเปนสัดส่วนโดยตรงกับแรง (F = kx) เขาเผยแพรครังแรกในรูปแบบคำปริศนา (anagram (anagram): ceiiinosssttuv) เพื่อสงวนสิทธิความเปนเจาของ",
+          "myth_th": "เหตุการณนี้เกิดขึ้นจริงและมีหลักฐานดี การใช้คำปริศนาเปนธรรมเนียมเพื่อสงวนสิทธิในขณะที่ยังไม่เปดเผยจนกว่าจะตีพิมพ"
         },
         {
           "title": "Micrographia — Discovery of Cells",
           "year": "1665",
           "description": "Using his improved compound microscope, Hooke examined a thin slice of cork and saw a honeycomb-like structure of tiny compartments. He named them 'cells' because they resembled monastery cells. His book Micrographia contained stunning illustrations of over 60 microscopic specimens.",
-          "myth_vs_fact": "This actually happened. Micrographia was a bestseller and is among the most important scientific books ever published."
+          "myth_vs_fact": "This actually happened. Micrographia was a bestseller and is among the most important scientific books ever published.",
+          "title_th": "Micrographia — Discovery of Cells (ไมโครกราเฟีย — การคนพบเซลล)",
+          "desc_th": "ด้วยกล้องจุลทรรศนประกอบที่ปรับปรุงแลว Hooke (ฮุก) ตรวจดูแผนคอร์กบางๆ และเห็นโครงสร้างคลายรงผึ้งของชองเล็กๆ เขาตั้งชื่อวา 'เซลล' (cell (cell)) เพราะคลายห้องของพระในวัด หนังสือของเขา 'Micrographia' ('ไมโครกราเฟีย') มีภาพประกอบ stunning ของสิ่งมีชีวิตจุลภาคกว่า 60 ชนิด",
+          "myth_th": "เหตุการณนี้เกิดขึ้นจริง Micrographia เปนหนังสือขายดีและเปนหนึ่งในหนังสือวิทยาศาสตร์สำคัญที่สุดเท่าที่เคยตีพิมพ"
         }
       ],
       "rating": {
@@ -459,7 +575,29 @@
         "summary_en": "The most versatile scientist of his age — discovered elasticity, cells, and was overshadowed by Newton.",
         "personality_th": "ทะเลาะกับนิวตันเรื่องกฎแรงโน้มถ่วง, นิวตันสั่งลบรูปฮุก (เชื่อกันว่า), ปัจจุบันไม่มีภาพเหมือนของฮุกหลงเหลือ! — เรื่องราวชวนนินทาที่สุดในประวัติศาสตร์วิทยาศาสตร์ ตัวละครที่ถูกกลบเกลื่อนอย่างไม่เป็นธรรม",
         "personality_en": "Bitter rival of Newton — Newton allegedly destroyed Hooke's portrait after his death. Today, no authenticated portrait of Hooke exists. The most unfairly forgotten genius in science history."
-      }
+      },
+      "summary_th": "Robert Hooke (โรเบิรต ฮุก) ชายผู้คนพบความยืดหยุน — และเปนนักวิทยาศาสตร์ที่หลากหลายที่สุดคนหนึ่ง หากมักถูกมองขาม",
+      "biography_th": [
+        "Robert Hooke (โรเบิรต ฮุก) เกิดป 1635 ที่ Isle of Wight (ไอลออฟไวต), England (อังกฤษ) เด็กที่ร่างกายออนแอแตหัวอัจฉริยะ ถูกสงไปฝึกงานกับชางศิลปแตหันไปสนใจวิทยาศาสตร์",
+        "ที่ Oxford (ออกซฟอร์ด) เขาทำงานเปนผู้ช่วยของ Robert Boyle (โรเบิรต บอยล) ช่วยสรางปั๊มลมที่ใช้ในการทดลองแกสของบอยล ในป 1662 เขาเปน Curator of Experiments (ภัณฑารักษการทดลอง) คนแรกของ Royal Society (ราชสมาคม) — งานของเขาคือสาธิตการทดลองใหม่ทุกสัปดาห",
+        "Hooke (ฮุก) เปนนักประดิษฐและนักทดลองที่ยอดเยี่ยม เขาสรางกล้องจุลทรรศนตัวแรกที่เผยใหเห็นโลกจุลภาค บัญญัติศัพท 'เซลล' (cell (cell)) หลังจากเห็นโครงสร้างรงผึ้งของไม้คอร์ก",
+        "ในป 1660 เขาคนพบว่าสำหรับวัสดุหลายชนิด แรงที่ตองใช้ยืดหรือหดสปริงเปนสัดส่วนกับการยืดตัว — Hooke's Law (กฎของฮุก)",
+        "ถึงแมเขาจะอัจฉริยะ แต Hooke (ฮุก) ขึ้นชื่อเรื่องอารมณรอนและทะเลาะแยงชิงความเปนเจาของกับ Isaac Newton (ไอแซค นิวตั้น) ว่าใครคนพบกฎแรงโนมถวงแบบผกผันกำลังสอง หลังฮุกตาย Newton (นิวตัน) (ในฐานะประธานราชสมาคม) ถูกกลาวหาวาสั่งเอาภาพเหมือนของฮุกออก — ซึ่งเปนสาเหตุที่ไมมีภาพเหมือนที่แทจริงของฮุกเหลืออยู่ในปจจุบัน"
+      ],
+      "contributions_th": [
+        "Hooke's Law (กฎของฮุก): การยืดตัวของสปริงเปนสัดส่วนโดยตรงกับแรงที่กระทำ (F = kx)",
+        "เปนคนแรกที่กลาววาแรงโนมถวงเปนแบบผกผันตามกำลังสอง (แมจะพิสูจนทางคณิตศาสตร์ไม่ได้)",
+        "สรางกล้องโทรทรรศนแบบ Gregorian (เกรกอเรียน) ตัวแรกและสำรวจ Great Fire of London (เพลิงไหมครังใหญ่แหงลอนดอน)",
+        "บุกเบิกกล้องจุลทรรศนและคนพบวาฟอสซิลคือซากของสิ่งมีชีวิตโบราณ",
+        "ออกแบบ universal joint (ขอตอนเนกประสงค) ที่ยังใช้ในรถยนตปจจุบัน"
+      ],
+      "legacy_th": [
+        "Hooke's Law (กฎของฮุก) เปนหนึ่งในสมการแรกที่นักเรียนฟิสิกสเรียนรู — สำคัญตอการเขาใจสปริง ความยืดหยุน และการเคลื่อนที่แบบซิมเปิลฮารมอนิก",
+        "ทุกสปริงในทุกอุปกรณ — จากระบบกันสะเทือนรถถึงปากกาหดได้ — อยู่ภายใต้ Hooke's Law (กฎของฮุก) ภายในขีดจำกัดยืดหยุน",
+        "แนวคิด 'elastic limit' (ขีดจำกัดยืดหยุน) (จุดที่วัสดุไม obe กฎของฮุกอีกตอไปและเสียรูปถาวร) เปนแนวคิดสำคัญในวิทยาศาสตร์วัสดุ",
+        "แมจะถูกบดบังรัศมีโดยนิวตัน ผลงานของฮุกนับเปนหนึ่งในผลงานสรางสรรคดั้งเดิมที่สุดในวิทยาศาสตร์ศตวรรษที่ 17"
+      ],
+      "key_quote_th": "ธรรมชาติมิไดถูกปกครองด้วยกฎตามอำเภอใจ แตด้วยกฎที่มีเหตุผล — และกฎเหล่านั้นสามารถคนพบได้ผ่านการทดลอง"
     },
     {
       "id": "newton",
@@ -514,19 +652,28 @@
           "title": "The Apple Tree and Gravity",
           "year": "1666",
           "description": "During the Plague, Newton retreated to Woolsthorpe. Watching an apple fall from a tree, he wondered: if the apple is pulled toward Earth, could the same force extend to the Moon? This led to the law of universal gravitation.",
-          "myth_vs_fact": "⚠️ OFTEN MISREPRESENTED. The apple did NOT hit Newton on the head. The story was told by Newton himself to his biographers and is considered genuine. However, his gravity theory took over 20 years to develop fully — he did not discover it in a single 'Eureka!' moment."
+          "myth_vs_fact": "⚠️ OFTEN MISREPRESENTED. The apple did NOT hit Newton on the head. The story was told by Newton himself to his biographers and is considered genuine. However, his gravity theory took over 20 years to develop fully — he did not discover it in a single 'Eureka!' moment.",
+          "title_th": "The Apple Tree and Gravity (ต้นแอปเปิลกับแรงโนมถวง)",
+          "desc_th": "ระหว่างโรคระบาด Newton (นิวตัน) หลบไปที่ Woolsthorpe (วูลสธอรป) มองแอปเปิลตกจากต้น เขาสงสัย: ถาแอปเปิลถูกดึงเขาโลก แรงเดียวกันนี้อาจขยายไปถึงดวงจันทรได้ไหม? นี้นำไปสู่กฎแรงโนมถวงสากล",
+          "myth_th": "⚠️ มักถูกนำเสนอผิดๆ แอปเปิลไม่ได้ตีหัว Newton (นิวตัน) เรื่องนี้ Newton (นิวตัน) เลาใหชีวประวัติฟังเองและถือวาเปนเรื่องจริง อยางไรก็ตาม ทฤษฎีแรงโนมถวงของเขาใช้เวลากว่า 20 ปในการพัฒนาอยางสมบูรณ — เขาไม่ได้คนพบในชั่วพริบตา"
         },
         {
           "title": "Prism Experiments — Light Spectrum",
           "year": "1665–1666",
           "description": "Newton let a narrow beam of sunlight pass through a glass prism, spreading it into a spectrum of colours (ROYGBIV). He passed the coloured beam through a second prism and it recombined into white light — proving white light is a mixture of all colours.",
-          "myth_vs_fact": "This actually happened. Newton's experimentum crucis (crucial experiment) with the second prism was brilliant methodology — proving the prism separates, not modifies, the light."
+          "myth_vs_fact": "This actually happened. Newton's experimentum crucis (crucial experiment) with the second prism was brilliant methodology — proving the prism separates, not modifies, the light.",
+          "title_th": "Prism Experiments — Light Spectrum (การทดลองปริซึม — สเปกตรัมแสง)",
+          "desc_th": "Newton (นิวตัน) สองลำแสงแดดแคบผ่านปริซึมแกว ทำให้กระจายเปนสเปกตรัมสี (ROYGBIV (รอยจีบีฟ)) เขาสองลำแสงสีผ่านปริซึมที่สองและมันรวมกลับเปนแสงสีขาว — พิสูจนวาแสงสีขาวคือส่วนผสมของทุกสี",
+          "myth_th": "เหตุการณนี้เกิดขึ้นจริง การทดลองชี้ขาด (experimentum crucis (experimentum crucis)) ของ Newton (นิวตัน) ด้วยปริซึมที่สองเปนวิธีการที่ยอดเยี่ยม — พิสูจนวาปริซึมแยกแสง ไม่ได้เปลี่ยนแปลง"
         },
         {
           "title": "Year of Wonders (Annus Mirabilis)",
           "year": "1665–1666",
           "description": "When Cambridge closed due to plague, Newton (age 23) spent 18 months at Woolsthorpe working alone. In this period he: (1) invented calculus, (2) discovered universal gravitation, (3) made breakthroughs on light and colour, (4) formulated the three laws of motion. Arguably the most productive 18 months in scientific history.",
-          "myth_vs_fact": "Historically accurate. However, many of these ideas continued to develop for decades — the Principia was not published until 1687."
+          "myth_vs_fact": "Historically accurate. However, many of these ideas continued to develop for decades — the Principia was not published until 1687.",
+          "title_th": "Year of Wonders (Annus Mirabilis) (ปแหงความมหัศจรรย)",
+          "desc_th": "เมื่อ Cambridge (เคมบริดจ) ปิดเนื่องจากโรคระบาด Newton (นิวตัน) (อายุ 23) ใช้เวลา 18 เดือนที่ Woolsthorpe (วูลสธอรป) ทำงานคนเดียว ในช่วงนี้เขาคิดคนแคลคูลัส คนพบแรงโนมถวงสากล ทำความกาวหนาดานแสงและสี และกำหนดกฎการเคลื่อนที่ 3 ขอ — 18 เดือนที่สรางสรรคที่สุดในประวัติศาสตร์วิทยาศาสตร์",
+          "myth_th": "แม่นยำทางประวัติศาสตร์ อยางไรก็ตาม แนวคิดเหล่านี้ยังคงพัฒนาเปนเวลาหลายทศวรรษ — Principia ไม่ได้ถูกตีพิมพจนถึงป 1687"
         }
       ],
       "rating": {
@@ -562,7 +709,31 @@
         "summary_en": "The single most influential scientist in history — laws of motion, gravity, and calculus.",
         "personality_th": "เรื่องแอปเปิลตกใส่หัว (แม้ไม่จริงแต่ทุกคนรู้!), 'ยืนบนไหล่ยักษ์', ทะเลาะกับฮุกและไลบ์นิซ, ไม่เคยแต่งงาน, เป็นหัวหน้าโรงกษาปณ์ตามล่าปลอมแปลง, ฝังใน Westminster Abbey — มีเรื่องราวน่าสนใจและน่านินทามากที่สุดในวงการวิทยาศาสตร์",
         "personality_en": "The apple story (didn't hit his head but he told it!), \"standing on the shoulders of giants,\" feuds with Hooke and Leibniz, never married, Master of the Mint hunting counterfeiters, buried in Westminster Abbey."
-      }
+      },
+      "summary_th": "Isaac Newton (ไอแซค นิวตั้น) นักวิทยาศาสตร์ที่ทรงอิทธิพลที่สุดในประวัติศาสตร์ — กฎการเคลื่อนที่ 3 ขอและกฎแรงโนมถวง  ปฏิวัติฟิสิกส",
+      "biography_th": [
+        "Isaac Newton (ไอแซค นิวตั้น) เกิดป 1643 ที่ Woolsthorpe (วูลสธอรป), Lincolnshire (ลิงคอลนเชียร), England (อังกฤษ) เขาเกิดกอนกำหนดและตัวเล็กมากจนแม่บอกวาสามารถใส่ในเหยือกควอร์ตได้ พอของเขาเสียชีวิตกอนเขาเกิด",
+        "เขาเรียนที่ Trinity College (ทรินิตีคอลเลจ), Cambridge (เคมบริดจ) แตในป 1665 โรคระบาดครังใหญ่ (Great Plague (Great Plague)) ทำให้มหาวิทยาลัยตองปิด Newton (นิวตัน) กลับบ้านที่ Woolsthorpe (วูลสธอรป) สำหรับสิ่งที่เขาเรียกวา 'ปแหงความมหัศจรรย' (year of wonders (year of wonders)) — 18 เดือนที่เขาคิดคนแคลคูลัส คนพบกฎแรงโนมถวงสากล และสรางความกาวหนาทางทัศนศาสตร์",
+        "Newton (นิวตัน) สรางกล้องโทรทรรศนสะทอนแสงตัวแรก (reflecting telescope (reflecting telescope)) ซึ่งหลีกเลี่ยงปัญหาการบิดเบือนสีของกล้องหักเหแสง เขายังแสดงวาแสงสีขาวประกอบด้วยสีรุ้งทั้งหมด",
+        "ผลงานชิ้นเอกของเขา — Principia Mathematica (พรินซิเปีย) (1687) — วางกฎการเคลื่อนที่ 3 ขอและกฎแรงโนมถวงสากล ถือเปนหนังสือวิทยาศาสตร์ที่สำคัญที่สุดเท่าที่เคยเขียนมา",
+        "ในชีวิตบั้นปลาย เขาเปน Master of the Royal Mint (Master of the Royal Mint) และประธาน Royal Society (ราชสมาคม) เขาได้รับบรรดาศักดิอัศวินโดย Queen Anne (สมเด็จพระราชินีแอนน) ในป 1705 เขาไม่เคยแตงงานและเสียชีวิตป 1727 ฝังที่ Westminster Abbey (เวสตมินสเตอร์แอบบีย์)"
+      ],
+      "contributions_th": [
+        "Newton's First Law (กฎขอที่หนึ่งของนิวตัน) (Law of Inertia (กฎความเฉื่อย)): วัตถุที่อยูนิ่งจะอยูนิ่ง วัตถุที่กำลังเคลื่อนที่จะเคลื่อนที่ด้วยความเร็วคงที่ นอกจากจะมีแรงลัพธมากระทำ",
+        "Newton's Second Law (กฎขอที่สองของนิวตัน): F = ma — ความเรงของวัตถุเปนสัดส่วนกับแรงลัพธและผกผันกับมวล",
+        "Newton's Third Law (กฎขอที่สามของนิวตัน): ทุกแรงกิริยายอมมีแรงปฏิกิริยาที่มีขนาดเทากันแตทิศทางตรงกันขาม",
+        "Law of Universal Gravitation (กฎแรงโนมถวงสากล): มวลทุกกอนดึงดูดมวลอื่นด้วยแรงที่สัดส่วนกับผลคูณของมวลและผกผันกับกำลังสองของระยะทาง",
+        "คิดคนแคลคูลัส (calculus (calculus)) (โดยอิสระจาก Leibniz (ไลบนิซ)) — คณิตศาสตร์แหงการเปลี่ยนแปลง",
+        "คนพบวาแสงสีขาวประกอบด้วยสเปกตรัมของสี"
+      ],
+      "legacy_th": [
+        "กฎการเคลื่อนที่ 3 ขอของ Newton (นิวตัน) เปนรากฐานของกลศาสตร์ดั้งเดิม (classical mechanics (classical mechanics)) — ตั้งแตการเคลื่อนที่แบบโพรเจกไทลถึงการสงจรวดลวนอยู่ภายใต้กฎเหล่านี้",
+        "สมการ F = ma เปนสมการที่ดังที่สุดในฟิสิกส สอนในทุกห้องเรียน IGCSE Physics (ฟิสิกส IGCSE)",
+        "กฎแรงโนมถวงของเขาอธิบายทั้งทำไมแอปเปิลตกและทำไมดวงจันทรโคจรรอบโลก — รวมฟิสิกสบโลกและฟิสิกสทองฟาเปนหนึ่งเดียวกันเปนครังแรก",
+        "วิธีการของ Newton (นิวตัน) ครอบงำฟิสิกสนานกว่า 200 ป จนกระทังสัมพัทธภาพของ Einstein (ไอนสไตน) ปรับปรุงสำหรับความเร็วสูงและแรงโนมถวงรุนแรง",
+        "หนวยของแรง — Newton (N) (นิวตัน (N)) — ตั้งชื่อตามเขา"
+      ],
+      "key_quote_th": "หากฉันมองได้ไกลกว่าใคร นั่นเปนเพราะฉันยืนอยู่บนไหลของยักษ"
     },
     {
       "id": "james-watt",
@@ -608,13 +779,19 @@
           "title": "The Separate Condenser",
           "year": "1763–1765",
           "description": "Watt was asked to repair a model Newcomen steam engine. He noticed the cylinder was alternately heated and cooled with every stroke — extremely wasteful. His breakthrough: keep the cylinder hot and condense steam in a separate chamber. This made steam engines 4 times more efficient, launching the Industrial Revolution.",
-          "myth_vs_fact": "Well-documented from Watt's own notes. The popular story that he 'suddenly thought of it while watching a kettle boil' is a myth — possibly confused with a story about his father."
+          "myth_vs_fact": "Well-documented from Watt's own notes. The popular story that he 'suddenly thought of it while watching a kettle boil' is a myth — possibly confused with a story about his father.",
+          "title_th": "The Separate Condenser (คอนเดนเซอรแยก)",
+          "desc_th": "Watt (วัตต) ถูกขอใหซอมแบบจำลองเครื่องจักรไอน้ำ Newcomen (นิวโคเมน) เขาพบวากระบอกสูบถูกทำให้รอนและเยนสลับกันทุกจังหวะ — สิ้นเปลืองมาก ความกาวหนาของเขา: ใหกระบอกสูบรอนอยู่และควบแน่นไอน้ำในห้องแยก ทำให้เครื่องจักรไอน้ำมีประสิทธิภาพ 4 เทา จุดชนวนการปฏิวัติอุตสาหกรรม",
+          "myth_th": "มีหลักฐานดีจากบันทึกของ Watt (วัตต) เอง เรื่องดังที่วาเขาคิดได้ 'ขณะดูกาต้มน้ำเดือด' เปนตำนาน — อาจสับสนกับเรื่องของพอ"
         },
         {
           "title": "The Horsepower Definition",
           "year": "c. 1782",
           "description": "To sell engines to mine owners who used horses, Watt calculated that a strong brewery horse could lift 33,000 lb one foot in one minute — defining 1 horsepower (≈ 746 W). Customers could then compare his engines directly with their horses.",
-          "myth_vs_fact": "This actually happened. Watt's estimate was deliberately optimistic (real horses sustain about half that), but the unit became standard and is still used today."
+          "myth_vs_fact": "This actually happened. Watt's estimate was deliberately optimistic (real horses sustain about half that), but the unit became standard and is still used today.",
+          "title_th": "The Horsepower Definition (การนิยามแรงมา)",
+          "desc_th": "เพื่อขายเครื่องจักรใหเจาของเหมืองที่ใช้มา Watt (วัตต) ดำนวณวามาโรงเบียร์ที่แข็งแรงสามารถยก 33,000 ปอนด ได้สูง 1 ฟุตใน 1 นาที — กำหนด 1 แรงมา (≈ 746 W)",
+          "myth_th": "เหตุการณนี้เกิดขึ้นจริง Watt (วัตต) ประมาณคาแบบมองโลกในแงดี (มาจริงทำได้ประมาณครึ่งหนึ่ง) แตหนวยนี้กลายเปนมาตรฐานและยังใช้อยู่ในปจจุบัน"
         }
       ],
       "rating": {
@@ -650,7 +827,28 @@
         "summary_en": "His improved steam engine powered the Industrial Revolution — and gave us the unit of power.",
         "personality_th": "ชอบดูกาต้มน้ำเดือดแล้วคิดเรื่องไอน้ำได้ (ตำนานที่เล่าขานแต่ไม่จริง), เด็กขี้โรคที่รักคณิตศาสตร์, เงียบขรึมและมุ่งมั่น แต่เรื่องราวชีวิตส่วนตัวไม่ดราม่าเท่าคนอื่น",
         "personality_en": "The kettle story (myth — but everyone tells it), a sickly child who loved maths, quiet and determined. His separate condenser changed civilisation more than any political revolution."
-      }
+      },
+      "summary_th": "James Watt (เจมส วัตต) การปรับปรุงเครื่องจักรไอน้ำของเขาจุดชนวนการปฏิวัติอุตสาหกรรม — และใหหนวยของกำลังแก่เรา",
+      "biography_th": [
+        "James Watt (เจมส วัตต) เกิดป 1736 ที่ Greenock (กรีนอค), Scotland (สกอตแลนด) เขาเปนเด็กเงียบขรึมสุขภาพไม่แข็งแรงแตรักคณิตศาสตร์และการทำแบบจำลอง",
+        "เขาฝึกเปนชางทำเครื่องมือวิทยาศาสตร์ใน London (ลอนดอน) และ Glasgow (กลาสโกว) ที่มหาวิทยาลัยกลาสโกว เขาได้รับเครื่องจักรไอน้ำ Newcomen (นิวโคเมน) ที่เสียมาซอม ขณะซอมเขาตระหนักว่าการออกแบบมีประสิทธิภาพต่ำมากเพราะตองทำให้กระบอกสูบรอนและเย็นสลับกันทุกจังหวะ",
+        "ความกาวหนาครังสำคัญของเขา — คอนเดนเซอรแยก (separate condenser (separate condenser)) ป 1765 — ทำให้กระบอกสูบรอนอยู่ได้ขณะที่ไอน้ำควบแน่นในห้องแยกต่างหาก ทำให้เครื่องจักรไอน้ำมีประสิทธิภาพเพิ่มขึ้นประมาณ 4 เทา",
+        "Watt (วัตต) รวมหุนกับ Matthew Boulton (แมทธิว โบลตัน) ใน Birmingham (เบอร มิงแฮม) และรวมกันผลิตเครื่องจักรไอน้ำหลายรอยเครื่องที่ขับเคลื่อนโรงงาน เหมือง และโรงสีทั่วอังกฤษและโลก",
+        "เพื่อเปนเกียรติแก่เขา หนวย SI (SI) ของกำลัง — Watt (W) (วัตต (W)) — ตั้งชื่อตามเขา หลอดไฟถูกระบุวา '60W' หมายถึงใช้พลังงาน 60 จูลตอนาที"
+      ],
+      "contributions_th": [
+        "พัฒนาคอนเดนเซอรแยก (separate condenser (separate condenser)) — นวัตกรรมสำคัญที่ทำให้เครื่องจักรไอน้ำใช้งานได้จริงและมีประสิทธิภาพ",
+        "นำเสนอแนวคิดเรื่องแรงมา (horsepower (horsepower)) สำหรับเปรียบเทียบกำลังเครื่อง (1 hp ≈ 746 W)",
+        "บุกเบิกการวัดกำลังในรูปของงานตอหนวยเวลา",
+        "ประดิษฐกลไกการเคลื่อนที่แบบขนาน (parallel motion (parallel motion)) และเครื่องควบคุมความเร็วแบบแรงเหวี่ยง (centrifugal governor (centrifugal governor))"
+      ],
+      "legacy_th": [
+        "Watt (W) (วัตต (W)) — หนวย SI (SI) ของกำลัง — เปนหนึ่งในหนวยที่ใช้บอยที่สุดทั้งในฟิสิกสและชีวิตประจำวัน",
+        "เครื่องจักรไอน้ำที่ปรับปรุงของ Watt (วัตต) เปดฉากการปฏิวัติอุตสาหกรรม เปลี่ยนแปลงการคมนาคม (รถไฟไอน้ำ เรือกลไฟ) การผลิต และการทำเหมือง",
+        "สูตร P = E/t (กำลัง = พลังงาน/เวลา) และแนวคิดวากำลังคืออัตราการทำงาน เชื่อมโยงโดยตรงกับงานของ Watt (วัตต)",
+        "ชื่อของเขาปรากฏบนหลอดไฟทุกดวง เตาไมโครเวฟ และเครื่องใช้ไฟฟาทุกชิ้น — เปนเครื่องเตือนใจถาวรถึงคุณูปการของเขา"
+      ],
+      "key_quote_th": "ฉันคิดถึงอะไรอื่นไม่ได้นอกจากเครื่องจักรนี้"
     },
     {
       "id": "joule",
@@ -698,13 +896,19 @@
           "title": "Paddle Wheel Experiment — Mechanical Equivalent of Heat",
           "year": "1843–1845",
           "description": "Joule built an apparatus where a falling weight turned a paddle wheel in water, raising its temperature. By measuring the temperature rise from a known amount of work, he determined that 4.186 J of work = 1 calorie of heat — the mechanical equivalent of heat.",
-          "myth_vs_fact": "Joule's original apparatus is preserved at the Science Museum, London. The temperature rise from a single run was tiny (less than 1°C), requiring extremely careful thermometry. His result is remarkably close to the modern accepted value."
+          "myth_vs_fact": "Joule's original apparatus is preserved at the Science Museum, London. The temperature rise from a single run was tiny (less than 1°C), requiring extremely careful thermometry. His result is remarkably close to the modern accepted value.",
+          "title_th": "Paddle Wheel Experiment — Mechanical Equivalent of Heat (การทดลองใบพาย — สมมูลเชิงกลของความรอน)",
+          "desc_th": "Joule (จูล) สรางอุปกรณที่น้ำหนักตกลงหมุนใบพายในน้ำ ทำให้อุณหภูมิสูงขึ้น โดยการวัดอุณหภูมิที่เพิ่มขึ้นจากงานที่ทราบ เขากำหนดวางาน 4.186 J = 1 แคลอรีของความรอน — คาสมมูลเชิงกลของความรอน",
+          "myth_th": "อุปกรณดั้งเดิมของ Joule (จูล) ถูกเก็บรักษาที่ Science Museum, London (พิพิธภัณฑ์วิทยาศาสตร์ ลอนดอน) อุณหภูมิที่เพิ่มขึ้นจากการทดลองครังเดียวน้อยมาก (นอยกว่า 1°C) ตองใช้การวัดอุณหภูมิอย่างระมัดระวังสูง ผลลัพธของเขาใกล้เคียงกับคาที่ยอมรับในปจจุบันอย่างน่าทึ่ง"
         },
         {
           "title": "Joule's Law — Heating Effect of Current",
           "year": "1841",
           "description": "Joule passed known electric currents through wires submerged in water and measured temperature rise. He discovered heat ∝ I²Rt — now called Joule's Law, fundamental to understanding electrical energy transfer.",
-          "myth_vs_fact": "Russian physicist Heinrich Lenz independently discovered the same law simultaneously, so it is sometimes called the Joule-Lenz law."
+          "myth_vs_fact": "Russian physicist Heinrich Lenz independently discovered the same law simultaneously, so it is sometimes called the Joule-Lenz law.",
+          "title_th": "Joule's Law — Heating Effect of Current (กฎของจูล — ผลความรอนของกระแสไฟฟา)",
+          "desc_th": "Joule (จูล) ผานกระแสไฟฟาที่ทราบคาผานลวดที่จุ่มในน้ำและวัดอุณหภูมิที่เพิ่มขึ้น เขาคนพบความรอน ∝ I²Rt — ปจจุบันเรียกว่า Joule's Law (กฎของจูล)",
+          "myth_th": "นักฟิสิกสรัสเซีย Heinrich Lenz (ไฮนริช เลนซ) คนพบกฎเดียวกันอย่างอิสระพร้อมกัน จึงบางครั้งเรียก Joule-Lenz law (กฎจูล-เลนซ)"
         }
       ],
       "rating": {
@@ -740,7 +944,28 @@
         "summary_en": "A brewer who proved heat is a form of energy — establishing the law of conservation of energy.",
         "personality_th": "นักวิทยาศาสตร์สมัครเล่นที่ทำการทดลองในโรงเบียร์ของครอบครัว, วัดอุณหภูมิน้ำเพิ่มขึ้นเสี้ยวองศา, ไม่ได้รับการยอมรับนานหลายปีเพราะเป็นแค่นักต้มเบียร์ — เรื่องราวของคนนอกที่พิสูจน์ตนเอง แรงบันดาลใจให้นักวิทยาศาสตร์สมัครเล่นทั่วโลก",
         "personality_en": "The gentleman scientist who experimented in his family brewery, measured tiny temperature rises, struggled for recognition because he was \"just a brewer.\" An inspiration to amateur scientists everywhere."
-      }
+      },
+      "summary_th": "James Prescott Joule (เจมส เพรสคอตต จูล) นักตมเบียรผู้พิสูจนวาความรอนคือพลังงานรูปแบบหนึ่ง — และคนพบกฎอนุรักษพลังงาน",
+      "biography_th": [
+        "James Prescott Joule (เจมส เพรสคอตต จูล) เกิดป 1818 ที่ Salford (ซอลฟอรด), England (อังกฤษ) ในครอบครัวเศรษฐีเจาของโรงเบียร เขาเรียนที่บ้านกับนักวิทยาศาสตร์ชื่อดัง John Dalton (จอหน ดาลตัน) ผู้ปลูกฝังความรักวิทยาศาสตร์",
+        "Joule (จูล) บริหารโรงเบียรของครอบครัวในขณะที่ทำการทดลองฟิสิกสในเวลาวาง — สุภาพบุรุษนักวิทยาศาสตร์ (gentleman scientist (gentleman scientist)) อย่างแทจริง การทดลองดังที่สุดของเขาเกี่ยวข้องกับการถวงน้ำหนักที่หมุนใบพายในถึงน้ำ ทำให้น้ำรอนขึ้น",
+        "เขาแสดงวางานเชิงกล (mechanical work (mechanical work)) (น้ำหนักที่ตกลง) ทำให้เกิดความรอนในปริมาณที่เทากันพอดี สถาปนาหลักการอนุรักษพลังงาน — พลังงานไม่สามารถสรางหรือทำลายได้ แปรรูปจากรูปแบบหนึ่งเปนอีกรูปแบบหนึ่งเทานั้น",
+        "ถึงแมเขาจะเกง แต Joule (จูล) ดิ้นรนเพื่อใหได้รับการยอมรับเพราะเขาเปนมือสมัครเลน ไมใช academic ใช้เวลาหลายปกอนที่สถาบันวิทยาศาสตร์จะยอมรับผลลัพธของเขา นักฟิสิกสชื่อดัง William Thomson (Lord Kelvin) (วิลเลียม ทอมสัน (ลอร์ดเคลวิน)) กลายเปนผู้รวมงานและพันธมิตรที่ใกล้ชิด",
+        "หนวย SI (SI) ของพลังงาน — Joule (J) (จูล (J)) — ตั้งชื่อตามเขา เมื่อคุณกินขนม 200 แคลอรี นั่นคือพลังงานเคมีประมาณ 837,000 จูล"
+      ],
+      "contributions_th": [
+        "หาคาสมมูลเชิงกลของความรอน (mechanical equivalent of heat (mechanical equivalent of heat)) — วาตองใช้งานมากเทาใดจึงจะเกิดความรอนตามจำนวนที่กำหนด",
+        "สถาปนา First Law of Thermodynamics (กฎขอที่หนึ่งของอุณหพลศาสตร์) (การอนุรักษพลังงาน)",
+        "คนพบ Joule's Law (กฎของจูล): ความรอนที่เกิดในตัวตานทาน ∝ กระแสกำลังสอง × ความตานทาน (I²Rt)",
+        "ปรากฏการณ Joule-Thomson (จูล-ทอมสัน) (รวมกับ Lord Kelvin (ลอร์ดเคลวิน)) — การเปลี่ยนแปลงอุณหภูมิของแกสเมื่อขยายตัวโดยไม่ทำงาน"
+      ],
+      "legacy_th": [
+        "Joule (J) (จูล (J)) — หนวย SI (SI) ของพลังงานและงาน — ตั้งชื่อตามเขา ใช้ทุกที่ในฟิสิกส",
+        "การทดลองของเขาพิสูจนวาความรอนไม่ใช่ของไหล (caloric theory (ทฤษฎีแคลอริก)) แตเปนพลังงานรูปแบบหนึ่ง — การเปลี่ยนแปลงครังสำคัญในความเขาใจ",
+        "กฎการอนุรักษพลังงาน — 'พลังงานไม่สามารถสรางหรือทำลายได้' — เปนหนึ่งในหลักการสำคัญที่สุดในวิทยาศาสตร์ทั้งหมด",
+        "ในหลักสูตร IGCSE (IGCSE) ทุกโจทยเกี่ยวกับงาน (W = Fd) หรือการถายโอนพลังงานใช้จูลเปนหนวย"
+      ],
+      "key_quote_th": "ผมเชื่อวาวิทยาศาสตร์ที่ยิ่งใหญ่แหงอนาคตจะตั้งอยู่บนการสาธิตเชิงการทดลอง ไม่ใช่การใช้เหตุผลนามธรรม"
     },
     {
       "id": "fahrenheit",
@@ -1059,13 +1284,19 @@
           "title": "Boyle's Law (1662)",
           "year": "1662",
           "description": "Boyle trapped air in a J-shaped tube and added mercury to increase pressure. He found P x V = constant.",
-          "myth_vs_fact": "This actually happened. Boyle's data is remarkably accurate - modern analysis shows only 1-2% deviation from ideal gas law."
+          "myth_vs_fact": "This actually happened. Boyle's data is remarkably accurate - modern analysis shows only 1-2% deviation from ideal gas law.",
+          "title_th": "Boyle's Law (1662) (กฎของบอยล (1662))",
+          "desc_th": "Boyle (บอยล) กักอากาศในทอรูปตัว J และเติมปรอทเพื่อเพิ่มความดัน เขาพบ P × V = constant",
+          "myth_th": "เหตุการณนี้เกิดขึ้นจริง ขอมูลของ Boyle (บอยล) แมนยำอยางน่าทึ่ง — การวิเคราะห์สมัยใหม่แสดงความคลาดเคลื่อนเพียง 1-2% จากกฎแกสอุดมคติ"
         },
         {
           "title": "The Air Pump Experiments (1659)",
           "year": "1659",
           "description": "Using Hooke's air pump, Boyle showed that a candle cannot burn in vacuum, sound doesn't travel, and animals cannot survive without air.",
-          "myth_vs_fact": "This actually happened. The animal-in-vacuum experiment was controversial but proved air is necessary for life."
+          "myth_vs_fact": "This actually happened. The animal-in-vacuum experiment was controversial but proved air is necessary for life.",
+          "title_th": "The Air Pump Experiments (1659) (การทดลองปั๊มลม (1659))",
+          "desc_th": "ด้วยปั๊มลมของ Hooke (ฮุก), Boyle (บอยล) แสดงวาเทียนไม่สามารถติดไฟในสุญญากาศ เสียงไมเดินทาง และสัตวไมสามารถอยูรอดได้โดยไมมีอากาศ",
+          "myth_th": "เหตุการณนี้เกิดขึ้นจริง การทดลองสัตวในสุญญากาศเปนที่ถกเถียงแตพิสูจนวาอากาศจำเปนตอชีวิต"
         }
       ],
       "rating": {
@@ -1101,7 +1332,28 @@
         "summary_en": "Discovered Boyle's Law, built the first vacuum pump, and founded modern chemistry.",
         "personality_th": "ลูกคนที่ 14 ของตระกูลร่ำรวย, เลือกใช้ชีวิตวิทยาศาสตร์, จ้างฮุกเป็นผู้ช่วย, เคร่งศาสนา, ก่อตั้ง Boyle Lectures",
         "personality_en": "The 14th child of a wealthy earl, chose science over luxury, employed Hooke as his assistant, deeply religious and saw science as revealing God's design. Founded the Boyle Lectures that still run today."
-      }
+      },
+      "summary_th": "Robert Boyle (โรเบิรต บอยล) คนพบ Boyle's Law (กฎของบอยล) สรางปั๊มสูญญากาศตัวแรก และกอตั้งเคมีสมัยใหม่",
+      "biography_th": [
+        "Robert Boyle (โรเบิรต บอยล) เกิดป 1627 ที่ Lismore Castle (ลิสมอรคาสเซิล), Ireland (ไอรแลนด) ลูกคนที่ 14 ของ Earl of Cork (เอิรลออฟคอร์ก) ผู้ร่ำรวย",
+        "เมื่อตั้งรกรากที่ Oxford (ออกซฟอรด) ในป 1654 Boyle (บอยล) สรางห้องปฏิบัติการและจางผู้ช่วยหนุม — Robert Hooke (โรเบิรต ฮุก) — เพื่อสรางอุปกรณทดลอง",
+        "ด้วยความช่วยเหลือของ Hooke (ฮุก), Boyle (บอยล) สรางปั๊มลมที่สามารถสรางสุญญากาศได้ — หนึ่งในเครื่องแรกของโลก",
+        "ในป 1662 เขาตีพิมพ Boyle's Law (กฎของบอยล): ความดันแกสแปรผกผันกับปริมาตร (P ∝ 1/V) ที่อุณหภูมิคงที่ นี่เปนกฎแกสขอแรก",
+        "Boyle (บอยล) ยังเปนผู้บุกเบิกเคมี จำกัดความธาตุวาเปนสารที่ไม่สามารถแยกยอยตอไปได้ เขาเคร่งศาสนาอยางลึกซึ้ง"
+      ],
+      "contributions_th": [
+        "Boyle's Law (กฎของบอยล): ที่อุณหภูมิคงที่ P1 V1 = P2 V2",
+        "สรางปั๊มสูญญากาศเครื่องแรกของโลกและทดลองเกี่ยวกับความดันอากาศและการเผาไหมในสุญญากาศ",
+        "สาธิตวาอากาศมีน้ำหนักและสามารถรองรับคอลัมน์ปรอท (ยืนยันการทดลองของ Torricelli (ตอริเชลลี))",
+        "บุกเบิกแนวคิดสมัยใหม่ของธาตุทางเคมี"
+      ],
+      "legacy_th": [
+        "Boyle's Law (กฎของบอยล) เปนหนึ่งในกฎแกสแรกที่สอนในฟิสิกสและเคมีทั่วโลก",
+        "แนวทางการทดลองของเขากำหนดมาตรฐานสำหรับวิทยาศาสตร์สมัยใหม่",
+        "นิยามธาตุทางเคมีของเขาปูทางให Lavoisier (ลาวัวซีเย) และเคมีสมัยใหม",
+        "ชุดบรรยาย Boyle Lectures (Boyle Lectures) ที่กอตั้งตามพินัยกรรมของเขายังคงดำเนินอยูถึงปจจุบัน"
+      ],
+      "key_quote_th": "หนังสือแหงธรรมชาติถูกเขียนด้วยภาษาคณิตศาสตร์ และการทดลองคือตัวอักษรเดียวที่เราตองอ่าน"
     },
     {
       "id": "charles",
