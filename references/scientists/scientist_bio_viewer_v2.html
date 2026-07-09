@@ -22,14 +22,34 @@
   .header {
     text-align: center;
     margin-bottom: 30px;
-    max-width: 800px;
-    position: relative;
+    max-width: 900px;
+    width: 100%;
   }
-  .header-top {
+  .header-row {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
     align-items: center;
-    margin-bottom: 8px;
+    width: 100%;
+  }
+  .header-left {
+    text-align: left;
+  }
+  .header-left h1 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #22d3ee, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0;
+  }
+  .header-left .subtitle {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-top: 4px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .header-logo {
+    flex-shrink: 0;
   }
   .haus-logo {
     display: inline-flex;
@@ -46,20 +66,9 @@
     height: auto;
     display: block;
   }
-  .header h1 {
-    font-size: 2.2rem;
-    font-weight: 800;
-    background: linear-gradient(135deg, #22d3ee, #a78bfa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
+  .header-logo {
+    flex-shrink: 0;
   }
-  .header .subtitle {
-    color: #94a3b8;
-    font-size: 0.9rem;
-    margin-top: 8px;
-    font-family: 'JetBrains Mono', monospace;
-  }
-
   /* ===== TIMELINE (v2) ===== */
   .timeline-wrap {
     max-width: 900px;
@@ -472,12 +481,15 @@
 <body>
 
 <div class="header">
-  <div class="header-top">
-    <div></div>
-    <div class="haus-logo"><img src="../../graphs/assets/HAUS_logo_black.png" alt="HAUS Academy"></div>
+  <div class="header-row">
+    <div class="header-left">
+      <h1>👨🔬 Scientist Bio Library</h1>
+      <div class="subtitle">CIE IGCSE Physics 0625 — Interactive Timeline &amp; Topic Explorer</div>
+    </div>
+    <div class="header-logo">
+      <div class="haus-logo"><img src="../../graphs/assets/HAUS_logo_black.png" alt="HAUS Academy"></div>
+    </div>
   </div>
-  <h1>👨🔬 Scientist Bio Library</h1>
-  <div class="subtitle">CIE IGCSE Physics 0625 — Interactive Timeline &amp; Topic Explorer</div>
 </div>
 
 <!-- ===== TIMELINE ===== -->
