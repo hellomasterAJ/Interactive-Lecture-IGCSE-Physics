@@ -11,7 +11,7 @@
     background: #0f172a;
     color: #e2e8f0;
     font-family: 'Inter', sans-serif;
-    padding: 28px 20px 20px;
+    padding: 40px 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -22,11 +22,10 @@
   .header {
     text-align: center;
     margin-bottom: 30px;
-    max-width: 900px;
-    width: 100%;
+    max-width: 800px;
   }
   .header h1 {
-    font-size: 1.8rem;
+    font-size: 2.2rem;
     font-weight: 800;
     background: linear-gradient(135deg, #22d3ee, #a78bfa);
     -webkit-background-clip: text;
@@ -34,20 +33,20 @@
   }
   .header .subtitle {
     color: #94a3b8;
-    font-size: 0.8rem;
-    margin-top: 4px;
+    font-size: 0.9rem;
+    margin-top: 8px;
     font-family: 'JetBrains Mono', monospace;
   }
 
-  /* ===== TOP: TIMELINE ===== */
+  /* ===== TIMELINE (v2) ===== */
   .timeline-wrap {
     max-width: 900px;
     width: 100%;
-    margin-bottom: 32px;
+    margin-bottom: 28px;
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 16px;
-    padding: 24px 20px 20px;
+    padding: 22px 20px 18px;
   }
   .timeline-title {
     font-size: 0.7rem;
@@ -55,7 +54,7 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: #64748b;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
     text-align: center;
   }
   .timeline {
@@ -112,141 +111,37 @@
     max-width: 90px;
   }
   .timeline-node:hover .era-label,
-  .timeline-node.active .era-label {
-    color: #22d3ee;
-  }
+  .timeline-node.active .era-label { color: #22d3ee; }
   .timeline-node .era-year {
     font-size: 0.55rem;
     font-family: 'JetBrains Mono', monospace;
     color: #64748b;
     text-align: center;
-    transition: color 0.2s;
-  }
-  .timeline-node:hover .era-year,
-  .timeline-node.active .era-year {
-    color: #a78bfa;
   }
 
-  /* Era detail panel */
   .era-detail {
-    margin-top: 16px;
+    margin-top: 14px;
     padding: 14px 18px;
     background: #0f172a;
     border: 1px solid #2d3748;
     border-radius: 12px;
     display: none;
-    transition: all 0.3s;
   }
   .era-detail.show { display: block; }
-  .era-detail .ed-name {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #22d3ee;
-  }
-  .era-detail .ed-years {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.75rem;
-    color: #a78bfa;
-    margin: 2px 0 6px;
-  }
-  .era-detail .ed-desc {
-    font-size: 0.8rem;
-    color: #94a3b8;
-    line-height: 1.5;
-  }
-  .era-detail .ed-count {
-    margin-top: 8px;
-    font-size: 0.7rem;
-    color: #64748b;
-    font-family: 'JetBrains Mono', monospace;
-  }
+  .era-detail .ed-name { font-size: 1rem; font-weight: 700; color: #22d3ee; }
+  .era-detail .ed-years { font-family: 'JetBrains Mono',monospace; font-size: 0.75rem; color: #a78bfa; margin: 2px 0 6px; }
+  .era-detail .ed-desc { font-size: 0.8rem; color: #94a3b8; line-height: 1.5; }
+  .era-detail .ed-count { margin-top: 6px; font-size: 0.7rem; color: #64748b; font-family: 'JetBrains Mono',monospace; }
 
-  /* ===== MIDDLE: CARD GRID + FILTER STATUS ===== */
-  .controls {
-    max-width: 1300px;
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .filter-status {
-    font-size: 0.75rem;
-    color: #64748b;
-    font-family: 'JetBrains Mono', monospace;
-  }
-  .filter-status span {
-    color: #22d3ee;
-    font-weight: 600;
-  }
-  .lang-bar {
-    display: flex;
-    gap: 6px;
-  }
-  .lang-btn {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.7rem;
-    padding: 4px 14px;
-    border-radius: 16px;
-    border: 1px solid #334155;
-    background: #1e293b;
-    color: #94a3b8;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  .lang-btn:hover { border-color: #22d3ee; color: #22d3ee; }
-  .lang-btn.active { background: rgba(34,211,238,0.15); border-color: #22d3ee; color: #22d3ee; }
-
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-    gap: 18px;
-    max-width: 1300px;
-    width: 100%;
-  }
-
-  /* ===== CARD STYLES (same as before) ===== */
-  .card {
-    background: #1e293b;
-    border: 1px solid #334155;
-    border-radius: 14px;
-    overflow: hidden;
-    transition: all 0.25s ease;
-  }
-  .card:hover {
-    border-color: #22d3ee;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(34,211,238,0.08);
-  }
-  .card-header {
-    padding: 18px 20px 12px;
-    border-bottom: 1px solid #334155;
-    background: linear-gradient(135deg, rgba(34,211,238,0.06), rgba(167,139,250,0.06));
-  }
-  .card-header .name { font-size: 1.15rem; font-weight: 700; color: #f1f5f9; }
-  .card-header .meta { font-size: 0.75rem; color: #94a3b8; margin-top: 2px; }
-  .card-header .meta .lifespan { color: #22d3ee; font-family: 'JetBrains Mono', monospace; }
-  .card-body { padding: 14px 20px 18px; }
-  .card-body .summary {
-    font-size: 0.8rem;
-    color: #cbd5e1;
-    font-style: italic;
-    margin-bottom: 12px;
-    line-height: 1.5;
-  }
-
-  /* ===== BOTTOM: TOPIC BAR ===== */
+  /* ===== TOPIC BAR (v2) ===== */
   .topic-bar-wrap {
     max-width: 900px;
     width: 100%;
-    margin-top: 24px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     background: #1e293b;
     border: 1px solid #334155;
     border-radius: 16px;
-    padding: 18px 16px 20px;
+    padding: 16px 16px 18px;
   }
   .topic-bar-title {
     font-size: 0.7rem;
@@ -254,7 +149,7 @@
     text-transform: uppercase;
     letter-spacing: 0.08em;
     color: #64748b;
-    margin-bottom: 14px;
+    margin-bottom: 12px;
     text-align: center;
   }
   .topic-bar {
@@ -266,40 +161,19 @@
     background: #0f172a;
     border: 1px solid #2d3748;
     border-radius: 10px;
-    padding: 10px 6px;
+    padding: 8px 4px;
     text-align: center;
     cursor: pointer;
     transition: all 0.2s;
     position: relative;
   }
   .topic-seg:hover,
-  .topic-seg.active {
-    background: rgba(34,211,238,0.08);
-    border-color: #22d3ee;
-  }
-  .topic-seg .t-num {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    font-weight: 700;
-    color: #22d3ee;
-  }
-  .topic-seg .t-name {
-    font-size: 0.55rem;
-    color: #94a3b8;
-    margin-top: 2px;
-    line-height: 1.2;
-    transition: color 0.2s;
-  }
-  .topic-seg:hover .t-name,
-  .topic-seg.active .t-name { color: #e2e8f0; }
-  .topic-seg .t-count {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.55rem;
-    color: #64748b;
-    margin-top: 3px;
-  }
+  .topic-seg.active { background: rgba(34,211,238,0.08); border-color: #22d3ee; }
+  .topic-seg .t-num { font-family: 'JetBrains Mono',monospace; font-size: 0.65rem; font-weight: 700; color: #22d3ee; }
+  .topic-seg .t-name { font-size: 0.55rem; color: #94a3b8; margin-top: 2px; line-height: 1.2; }
+  .topic-seg:hover .t-name, .topic-seg.active .t-name { color: #e2e8f0; }
+  .topic-seg .t-count { font-family: 'JetBrains Mono',monospace; font-size: 0.55rem; color: #64748b; margin-top: 2px; }
 
-  /* Topic tooltip */
   .topic-tip {
     display: none;
     position: absolute;
@@ -325,58 +199,258 @@
     border-top-color: #22d3ee;
   }
   .topic-seg:hover .topic-tip { display: block; }
-  .topic-tip .tt-title {
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: #22d3ee;
-    margin-bottom: 4px;
-  }
-  .topic-tip .tt-desc {
-    font-size: 0.65rem;
-    color: #94a3b8;
-    line-height: 1.4;
-  }
+  .topic-tip .tt-title { font-size: 0.75rem; font-weight: 600; color: #22d3ee; margin-bottom: 4px; }
+  .topic-tip .tt-desc { font-size: 0.65rem; color: #94a3b8; line-height: 1.4; }
 
-  .footer {
-    margin-top: 20px;
-    color: #475569;
-    font-size: 0.75rem;
-    text-align: center;
+  /* ===== CONTROLS ===== */
+  .controls {
+    max-width: 1300px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 18px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
-
-  /* Reset btn */
+  .filter-status { font-size: 0.75rem; color: #64748b; font-family: 'JetBrains Mono',monospace; }
+  .filter-status span { color: #22d3ee; font-weight: 600; }
+  .lang-bar { display: flex; gap: 6px; }
+  .lang-btn {
+    font-family: 'JetBrains Mono',monospace; font-size: 0.7rem;
+    padding: 4px 14px; border-radius: 16px;
+    border: 1px solid #334155; background: #1e293b; color: #94a3b8;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .lang-btn:hover { border-color: #22d3ee; color: #22d3ee; }
+  .lang-btn.active { background: rgba(34,211,238,0.15); border-color: #22d3ee; color: #22d3ee; }
   .reset-btn {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.65rem;
-    padding: 3px 12px;
-    border-radius: 12px;
-    border: 1px solid #475569;
-    background: transparent;
+    font-family: 'JetBrains Mono',monospace; font-size: 0.65rem;
+    padding: 3px 12px; border-radius: 12px;
+    border: 1px solid #475569; background: transparent; color: #64748b;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .reset-btn:hover { border-color: #22d3ee; color: #22d3ee; }
+
+  /* ===== CARD GRID (from v1) ===== */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 24px;
+    max-width: 1400px;
+    width: 100%;
+  }
+  .card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 16px;
+    overflow: hidden;
+    transition: all 0.25s ease;
+  }
+  .card:hover {
+    border-color: #22d3ee;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(34,211,238,0.08);
+  }
+  .card-header {
+    background: linear-gradient(135deg, rgba(34,211,238,0.08), rgba(167,139,250,0.08));
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid #334155;
+  }
+  .card-header .name { font-size: 1.3rem; font-weight: 700; color: #f1f5f9; }
+  .card-header .lifespan { font-family: 'JetBrains Mono',monospace; font-size: 0.8rem; color: #22d3ee; margin-top: 2px; }
+  .card-header .nationality { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+  .card-body { padding: 16px 24px 20px; }
+  .card-body .summary {
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    font-style: italic;
+    margin-bottom: 14px;
+    line-height: 1.5;
+  }
+  .section-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     color: #64748b;
-    cursor: pointer;
+    margin: 14px 0 6px;
+  }
+  .card-body ul { list-style: none; }
+  .card-body ul li {
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    padding: 3px 0;
+    line-height: 1.5;
+  }
+  .card-body ul li::before { content: "▸ "; color: #22d3ee; }
+  .card-body .quote {
+    margin-top: 14px;
+    padding: 10px 14px;
+    background: #0f172a;
+    border-left: 3px solid #a78bfa;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-style: italic;
+    color: #94a3b8;
+    line-height: 1.5;
+  }
+  .card-footer {
+    padding: 10px 24px 14px;
+    border-top: 1px solid #1e293b;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .tag {
+    font-family: 'JetBrains Mono',monospace; font-size: 0.65rem;
+    padding: 3px 10px; border-radius: 20px;
+    background: rgba(34,211,238,0.1); border: 1px solid rgba(34,211,238,0.2);
+    color: #67e8f9;
+  }
+  .tag-topic {
+    background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.2);
+    color: #c4b5fd;
+  }
+  /* Experiment cards */
+  .experiment-card {
+    background: #0f172a;
+    border: 1px solid #2d3748;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-top: 8px;
     transition: all 0.2s;
   }
-  .reset-btn:hover {
-    border-color: #22d3ee;
-    color: #22d3ee;
+  .experiment-card:hover { border-color: #22d3ee; }
+  .experiment-card .exp-title {
+    font-size: 0.85rem; font-weight: 600; color: #f1f5f9;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .experiment-card .exp-year {
+    font-family: 'JetBrains Mono',monospace; font-size: 0.7rem;
+    color: #64748b; background: #1e293b; padding: 1px 8px; border-radius: 12px;
+  }
+  .experiment-card .exp-desc {
+    font-size: 0.8rem; color: #94a3b8; line-height: 1.5; margin-top: 6px;
+  }
+  .experiment-card .exp-myth {
+    margin-top: 8px; padding: 8px 10px;
+    background: rgba(251,191,36,0.06); border-left: 3px solid #fbbf24;
+    border-radius: 4px; font-size: 0.75rem; color: #d4a574; line-height: 1.5;
+  }
+  .experiment-card .exp-myth .myth-label {
+    font-weight: 600; text-transform: uppercase; font-size: 0.65rem;
+    letter-spacing: 0.05em; color: #fbbf24;
+  }
+  .experiment-card .exp-myth .fact-label {
+    font-weight: 600; text-transform: uppercase; font-size: 0.65rem;
+    letter-spacing: 0.05em; color: #34d399;
+  }
+  .show-more-btn {
+    font-family: 'JetBrains Mono',monospace; font-size: 0.7rem;
+    color: #22d3ee; background: none; border: 1px solid #22d3ee;
+    border-radius: 6px; padding: 4px 12px; cursor: pointer;
+    margin-top: 6px; transition: all 0.2s;
+  }
+  .show-more-btn:hover { background: rgba(34,211,238,0.1); }
+  .bio-collapse {
+    max-height: 80px;
+    overflow: hidden;
+    position: relative;
+  }
+  .bio-collapse::after {
+    content: "";
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 30px;
+    background: linear-gradient(transparent, #0f172a);
+    pointer-events: none;
+  }
+
+  /* ⭐ Star Rating Styles */
+  .stars-section {
+    margin: 10px 0 14px;
+    padding: 10px 14px;
+    background: rgba(251,191,36,0.04);
+    border: 1px solid rgba(251,191,36,0.12);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .stars-section:hover {
+    background: rgba(251,191,36,0.07);
+    border-color: rgba(251,191,36,0.25);
+  }
+  .stars-row {
+    display: flex;
+    align-items: center;
+    gap: 1px;
+    flex-wrap: wrap;
+  }
+  .star-filled { color: #fbbf24; font-size: 0.85rem; filter: drop-shadow(0 0 2px rgba(251,191,36,0.3)); }
+  .star-empty { color: #475569; font-size: 0.85rem; }
+  .star-score {
+    font-size: 0.7rem; color: #94a3b8; margin-left: 8px;
+    font-family: 'JetBrains Mono',monospace;
+  }
+  .rating-summary {
+    font-size: 0.75rem;
+    color: #a78bfa;
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .rating-hint {
+    font-size: 0.65rem;
+    color: #64748b;
+    margin-top: 2px;
+    font-style: italic;
+  }
+  .rating-breakdown {
+    display: none;
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: #0f172a;
+    border-radius: 8px;
+    border: 1px solid #2d3748;
+  }
+  .rating-breakdown.open { display: block; }
+  .rb-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 0.75rem;
+    color: #cbd5e1;
+  }
+  .rb-item .rb-label { font-weight: 500; min-width: 110px; }
+  .rb-item .rb-bar-wrap { flex: 1; height: 6px; background: #1e293b; border-radius: 4px; margin: 0 10px; overflow: hidden; }
+  .rb-item .rb-bar { height: 100%; border-radius: 4px; transition: width 0.4s ease; }
+  .rb-item .rb-score { font-family: 'JetBrains Mono',monospace; font-size: 0.7rem; color: #64748b; min-width: 24px; text-align: right; }
+
+  .footer {
+    margin-top: 40px;
+    color: #475569;
+    font-size: 0.8rem;
+    text-align: center;
   }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <h1>👨‍🔬 Scientist Bio Library</h1>
+  <h1>👨🔬 Scientist Bio Library</h1>
   <div class="subtitle">CIE IGCSE Physics 0625 — Interactive Timeline & Topic Explorer</div>
 </div>
 
-<!-- ===== TOP: TIMELINE ===== -->
+<!-- ===== TIMELINE ===== -->
 <div class="timeline-wrap">
-  <div class="timeline-title">⏳ Timeline of Scientific Eras — Click to explore</div>
+  <div class="timeline-title">⏳ Timeline of Scientific Eras</div>
   <div class="timeline" id="timeline"></div>
   <div class="era-detail" id="eraDetail"></div>
 </div>
 
-<!-- ===== BOTTOM: TOPIC BAR (now above grid) ===== -->
+<!-- ===== TOPIC BAR ===== -->
 <div class="topic-bar-wrap">
   <div class="topic-bar-title">📚 IGCSE Physics 0625 Topics — Hover for details · Click to filter</div>
   <div class="topic-bar" id="topicBar"></div>
@@ -400,7 +474,6 @@
 <div class="footer">InteractiveLecture — Scientist Bio Library v2 · 49 scientists · 6 Topics</div>
 
 <script>
-// ===== SCIENTIST DATA (embedded from JSON) =====
 const scientists = [
   {
     "id": "aristotle",
@@ -6186,12 +6259,12 @@ const scientists = [
 
 // ===== ERA DATA =====
 const eras = [
-  { id: 'ancient',  label: 'Ancient\nGreece',     years: '384–212 BC', desc: 'The foundations of Western science — natural philosophy, geometry, and early physics. Scientists like Aristotle and Archimedes relied on observation and logic rather than experiment.' },
-  { id: 'revolution', label: 'Scientific\nRevolution', years: '1543–1727', desc: 'A period of radical change. Copernicus, Galileo, Kepler, Newton — the scientific method was born, overturning 2,000 years of Aristotelian thought.' },
-  { id: 'enlightenment', label: 'Enlight-\nement', years: '1686–1823', desc: 'Reason and measurement flourished. Fahrenheit, Celsius, Coulomb, Volta — precise instruments enabled quantitative physics.' },
-  { id: 'industrial', label: 'Industrial\nRevolution', years: '1736–1907', desc: 'Science met engineering. Watt\'s steam engine, Carnot\'s thermodynamics, Kelvin\'s telegraph — physics powered the modern world.' },
-  { id: '19th', label: '19th\nCentury', years: '1773–1901', desc: 'The golden age of experimental physics. Faraday, Maxwell, Hertz — electricity, magnetism, and light were unified.' },
-  { id: '20th', label: '20th\nCentury', years: '1856–2018', desc: 'Relativity, quantum mechanics, and cosmology. Einstein, Bohr, Hubble, Hawking — our understanding of the universe was revolutionised.' },
+  { id: 'ancient',     label: 'Ancient\nGreece',       years: '384–212 BC',  desc: 'The foundations of Western science — natural philosophy, geometry, and early physics. Scientists like Aristotle and Archimedes relied on observation and logic rather than experiment.' },
+  { id: 'revolution',   label: 'Scientific\nRevolution', years: '1543–1727',  desc: 'A period of radical change. Copernicus, Galileo, Kepler, Newton — the scientific method was born, overturning 2,000 years of Aristotelian thought.' },
+  { id: 'enlightenment',label: 'Enlight-\nement',        years: '1686–1823',  desc: 'Reason and measurement flourished. Fahrenheit, Celsius, Coulomb, Volta — precise instruments enabled quantitative physics.' },
+  { id: 'industrial',   label: 'Industrial\nRevolution', years: '1736–1907',  desc: 'Science met engineering. Watt\'s steam engine, Carnot\'s thermodynamics, Kelvin\'s telegraph — physics powered the modern world.' },
+  { id: '19th',         label: '19th\nCentury',          years: '1773–1901',  desc: 'The golden age of experimental physics. Faraday, Maxwell, Hertz — electricity, magnetism, and light were unified.' },
+  { id: '20th',         label: '20th\nCentury',          years: '1856–2018',  desc: 'Relativity, quantum mechanics, and cosmology. Einstein, Bohr, Hubble, Hawking — our understanding of the universe was revolutionised.' },
 ];
 
 // ===== TOPIC DATA =====
@@ -6204,134 +6277,133 @@ const topics = [
   { num: '6', name: 'Space Physics',          color: '#f472b6', desc: 'Solar system, stars, cosmology. Our place in the expanding universe.' },
 ];
 
-// ===== LANG STATE =====
+// ===== STATE =====
 let lang = 'en';
 let activeEra = null;
 let activeTopic = null;
 
-// ===== RENDER =====
+// ===== RENDER (from v1) =====
 function render() {
   const grid = document.getElementById('cardGrid');
   let filtered = scientists;
-
-  if (activeEra) {
-    filtered = filtered.filter(s => s.era === activeEra);
-  }
-  if (activeTopic) {
-    filtered = filtered.filter(s => s.related_topics && s.related_topics.some(t => t.startsWith(activeTopic + '.')));
-  }
+  if (activeEra) filtered = filtered.filter(s => s.era === activeEra);
+  if (activeTopic) filtered = filtered.filter(s => s.related_topics && s.related_topics.some(t => t.startsWith(activeTopic + '.')));
 
   // Update filter status
   const fs = document.getElementById('filterStatus');
   let label = `Showing <span>${filtered.length}</span> of ${scientists.length} scientists`;
-  if (activeEra || activeTopic) {
-    const parts = [];
-    if (activeEra) {
-      const e = eras.find(x => x.label.replace(/\n/g,' ').includes(activeEra.substring(0,5)));
-      parts.push(`Era: <span>${activeEra}</span>`);
-    }
-    if (activeTopic) {
-      const t = topics.find(x => x.num === activeTopic);
-      parts.push(`Topic <span>${activeTopic}</span>`);
-    }
-    label += ` · ${parts.join(' · ')}`;
-  }
+  const parts = [];
+  if (activeEra) parts.push(`Era: <span>${activeEra}</span>`);
+  if (activeTopic) parts.push(`Topic <span>${activeTopic}</span>`);
+  if (parts.length) label += ` · ${parts.join(' · ')}`;
   fs.innerHTML = label;
 
-  // Render cards
   grid.innerHTML = filtered.map(s => {
     const bioArr = lang === 'en' ? s.biography : (s.biography_th || s.biography);
-    const summary = lang === 'en' ? s.summary : (s.summary_th || s.summary);
+    const bioShort = bioArr.slice(0,1).map(p => `<li>${p}</li>`).join('');
+    const bioRest = bioArr.slice(1).map(p => `<li>${p}</li>`).join('');
+    const hasMore = bioArr.length > 1;
 
-    const contributions = (lang === 'en' ? s.contributions_to_physics : (s.contributions_th || s.contributions_to_physics)).map(c => `<li>${c}</li>`).join('');
-    const legacy = (lang === 'en' ? s.legacy : (s.legacy_th || s.legacy)).map(l => `<li>${l}</li>`).join('');
-    const quote = lang === 'en' ? s.key_quote : (s.key_quote_th || s.key_quote);
+    const expHtml = (s.key_experiments || []).map(e => {
+      const isEn = lang === 'en';
+      const title = isEn ? e.title : (e.title_th || e.title);
+      const desc = isEn ? e.description : (e.desc_th || e.description);
+      const myth = isEn ? e.myth_vs_fact : (e.myth_th || e.myth_vs_fact);
+      let mythHtml = '';
+      if (myth) {
+        const isMyth = !isEn || (e.myth_vs_fact && (e.myth_vs_fact.includes('DID NOT') || e.myth_vs_fact.includes('MISREPRESENTED') || e.myth_vs_fact.includes('legend')));
+        mythHtml = `<div class="exp-myth"><span class="${isMyth ? 'myth-label' : 'fact-label'}">${isEn ? (isMyth ? '⚠️ Myth vs Fact' : '📌 Note') : (isMyth ? '⚠️ ตำนานvsความจริง' : '📌 หมายเหตุ')}</span><br>${myth}</div>`;
+      }
+      return `<div class="experiment-card"><div class="exp-title">🔬 ${title} <span class="exp-year">${e.year}</span></div><div class="exp-desc">${desc}</div>${mythHtml}</div>`;
+    }).join('');
 
     return `<div class="card">
       <div class="card-header">
         <div class="name">${s.name}</div>
-        <div class="meta"><span class="lifespan">${s.lifespan}</span> · ${s.nationality} · ${s.era}</div>
+        <div class="lifespan">${s.lifespan}</div>
+        <div class="nationality">${s.nationality} • ${s.era}</div>
       </div>
       <div class="card-body">
-        <div class="summary">"${summary}"</div>
-        <div style="margin:8px 0 4px;font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;">📜 Biography</div>
-        <ul>${bioArr.slice(0,2).map(p => `<li>${p}</li>`).join('')}</ul>
-        <div style="margin:10px 0 4px;font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;">🔬 Contributions</div>
-        <ul>${contributions}</ul>
-        <div style="margin:10px 0 4px;font-size:0.65rem;font-weight:600;text-transform:uppercase;letter-spacing:0.08em;color:#64748b;">🏛️ Legacy</div>
-        <ul>${legacy}</ul>
-        <div class="quote" style="margin-top:12px;padding:8px 12px;background:#0f172a;border-left:3px solid #a78bfa;border-radius:6px;font-size:0.75rem;font-style:italic;color:#94a3b8;line-height:1.4;">${quote}</div>
+        <div class="summary">"${lang === 'en' ? s.summary : (s.summary_th || s.summary)}"</div>
+
+        <div class="stars-section" onclick="toggleRating('${s.id}')" title="Click for breakdown">
+          <div class="stars-row">
+            ${getStars(s.rating?.stars || 0)}
+            <span class="star-score">(${s.rating?.stars || 0}/10)</span>
+          </div>
+          <div class="rating-summary">${lang === 'en' ? (s.rating?.summary_en || '') : (s.rating?.summary_th || '')}</div>
+          <div class="rating-hint">${lang === 'en' ? '▼ Click for breakdown' : '▼ คลิกเพื่อดูคะแนนแยก'}</div>
+          <div class="rating-breakdown" id="rb-${s.id}">
+            ${getBreakdown(s.rating?.breakdown)}
+            <div style="margin-top:6px; font-size:0.7rem; color:#94a3b8; border-top:1px solid #1e293b; padding-top:6px;">
+              <div style="margin-bottom:4px;">${lang === 'en' ? '📜 Story: ' : '📜 เกร็ดประวัติ: '}${lang === 'en' ? (s.rating?.personality_en || '') : (s.rating?.personality_th || '')}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-label">📜 ${lang === 'en' ? 'Biography' : 'ชีวประวัติ'}</div>
+        <ul>${bioShort}</ul>
+        ${hasMore ? `<div id="bio-more-${s.id}" style="display:none;"><ul>${bioRest}</ul></div>
+        <button class="show-more-btn" onclick="toggleBio('${s.id}')" id="bio-btn-${s.id}">${lang === 'en' ? 'Show more +' : 'แสดงเพิ่ม +'}</button>` : ''}
+
+        <div class="section-label">🔬 ${lang === 'en' ? 'Key Contributions' : 'ผลงานสำคัญ'}</div>
+        <ul>${(lang === 'en' ? s.contributions_to_physics : (s.contributions_th || s.contributions_to_physics)).map(c => `<li>${c}</li>`).join('')}</ul>
+
+        ${expHtml ? `<div class="section-label">🧪 ${lang === 'en' ? 'Key Experiments &amp; Events' : 'การทดลองสำคัญและเหตุการณ์'}</div>${expHtml}` : ''}
+
+        <div class="section-label">🏛️ ${lang === 'en' ? 'Legacy' : 'มรดกทางวิทยาศาสตร์'}</div>
+        <ul>${(lang === 'en' ? s.legacy : (s.legacy_th || s.legacy)).map(l => `<li>${l}</li>`).join('')}</ul>
+
+        <div class="quote">${lang === 'en' ? s.key_quote : (s.key_quote_th || s.key_quote)}</div>
       </div>
-      <div class="card-footer" style="padding:8px 20px 12px;border-top:1px solid #1e293b;display:flex;flex-wrap:wrap;gap:4px;">
-        ${(s.tags || []).slice(0,4).map(t => `<span style="font-family:'JetBrains Mono',monospace;font-size:0.55rem;padding:2px 8px;border-radius:12px;background:rgba(34,211,238,0.08);border:1px solid rgba(34,211,238,0.15);color:#67e8f9;">${t}</span>`).join('')}
-        ${(s.related_topics || []).map(t => `<span style="font-family:'JetBrains Mono',monospace;font-size:0.55rem;padding:2px 8px;border-radius:12px;background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.15);color:#c4b5fd;">${t}</span>`).join('')}
+      <div class="card-footer">
+        ${(s.tags || []).map(t => `<span class="tag">${t}</span>`).join('')}
+        ${(s.related_topics || []).map(t => `<span class="tag tag-topic">${t}</span>`).join('')}
       </div>
     </div>`;
   }).join('');
 }
 
-// ===== BUILD TIMELINE =====
-function buildTimeline() {
-  const el = document.getElementById('timeline');
-  el.innerHTML = eras.map((e, i) => `
-    <div class="timeline-node ${i === 0 ? 'active' : ''}" data-era="${e.label.replace(/\n/g,' ')}" onclick="selectEra(${i})">
-      <div class="dot"></div>
-      <div class="era-label">${e.label.replace(/\n/g,'<br>')}</div>
-      <div class="era-year">${e.years}</div>
-    </div>
-  `).join('');
-  // Show first era
-  selectEra(0);
+// ===== HELPERS (from v1) =====
+function getStars(n) {
+  let out = '';
+  for(let i=0;i<10;i++) out += i<n ? '<span class="star-filled">★</span>' : '<span class="star-empty">☆</span>';
+  return out;
 }
 
-function selectEra(idx) {
-  const e = eras[idx];
-  document.querySelectorAll('.timeline-node').forEach((n, i) => n.classList.toggle('active', i === idx));
+function getBreakdown(bd) {
+  if(!bd) return '';
+  const colors = {references:'#fbbf24', outstanding_work:'#a78bfa', diversity:'#22d3ee', social_impact:'#34d399', personality:'#fb923c'};
+  const enLabels = {references:'📖 References', outstanding_work:'💡 Outstanding Work', diversity:'🔀 Diversity', social_impact:'🌍 Social Impact', personality:'👤 Personality'};
+  const thLabels = {references:'📖 การอ้างอิง', outstanding_work:'💡 ผลงานโดดเด่น', diversity:'🔀 ความหลากหลาย', social_impact:'🌍 จุดเปลี่ยนสังคม', personality:'👤 บุคลิกอันโดดเด่น'};
+  const labels = lang === 'en' ? enLabels : thLabels;
+  const order = ['references', 'outstanding_work', 'diversity', 'social_impact', 'personality'];
+  let out = '';
+  order.forEach(k => {
+    if(!bd[k]) return;
+    const pct = (bd[k].score / 10) * 100;
+    const label = lang === 'en' ? (bd[k].label_en || labels[k]) : (bd[k].label_th || labels[k]);
+    out += '<div class="rb-item"><span class="rb-label">' + label + '</span><div class="rb-bar-wrap"><div class="rb-bar" style="width:' + pct + '%;background:' + colors[k] + '"></div></div><span class="rb-score">' + bd[k].score + '/10</span></div>';
+  });
+  return out;
+}
 
-  const detail = document.getElementById('eraDetail');
-  const eraScientists = scientists.filter(s => s.era === e.label.replace(/\n/g,' ')).length;
-  detail.innerHTML = `
-    <div class="ed-name">${e.label.replace(/\n/g,' ')}</div>
-    <div class="ed-years">${e.years}</div>
-    <div class="ed-desc">${e.desc}</div>
-    <div class="ed-count">${eraScientists} scientist${eraScientists !== 1 ? 's' : ''} from this era</div>
-  `;
-  detail.classList.add('show');
-
-  // Filter by era (unless topic filter active)
-  if (!activeTopic) {
-    activeEra = e.label.replace(/\n/g,' ');
-    render();
+function toggleBio(id) {
+  const more = document.getElementById('bio-more-' + id);
+  const btn = document.getElementById('bio-btn-' + id);
+  if(!more || !btn) return;
+  if (more.style.display === 'none') {
+    more.style.display = 'block';
+    btn.textContent = lang === 'en' ? 'Show less -' : 'แสดงน้อยลง -';
+  } else {
+    more.style.display = 'none';
+    btn.textContent = lang === 'en' ? 'Show more +' : 'แสดงเพิ่ม +';
   }
 }
 
-// ===== BUILD TOPIC BAR =====
-function buildTopicBar() {
-  const el = document.getElementById('topicBar');
-  el.innerHTML = topics.map(t => {
-    const count = scientists.filter(s => s.related_topics && s.related_topics.some(r => r.startsWith(t.num + '.'))).length;
-    return `<div class="topic-seg" data-topic="${t.num}" onclick="selectTopic('${t.num}')">
-      <div class="topic-tip">
-        <div class="tt-title">📘 Topic ${t.num}: ${t.name}</div>
-        <div class="tt-desc">${t.desc}</div>
-      </div>
-      <div class="t-num">${t.num}</div>
-      <div class="t-name">${t.name}</div>
-      <div class="t-count">${count} scientists</div>
-    </div>`;
-  }).join('');
-  // Auto-select Topic 1
-  selectTopic('1');
-}
-
-function selectTopic(num) {
-  activeTopic = num;
-  document.querySelectorAll('.topic-seg').forEach(n => n.classList.toggle('active', n.dataset.topic === num));
-  // Clear era filter on topic selection
-  document.querySelectorAll('.timeline-node').forEach(n => n.classList.remove('active'));
-  document.getElementById('eraDetail').classList.remove('show');
-  activeEra = null;
-  render();
+function toggleRating(id) {
+  const el = document.getElementById('rb-' + id);
+  if(el) el.classList.toggle('open');
 }
 
 // ===== LANG =====
@@ -6348,6 +6420,56 @@ function resetAll() {
   document.querySelectorAll('.timeline-node').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('.topic-seg').forEach(n => n.classList.remove('active'));
   document.getElementById('eraDetail').classList.remove('show');
+  render();
+}
+
+// ===== TIMELINE =====
+function buildTimeline() {
+  const el = document.getElementById('timeline');
+  el.innerHTML = eras.map((e, i) => `
+    <div class="timeline-node ${i === 0 ? 'active' : ''}" data-era="${e.label.replace(/\n/g,' ')}" onclick="selectEra(${i})">
+      <div class="dot"></div>
+      <div class="era-label">${e.label.replace(/\n/g,'<br>')}</div>
+      <div class="era-year">${e.years}</div>
+    </div>
+  `).join('');
+  selectEra(0);
+}
+
+function selectEra(idx) {
+  const e = eras[idx];
+  document.querySelectorAll('.timeline-node').forEach((n, i) => n.classList.toggle('active', i === idx));
+  const detail = document.getElementById('eraDetail');
+  const eraScientists = scientists.filter(s => s.era === e.label.replace(/\n/g,' ')).length;
+  detail.innerHTML = `<div class="ed-name">${e.label.replace(/\n/g,' ')}</div><div class="ed-years">${e.years}</div><div class="ed-desc">${e.desc}</div><div class="ed-count">${eraScientists} scientist${eraScientists !== 1 ? 's' : ''} from this era</div>`;
+  detail.classList.add('show');
+  if (!activeTopic) {
+    activeEra = e.label.replace(/\n/g,' ');
+    render();
+  }
+}
+
+// ===== TOPIC BAR =====
+function buildTopicBar() {
+  const el = document.getElementById('topicBar');
+  el.innerHTML = topics.map(t => {
+    const count = scientists.filter(s => s.related_topics && s.related_topics.some(r => r.startsWith(t.num + '.'))).length;
+    return `<div class="topic-seg" data-topic="${t.num}" onclick="selectTopic('${t.num}')">
+      <div class="topic-tip"><div class="tt-title">📘 Topic ${t.num}: ${t.name}</div><div class="tt-desc">${t.desc}</div></div>
+      <div class="t-num">${t.num}</div>
+      <div class="t-name">${t.name}</div>
+      <div class="t-count">${count} scientists</div>
+    </div>`;
+  }).join('');
+  selectTopic('1');
+}
+
+function selectTopic(num) {
+  activeTopic = num;
+  document.querySelectorAll('.topic-seg').forEach(n => n.classList.toggle('active', n.dataset.topic === num));
+  document.querySelectorAll('.timeline-node').forEach(n => n.classList.remove('active'));
+  document.getElementById('eraDetail').classList.remove('show');
+  activeEra = null;
   render();
 }
 
