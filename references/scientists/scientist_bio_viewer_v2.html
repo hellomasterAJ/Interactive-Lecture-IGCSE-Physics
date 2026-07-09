@@ -6261,7 +6261,7 @@ const scientists = [
 const eras = [
   { id: 'ancient',     label: 'Ancient\nGreece',       years: '384–212 BC',  desc: 'The foundations of Western science — natural philosophy, geometry, and early physics. Scientists like Aristotle and Archimedes relied on observation and logic rather than experiment.' },
   { id: 'revolution',   label: 'Scientific\nRevolution', years: '1543–1727',  desc: 'A period of radical change. Copernicus, Galileo, Kepler, Newton — the scientific method was born, overturning 2,000 years of Aristotelian thought.' },
-  { id: 'enlightenment',label: 'Enlight-\nement',        years: '1686–1823',  desc: 'Reason and measurement flourished. Fahrenheit, Celsius, Coulomb, Volta — precise instruments enabled quantitative physics.' },
+  { id: 'enlightenment',label: 'Enlightenment',       years: '1686–1823',  desc: 'Reason and measurement flourished. Fahrenheit, Celsius, Coulomb, Volta — precise instruments enabled quantitative physics.' },
   { id: 'industrial',   label: 'Industrial\nRevolution', years: '1736–1907',  desc: 'Science met engineering. Watt\'s steam engine, Carnot\'s thermodynamics, Kelvin\'s telegraph — physics powered the modern world.' },
   { id: '19th',         label: '19th\nCentury',          years: '1773–1901',  desc: 'The golden age of experimental physics. Faraday, Maxwell, Hertz — electricity, magnetism, and light were unified.' },
   { id: '20th',         label: '20th\nCentury',          years: '1856–2018',  desc: 'Relativity, quantum mechanics, and cosmology. Einstein, Bohr, Hubble, Hawking — our understanding of the universe was revolutionised.' },
@@ -6439,14 +6439,16 @@ function buildTimeline() {
 function selectEra(idx) {
   const e = eras[idx];
   document.querySelectorAll('.timeline-node').forEach((n, i) => n.classList.toggle('active', i === idx));
+  // Clear topic when era is selected
+  activeTopic = null;
+  document.querySelectorAll('.topic-seg').forEach(n => n.classList.remove('active'));
   const detail = document.getElementById('eraDetail');
-  const eraScientists = scientists.filter(s => s.era === e.label.replace(/\n/g,' ')).length;
-  detail.innerHTML = `<div class="ed-name">${e.label.replace(/\n/g,' ')}</div><div class="ed-years">${e.years}</div><div class="ed-desc">${e.desc}</div><div class="ed-count">${eraScientists} scientist${eraScientists !== 1 ? 's' : ''} from this era</div>`;
+  const eraLabel = e.label.replace(/\n/g,' ');
+  const eraScientists = scientists.filter(s => s.era === eraLabel).length;
+  detail.innerHTML = `<div class="ed-name">${eraLabel}</div><div class="ed-years">${e.years}</div><div class="ed-desc">${e.desc}</div><div class="ed-count">${eraScientists} scientist${eraScientists !== 1 ? 's' : ''} from this era</div>`;
   detail.classList.add('show');
-  if (!activeTopic) {
-    activeEra = e.label.replace(/\n/g,' ');
-    render();
-  }
+  activeEra = eraLabel;
+  render();
 }
 
 // ===== TOPIC BAR =====
