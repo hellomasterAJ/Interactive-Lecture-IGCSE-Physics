@@ -235,6 +235,13 @@
     cursor: pointer; transition: all 0.2s;
   }
   .reset-btn:hover { border-color: #22d3ee; color: #22d3ee; }
+  .sort-btn {
+    font-family: 'JetBrains Mono',monospace; font-size: 0.65rem;
+    padding: 3px 12px; border-radius: 12px;
+    border: 1px solid #a78bfa; background: rgba(167,139,250,0.08); color: #c4b5fd;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .sort-btn:hover { border-color: #a78bfa; background: rgba(167,139,250,0.15); color: #e2e8f0; }
 
   /* ===== CARD GRID (from v1) ===== */
   .grid {
@@ -464,7 +471,8 @@
 <div class="controls">
   <div class="filter-status" id="filterStatus">Showing all <span>49</span> scientists</div>
   <div style="display:flex;gap:8px;align-items:center;">
-    <button class="reset-btn" onclick="resetAll()">✕ Reset filters</button>
+    <button class="reset-btn" onclick="resetAll()">✕ Reset</button>
+    <button class="sort-btn" id="sortBtn" onclick="toggleSort()">🔤 Sort: A–Z</button>
     <div class="lang-bar">
       <button class="lang-btn active" data-lang="en" onclick="setLang('en')">🇬🇧 EN</button>
       <button class="lang-btn" data-lang="th" onclick="setLang('th')">🇹🇭 TH</button>
@@ -6285,6 +6293,7 @@ const topics = [
 let lang = 'en';
 let activeEra = null;
 let activeTopic = null;
+let sortMode = 'alpha'; // 'alpha' or 'stars'
 
 // ===== RENDER (from v1) =====
 function render() {
@@ -6292,6 +6301,12 @@ function render() {
   let filtered = scientists;
   if (activeEra) filtered = filtered.filter(s => s.era === activeEra);
   if (activeTopic) filtered = filtered.filter(s => s.related_topics && s.related_topics.some(t => t.startsWith(activeTopic + '.')));
+  // Sort
+  if (sortMode === 'stars') {
+    filtered = [...filtered].sort((a, b) => (b.rating?.stars || 0) - (a.rating?.stars || 0));
+  } else {
+    filtered = [...filtered].sort((a, b) => a.name.localeCompare(b.name));
+  }
 
   // Update filter status
   const fs = document.getElementById('filterStatus');
@@ -6417,13 +6432,20 @@ function setLang(l) {
   render();
 }
 
-// ===== RESET =====
+// ===== RESET & SORT =====
 function resetAll() {
   activeEra = null;
   activeTopic = null;
   document.querySelectorAll('.timeline-node').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('.topic-seg').forEach(n => n.classList.remove('active'));
   document.getElementById('eraDetail').classList.remove('show');
+  render();
+}
+
+function toggleSort() {
+  sortMode = sortMode === 'alpha' ? 'stars' : 'alpha';
+  const btn = document.getElementById('sortBtn');
+  btn.textContent = sortMode === 'stars' ? '⭐ Sort: Stars' : '🔤 Sort: A–Z';
   render();
 }
 
