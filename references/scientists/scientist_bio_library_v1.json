@@ -3853,7 +3853,10 @@
           "title": "Discovery of Radioactivity (February 1896)",
           "year": "1896",
           "description": "Becquerel placed uranium salt crystals on a photographic plate wrapped in black paper. He expected the crystals to emit penetrating rays only when exposed to sunlight (to activate phosphorescence). Cloudy weather delayed the experiment. He developed the plate anyway — and found a strong image.",
-          "myth_vs_fact": "This actually happened. Becquerel's discovery is a classic case of serendipity. The cloudy Parisian weather was entirely unplanned. He quickly realized the rays came from the uranium itself, not from sunlight."
+          "myth_vs_fact": "This actually happened. Becquerel's discovery is a classic case of serendipity. The cloudy Parisian weather was entirely unplanned. He quickly realized the rays came from the uranium itself, not from sunlight.",
+          "title_th": "Discovery of Radioactivity (February 1896) (การค้นพบกัมมันตภาพรังสี (กุมภาพันธ์ 1896))",
+          "desc_th": "Becquerel (เบกเกอเรล) วางผลึกเกลือยูเรเนียมบนแผ่นถ่ายภาพที่ห่อด้วยกระดาษดำ เขาคาดว่าผลึกจะปล่อยรังสีทะลุทะลวงเมื่อถูกแสงแดดเท่านั้น อากาศครึ้มทำให้การทดลองล่าช้า เขาล้างฟิล์ม anyway — และพบภาพที่เข้ม",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง การค้นพบของ Becquerel (เบกเกอเรล) เป็นกรณีคลาสสิกของความบังเอิญ อากาศครึ้มในปารีสเป็นสิ่งที่ไม่ได้วางแผน เขาตระหนักได้อย่างรวดเร็วว่ารังสีมาจากยูเรเนียมเอง ไม่ใช่จากแสงแดด"
         }
       ],
       "rating": {
@@ -3889,7 +3892,28 @@
         "summary_en": "Discovered radioactivity by accident — uranium salts fogged a photographic plate without sunlight.",
         "personality_th": "เกิดในตระกูลนักฟิสิกส์ 3 รุ่น, อากาศครึ้มในปารีสทำให้เขาค้นพบรังสีโดยไม่ได้ตั้งใจ, เป็นคนเงียบจริงจัง, แบ่งรางวัลโนเบลกับ Curie, หน่วย Bq ตั้งตามเขา",
         "personality_en": "Born into a family of three generations of physicists, cloudy Parisian weather led to his accidental discovery, quiet and earnest, shared the Nobel Prize with the Curies. The Bq unit is named after him."
-      }
+      },
+      "summary_th": "Henri Becquerel (อ็องรี เบกเกอเรล) ผู้ค้นพบกัมมันตภาพรังสีโดยบังเอิญ — เกลือยูเรเนียมทำให้ฟิล์มถ่ายรูปดำโดยไม่ต้องใช้แสงแดด",
+      "biography_th": [
+        "Henri Becquerel (อ็องรี เบกเกอเรล) เกิดในปี 1852 ที่ Paris (ปารีส) ในตระกูลนักวิทยาศาสตร์ — บิดาและปู่ของเขาต่างก็เป็นนักฟิสิกส์ที่เชี่ยวชาญด้านการเรืองแสงและการเรือง磷",
+        "เขาเรียนวิศวกรรมที่ École Polytechnique (เอโกลโปลีเทคนิค) และเป็นศาสตราจารย์ที่ Museum of Natural History (พิพิธภัณฑ์ประวัติศาสตร์ธรรมชาติ)",
+        "ในปี 1896 Becquerel (เบกเกอเรล) กำลังสืบสวนว่าเกลือยูเรเนียมสามารถปล่อยรังสีเอกซ์เมื่อถูกแสงแดดหรือไม่ (ตามการค้นพบรังสีเอกซ์ของ Röntgen (เรินต์เกน)) เขาห่อผลึกเกลือยูเรเนียมบนแผ่นถ่ายภาพ รอให้มีแสงแดด",
+        "อากาศมีเมฆครึ้มหลายวัน เมื่อเขาล้างฟิล์ม anyway คาดว่าจะได้ภาพจางๆ กลับพบว่ามันถูกถ่ายอย่างเข้ม — โดยไม่ต้องใช้แสงแดด ยูเรเนียมปล่อยรังสีที่มองไม่เห็นด้วยตัวของมันเอง",
+        "Becquerel (เบกเกอเรล) ได้ค้นพบกัมมันตภาพรังสี — การปล่อยรังสีที่เกิดขึ้นเองจากอะตอม เขาได้รับรางวัลโนเบลสาขาฟิสิกส์ในปี 1903 ร่วมกับ Marie (มารี) และ Pierre Curie (ปีแยร์ กูรี)",
+        "หน่วย SI (เอสไอ) ของกัมมันตภาพรังสี — Becquerel (Bq) (เบกเกอเรล (บีคิว)) — ตั้งชื่อตามเขา"
+      ],
+      "contributions_th": [
+        "ค้นพบกัมมันตภาพรังสี (1896) — การปล่อยรังสีที่เกิดขึ้นเองจากเกลือยูเรเนียม",
+        "แสดงว่ารังสีจากยูเรเนียมแตกต่างจากรังสีเอกซ์และไม่ต้องการพลังงานภายนอก",
+        "สาธิตว่าสารประกอบยูเรเนียมต่างชนิดกันปล่อยรังสีตามสัดส่วนของปริมาณยูเรเนียม — พิสูจน์ว่ามันเป็นสมบัติของอะตอม"
+      ],
+      "legacy_th": [
+        "หน่วย SI (เอสไอ) ของกัมมันตภาพรังสี — Becquerel (Bq) (เบกเกอเรล) — ตั้งชื่อตามเขา",
+        "การค้นพบของเขาเปิดสาขาฟิสิกส์นิวเคลียร์และการวิจัยโครงสร้างอะตอม",
+        "กัมมันตภาพรังสีกลายเป็นรากฐานของพลังงานนิวเคลียร์ การถ่ายภาพทางการแพทย์ และการรักษามะเร็ง",
+        "การค้นพบ 'โดยบังเอิญ' ของ Becquerel (เบกเกอเรล) เป็นหนึ่งในเรื่องราวความบังเอิญที่มีชื่อเสียงที่สุดในวิทยาศาสตร์"
+      ],
+      "key_quote_th": "เกลือยูเรเนียมปล่อยรังสีโดยธรรมชาติ โดยไม่มีการกระตุ้นจากภายนอก — ปรากฏการณ์ที่ใหม่และไม่คาดคิดอย่างสิ้นเชิง"
     },
     {
       "id": "curie",
@@ -3939,7 +3963,10 @@
           "title": "Discovering Radium (1898-1902)",
           "year": "1902",
           "description": "Curie processed tonnes of pitchblende uranium ore in a leaky shed at the Ecole de Physique et Chimie. Using chemical separation methods, she isolated 0.1 gram of pure radium chloride from a tonne of ore. Radium glows blue and is millions of times more radioactive than uranium.",
-          "myth_vs_fact": "This actually happened. The shed was freezing in winter and sweltering in summer, with a leaking roof. She later admitted those were 'the best years of her life' despite the incredible physical labour."
+          "myth_vs_fact": "This actually happened. The shed was freezing in winter and sweltering in summer, with a leaking roof. She later admitted those were 'the best years of her life' despite the incredible physical labour.",
+          "title_th": "Discovering Radium (1898-1902) (การค้นพบเรเดียม (1898-1902))",
+          "desc_th": "Curie (กูรี) แปรรูปแร่พิทช์เบลนด์หลายตันในโรงเก็บของที่รั่วที่ École de Physique et Chimie (โรงเรียนฟิสิกส์และเคมี) ด้วยวิธีการแยกทางเคมี เธอแยกเรเดียมคลอไรด์บริสุทธิ์ 0.1 กรัมจากแร่หนึ่งตัน เรเดียมส่องแสงสีน้ำเงินและมีกัมมันตภาพรังสีมากกว่ายูเรเนียมหลายล้านเท่า",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง โรงเก็บของหนาวจัดในฤดูหนาวและร้อนอบอ้าวในฤดูร้อน หลังคารั่ว เธอยอมรับในภายหลังว่านั่นเป็น 'ปีที่ดีที่สุดในชีวิตของเธอ' แม้จะต้องใช้แรงงานทางกายภาพที่หนักหน่วงอย่างไม่น่าเชื่อ"
         }
       ],
       "rating": {
@@ -3975,7 +4002,31 @@
         "summary_en": "Pioneered radioactivity research — discovered polonium and radium, won 2 Nobel Prizes.",
         "personality_th": "เกิดในโปแลนด์, ผู้หญิงเข้าเรียนมหา'ลัยไม่ได้ต้องไปปารีส, อยู่ในห้องน้ำแข็งไม่มีเครื่องทำความร้อน, แต่งงานกับ Pierre Curie, ตั้งชื่อธาตุ Polonium ตามประเทศของเธอ, เป็นคนเดียวที่ได้โนเบล 2 สาขา, สมุดบันทึกของเธอยังกัมมันตรังสีอยู่, เสียชีวิตจากรังสี",
         "personality_en": "Born in Poland, couldn't attend university as a woman so moved to Paris, lived in an unheated garret, married Pierre Curie, named element Polonium after her homeland, the only person to win Nobels in two sciences, her notebooks are still radioactive."
-      }
+      },
+      "summary_th": "Marie Curie (มารี กูรี) ผู้บุกเบิกการศึกษากัมมันตภาพรังสี — ค้นพบพอลอนิอุมและเรเดียม ชนะรางวัลโนเบล 2 สาขา",
+      "biography_th": [
+        "Marie Curie (มารี กูรี) เกิด Maria Skłodowska (มาเรีย สกูลอโดฟสกา) ในปี 1867 ที่ Warsaw (วอร์ซอ), Poland (โปแลนด์) (ขณะนั้นคือจักรวรรดิรัสเซีย) ผู้หญิงไม่สามารถเรียนมหาวิทยาลัยในโปแลนด์ได้ ดังนั้นเธอทำงานเป็นผู้ปกครองเพื่อส่งเงินให้น้องสาวเรียนแพทย์ — และเพื่อการย้ายไป Paris (ปารีส) ของตัวเองในที่สุด",
+        "ในปี 1891 เธอย้ายไป Paris (ปารีส) และเรียนฟิสิกส์และคณิตศาสตร์ที่ Sorbonne (ซอร์บอนน์) เธออาศัยในห้องใต้หลังคาที่ไม่มีเครื่องทำความร้อน มักจะเป็นลมจากความหนาวและความหิว แต่เรียนจบเป็นที่หนึ่งของชั้น",
+        "เธอพบ Pierre Curie (ปีแยร์ กูรี) นักฟิสิกส์อัจฉริยะ และแต่งงานในปี 1895 — เป็นหนึ่งในความร่วมมือทางวิทยาศาสตร์ที่ยิ่งใหญ่ที่สุดในประวัติศาสตร์",
+        "ได้รับแรงบันดาลใจจากการค้นพบของ Becquerel (เบกเกอเรล) Marie (มารี) สืบสวนรังสียูเรเนียม เธอค้นพบว่ารังสีเป็นสมบัติของอะตอมของธาตุ เธอบัญญัติศัพท์ 'radioactivity' (กัมมันตภาพรังสี)",
+        "Marie (มารี) ค้นพบธาตุใหม่สองชนิด: polonium (พอลอนิอุม) (ตั้งชื่อตามประเทศโปแลนด์บ้านเกิดของเธอ) และ radium (เรเดียม) ใช้เวลา 4 ปีของการทำงานหนักเพื่อแยกเรเดียมคลอไรด์บริสุทธิ์ปริมาณเล็กน้อยจากแร่พิทช์เบลนด์หลายตัน",
+        "เธอได้รับรางวัลโนเบลสาขาฟิสิกส์ (1903 ร่วมกับ Pierre (ปีแยร์) และ Becquerel (เบกเกอเรล)) และรางวัลโนเบลสาขาเคมี (1911 เพียงคนเดียว) — เป็นคนเดียวเท่าที่เคยมีมาที่ได้รับรางวัลโนเบลในสองสาขาวิทยาศาสตร์ที่แตกต่างกัน",
+        "ระหว่างสงครามโลกครั้งที่ 1 เธอพัฒนาเครื่องเอกซ์เรย์เคลื่อนที่ ('petites Curies') ที่ช่วยรักษาทหารที่บาดเจ็บ เธอเสียชีวิตในปี 1934 จากโรคโลหิตจางชนิดอะพลาสติกที่เกิดจากการได้รับรังสีเป็นระยะเวลานาน"
+      ],
+      "contributions_th": [
+        "บัญญัติศัพท์ 'radioactivity' (กัมมันตภาพรังสี) และพิสูจน์ว่ามันเป็นสมบัติของอะตอม",
+        "ค้นพบธาตุกัมมันตรังสี polonium (พอลอนิอุม) (Po, 1898) และ radium (เรเดียม) (Ra, 1898)",
+        "พัฒนาวิธีการแยกไอโซโทปกัมมันตรังสีจากแร่",
+        "กำหนดทฤษฎีกัมมันตภาพรังสี — อะตอมของธาตุหนึ่งสามารถเปลี่ยนเป็นอีกธาตุหนึ่งได้ (transmutation)"
+      ],
+      "legacy_th": [
+        "Curie (Ci) (กูรี (ซีไอ)) เป็นหน่วยของกัมมันตภาพรังสี (แม้ Bq จะเป็นหน่วย SI ในปัจจุบัน)",
+        "งานของ Curie (กูรี) วางรากฐานสำหรับฟิสิกส์นิวเคลียร์ การฉายรังสีรักษามะเร็ง และเวชศาสตร์นิวเคลียร์",
+        "เธอเป็นผู้หญิงคนแรกที่ได้รับรางวัลโนเบล และเป็นคนเดียวที่ได้รับรางวัลในสองสาขาวิทยาศาสตร์ที่แตกต่างกัน",
+        "สมุดบันทึกของเธอจากคริสต์ทศวรรษ 1890 ยังคงมีกัมมันตภาพรังสีสูงเกินกว่าจะจับต้องได้โดยไม่มีอุปกรณ์ป้องกัน — ถูกเก็บในกล่องบุด้วยตะกั่ว",
+        "เธอเป็นสัญลักษณ์ที่ยั่งยืนของการอุทิศตนทางวิทยาศาสตร์ การเสียสละ และชัยชนะของผู้หญิงในวิทยาศาสตร์"
+      ],
+      "key_quote_th": "ไม่มีสิ่งใดในชีวิตที่น่ากลัว มีแต่สิ่งที่ต้องทำความเข้าใจ ถึงเวลาแล้วที่เราจะต้องเข้าใจมากขึ้น เพื่อที่เราจะได้กลัวน้อยลง"
     },
     {
       "id": "thomson-jj",
@@ -4022,7 +4073,10 @@
           "title": "Discovery of the Electron (1897)",
           "year": "1897",
           "description": "Thomson built a cathode ray tube with electric and magnetic deflection plates. He measured how much the beam bent and calculated the charge-to-mass ratio (e/m). The value was 1,000 times larger than for hydrogen ions — proving the particles were much smaller than atoms.",
-          "myth_vs_fact": "This actually happened. Thomson was not the first to observe cathode rays, but he was the first to systematically measure their properties and identify them as particles common to all matter."
+          "myth_vs_fact": "This actually happened. Thomson was not the first to observe cathode rays, but he was the first to systematically measure their properties and identify them as particles common to all matter.",
+          "title_th": "Discovery of the Electron (1897) (การค้นพบอิเล็กตรอน (1897))",
+          "desc_th": "Thomson (ทอมสัน) สร้างหลอดรังสีแคโทดที่มีแผ่นเบี่ยงเบนไฟฟ้าและแม่เหล็ก เขาวัดว่าลำแสงเบนไปเท่าใดและคำนวณอัตราส่วนประจุต่อมวล (e/m) ค่าที่ได้มากกว่าของไฮโดรเจนไอออนถึง 1,000 เท่า — พิสูจน์ว่าอนุภาคเล็กกว่าอะตอมมาก",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Thomson (ทอมสัน) ไม่ใช่คนแรกที่สังเกตรังสีแคโทด แต่เขาเป็นคนแรกที่วัดสมบัติของมันอย่างเป็นระบบและระบุว่าพวกมันเป็นอนุภาคทั่วไปในสสารทั้งหมด"
         }
       ],
       "rating": {
@@ -4058,7 +4112,29 @@
         "summary_en": "Discovered the electron — the first subatomic particle, shattering the idea that atoms are indivisible.",
         "personality_th": "ลูกชายร้านขายหนังสือ, เรียนที่ Cambridge อยู่ตลอดชีพ, เป็นอาจารย์ที่ยอดเยี่ยม — ลูกน้อง 7 คนได้รางวัลโนเบล!, เสนอแบบจำลอง 'plum pudding' ที่ Rutherford พิสูจน์ว่าผิดในอีก 14 ปีต่อมา, ได้รางวัลโนเบลปี 1906",
         "personality_en": "Son of a bookseller, stayed at Cambridge his whole career, a brilliant teacher — 7 of his assistants won Nobel Prizes!, proposed the \"plum pudding\" model that Rutherford later disproved."
-      }
+      },
+      "summary_th": "J.J. Thomson (เจเจ ทอมสัน) ผู้ค้นพบอิเล็กตรอน — อนุภาคแรกที่เล็กกว่าอะตอม ทำลายความเชื่อ 2,000 ปีว่าอะตอมแบ่งแยกไม่ได้",
+      "biography_th": [
+        "Joseph John Thomson (โจเซฟ จอห์น ทอมสัน) เกิดในปี 1856 ที่ Cheetham Hill (ชีแธมฮิลล์), Manchester (แมนเชสเตอร์), England (อังกฤษ) บิดาเป็นพ่อค้าหนังสือ",
+        "เขาเรียนวิศวกรรมที่ Owens College (โอเวนส์คอลเลจ) (Manchester (แมนเชสเตอร์)) และคณิตศาสตร์ที่ Cambridge (เคมบริดจ์) ซึ่งเขาอยู่ที่นั่นตลอดอาชีพการงาน",
+        "ในปี 1897 Thomson (ทอมสัน) ทำชุดการทดลองเกี่ยวกับรังสีแคโทด (กระแสไฟฟ้าในหลอดสุญญากาศ) โดยใช้สนามไฟฟ้าและสนามแม่เหล็ก เขาวัดอัตราส่วนประจุต่อมวล (e/m) ของอนุภาคในรังสีแคโทด",
+        "เขาค้นพบว่าอนุภาคเหล่านี้เหมือนกันไม่ว่าจะใช้แก๊สชนิดใดในหลอดหรือโลหะใดทำอิเล็กโทรด — พิสูจน์ว่าพวกมันเป็นส่วนประกอบพื้นฐานของอะตอมทั้งหมด เขาเรียกพวกมันว่า 'corpuscles' (คอร์พัสเคิล) — ต่อมาเรียกว่าอิเล็กตรอน",
+        "การค้นพบอิเล็กตรอนทำลายความเชื่อที่มีมา 2,000 ปีว่าอะตอมแบ่งแยกไม่ได้ Thomson (ทอมสัน) เสนอ 'แบบจำลองพลัมพุดดิ้ง' — อิเล็กตรอนลบฝังในทรงกลมบวก",
+        "Thomson (ทอมสัน) เป็นครูที่ยอดเยี่ยม — ผู้ช่วยวิจัยของเขา 7 คนได้รับรางวัลโนเบล รวมถึง Rutherford (รัทเทอร์ฟอร์ด) ตัวเขาเองได้รับรางวัลโนเบลสาขาฟิสิกส์ในปี 1906"
+      ],
+      "contributions_th": [
+        "ค้นพบอิเล็กตรอน (1897) — อนุภาคแรกที่เล็กกว่าอะตอม",
+        "วัดอัตราส่วนประจุต่อมวล (e/m) ของอิเล็กตรอน",
+        "เสนอ 'แบบจำลองพลัมพุดดิ้ง' ของอะตอม (ต่อมา Rutherford (รัทเทอร์ฟอร์ด) พิสูจน์ว่าผิด)",
+        "ประดิษฐ์แมสสเปกโตรเมทรี — การใช้สนามแม่เหล็กแยกไอออนตามมวล"
+      ],
+      "legacy_th": [
+        "อิเล็กตรอนเป็นพื้นฐานของฟิสิกส์ เคมี และอิเล็กทรอนิกส์สมัยใหม่ทั้งหมด",
+        "อิเล็กทรอนิกส์สมัยใหม่ — ตั้งแต่หลอดสุญญากาศถึงทรานซิสเตอร์ถึงควอนตัมคอมพิวติ้ง — สร้างขึ้นจากการค้นพบของ Thomson (ทอมสัน)",
+        "'แบบจำลองพลัมพุดดิ้ง' ผิด แต่มันเป็นแบบจำลองทางวิทยาศาสตร์แรกของโครงสร้างภายในอะตอม",
+        "Cavendish Laboratory (ห้องปฏิบัติการคาเวนดิช) ของ Thomson (ทอมสัน) เป็นห้องปฏิบัติการฟิสิกส์ที่ productive ที่สุดในยุคนั้น ผลิตผู้ได้รับรางวัลโนเบล 7 คน"
+      ],
+      "key_quote_th": "จะมีอะไรที่ดูไร้ประโยชน์ในแวบแรกไปกว่าวัตถุที่เล็กมากจนมวลของมันเป็นเพียงเศษเสี้ยวเล็กน้อยของมวลอะตอมไฮโดรเจน?"
     },
     {
       "id": "rutherford",
@@ -4110,13 +4186,19 @@
           "title": "The Gold Foil Experiment (1909-1911)",
           "year": "1911",
           "description": "Rutherford, Geiger, and Marsden fired alpha particles (helium nuclei) from a radioactive source at a thin gold foil (only a few atoms thick). A zinc sulfide screen detected where the alphas struck. Most went straight through. Some were deflected at large angles. About 1 in 8,000 bounced back.",
-          "myth_vs_fact": "This actually happened. Marsden (an undergraduate) was given the task of looking for backscattered alphas — Rutherford thought they wouldn't find any. The backscattering result shocked Rutherford and took him 2 years to interpret correctly."
+          "myth_vs_fact": "This actually happened. Marsden (an undergraduate) was given the task of looking for backscattered alphas — Rutherford thought they wouldn't find any. The backscattering result shocked Rutherford and took him 2 years to interpret correctly.",
+          "title_th": "The Gold Foil Experiment (1909-1911) (การทดลองแผ่นทองคำ (1909-1911))",
+          "desc_th": "Rutherford (รัทเทอร์ฟอร์ด), Geiger (ไกเกอร์) และ Marsden (มาร์สเดน) ยิงอนุภาคแอลฟา (นิวเคลียสฮีเลียม) จากแหล่งกำเนิดกัมมันตรังสีไปที่แผ่นทองคำบางๆ (หนาเพียงไม่กี่อะตอม) ฉากซิงก์ซัลไฟด์ตรวจจับตำแหน่งที่อนุภาคแอลฟากระทบ ส่วนใหญ่ทะลุตรงไป บางส่วนเบี่ยงเบนเป็นมุมกว้าง ประมาณ 1 ใน 8,000 สะท้อนกลับ",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Marsden (มาร์สเดน) (นักศึกษาปริญญาตรี) ได้รับมอบหมายให้มองหาอนุภาคแอลฟาที่สะท้อนกลับ — Rutherford (รัทเทอร์ฟอร์ด) คิดว่าจะไม่พบ ผลการสะท้อนกลับทำให้ Rutherford (รัทเทอร์ฟอร์ด) ตกตะลึงและใช้เวลา 2 ปีในการตีความอย่างถูกต้อง"
         },
         {
           "title": "Splitting the Atom (1919)",
           "year": "1919",
           "description": "Rutherford bombarded nitrogen gas with alpha particles. He observed that hydrogen nuclei (protons) were knocked out of the nitrogen atoms. This was the first time a human had deliberately transformed one element into another (nitrogen into oxygen).",
-          "myth_vs_fact": "This actually happened. Rutherford called it 'disintegration of the atom'. It was the first fully controlled nuclear reaction."
+          "myth_vs_fact": "This actually happened. Rutherford called it 'disintegration of the atom'. It was the first fully controlled nuclear reaction.",
+          "title_th": "Splitting the Atom (1919) (การแตกอะตอม (1919))",
+          "desc_th": "Rutherford (รัทเทอร์ฟอร์ด) ยิงอนุภาคแอลฟาไปที่แก๊สไนโตรเจน เขาสังเกตเห็นว่านิวเคลียสไฮโดรเจน (โปรตอน) ถูกกระแทกออกจากอะตอมไนโตรเจน นี่เป็นครั้งแรกที่มนุษย์จงใจเปลี่ยนธาตุหนึ่งเป็นอีกธาตุหนึ่ง (ไนโตรเจนเป็นออกซิเจน)",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Rutherford (รัทเทอร์ฟอร์ด) เรียกมันว่า 'การสลายตัวของอะตอม' มันเป็นปฏิกิริยานิวเคลียร์ที่มีการควบคุมอย่างสมบูรณ์เป็นครั้งแรก"
         }
       ],
       "rating": {
@@ -4152,7 +4234,33 @@
         "summary_en": "Discovered the atomic nucleus via the gold foil experiment — father of nuclear physics.",
         "personality_th": "ชาวนิวซีแลนด์ — ลูกชาวนาคนที่ 1 ใน 12, เสียงดังและรักรักบี้, 'ยิงกระสุนใส่กระดาษทิชชู่แล้วกระสุนเด้งกลับ', ใช้เวลาถึง 2 ปีกว่าจะเข้าใจผลการทดลอง, ได้รางวัลโนเบลสาขาเคมี — ทั้งที่ทำฟิสิกส์!, ฝังใน Westminster Abbey ข้าง Newton",
         "personality_en": "A New Zealander, 12th child of a farmer, loud voice and loved rugby, \"firing a shell at tissue paper and it came back,\" took 2 years to understand his own experiment, won the Nobel in CHEMISTRY — for physics!, buried in Westminster Abbey."
-      }
+      },
+      "summary_th": "Ernest Rutherford (เออร์เนสต์ รัทเทอร์ฟอร์ด) ผู้ค้นพบนิวเคลียสของอะตอมด้วยการทดลอง Gold Foil — บิดาแห่งฟิสิกส์นิวเคลียร์",
+      "biography_th": [
+        "Ernest Rutherford (เออร์เนสต์ รัทเทอร์ฟอร์ด) เกิดในปี 1871 ที่ Nelson (เนลสัน), New Zealand (นิวซีแลนด์) เป็นหนึ่งใน 12 คนของชาวนาและครู",
+        "เขาชนะทุนเรียนที่ Cambridge University (มหาวิทยาลัยเคมบริดจ์) (นักวิจัยคนแรกจากนอก Cambridge (เคมบริดจ์)) เขาทำงานภายใต้ J.J. Thomson (เจเจ ทอมสัน) ที่ Cavendish Laboratory (ห้องปฏิบัติการคาเวนดิช)",
+        "Rutherford (รัทเทอร์ฟอร์ด) ย้ายไป McGill University (มหาวิทยาลัยแม็กกิลล์) ใน Canada (แคนาดา) (1898) ที่ซึ่งเขาค้นพบความแตกต่างระหว่างรังสีแอลฟาและบีตา",
+        "ในปี 1907 เขาย้ายไป University of Manchester (มหาวิทยาลัยแมนเชสเตอร์) ที่นั่นกับนักเรียนของเขา Hans Geiger (ฮันส์ ไกเกอร์) และ Ernest Marsden (เออร์เนสต์ มาร์สเดน) เขาทำการทดลองที่มีชื่อเสียงที่สุดในฟิสิกส์อะตอม",
+        "การทดลอง Gold Foil (1909-1911): Rutherford (รัทเทอร์ฟอร์ด) ยิงอนุภาคแอลฟาไปที่แผ่นทองคำบางๆ ส่วนใหญ่ทะลุผ่านตรงไป — แต่บางส่วนสะท้อนกลับ! Rutherford (รัทเทอร์ฟอร์ด) กล่าวว่า: 'มันแทบจะเหลือเชื่อราวกับว่าคุณยิงกระสุนขนาด 15 นิ้วใส่กระดาษทิชชู่แล้วมันเด้งกลับมาถูกคุณ'",
+        "นี่พิสูจน์ว่าอะตอมมีนิวเคลียสขนาดเล็กมาก หนาแน่น มีประจุบวก ล้อมรอบด้วยที่ว่างเป็นส่วนใหญ่ 'แบบจำลองนิวเคลียส' แทนที่แบบจำลองพลัมพุดดิ้งของ Thomson (ทอมสัน)",
+        "ในปี 1919 Rutherford (รัทเทอร์ฟอร์ด) ทำปฏิกิริยานิวเคลียร์เทียมครั้งแรก — แตกอะตอมไนโตรเจนโดยใช้อนุภาคแอลฟา เขายังค้นพบโปรตอน",
+        "Rutherford (รัทเทอร์ฟอร์ด) ได้รับบรรดาศักดิ์อัศวินและเป็น Lord Rutherford of Nelson (ลอร์ดรัทเทอร์ฟอร์ดแห่งเนลสัน) เขาขึ้นชื่อเรื่องเสียงก้อง ความรักในรักบี้ และบุคลิกที่ครึกครื้น เขาเสียชีวิตในปี 1937 และฝังใน Westminster Abbey (เวสต์มินสเตอร์แอบบี)"
+      ],
+      "contributions_th": [
+        "การทดลอง Gold Foil: ค้นพบนิวเคลียสของอะตอม — เล็ก หนาแน่น มีประจุบวก",
+        "เสนอแบบจำลองนิวเคลียสของอะตอม (แบบจำลองรัทเทอร์ฟอร์ด)",
+        "ค้นพบโปรตอน (1919) — อนุภาคที่มีประจุบวกในนิวเคลียส",
+        "ทำปฏิกิริยานิวเคลียร์เทียมครั้งแรก (การแตกอะตอม, 1919)",
+        "จำแนกรังสีแอลฟาและบีตา (1899)"
+      ],
+      "legacy_th": [
+        "แบบจำลองนิวเคลียสของ Rutherford (รัทเทอร์ฟอร์ด) เป็นรากฐานของฟิสิกส์อะตอมและนิวเคลียร์ทั้งหมด",
+        "การทดลอง Gold Foil เป็นหนึ่งในการทดลองที่สำคัญที่สุดในประวัติศาสตร์วิทยาศาสตร์",
+        "ความเข้าใจสมัยใหม่เกี่ยวกับโครงสร้างอะตอม — จากแบบจำลองของ Bohr (บอร์) ถึงกลศาสตร์ควอนตัม — สร้างบนนิวเคลียสของ Rutherford (รัทเทอร์ฟอร์ด)",
+        "เขาได้รับรางวัลโนเบลสาขาเคมี (1908) — น่าขันที่ได้จากงานฟิสิกส์",
+        "นักเรียนของ Rutherford (รัทเทอร์ฟอร์ด) (รวมถึง Bohr (บอร์), Chadwick (แชดวิก) และอื่นๆ อีกมาก) เปลี่ยนโฉมหน้าฟิสิกส์"
+      ],
+      "key_quote_th": "วิทยาศาสตร์ทั้งหมดเป็นฟิสิกส์หรือไม่ก็การสะสมแสตมป์"
     },
     {
       "id": "bohr",
@@ -4203,7 +4311,10 @@
           "title": "Bohr Model of the Atom (1913)",
           "year": "1913",
           "description": "Bohr proposed that electrons orbit the nucleus in discrete energy levels (shells). When an electron jumps from a higher to a lower level, it emits a photon of specific energy (E = hf). This explained the hydrogen emission spectrum perfectly.",
-          "myth_vs_fact": "This was a theoretical model, not a single experiment. Bohr combined Rutherford's nucleus with Planck's quantum (h) and assumed angular momentum is quantized. The model worked brilliantly for hydrogen but failed for larger atoms — it was later superseded by quantum mechanics."
+          "myth_vs_fact": "This was a theoretical model, not a single experiment. Bohr combined Rutherford's nucleus with Planck's quantum (h) and assumed angular momentum is quantized. The model worked brilliantly for hydrogen but failed for larger atoms — it was later superseded by quantum mechanics.",
+          "title_th": "Bohr Model of the Atom (1913) (แบบจำลองอะตอมของบอร์ (1913))",
+          "desc_th": "Bohr (บอร์) เสนอว่าอิเล็กตรอนโคจรรอบนิวเคลียสในระดับพลังงานที่ไม่ต่อเนื่อง (shells) เมื่ออิเล็กตรอนกระโดดจากระดับสูงลงมาต่ำ มันปล่อยโฟตอนที่มีพลังงานเฉพาะ (E = hf) สิ่งนี้อธิบายสเปกตรัมการเปล่งแสงของไฮโดรเจนได้อย่างสมบูรณ์แบบ",
+          "myth_th": "นี่เป็นแบบจำลองทางทฤษฎี ไม่ใช่การทดลองเดียว Bohr (บอร์) รวมนิวเคลียสของ Rutherford (รัทเทอร์ฟอร์ด) กับควอนตัมของ Planck (พลังค์) (h) และสมมติว่าโมเมนตัมเชิงมุมมีค่าไม่ต่อเนื่อง แบบจำลองทำงานได้ดีสำหรับไฮโดรเจนแต่ล้มเหลวสำหรับอะตอมที่ใหญ่กว่า — ต่อมาถูกแทนที่โดยกลศาสตร์ควอนตัม"
         }
       ],
       "rating": {
@@ -4239,7 +4350,32 @@
         "summary_en": "Created the Bohr model of the atom — electrons orbit the nucleus in fixed energy levels.",
         "personality_th": "เป็นคนอ่อนโยนและใจดี, หนีจากนาซีไปสวีเดน-อังกฤษตอน WWII, ทำงานใน Manhattan Project จากนั้นรณรงค์ต่อต้านอาวุธนิวเคลียร์, ก่อตั้ง Niels Bohr Institute ที่มีลูกน้องได้โนเบลนับสิบ, หลานชายของเขาก็ได้รางวัลโนเบลเช่นกัน",
         "personality_en": "Gentle and kind, escaped from Nazis to Sweden and England, worked on the Manhattan Project then campaigned against nuclear weapons, founded the Niels Bohr Institute that produced dozens of Nobel laureates, his grandson also won the Nobel."
-      }
+      },
+      "summary_th": "Niels Bohr (นีลส์ บอร์) ผู้สร้างแบบจำลองอะตอมแบบ Bohr — อิเล็กตรอนโคจรรอบนิวเคลียสในระดับพลังงานคงที่ (shells)",
+      "biography_th": [
+        "Niels Bohr (นีลส์ บอร์) เกิดในปี 1885 ที่ Copenhagen (โคเปนเฮเกน), Denmark (เดนมาร์ก) บิดาเป็นศาสตราจารย์ด้านสรีรวิทยาที่ University of Copenhagen (มหาวิทยาลัยโคเปนเฮเกน)",
+        "Bohr (บอร์) เรียนฟิสิกส์ที่ University of Copenhagen (มหาวิทยาลัยโคเปนเฮเกน) และต่อมาที่ Cambridge (เคมบริดจ์) ภายใต้ J.J. Thomson (เจเจ ทอมสัน) จากนั้นกับ Rutherford (รัทเทอร์ฟอร์ด) ใน Manchester (แมนเชสเตอร์)",
+        "ขณะทำงานในห้องปฏิบัติการของ Rutherford (รัทเทอร์ฟอร์ด) ในปี 1912-1913 Bohr (บอร์) รวมอะตอมแบบนิวเคลียสของ Rutherford (รัทเทอร์ฟอร์ด) กับทฤษฎีควอนตัมของ Planck (พลังค์) ผลลัพธ์ปฏิวัติวงการ: อิเล็กตรอนโคจรรอบนิวเคลียสในระดับพลังงานที่เฉพาะเจาะจงและมีค่าไม่ต่อเนื่อง (shells)",
+        "แบบจำลองของ Bohr (บอร์) อธิบายสเปกตรัมของไฮโดรเจนได้อย่างสมบูรณ์แบบ — เหตุใดไฮโดรเจนจึงปล่อยแสงที่ความยาวคลื่นเฉพาะเท่านั้น นี่เป็นชัยชนะครั้งแรกของทฤษฎีควอนตัมที่ประยุกต์ใช้กับอะตอม",
+        "Bohr (บอร์) กลายเป็นผู้อำนวยการ Institute of Theoretical Physics (สถาบันฟิสิกส์ทฤษฎี) ใน Copenhagen (โคเปนเฮเกน) (ปัจจุบันคือ Niels Bohr Institute (สถาบันนีลส์ บอร์)) ซึ่งกลายเป็นศูนย์กลางโลกของกลศาสตร์ควอนตัม",
+        "ระหว่างสงครามโลกครั้งที่ 2 Bohr (บอร์) ถูกนำออกจาก Denmark (เดนมาร์ก) ที่ถูกนาซียึดครองไปยัง Sweden (สวีเดน) แล้วไปยัง England (อังกฤษ)/USA (สหรัฐฯ) เขาทำงานใน Manhattan Project (โครงการแมนฮัตตัน) (ระเบิดปรมาณู) แต่ในภายหลังรณรงค์อย่างจริงจังเพื่อการลดอาวุธนิวเคลียร์",
+        "Bohr (บอร์) ขึ้นชื่อว่าเป็นคนใจดี อ่อนโยน และครุ่นคิดอย่างลึกซึ้ง การตีความแบบโคเปนเฮเกนของเขาเกี่ยวกับกลศาสตร์ควอนตัมยังคงเป็นมุมมองมาตรฐาน"
+      ],
+      "contributions_th": [
+        "แบบจำลองอะตอมของ Bohr (บอร์): อิเล็กตรอนโคจรในระดับพลังงานคงที่และมีค่าไม่ต่อเนื่อง (shells)",
+        "อธิบายสเปกตรัมของไฮโดรเจน (อนุกรมบัลเมอร์) โดยใช้ทฤษฎีควอนตัม",
+        "พัฒนา 'การตีความแบบโคเปนเฮเกน' ของกลศาสตร์ควอนตัม",
+        "กำหนดหลักการ correspondence (ความสอดคล้อง): กลศาสตร์ควอนตัมต้องสอดคล้องกับฟิสิกส์คลาสสิกที่ขนาดใหญ่",
+        "เสนอแบบจำลองหยดของเหลวของนิวเคลียส (พื้นฐานสำหรับการเข้าใจฟิชชันนิวเคลียร์)"
+      ],
+      "legacy_th": [
+        "แบบจำลองของ Bohr (บอร์) ยังคงเป็นภาพแรกที่ผุดขึ้นในใจเมื่อคนนึกถึง 'อะตอม' — แบบจำลองดาวเคราะห์อันเป็นสัญลักษณ์",
+        "แนวคิดเรื่องเปลือกอิเล็กตรอน (K, L, M, N...) ของเขาใช้ในทุกหลักสูตร IGCSE Chemistry และ Physics",
+        "Niels Bohr Institute (สถาบันนีลส์ บอร์) เป็นศูนย์กลางแห่งความเป็นเลิศที่ผลิตผู้ได้รับรางวัลโนเบลนับสิบคน",
+        "Bohr (บอร์) ได้รับรางวัลโนเบลสาขาฟิสิกส์ในปี 1922 สำหรับแบบจำลองอะตอมของเขา",
+        "ธาตุ Bohrium (Bh, เลขอะตอม 107) ตั้งชื่อตามเขา"
+      ],
+      "key_quote_th": "ผู้เชี่ยวชาญคือคนที่ได้ค้นพบจากประสบการณ์อันเจ็บปวดของตนเองถึงความผิดพลาดทั้งหมดที่คนเราสามารถทำได้ในสาขาที่แคบมาก"
     },
     {
       "id": "chadwick",
@@ -4286,7 +4422,10 @@
           "title": "Discovery of the Neutron (1932)",
           "year": "1932",
           "description": "Chadwick bombarded beryllium with alpha particles from polonium. The beryllium emitted a mysterious radiation that could penetrate lead and eject protons from paraffin wax. By measuring the recoil protons, Chadwick calculated the new particle's mass — almost identical to the proton but neutral.",
-          "myth_vs_fact": "This actually happened. Curie and Joliot had observed the same radiation earlier but misinterpreted it as gamma rays. Chadwick's father-in-law remarked that Chadwick discovered the neutron 'before the French discovered they'd discovered it.'"
+          "myth_vs_fact": "This actually happened. Curie and Joliot had observed the same radiation earlier but misinterpreted it as gamma rays. Chadwick's father-in-law remarked that Chadwick discovered the neutron 'before the French discovered they'd discovered it.'",
+          "title_th": "Discovery of the Neutron (1932) (การค้นพบนิวตรอน (1932))",
+          "desc_th": "Chadwick (แชดวิก) ยิงเบริลเลียมด้วยอนุภาคแอลฟาจากพอลอนิอุม เบริลเลียมปล่อยรังสีลึกลับที่สามารถทะลุทะลวงตะกั่วและกระแทกโปรตอนออกจากพาราฟิน โดยการวัดโปรตอนที่สะท้อนกลับ Chadwick (แชดวิก) คำนวณมวลของอนุภาคใหม่ — เกือบเท่าโปรตอนแต่เป็นกลาง",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Curie (กูรี) และ Joliot (โจลิโอต์) เคยสังเกตรังสีเดียวกันมาก่อนแต่ตีความผิดว่าเป็นรังสีแกมมา พ่อตาของ Chadwick (แชดวิก) กล่าวว่า Chadwick (แชดวิก) ค้นพบนิวตรอน 'ก่อนที่ฝรั่งเศสจะรู้ว่าตัวเองค้นพบมัน'"
         }
       ],
       "rating": {
@@ -4322,7 +4461,29 @@
         "summary_en": "Discovered the neutron — the neutral particle in the nucleus that made nuclear fission possible.",
         "personality_th": "ลูกศิษย์ของ Rutherford, ถูกกักระหว่าง WWII ในเยอรมนี (WWI) จนปวดหัวตลอดชีวิต, 'ค้นพบนิวตรอนก่อนที่ฝรั่งเศสจะรู้ว่าตัวเองค้นพบ', นำทีมอังกฤษใน Manhattan Project",
         "personality_en": "Student of Rutherford, was interned in Germany during WWI which gave him headaches for life, 'discovered the neutron before the French knew they'd discovered it,' led the British team on the Manhattan Project."
-      }
+      },
+      "summary_th": "James Chadwick (เจมส์ แชดวิก) ผู้ค้นพบนิวตรอน — อนุภาคที่เป็นกลางในนิวเคลียสที่ทำให้ปฏิกิริยานิวเคลียร์เกิดขึ้นได้",
+      "biography_th": [
+        "James Chadwick (เจมส์ แชดวิก) เกิดในปี 1891 ที่ Bollington (บอลลิงตัน), England (อังกฤษ) เขาเรียนฟิสิกส์ที่ University of Manchester (มหาวิทยาลัยแมนเชสเตอร์) ภายใต้ Rutherford (รัทเทอร์ฟอร์ด)",
+        "เขาทำงานกับ Rutherford (รัทเทอร์ฟอร์ด) ในการทดลองนิวเคลียร์ต่างๆ และตามเขาไปที่ Cavendish Laboratory (ห้องปฏิบัติการคาเวนดิช) ของ Cambridge (เคมบริดจ์)",
+        "ในปี 1932 Chadwick (แชดวิก) ทำชุดการทดลองยิงเบริลเลียมด้วยอนุภาคแอลฟา รังสีที่ลึกลับและทะลุทะลวงสูงถูกผลิตขึ้น",
+        "Chadwick (แชดวิก) แสดงว่ารังสีนี้ไม่ใช่รังสีแกมมา (อย่างที่คนอื่นคิด) แต่อนุภาคใหม่ที่มีมวลประมาณเท่าโปรตอนแต่ไม่มีประจุไฟฟ้า เขาได้ค้นพบนิวตรอน",
+        "นิวตรอนเป็นชิ้นส่วนที่หายไปของปริศนาอะตอม เมื่อรวมกับโปรตอน มันทำให้ภาพของนิวเคลียสอะตอมสมบูรณ์",
+        "ต่างจากโปรตอนที่มีประจุ นิวตรอนสามารถทะลุทะลวงนิวเคลียสอะตอมได้ง่าย — ทำให้มันเป็น 'กระสุน' ที่เหมาะสำหรับปฏิกิริยานิวเคลียร์ การค้นพบนี้โดยตรงทำให้เกิดฟิชชันนิวเคลียร์และพลังงานนิวเคลียร์",
+        "Chadwick (แชดวิก) ได้รับรางวัลโนเบลสาขาฟิสิกส์ในปี 1935 ระหว่างสงครามโลกครั้งที่ 2 เขานำทีมอังกฤษใน Manhattan Project (โครงการแมนฮัตตัน)"
+      ],
+      "contributions_th": [
+        "ค้นพบนิวตรอน (1932) — อนุภาคที่เป็นกลางในนิวเคลียสอะตอม",
+        "วัดมวลของนิวตรอน (หนักกว่าโปรตอนเล็กน้อย)",
+        "อธิบายว่านิวตรอน ต่างจากโปรตอน สามารถทะลุทะลวงนิวเคลียสได้ง่าย (ทำให้ปฏิกิริยานิวเคลียร์เกิดขึ้นได้)"
+      ],
+      "legacy_th": [
+        "นิวตรอนทำให้ภาพของอะตอมสมบูรณ์: นิวเคลียส = โปรตอน + นิวตรอน",
+        "นิวตรอนเป็นกุญแจสำคัญของฟิชชันนิวเคลียร์ — พวกมันสามารถแยกอะตอมยูเรเนียมและรักษาปฏิกิริยาลูกโซ่ไว้ได้",
+        "การค้นพบของ Chadwick (แชดวิก) โดยตรงนำไปสู่พลังงานนิวเคลียร์และอาวุธนิวเคลียร์",
+        "นิวตรอนสำคัญต่อการเข้าใจไอโซโทป — อะตอมของธาตุเดียวกันที่มีจำนวนนิวตรอนต่างกัน"
+      ],
+      "key_quote_th": "การค้นพบนิวตรอนได้เปลี่ยนโฉมหน้าของฟิสิกส์อย่างลึกซึ้งยิ่งกว่าการค้นพบอื่นใดในยุคของเรา"
     },
     {
       "id": "einstein",
@@ -4378,13 +4539,19 @@
           "title": "Miracle Year — Annus Mirabilis (1905)",
           "year": "1905",
           "description": "Einstein published 4 papers in one year: (1) Photoelectric effect — light quanta, (2) Brownian motion — proof of atoms, (3) Special relativity — E=mc² as a 3-page paper. All while working at the patent office.",
-          "myth_vs_fact": "This actually happened. Einstein didn't have access to a university library or lab. He called his patent office desk 'the world's best physics institute.' He didn't win the Nobel for relativity but for the photoelectric effect."
+          "myth_vs_fact": "This actually happened. Einstein didn't have access to a university library or lab. He called his patent office desk 'the world's best physics institute.' He didn't win the Nobel for relativity but for the photoelectric effect.",
+          "title_th": "Miracle Year — Annus Mirabilis (1905) (ปีแห่งความมหัศจรรย์ (1905))",
+          "desc_th": "Einstein (ไอน์สไตน์) ตีพิมพ์ 4 บทความในหนึ่งปี: (1) ปรากฏการณ์โฟโตอิเล็กทริก — ควอนตัมแสง (2) การเคลื่อนที่แบบบราวน์ — พิสูจน์อะตอม (3) สัมพัทธภาพพิเศษ — E=mc² เป็นบทความ 3 หน้า ทั้งหมดขณะทำงานที่สำนักงานสิทธิบัตร",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Einstein (ไอน์สไตน์) ไม่มีสิทธิ์เข้าห้องสมุดมหาวิทยาลัยหรือห้องปฏิบัติการ เขาเรียกโต๊ะทำงานที่สำนักงานสิทธิบัตรว่า 'สถาบันฟิสิกส์ที่ดีที่สุดในโลก' เขาไม่ได้ชนะโนเบลจากสัมพัทธภาพแต่จากปรากฏการณ์โฟโตอิเล็กทริก"
         },
         {
           "title": "Solar Eclipse Confirmation of Relativity (1919)",
           "year": "1919",
           "description": "Arthur Eddington led an expedition to photograph stars near the Sun during a solar eclipse. Their positions shifted exactly as Einstein's general relativity predicted — gravity bending light around the Sun.",
-          "myth_vs_fact": "This actually happened. The results made Einstein a world celebrity overnight. When a journalist asked what would happen if the experiment had disagreed, Einstein replied: 'Then I would feel sorry for the dear Lord — the theory is correct.'"
+          "myth_vs_fact": "This actually happened. The results made Einstein a world celebrity overnight. When a journalist asked what would happen if the experiment had disagreed, Einstein replied: 'Then I would feel sorry for the dear Lord — the theory is correct.'",
+          "title_th": "Solar Eclipse Confirmation of Relativity (1919) (การยืนยันสัมพัทธภาพด้วยสุริยุปราคา (1919))",
+          "desc_th": "Arthur Eddington (อาเธอร์ เอดดิงตัน) นำคณะสำรวจไปถ่ายภาพดาวฤกษ์ใกล้ดวงอาทิตย์ระหว่างสุริยุปราคา ตำแหน่งของพวกมันเลื่อนไปอย่างที่ทฤษฎีสัมพัทธภาพทั่วไปของ Einstein (ไอน์สไตน์) ทำนายไว้ — แรงโน้มถ่วงทำให้แสงโค้งรอบดวงอาทิตย์",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง ผลลัพธ์ทำให้ Einstein (ไอน์สไตน์) กลายเป็นคนดังระดับโลกในชั่วข้ามคืน เมื่อนักข่าวถามว่าจะเกิดอะไรขึ้นถ้าการทดลองไม่เห็นด้วย Einstein (ไอน์สไตน์) ตอบ: 'ถ้าอย่างนั้นฉันคงรู้สึกเสียใจต่อพระเจ้า — ทฤษฎีถูกต้องแล้ว'"
         }
       ],
       "rating": {
@@ -4420,7 +4587,32 @@
         "summary_en": "Changed our understanding of space, time, and energy — the most famous scientist in history.",
         "personality_th": "พูดช้าตอนเด็กจนพ่อแม่คิดว่าสมองช้า, เขียน 4 บทความเปลี่ยนโลกตอนเป็นลูกจ้างในออฟฟิศสิทธิบัตร, E=mc² เป็นสมการที่ดังที่สุดในโลก, ผมฟูเป็นเอกลักษณ์, หนีนาซีไป Princeton, สอนภาษาฮีบรูที่ศีรษะ, เล่นไวโอลิน, 'พระเจ้าไม่เล่นลูกเต๋า'",
         "personality_en": "Late talker — parents feared he was slow, wrote 4 world-changing papers while working at a patent office, E=mc² is the most famous equation ever, wild hair is iconic, fled Nazis to Princeton, played the violin, \"God does not play dice.\""
-      }
+      },
+      "summary_th": "Albert Einstein (อัลเบิร์ต ไอน์สไตน์) ผู้เปลี่ยนความเข้าใจเรื่องเวลา อวกาศ และพลังงาน — นักวิทยาศาสตร์ที่มีชื่อเสียงที่สุดในประวัติศาสตร์",
+      "biography_th": [
+        "Albert Einstein (อัลเบิร์ต ไอน์สไตน์) เกิดในปี 1879 ที่ Ulm (อุล์ม), Germany (เยอรมนี) ในครอบครัวชาวยิว เขาพูดช้าและพ่อแม่กังวลว่าเขาจะช้า",
+        "เขาเรียนที่ Swiss Federal Polytechnic (โปลีเทคนิคสหพันธ์สวิส) ใน Zurich (ซูริก) หลังจากเรียนจบ เขาทำงานที่สำนักงานสิทธิบัตรสวิส — งานที่ทำให้เขามีเวลาคิด deeply เกี่ยวกับฟิสิกส์",
+        "ในปี 1905 'Annus Mirabilis' (ปีแห่งความมหัศจรรย์) ของ Einstein (ไอน์สไตน์) เขาตีพิมพ์บทความที่ก้าวล้ำ 4 ฉบับขณะยังทำงานที่สำนักงานสิทธิบัตร: (1) ปรากฏการณ์โฟโตอิเล็กทริก — ชนะรางวัลโนเบล (2) การเคลื่อนที่แบบบราวน์ — พิสูจน์การมีอยู่ของอะตอม (3) สัมพัทธภาพพิเศษ — ปฏิวัติความเข้าใจเรื่องเวลาและอวกาศ (4) E = mc² — สมการที่โด่งดังที่สุดในประวัติศาสตร์",
+        "ในปี 1915 Einstein (ไอน์สไตน์) ทำผลงานชิ้นเอก: ทฤษฎีสัมพัทธภาพทั่วไป — แรงโน้มถ่วงในฐานะความโค้งของกาล-อวกาศ ทฤษฎีได้รับการยืนยันโดยการสำรวจสุริยุปราคาของ Eddington (เอดดิงตัน) ในปี 1919 ทำให้ Einstein (ไอน์สไตน์) มีชื่อเสียงโด่งดังไปทั่วโลกในชั่วข้ามคืน",
+        "Einstein (ไอน์สไตน์) หนีเยอรมนีเมื่อนาซีขึ้นสู่อำนาจในปี 1933 เขาตั้งรกรากที่ Institute for Advanced Study (สถาบันเพื่อการศึกษาขั้นสูง) ใน Princeton (พรินซ์ตัน), USA (สหรัฐฯ) แม้จะเป็นนักสันติวิธี เขาเซ็นจดหมายถึงประธานาธิบดี Roosevelt (รูสเวลต์)  urging การพัฒนาระเบิดปรมาณู",
+        "Einstein (ไอน์สไตน์) เป็นนักวิทยาศาสตร์ที่เป็นสัญลักษณ์มากที่สุดตลอดกาล — หน้าตา ผม และสมการ E = mc² ของเขาเป็นที่รู้จักไปทั่วโลก"
+      ],
+      "contributions_th": [
+        "สัมพัทธภาพพิเศษและทั่วไป — ปฏิวัติความเข้าใจของเราเกี่ยวกับเวลา อวกาศ และแรงโน้มถ่วงอย่างสิ้นเชิง",
+        "ปรากฏการณ์โฟโตอิเล็กทริก (E = hf) — พิสูจน์ว่าแสงมีค่าไม่ต่อเนื่อง ชนะรางวัลโนเบล",
+        "สมการมวล-พลังงาน: E = mc² — สมการที่โด่งดังที่สุดในฟิสิกส์",
+        "อธิบายการเคลื่อนที่แบบบราวน์ — ให้หลักฐานขั้นสุดท้ายว่าอะตอมมีอยู่จริง",
+        "วางรากฐานสำหรับกลศาสตร์ควอนตัม (แม้ภายหลังเขาปฏิเสธบางส่วน)",
+        "ทำนายคลื่นความโน้มถ่วง (ยืนยันในปี 2015, 100 ปีต่อมา)"
+      ],
+      "legacy_th": [
+        "Einstein (ไอน์สไตน์) เป็นนักวิทยาศาสตร์ที่มีชื่อเสียงและเป็นที่รู้จักมากที่สุดในประวัติศาสตร์มนุษย์",
+        "E = mc² เป็นสมการที่โด่งดังที่สุด — แสดงถึงความเท่าเทียมของมวลและพลังงาน",
+        "สัมพัทธภาพเปลี่ยนวิธีที่เราเข้าใจจักรวาลอย่างสิ้นเชิง — จากดาวเทียม GPS ถึงหลุมดำ",
+        "ปรากฏการณ์โฟโตอิเล็กทริก (แสงเป็นอนุภาค) สำคัญต่อกลศาสตร์ควอนตัมและอิเล็กทรอนิกส์สมัยใหม่",
+        "งานของ Einstein (ไอน์สไตน์) เป็นพื้นฐานของ GPS, พลังงานนิวเคลียร์, เซลล์แสงอาทิตย์ และความเข้าใจจักรวาลของเรา"
+      ],
+      "key_quote_th": "จินตนาการสำคัญกว่าความรู้ ความรู้มีขีดจำกัด จินตนาการโอบล้อมโลก"
     },
     {
       "id": "planck",
@@ -4468,7 +4660,10 @@
           "title": "The Quantum Hypothesis (14 December 1900)",
           "year": "1900",
           "description": "Planck proposed that a blackbody emits radiation in discrete packets (quanta) with energy E = hf. This perfectly matched the experimental data for blackbody spectra and solved the 'ultraviolet catastrophe'.",
-          "myth_vs_fact": "This was a theoretical breakthrough, not a lab experiment. Planck called it 'an act of desperation' and never fully accepted its implications. Ironically, his discovery launched the quantum revolution he later resisted."
+          "myth_vs_fact": "This was a theoretical breakthrough, not a lab experiment. Planck called it 'an act of desperation' and never fully accepted its implications. Ironically, his discovery launched the quantum revolution he later resisted.",
+          "title_th": "The Quantum Hypothesis (14 December 1900) (สมมติฐานควอนตัม (14 ธันวาคม 1900))",
+          "desc_th": "Planck (พลังค์) เสนอว่าวัตถุดำแผ่รังสีเป็นก้อนไม่ต่อเนื่อง (quanta) ด้วยพลังงาน E = hf สิ่งนี้ตรงกับข้อมูลการทดลองของสเปกตรัมวัตถุดำอย่างสมบูรณ์แบบและแก้ 'ultraviolet catastrophe' ได้",
+          "myth_th": "นี่เป็นความก้าวหน้าทางทฤษฎี ไม่ใช่การทดลองในห้องปฏิบัติการ Planck (พลังค์) เรียกมันว่า 'การกระทำด้วยความสิ้นหวัง' และไม่เคยยอมรับผลกระทบของมันอย่างเต็มที่ น่าขันที่การค้นพบของเขาเปิดฉากการปฏิวัติควอนตัมที่ภายหลังเขาต่อต้าน"
         }
       ],
       "rating": {
@@ -4504,7 +4699,30 @@
         "summary_en": "Founded quantum theory by discovering that energy is quantized — Planck's constant h changed everything.",
         "personality_th": "อาจารย์บอกว่า 'ฟิสิกส์สำคัญๆ ค้นพบหมดแล้ว' แต่ Planck ไม่ฟัง, เรียกต้นคิดของควอนตัมว่า 'การกระทำด้วยความสิ้นหวัง', ลูกชายถูก Gestapo ประหารเพราะวางแผนลอบสังหาร Hitler, บ้านถูกระเบิดในสงคราม, Max Planck Society ซึ่งเป็นองค์กรวิจัยใหญ่สุดในเยอรมนีตั้งชื่อตามเขา",
         "personality_en": "His professor told him 'everything important in physics has been discovered' — he chose it anyway, called his own quantum discovery 'an act of desperation,' his son was executed by the Gestapo for plotting to kill Hitler, his house was bombed."
-      }
+      },
+      "summary_th": "Max Planck (มักซ์ พลังค์) ผู้ก่อตั้งทฤษฎีควอนตัม — ค้นพบว่าพลังงานถูกปล่อยออกมาเป็นก้อนไม่ต่อเนื่อง ค่าคงที่ h เปลี่ยนทุกอย่าง",
+      "biography_th": [
+        "Max Karl Ernst Ludwig Planck (มักซ์ คาร์ล แอร์นสท์ ลุดวิจ พลังค์) เกิดในปี 1858 ที่ Kiel (คีล), Germany (เยอรมนี) ในครอบครัวนักวิชาการ ทวดและปู่เป็นศาสตราจารย์เทววิทยา บิดาเป็นศาสตราจารย์กฎหมาย",
+        "Planck (พลังค์) เข้าเรียนที่ University of Munich (มหาวิทยาลัยมิวนิก) เมื่ออายุ 16 ปี อาจารย์ของเขาบอกให้เขาไม่เรียนฟิสิกส์เพราะ 'ทุกอย่างสำคัญถูกค้นพบหมดแล้ว' Planck (พลังค์) เลือกฟิสิกส์ anyway",
+        "ในปี 1900 Planck (พลังค์) พยายามแก้ 'ultraviolet catastrophe' — ฟิสิกส์คลาสสิกทำนายว่าวัตถุร้อนจะแผ่พลังงานอนันต์ที่ความถี่สูง ซึ่งผิดอย่างเห็นได้ชัดแต่ไม่มีใครแก้ได้",
+        "Planck (พลังค์) ตั้งสมมติฐานอย่างสิ้นหวัง: พลังงานไม่ได้ถูกปล่อยออกมาอย่างต่อเนื่อง แต่เป็นก้อนเล็กๆ ไม่ต่อเนื่อง หรือ 'ควอนตัม' พลังงานของแต่ละควอนตัมคือ E = hf โดยที่ h คือค่าคงที่พื้นฐานใหม่ — Planck's constant (ค่าคงที่ของพลังค์) (h = 6.626 × 10⁻³⁴ J·s)",
+        "สมมติฐานควอนตัมนี้ตรงกับข้อมูลการทดลองอย่างสมบูรณ์แบบ — แต่ Planck (พลังค์) เองไม่สบายใจ เขาเรียกมันว่า 'การกระทำด้วยความสิ้นหวัง' และใช้เวลาหลายปีพยายาม reconcile มันกับฟิสิกส์คลาสสิก",
+        "ค่าคงที่ของพลังค์เปิดประตูสู่กลศาสตร์ควอนตัม — ฟิสิกส์ของโลกอะตอม เขาได้รับรางวัลโนเบลสาขาฟิสิกส์ในปี 1918",
+        "ชีวิตส่วนตัวของ Planck (พลังค์) เป็นโศกนาฏกรรม ลูกชาย Erwin (แอร์วิน) ถูก Gestapo (เกสตาโป) ประหารชีวิตเพราะมีส่วนร่วมในแผนลอบสังหาร Hitler (ฮิตเลอร์) ในปี 1944 บ้านของเขาถูกทำลายในเหตุการณ์ทิ้งระเบิด Max Planck (มักซ์ พลังค์) เสียชีวิตในปี 1947 ด้วยอายุ 89 ปี"
+      ],
+      "contributions_th": [
+        "นำเสนอแนวคิดควอนตัม: พลังงานถูกปล่อยและดูดซับเป็นก้อนไม่ต่อเนื่อง (quanta)",
+        "Planck's constant (ค่าคงที่ของพลังค์) (h = 6.626 × 10⁻³⁴ J·s) — ค่าคงที่พื้นฐานของธรรมชาติ",
+        "กฎการแผ่รังสีของวัตถุดำ — อธิบายสเปกตรัมของรังสีจากวัตถุร้อนได้อย่างแม่นยำ",
+        "ก่อตั้งทฤษฎีควอนตัม — ทฤษฎีทางกายภาพที่ประสบความสำเร็จและแม่นยำที่สุดเท่าที่เคยพัฒนา"
+      ],
+      "legacy_th": [
+        "Planck's constant (ค่าคงที่ของพลังค์) (h) ปรากฏในทุกสมการของกลศาสตร์ควอนตัม — 'ควอนตัมของการกระทำ'",
+        "ค่าคงที่ของพลังค์เป็นค่าคงที่พื้นฐานของธรรมชาติ เหมือนความเร็วแสง (c) และค่าคงที่ความโน้มถ่วง (G)",
+        "ทฤษฎีควอนตัมอธิบายทุกอย่างตั้งแต่โครงสร้างอะตอมถึงเลเซอร์ถึงสารกึ่งตัวนำ",
+        "Max Planck Society (สมาคมมักซ์ พลังค์) องค์กรวิจัยชั้นนำของเยอรมนี ตั้งชื่อเพื่อเป็นเกียรติแก่เขา"
+      ],
+      "key_quote_th": "ความจริงทางวิทยาศาสตร์ใหม่ไม่ได้ชนะด้วยการโน้มน้าวฝ่ายตรงข้ามและทำให้พวกเขาเห็นแสงสว่าง แต่เพราะฝ่ายตรงข้ามตายไปในที่สุด และคนรุ่นใหม่ที่เติบโตขึ้นมาคุ้นเคยกับมัน"
     },
     {
       "id": "copernicus",
@@ -4552,7 +4770,10 @@
           "title": "De Revolutionibus (1543)",
           "year": "1543",
           "description": "Copernicus published his heliocentric model showing Earth and planets orbit the Sun. He used 34 epicycles (circles on circles) — far fewer than the 80+ in Ptolemy's system.",
-          "myth_vs_fact": "Copernicus's model was still not fully accurate — he assumed circular orbits (Kepler later proved elliptical). The famous story of him seeing his book on his deathbed is likely true."
+          "myth_vs_fact": "Copernicus's model was still not fully accurate — he assumed circular orbits (Kepler later proved elliptical). The famous story of him seeing his book on his deathbed is likely true.",
+          "title_th": "De Revolutionibus (1543) (关于天球运行论 (1543))",
+          "desc_th": "Copernicus (โคเปอร์นิคัส) ตีพิมพ์แบบจำลอง heliocentric ของเขาแสดงว่าโลกและดาวเคราะห์โคจรรอบดวงอาทิตย์ เขาใช้ epicycles (วงกลมซ้อนวงกลม) 34 อัน — น้อยกว่าระบบของ Ptolemy (ปโตเลมี) ที่มีมากกว่า 80 อัน",
+          "myth_th": "แบบจำลองของ Copernicus (โคเปอร์นิคัส) ยังไม่แม่นยำเต็มที่ — เขาสมมติวงโคจรเป็นวงกลม (Kepler (เคปเลอร์) ภายหลังพิสูจน์ว่าเป็นวงรี) เรื่องดังที่เขาเห็นหนังสือบนเตียงมรณะน่าจะเป็นจริง"
         }
       ],
       "rating": {
@@ -4588,7 +4809,30 @@
         "summary_en": "Proposed the heliocentric model — the Sun, not Earth, is the centre of the solar system.",
         "personality_th": "เป็นทั้งบาทหลวง แพทย์ นักการทูต นักเศรษฐศาสตร์ และนักดาราศาสตร์, ลังเลที่จะตีพิมพ์เพราะกลัวคริสตจักร, หนังสือเล่มแรกถึงมือตอนใกล้ตายบนเตียง, หนังสือถูกแบน 219 ปี",
         "personality_en": "A canon, doctor, diplomat, economist, AND astronomer, hesitated to publish for fear of the Church, his book reached him on his deathbed, banned by the Catholic Church for 219 years."
-      }
+      },
+      "summary_th": "Nicolaus Copernicus (นิโคเลาส์ โคเปอร์นิคัส) ผู้เสนอแบบจำลองสุริยะเป็นศูนย์กลาง — ดวงอาทิตย์ ไม่ใช่โลก เป็นศูนย์กลางของระบบสุริยะ",
+      "biography_th": [
+        "Nicolaus Copernicus (นิโคเลาส์ โคเปอร์นิคัส) เกิดในปี 1473 ที่ Torun (โตร์น), Poland (โปแลนด์) เขาเรียนที่ University of Krakow (มหาวิทยาลัยกรากุฟ) และจากนั้นใน Italy (อิตาลี) — กฎหมายศาสนา แพทยศาสตร์ ดาราศาสตร์ และคณิตศาสตร์",
+        "Copernicus (โคเปอร์นิคัส) เป็นพหูสูต: นักบวช, แพทย์, นักการทูต, นักเศรษฐศาสตร์ และนักดาราศาสตร์",
+        "เขากังขากับความซับซ้อนของแบบจำลองปโตเลมี (โลกเป็นศูนย์กลาง) ซึ่งต้องใช้ epicycles (วงกลมซ้อนวงกลม) ที่ซับซ้อนมากขึ้นเพื่ออธิบายการเคลื่อนที่ของดาวเคราะห์",
+        "Copernicus (โคเปอร์นิคัส) พัฒนาแบบจำลองที่ง่ายกว่า: ดวงอาทิตย์เป็นศูนย์กลาง และโลก (พร้อมดาวเคราะห์อื่นๆ ทั้งหมด) โคจรรอบดวงอาทิตย์ โลกยังหมุนรอบแกนของตัวเองวันละครั้ง อธิบายกลางวันและกลางคืน",
+        "เขาเขียนหนังสือ 'De Revolutionibus Orbium Coelestium' ('关于天球运行论') เสร็จประมาณปี 1530 แต่ลังเลที่จะตีพิมพ์เพราะกลัวการเยาะเย้ยจากคริสตจักร",
+        "บนเตียงมรณะในปี 1543 หนังสือพิมพ์ครั้งแรกถูกวางในมือของเขา ตำนานเล่าว่าเขาตื่นจาก coma, เห็นหนังสือของเขา, และเสียชีวิตอย่างสงบ",
+        "การปฏิวัติโคเปอร์นิคัสเป็นจุดเริ่มต้นของดาราศาสตร์สมัยใหม่และการปฏิวัติวิทยาศาสตร์"
+      ],
+      "contributions_th": [
+        "แบบจำลอง heliocentric (ดวงอาทิตย์เป็นศูนย์กลาง) ของระบบสุริยะ — แทนที่แบบจำลอง geocentric (โลกเป็นศูนย์กลาง)",
+        "อธิบายการเคลื่อนที่ถอยหลังของดาวเคราะห์โดยธรรมชาติ โดยโลกแซงดาวเคราะห์ชั้นนอกในวงโคจร",
+        "กำหนดว่าโลกหมุนรอบแกนตนเองทุกวัน (อธิบายกลางวัน/กลางคืน) และโคจรรอบดวงอาทิตย์ทุกปี",
+        "คำนวณระยะทางสัมพัทธ์ของดาวเคราะห์จากดวงอาทิตย์ด้วยความแม่นยำพอสมควร"
+      ],
+      "legacy_th": [
+        "Copernicus (โคเปอร์นิคัส) จุดชนวนการปฏิวัติวิทยาศาสตร์ — แบบจำลองของเขานำไปสู่ Kepler (เคปเลอร์), Galileo (กาลิเลโอ) และ Newton (นิวตัน)",
+        "แบบจำลอง heliocentric (ดวงอาทิตย์เป็นศูนย์กลาง) เปลี่ยนสถานที่ของมนุษยชาติในจักรวาลอย่างสิ้นเชิง",
+        "งานของเขาถูกแบนโดยคริสตจักรคาทอลิกตั้งแต่ปี 1616 ถึง 1835",
+        "Copernicus (โคเปอร์นิคัส) ถือเป็นบิดาแห่งดาราศาสตร์สมัยใหม่"
+      ],
+      "key_quote_th": "ท่ามกลางทุกสิ่ง ดวงอาทิตย์สถิตอยู่ ใครเล่าจะวางตะเกียงแห่งวิหารที่งดงามนี้ในที่อื่นหรือที่ดีกว่า?"
     },
     {
       "id": "tycho-brahe",
@@ -4636,13 +4880,19 @@
           "title": "Tycho's Supernova (1572)",
           "year": "1572",
           "description": "Tycho observed a 'new star' (supernova) in Cassiopeia that appeared brighter than Venus. He measured its position relative to background stars and proved it showed no parallax — meaning it was far beyond the Moon.",
-          "myth_vs_fact": "This actually happened. It contradicted Aristotle's doctrine that the celestial realm was unchanging. Tycho published 'De Nova Stella' — the word 'nova' for a new star originates from this work."
+          "myth_vs_fact": "This actually happened. It contradicted Aristotle's doctrine that the celestial realm was unchanging. Tycho published 'De Nova Stella' — the word 'nova' for a new star originates from this work.",
+          "title_th": "Tycho's Supernova (1572) (ซูเปอร์โนวาของทีโค (1572))",
+          "desc_th": "Tycho (ทีโค) สังเกต 'ดาวดวงใหม่' (ซูเปอร์โนวา) ในกลุ่มดาวแคสซิโอเปียที่สว่างกว่าดาวศุกร์ เขาวัดตำแหน่งของมันเทียบกับดาวพื้นหลังและพิสูจน์ว่ามันไม่มีพารัลแลกซ์ — หมายความว่ามันอยู่ไกลเกินดวงจันทร์",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง มันขัดแย้งกับหลักคำสอนของ Aristotle (อริสโตเติล) ที่ว่าอาณาจักรท้องฟ้าไม่เปลี่ยนแปลง Tycho (ทีโค) ตีพิมพ์ 'De Nova Stella' — คำว่า 'nova' สำหรับดาวดวงใหม่มีที่มาจากงานนี้"
         },
         {
           "title": "Uraniborg Observatory (1576-1597)",
           "year": "1597",
           "description": "Tycho built the most advanced observatory in Europe on the island of Hven, equipped with giant quadrants, sextants, armillary spheres, and a printing press. He recorded planetary positions nightly for 20 years.",
-          "myth_vs_fact": "This actually happened. The observatory was a prototype for modern research institutes — combining residence, laboratory, library, workshop, and printing facilities."
+          "myth_vs_fact": "This actually happened. The observatory was a prototype for modern research institutes — combining residence, laboratory, library, workshop, and printing facilities.",
+          "title_th": "Uraniborg Observatory (1576-1597) (หอดูดาวอูรานีบอร์ก (1576-1597))",
+          "desc_th": "Tycho (ทีโค) สร้างหอดูดาวที่ก้าวหน้าที่สุดในยุโรปบนเกาะ Hven (เวน) ติดตั้งควอแดรนท์ยักษ์ เซกซ์แทนต์ ทรงกลมอาร์มิลลารี และแท่นพิมพ์ เขาบันทึกตำแหน่งดาวเคราะห์ทุกคืนนาน 20 ปี",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง หอดูดาวเป็นต้นแบบของสถาบันวิจัยสมัยใหม่ — รวมที่พัก ห้องปฏิบัติการ ห้องสมุด โรงงาน และแท่นพิมพ์"
         }
       ],
       "rating": {
@@ -4678,7 +4928,30 @@
         "summary_en": "The greatest naked-eye astronomer — his precise data enabled Kepler's laws of planetary motion.",
         "personality_th": "จมูกโดนตัดในดวล — ใส่จมูกปลอมทำจากเงินและทอง!, มีเกาะ Hven ทั้งเกาะเป็นหอดูดาวส่วนตัว, สังเกต supernova ปี 1572, จ้าง Kepler เป็นลูกน้อง, ตายเพราะกระเพาะปัสสาวะแตก (ห้ามเข้าห้องน้ำเพราะมารยาท!)",
         "personality_en": "Lost part of his nose in a duel — wore a metal prosthetic!, owned an entire island for his observatory, observed the 1572 supernova, hired Kepler as his assistant, died from a burst bladder (refusing to leave the dinner table!)."
-      }
+      },
+      "summary_th": "Tycho Brahe (ทีโค บราเฮ) นักดาราศาสตร์สายตาที่แม่นยำที่สุดก่อนกล้องโทรทรรศน์ — ข้อมูลของเขาทำให้ Kepler ค้นพบกฎการโคจร",
+      "biography_th": [
+        "Tycho Brahe (ทีโค บราเฮ) เกิดในปี 1546 ที่ Knudstrup (คนุดสตรุป), Denmark (เดนมาร์ก) ในตระกูลขุนนางร่ำรวย เขาถูกเลี้ยงดูโดยลุง ซึ่งส่งเขาไปเรียนกฎหมายที่ University of Copenhagen (มหาวิทยาลัยโคเปนเฮเกน)",
+        "สุริยุปราคาในปี 1560 (ที่นักดาราศาสตร์ทำนายได้) ทำให้ Tycho (ทีโค) ประทับใจมากจนเปลี่ยนจากกฎหมายเป็นดาราศาสตร์",
+        "ในปี 1566 Tycho (ทีโค) สูญเสียจมูกบางส่วนในการดวลเพราะข้อพิพาททางคณิตศาสตร์! เขาสวมจมูกปลอมทำจากเงินและทองไปตลอดชีวิต",
+        "King Frederick II (พระเจ้าเฟรเดอริกที่ 2) แห่ง Denmark (เดนมาร์ก) มอบเกาะ Hven (เวน) ให้ Tycho (ทีโค) สร้างหอดูดาวที่ดีที่สุดในโลก — Uraniborg (อูรานีบอร์ก) ('ปราสาทแห่งฟากฟ้า') Tycho (ทีโค) ใช้เวลา 20 ปีวัดตำแหน่งของดาวฤกษ์และดาวเคราะห์ด้วยความแม่นยำที่ไม่เคยมีมาก่อน (ภายใน 1 arcminute)",
+        "การสังเกตซูเปอร์โนวาในปี 1572 (ปัจจุบันเรียกว่า Tycho's Supernova (ซูเปอร์โนวาของทีโค)) พิสูจน์ว่าท้องฟ้าสามารถเปลี่ยนแปลงได้ — ขัดแย้งกับหลักคำสอนของ Aristotle (อริสโตเติล)",
+        "แบบจำลองของ Tycho (ทีโค) เป็นการประนีประนอม: โลกเป็นศูนย์กลาง ดวงอาทิตย์และดวงจันทร์โคจรรอบโลก แต่ดาวเคราะห์อื่นโคจรรอบดวงอาทิตย์ แม้จะผิด แต่ข้อมูลของเขามีค่าอย่างยิ่ง",
+        "หลังจากขัดแย้งกับกษัตริย์เดนมาร์ก Tycho (ทีโค) ย้ายไป Prague (ปราก) และจ้างนักคณิตศาสตร์หนุ่ม — Johannes Kepler (โยฮันเนส เคปเลอร์) — เป็นผู้ช่วย เมื่อ Tycho (ทีโค) เสียชีวิตอย่างกะทันหันในปี 1601 (อาจจากกระเพาะปัสสาวะแตก) Kepler (เคปเลอร์) ได้รับข้อมูลอันล้ำค่าของเขา"
+      ],
+      "contributions_th": [
+        "การวัดทางดาราศาสตร์ที่แม่นยำที่สุดก่อนกล้องโทรทรรศน์ — แม่นยำถึง 1 arcminute",
+        "บันทึกตำแหน่งของดาว 777 ดวง",
+        "พิสูจน์ว่าซูเปอร์โนวาในปี 1572 อยู่ไกลเกินดวงจันทร์ (ท้องฟ้าเปลี่ยนแปลงได้)",
+        "ให้ข้อมูลที่ Kepler (เคปเลอร์) ต้องการเพื่อค้นพบกฎการเคลื่อนที่ของดาวเคราะห์"
+      ],
+      "legacy_th": [
+        "ข้อมูลของ Tycho (ทีโค) เป็นรากฐานของกฎการเคลื่อนที่ของดาวเคราะห์ของ Kepler (เคปเลอร์)",
+        "Tycho's Supernova (ซูเปอร์โนวาของทีโค) (SN 1572) ยังคงเป็นวัตถุสำคัญในฟิสิกส์ดาราศาสตร์สมัยใหม่",
+        "หอดูดาว Uraniborg (อูรานีบอร์ก) ของเขากำหนดมาตรฐานใหม่สำหรับเครื่องมือทางวิทยาศาสตร์",
+        "Tycho (ทีโค) ถือเป็นนักดาราศาสตร์สังเกตการณ์ที่ยิ่งใหญ่ที่สุดก่อนกล้องโทรทรรศน์"
+      ],
+      "key_quote_th": "ฉันได้สังเกตดวงดาว — ไม่ใช่ด้วยตาเพียงอย่างเดียว แต่ด้วยเครื่องมือที่ดีที่สุดเท่าที่จะสร้างได้"
     },
     {
       "id": "kepler",
@@ -4728,13 +5001,19 @@
           "title": "The Elliptical Orbit of Mars (1609)",
           "year": "1609",
           "description": "Using Tycho's data on Mars, Kepler tried fitting circles to the orbit. After 70+ attempts and 4 years of calculation, he discovered an ellipse fits the data perfectly — with the Sun at one focus.",
-          "myth_vs_fact": "This actually happened. Amazingly, the difference between a circle and Mars's orbit is only 0.009 (8 arcminutes), but Tycho's data was accurate enough to detect it. Kepler shouted 'I have the answer — the orbit is an ellipse!'"
+          "myth_vs_fact": "This actually happened. Amazingly, the difference between a circle and Mars's orbit is only 0.009 (8 arcminutes), but Tycho's data was accurate enough to detect it. Kepler shouted 'I have the answer — the orbit is an ellipse!'",
+          "title_th": "The Elliptical Orbit of Mars (1609) (วงโคจรรูปวงรีของดาวอังคาร (1609))",
+          "desc_th": "ด้วยข้อมูลของ Tycho (ทีโค) เกี่ยวกับดาวอังคาร Kepler (เคปเลอร์) พยายามใส่วงกลมให้พอดีกับวงโคจร หลังจาก 70+ ครั้งและ 4 ปีของการคำนวณ เขาค้นพบว่าวงรีพอดีกับข้อมูลอย่างสมบูรณ์ — โดยมีดวงอาทิตย์ที่จุดโฟกัสหนึ่ง",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง น่าทึ่งที่ความแตกต่างระหว่างวงกลมกับวงโคจรของดาวอังคารมีเพียง 0.009 (8 arcminutes) แต่ข้อมูลของ Tycho (ทีโค) แม่นยำพอที่จะตรวจจับมัน Kepler (เคปเลอร์) ตะโกนว่า 'ฉันมีคำตอบ — วงโคจรเป็นวงรี!'"
         },
         {
           "title": "Kepler's Third Law (1619)",
           "year": "1619",
           "description": "Kepler discovered the 'Harmonic Law': T² ∝ r³. He found that the square of each planet's orbital period is proportional to the cube of its average distance from the Sun.",
-          "myth_vs_fact": "This actually happened. Kepler published it in 'Harmonices Mundi' (The Harmony of the World), which combined serious science with his mystical belief in the 'music of the spheres'."
+          "myth_vs_fact": "This actually happened. Kepler published it in 'Harmonices Mundi' (The Harmony of the World), which combined serious science with his mystical belief in the 'music of the spheres'.",
+          "title_th": "Kepler's Third Law (1619) (กฎข้อที่สามของเคปเลอร์ (1619))",
+          "desc_th": "Kepler (เคปเลอร์) ค้นพบ 'กฎฮาร์มอนิก': T² ∝ r³ เขาพบว่ากำลังสองของคาบการโคจรของดาวเคราะห์แต่ละดวงเป็นสัดส่วนกับกำลังสามของระยะทางเฉลี่ยจากดวงอาทิตย์",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Kepler (เคปเลอร์) ตีพิมพ์ใน 'Harmonices Mundi' ('ความกลมกลืนของโลก') ซึ่งรวมวิทยาศาสตร์จริงจังกับความเชื่อมึสติกของเขาใน 'ดนตรีแห่งทรงกลม'"
         }
       ],
       "rating": {
@@ -4770,7 +5049,30 @@
         "summary_en": "Discovered the three laws of planetary motion — ellipses, equal areas, and the harmonic law.",
         "personality_th": "ป่วยเป็นไข้ทรพิษตอนเด็กทำให้สายตาไม่ดี — แต่ใช้ข้อมูลคนอื่นมาคำนวณ!, ลองผิดลองถูก 70 ครั้งกว่าเจอวงรี, มีความเชื่อมึสติก — คิดว่าเอกภพมีดนตรี, แม่ถูกจับข้อหาเป็นแม่มด, ตายอย่างยากจน",
         "personality_en": "Survived smallpox which damaged his eyesight — but used other people's data!, tried 70+ shapes before finding the ellipse, believed in mystical \"music of the spheres,\" his mother was tried for witchcraft, died impoverished."
-      }
+      },
+      "summary_th": "Johannes Kepler (โยฮันเนส เคปเลอร์) ผู้ค้นพบกฎ 3 ข้อของการเคลื่อนที่ของดาวเคราะห์ — วงรี พื้นที่เท่ากัน และกฎฮาร์มอนิก",
+      "biography_th": [
+        "Johannes Kepler (โยฮันเนส เคปเลอร์) เกิดในปี 1571 ที่ Weil der Stadt (ไวล์เดอร์ชตัดท์), Germany (เยอรมนี) เขาเป็นเด็กขี้โรคที่รอดชีวิตจากไข้ทรพิษ ทำให้สายตาไม่ดี",
+        "เขาเรียนที่ University of Tübingen (มหาวิทยาลัยทือบิงเงิน) ที่ซึ่งเขาเรียนรู้ระบบ Copernicus (โคเปอร์นิคัส) จาก Michael Maestlin (มิคาเอล เมสต์ลิน)",
+        "Kepler (เคปเลอร์) กลายเป็นครูคณิตศาสตร์ใน Graz (กราซ) เขายังมีความเชื่อมึสติกอย่างลึกซึ้ง — เขาเชื่อว่าจักรวาลสร้างขึ้นจากความกลมกลืนทางเรขาคณิตและดนตรี",
+        "ในปี 1600 Kepler (เคปเลอร์) กลายเป็นผู้ช่วยของ Tycho Brahe (ทีโค บราเฮ) ใน Prague (ปราก) เมื่อ Tycho (ทีโค) เสียชีวิตในปี 1601 Kepler (เคปเลอร์) ได้รับข้อมูลดาวเคราะห์อันล้ำค่าของเขา — แม่นยำที่สุดเท่าที่เคยบันทึก",
+        "ด้วยข้อมูลของ Tycho (ทีโค) เกี่ยวกับดาวอังคาร Kepler (เคปเลอร์) ดิ้นรนเป็นเวลาหลายปีเพื่อหารูปร่างที่พอดี หลังจากพยายาม 70 ครั้ง เขาค้นพบว่าวงโคจรเป็นวงรี ไม่ใช่วงกลม",
+        "กฎ 3 ข้อของ Kepler (เคปเลอร์): (1) ดาวเคราะห์โคจรเป็นวงรีโดยมีดวงอาทิตย์ที่จุดโฟกัสหนึ่ง (2) ดาวเคราะห์กวาดพื้นที่เท่ากันในเวลาเท่ากัน (3) กำลังสองของคาบการโคจรเป็นสัดส่วนกับกำลังสามของกึ่งแกนเอก (T² ∝ r³)",
+        "Kepler (เคปเลอร์) เสียชีวิตในปี 1630 อย่างยากจน กฎของเขาในภายหลังทำให้ Newton (นิวตัน) ค้นพบแรงโน้มถ่วงสากล"
+      ],
+      "contributions_th": [
+        "Kepler's First Law (กฎข้อที่หนึ่งของเคปเลอร์): ดาวเคราะห์โคจรรอบดวงอาทิตย์เป็นวงรี ไม่ใช่วงกลม",
+        "Kepler's Second Law (กฎข้อที่สองของเคปเลอร์): ดาวเคราะห์กวาดพื้นที่เท่ากันในเวลาเท่ากัน",
+        "Kepler's Third Law (กฎข้อที่สามของเคปเลอร์): T² ∝ r³ — กำลังสองของคาบการโคจรเป็นสัดส่วนกับกำลังสามของรัศมีวงโคจรเฉลี่ย",
+        "พัฒนา Rudolphine Tables (ตารางรูดอล์ฟ) — แคตตาล็อกดาวสมัยใหม่เล่มแรกที่ใช้วงโคจรรูปวงรี"
+      ],
+      "legacy_th": [
+        "กฎของ Kepler (เคปเลอร์) สอนในทุกหลักสูตร IGCSE Physics และจำเป็นสำหรับการเข้าใจวงโคจร",
+        "กฎของเขาเป็นพื้นฐานเชิงประจักษ์สำหรับกฎแรงโน้มถ่วงสากลของ Newton (นิวตัน)",
+        "กฎข้อที่สามของ Kepler (เคปเลอร์) ใช้คำนวณระยะทางและคาบของวัตถุที่โคจรทั้งหมด — จากดาวเทียมถึงดาวเคราะห์นอกระบบ",
+        "กล้องโทรทรรศน์อวกาศ Kepler (เคปเลอร์) (2009-2018) ค้นพบดาวเคราะห์นอกระบบกว่า 2,600 ดวง ตั้งชื่อเพื่อเป็นเกียรติแก่เขา"
+      ],
+      "key_quote_th": "ฉันแน่ใจว่าดาวเคราะห์เคลื่อนที่เป็นวงรี วงกลมเป็นเพียงจินตนาการ"
     },
     {
       "id": "halley",
@@ -4819,13 +5121,19 @@
           "title": "Halley's Comet Orbit (1705)",
           "year": "1705",
           "description": "Halley used Newton's law of gravity to calculate the orbits of 24 comets. Three bright comets (1531, 1607, 1682) had nearly identical orbits. He concluded they were the same comet returning every 76 years.",
-          "myth_vs_fact": "This actually happened, and the prediction was spectacularly confirmed. Halley predicted return in 1758 — it arrived on Christmas Day 1758. He was 16 years dead, but his fame was assured forever."
+          "myth_vs_fact": "This actually happened, and the prediction was spectacularly confirmed. Halley predicted return in 1758 — it arrived on Christmas Day 1758. He was 16 years dead, but his fame was assured forever.",
+          "title_th": "Halley's Comet Orbit (1705) (วงโคจรของดาวหางฮัลเลย์ (1705))",
+          "desc_th": "Halley (ฮัลเลย์) ใช้กฎแรงโน้มถ่วงของ Newton (นิวตัน) คำนวณวงโคจรของดาวหาง 24 ดวง ดาวหางสว่างสามดวง (1531, 1607, 1682) มีวงโคจรเกือบเหมือนกัน เขาสรุปว่าพวกมันเป็นดาวหางดวงเดียวกันที่กลับมาทุก 76 ปี",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง และการทำนายได้รับการยืนยันอย่างน่าตื่นตา Halley (ฮัลเลย์) ทำนายการกลับมาในปี 1758 — มันมาถึงในวันคริสต์มาสปี 1758 เขาตายไป 16 ปีแล้ว แต่ชื่อเสียงของเขาถูกจารึกไว้ตลอดกาล"
         },
         {
           "title": "Southern Hemisphere Star Catalogue (1676-1678)",
           "year": "1678",
           "description": "At 20, Halley sailed to St Helena and catalogued 341 southern stars. He also observed a transit of Mercury and measured the magnetic declination. The Royal Society was so impressed they made him a Fellow.",
-          "myth_vs_fact": "This actually happened. St Helena was chosen because it was the southernmost territory England controlled. Halley's catalogue was the first systematic survey of southern stars."
+          "myth_vs_fact": "This actually happened. St Helena was chosen because it was the southernmost territory England controlled. Halley's catalogue was the first systematic survey of southern stars.",
+          "title_th": "Southern Hemisphere Star Catalogue (1676-1678) (แคตตาล็อกดาวซีกโลกใต้ (1676-1678))",
+          "desc_th": "เมื่ออายุ 20 ปี Halley (ฮัลเลย์) เดินเรือไป St Helena (เซนต์เฮเลนา) และบันทึกดาวซีกโลกใต้ 341 ดวง เขายังสังเกต transit of Mercury (การเคลื่อนผ่านของดาวพุธ) และวัดค่า magnetic declination (ความเบี่ยงเบนแม่เหล็ก) Royal Society (ราชสมาคม) ประทับใจมากจนแต่งตั้งเขาเป็น Fellow",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง St Helena (เซนต์เฮเลนา) ถูกเลือกเพราะเป็นดินแดนใต้สุดที่อังกฤษควบคุม แคตตาล็อกของ Halley (ฮัลเลย์) เป็นการสำรวจดาวซีกโลกใต้อย่างเป็นระบบครั้งแรก"
         }
       ],
       "rating": {
@@ -4861,7 +5169,31 @@
         "summary_en": "Predicted Halley's Comet's return — and funded Newton's Principia, the most important science book ever.",
         "personality_th": "เดินเรือไปเซนต์เฮเลนาตอนอายุ 20 เพื่อทำแผนที่ดาวซีกโลกใต้, เป็นคนให้ทุน Newton ตีพิมพ์ Principia, เคยเป็นกัปตันเรือ HMS Paramour, ประดิษฐ์ระฆังดำน้ำ, ดาวหางกลับมาปี 1758 — 16 ปีหลังจากเขาตาย",
         "personality_en": "Sailed to St. Helena at 20 to map southern stars, funded and edited Newton's Principia — essential to science history!, was a sea captain and invented the diving bell. His comet returned 16 years after his death."
-      }
+      },
+      "summary_th": "Edmond Halley (เอ็ดมอนด์ ฮัลเลย์) ผู้ทำนายการกลับมาของดาวหางฮัลเลย์ — และเป็นผู้สนับสนุนให้ Newton ตีพิมพ์ Principia",
+      "biography_th": [
+        "Edmond Halley (เอ็ดมอนด์ ฮัลเลย์) เกิดในปี 1656 ที่ London (ลอนดอน), England (อังกฤษ) ในครอบครัวเศรษฐีผู้ผลิตสบู่ เขาเรียนที่ Oxford University (มหาวิทยาลัยออกซ์ฟอร์ด)",
+        "เมื่ออายุ 20 ปี Halley (ฮัลเลย์) เดินเรือไป St Helena (เซนต์เฮเลนา) (มหาสมุทรแอตแลนติกใต้) เพื่อบันทึกดาวซีกโลกใต้ — แคตตาล็อกดาวซีกโลกใต้ที่ครอบคลุมเป็นครั้งแรก",
+        "Halley (ฮัลเลย์) กลายเป็นเพื่อนสนิทของ Isaac Newton (ไอแซค นิวตัน) ในปี 1684 Halley (ฮัลเลย์) ไปเยี่ยม Newton (นิวตัน) และถามว่าเส้นทางใดที่ดาวเคราะห์จะตามภายใต้กฎผกผันกำลังสอง Newton (นิวตัน) ตอบ 'วงรี' — แต่หาเอกสารการคำนวณไม่พบ Halley (ฮัลเลย์) กระตุ้นให้ Newton (นิวตัน) ตีพิมพ์",
+        "Halley (ฮัลเลย์) เป็นบรรณาธิการ ให้ทุน และดูแลการตีพิมพ์ Principia Mathematica (1687) ของ Newton (นิวตัน) — หนังสือวิทยาศาสตร์ที่สำคัญที่สุดเท่าที่เคยเขียนมา หากไม่มี Halley (ฮัลเลย์) มันอาจไม่เคยถูกตีพิมพ์",
+        "ด้วยทฤษฎีของ Newton (นิวตัน) Halley (ฮัลเลย์) ศึกษาดาวหาง เขาสังเกตว่าดาวหางสว่างปรากฏในปี 1531, 1607 และ 1682 เขาคำนวณวงโคจรและสรุปว่าพวกมันเป็นดาวหางดวงเดียวกันที่กลับมาทุก 76 ปี เขาทำนายการกลับมาในปี 1758",
+        "Halley (ฮัลเลย์) เสียชีวิตในปี 1742 ด้วยอายุ 85 ปี ดาวหางกลับมาในเดือนธันวาคม 1758 — 16 ปีหลังจากเขาเสียชีวิต — และถูกตั้งชื่อว่า Halley's Comet (ดาวหางฮัลเลย์) เพื่อเป็นเกียรติแก่เขา",
+        "Halley (ฮัลเลย์) ยังเป็นกัปตันเรือ (บัญชาการ HMS Paramour ในการสำรวจแม่เหล็ก), นักทำแผนที่ และแม้แต่ประดิษฐ์ระฆังดำน้ำ"
+      ],
+      "contributions_th": [
+        "คำนวณวงโคจรของ Halley's Comet (ดาวหางฮัลเลย์) และทำนายการกลับมาอย่างถูกต้อง (คนแรกที่ทำนายวงโคจรคาบของดาวหาง)",
+        "ตีพิมพ์แคตตาล็อกดาวซีกโลกใต้เป็นครั้งแรก (341 ดาว)",
+        "ให้ทุน, เป็นบรรณาธิการ และดูแลการตีพิมพ์ Principia Mathematica ของ Newton (นิวตัน)",
+        "เสนอให้ใช้ transit of Venus (การเคลื่อนผ่านของดาวศุกร์) เพื่อวัดระยะทางโลก-ดวงอาทิตย์",
+        "ค้นพบ proper motion (การเคลื่อนที่เฉพาะ) ของดาวฤกษ์ (ดาวฤกษ์กำลังเคลื่อนที่ ไม่ได้固定)"
+      ],
+      "legacy_th": [
+        "Halley's Comet (ดาวหางฮัลเลย์) (1P/Halley) — ดาวหางที่มีชื่อเสียงที่สุด — กลับมาทุก 75-76 ปี",
+        "Halley Armada (กองเรือฮัลเลย์) (1986) — ยานอวกาศจากสหภาพโซเวียต ญี่ปุ่น และยุโรปไปเยี่ยมดาวหาง",
+        "บทบาทของ Halley (ฮัลเลย์) ในการตีพิมพ์ Principia ของ Newton (นิวตัน) สำคัญต่อประวัติศาสตร์วิทยาศาสตร์",
+        "สถานีวิจัย Halley Bay (ฮัลเลย์เบย์) ในแอนตาร์กติกาตั้งชื่อตามเขา"
+      ],
+      "key_quote_th": "ฉันมั่นใจว่าดาวหางในปี 1682 เป็นดวงเดียวกับในปี 1531 และ 1607 — และฉันกล้าทำนายการกลับมาของมันในปี 1758"
     },
     {
       "id": "herschel",
@@ -4912,13 +5244,19 @@
           "title": "Discovery of Uranus (13 March 1781)",
           "year": "1781",
           "description": "Herschel was surveying stars in Gemini when he noticed a faint object that appeared as a 'disk' rather than a point of light. Over several nights it moved — it was a planet beyond Saturn.",
-          "myth_vs_fact": "This actually happened. Herschel wanted to name it 'Georgium Sidus' (George's Star) after King George III. The name 'Uranus' came later. Ironically, others had seen Uranus before but dismissed it as a star."
+          "myth_vs_fact": "This actually happened. Herschel wanted to name it 'Georgium Sidus' (George's Star) after King George III. The name 'Uranus' came later. Ironically, others had seen Uranus before but dismissed it as a star.",
+          "title_th": "Discovery of Uranus (13 March 1781) (การค้นพบดาวยูเรนัส (13 มีนาคม 1781))",
+          "desc_th": "Herschel (เฮอร์เชล) กำลังสำรวจดาวในกลุ่มดาว Gemini (เมถุน) เมื่อเขาสังเกตเห็นวัตถุจางๆ ที่ปรากฏเป็น 'จาน' ไม่ใช่จุดแสง หลายคืนต่อมามันเคลื่อนที่ — มันคือดาวเคราะห์ที่อยู่เลย Saturn (ดาวเสาร์)",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Herschel (เฮอร์เชล) ต้องการตั้งชื่อมันว่า 'Georgium Sidus' (ดาวของจอร์จ) ตาม King George III (พระเจ้าจอร์จที่ 3) ชื่อ 'Uranus' (ดาวยูเรนัส) มาในภายหลัง น่าขันที่คนอื่นเคยเห็น Uranus (ดาวยูเรนัส) มาก่อนแต่เมินเฉยว่าเป็นดาวฤกษ์"
         },
         {
           "title": "Discovery of Infrared Radiation (1800)",
           "year": "1800",
           "description": "Herschel passed sunlight through a prism and placed thermometers in different colours of the spectrum. The thermometer placed just BEYOND the red end measured the highest temperature — proving invisible 'calorific rays' (infrared).",
-          "myth_vs_fact": "This actually happened. It was a beautifully simple experiment. Herschel showed that sunlight carries heat in addition to visible light."
+          "myth_vs_fact": "This actually happened. It was a beautifully simple experiment. Herschel showed that sunlight carries heat in addition to visible light.",
+          "title_th": "Discovery of Infrared Radiation (1800) (การค้นพบรังสีอินฟราเรด (1800))",
+          "desc_th": "Herschel (เฮอร์เชล) ส่องแสงอาทิตย์ผ่านปริซึมและวางเทอร์โมมิเตอร์ในสีต่างๆ ของสเปกตรัม เทอร์โมมิเตอร์ที่วางเลยปลายสีแดงวัดอุณหภูมิสูงที่สุด — พิสูจน์ว่ามี 'รังสีความร้อน' ที่มองไม่เห็น (อินฟราเรด)",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง มันเป็นการทดลองที่เรียบง่ายอย่างสวยงาม Herschel (เฮอร์เชล) แสดงว่าแสงอาทิตย์นำพาความร้อนนอกเหนือจากแสงที่มองเห็น"
         }
       ],
       "rating": {
@@ -4954,7 +5292,31 @@
         "summary_en": "Discovered Uranus, infrared radiation, and mapped the Milky Way galaxy.",
         "personality_th": "เคยเป็นนักดนตรี — เล่าโอโบและสอนดนตรี!, สร้างกล้องโทรทรรศน์ด้วยมือตัวเอง — ขัดกระจกนานถึง 16 ชั่วโมงต่อวัน!, ค้นพบยูเรนัสโดยบังเอิญ, น้องสาว Caroline Berry เป็นนักดาราศาสตร์หญิงคนสำคัญ, สร้างกล้องยักษ์ยาว 40 ฟุต",
         "personality_en": "Was a professional musician — played the oboe and taught music!, built his own telescopes polishing mirrors for 16 hours a day, discovered Uranus by chance, his sister Caroline was also a brilliant astronomer."
-      }
+      },
+      "summary_th": "William Herschel (วิลเลียม เฮอร์เชล) ผู้ค้นพบดาวยูเรนัสและรังสีอินฟราเรด — และแผนที่ทางช้างเผือก",
+      "biography_th": [
+        "William Herschel (วิลเลียม เฮอร์เชล) เกิดในปี 1738 ที่ Hanover (ฮันโนเฟอร์), Germany (เยอรมนี) บิดาเป็นนักดนตรี และ William (วิลเลียม) วัยหนุ่มเป็นนักเล่นโอโบในวงดนตรีทหาร",
+        "เขาย้ายไป England (อังกฤษ) เมื่ออายุ 19 ปี ทำงานเป็นครูสอนดนตรี นักแต่งเพลง และนักเล่นออร์แกน ความหลงใหลในดาราศาสตร์ของเขาเริ่มต้นหลังจากอ่าน 'Harmonics' และ 'Opticks' ของ Robert Smith (โรเบิร์ต สมิธ)",
+        "ไม่สามารถซื้อกล้องโทรทรรศน์ได้ Herschel (เฮอร์เชล) สร้างเอง เขากลายเป็นช่างทำกล้องโทรทรรศน์ที่ดีที่สุดในยุคของเขา ขัดกระจกด้วยมือนานถึง 16 ชั่วโมงต่อวัน",
+        "ในวันที่ 13 มีนาคม 1781 Herschel (เฮอร์เชล) สังเกตวัตถุแปลกประหลาดใกล้ดาว H Geminorum (เอช เจมินอรัม) นักดาราศาสตร์ส่วนใหญ่คงไม่สนใจ แต่ Herschel (เฮอร์เชล) สังเกตว่ามันเคลื่อนที่เทียบกับดาว — เขาค้นพบดาวเคราะห์ดวงใหม่! Uranus (ดาวยูเรนัส) เป็นดาวเคราะห์ดวงแรกที่ค้นพบในประวัติศาสตร์ที่บันทึกไว้",
+        "King George III (พระเจ้าจอร์จที่ 3) แต่งตั้ง Herschel (เฮอร์เชล) เป็นนักดาราศาสตร์ส่วนตัวพร้อมเงินเดือน Herschel (เฮอร์เชล) ใช้ความมั่นคงนี้สร้างกล้องโทรทรรศน์ที่ใหญ่ขึ้น สุดท้ายคือกล้องยักษ์ยาว 40 ฟุตพร้อมกระจก 48 นิ้ว",
+        "Herschel (เฮอร์เชล) ค้นพบอื่นๆ อีกมาก: รังสีอินฟราเรด (ใช้เทอร์โมมิเตอร์ในสเปกตรัมของแสงอาทิตย์), ระบบดาวคู่, ดวงจันทร์ของ Uranus (ดาวยูเรนัส) และ Saturn (ดาวเสาร์), และแผนที่รูปร่างของทางช้างเผือก — พิสูจน์ว่ามันเป็นจาน",
+        "Caroline Herschel (คาโรไลน์ เฮอร์เชล) น้องสาวของเขาเป็นผู้ช่วยและนักดาราศาสตร์ที่ยอดเยี่ยมในตัวของเธอเอง — เธอค้นพบดาวหางและกระจุกดาวหลายแห่ง"
+      ],
+      "contributions_th": [
+        "ค้นพบ Uranus (ดาวยูเรนัส) (1781) — ดาวเคราะห์ดวงแรกที่ค้นพบด้วยกล้องโทรทรรศน์",
+        "ค้นพบรังสีอินฟราเรด (1800) — เลยสีแดงไปในสเปกตรัมของแสง",
+        "แผนที่ทางช้างเผือก — แสดงว่ามันเป็นจานรูปเลนส์ของดวงดาว",
+        "ค้นพบระบบดาวคู่ (ดาวฤกษ์ที่โคจรรอบกัน) พิสูจน์ว่าแรงโน้มถ่วงของ Newton (นิวตัน) ทำงานนอกระบบสุริยะ",
+        "บันทึกวัตถุท้องฟ้าลึกกว่า 2,500 ชิ้น (เนบิวลาและกระจุกดาว)"
+      ],
+      "legacy_th": [
+        "Uranus (ดาวยูเรนัส) เป็นดาวเคราะห์ 'ใหม่' ดวงแรกที่ค้นพบในประวัติศาสตร์ที่บันทึกไว้ — ขยายระบบสุริยะที่รู้จัก",
+        "รังสีอินฟราเรดเป็นเครื่องมือพื้นฐานในดาราศาสตร์ การแพทย์ และเทคโนโลยี",
+        "Herschel Space Observatory (หอดูดาวอวกาศเฮอร์เชล) (2009-2013) ศึกษาจักรวาลอินฟราเรด ตั้งชื่อเพื่อเป็นเกียรติแก่เขา",
+        "การทำแผนที่ทางช้างเผือกของ Herschel (เฮอร์เชล) เป็นหลักฐานเชิงสังเกตแรกของโครงสร้างกาแล็กซีของเรา"
+      ],
+      "key_quote_th": "ฉันมองเข้าไปในอวกาศได้ไกลกว่ามนุษย์คนใดเคยทำก่อนฉัน"
     },
     {
       "id": "leavitt",
@@ -5002,7 +5364,10 @@
           "title": "Period-Luminosity Relation (1912)",
           "year": "1912",
           "description": "Leavitt examined photographic plates of the Small Magellanic Cloud. She identified 25 Cepheid variable stars and plotted their brightness against their pulsation period. The graph showed a clear, tight relationship.",
-          "myth_vs_fact": "This actually happened. Since all stars in the SMC are at roughly the same distance from Earth, the apparent brightness differences directly reflect true brightness differences. This elegant insight — using all stars at the same distance — was key to the discovery."
+          "myth_vs_fact": "This actually happened. Since all stars in the SMC are at roughly the same distance from Earth, the apparent brightness differences directly reflect true brightness differences. This elegant insight — using all stars at the same distance — was key to the discovery.",
+          "title_th": "Period-Luminosity Relation (1912) (ความสัมพันธ์คาบ-ความสว่าง (1912))",
+          "desc_th": "Leavitt (ลีวิตต์) ตรวจสอบแผ่นถ่ายภาพของ Small Magellanic Cloud (เมฆแมกเจลแลนเล็ก) เธอระบุ Cepheid (เซเฟอิด) 25 ดวงและพล็อตความสว่างกับคาบการส่องแสงเป็นจังหวะ กราฟแสดงความสัมพันธ์ที่ชัดเจนและแน่นหนา",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง เนื่องจากดาวทุกดวงใน SMC (เอสเอ็มซี) อยู่ห่างจากโลกโดยประมาณเท่ากัน ความแตกต่างของความสว่างที่ปรากฏจึงสะท้อนความแตกต่างของความสว่างที่แท้จริงโดยตรง ความเข้าใจที่ชาญฉลาดนี้ — การใช้ดาวทุกดวงที่ระยะทางเท่ากัน — เป็นกุญแจสำคัญของการค้นพบ"
         }
       ],
       "rating": {
@@ -5038,7 +5403,29 @@
         "summary_en": "Discovered the period-luminosity relation of Cepheid stars — the \"standard candle\" that measures the universe.",
         "personality_th": "เป็น 'คอมพิวเตอร์' ที่ Harvard — เงินเดือน 25 เซนต์ต่อชั่วโมง!, ผู้หญิงยังไม่มีสิทธิ์ใช้กล้องโทรทรรศน์ต้องทำงานวิเคราะห์ฟิล์มถ่ายรูป, คนพบความสัมพันธ์ที่เปลี่ยนดาราศาสตร์, ตายดวยมะเร็งกอนที่จะเห็นผลงานของเธอเปลยนโลก, Hubble ใชงานของเธอคนพบเอกภพขยายตัว",
         "personality_en": "Worked as a \"computer\" at Harvard — paid 25 cents an hour!, women weren't allowed to use telescopes so she analysed photographic plates, her discovery was used by Hubble to find the expanding universe, died of cancer before seeing her impact."
-      }
+      },
+      "summary_th": "Henrietta Swan Leavitt (เฮนเรียตตา สวอน ลีวิตต์) ผู้ค้นพบความสัมพันธ์ระหว่างความสว่างและคาบของดาวแปรแสง Cepheid — 'เทียนมาตรฐาน' ที่วัดระยะทางในเอกภพ",
+      "biography_th": [
+        "Henrietta Swan Leavitt (เฮนเรียตตา สวอน ลีวิตต์) เกิดในปี 1868 ที่ Lancaster (แลงคาสเตอร์), Massachusetts (แมสซาชูเซตส์) เธอจบจาก Radcliffe College (วิทยาลัยแรดคลิฟฟ์) (ซึ่งตอนนั้นเป็นวิทยาลัยสตรีของ Harvard (ฮาร์วาร์ด))",
+        "เธอกลายเป็น 'คอมพิวเตอร์' ที่ Harvard College Observatory (หอดูดาวฮาร์วาร์ดคอลเลจ) — ทีมผู้หญิงที่ได้รับค่าจ้าง 25 เซนต์ต่อชั่วโมงเพื่อวิเคราะห์แผ่นถ่ายภาพของดวงดาว",
+        "Leavitt (ลีวิตต์) ศึกษาดาวแปรแสง Cepheid (เซเฟอิด) ใน Small Magellanic Cloud (เมฆแมกเจลแลนเล็ก) (กาแล็กซีใกล้เคียง) เธอสังเกตว่า Cepheid (เซเฟอิด) ที่สว่างกว่าจะส่องแสงเป็นจังหวะช้ากว่า — ความสัมพันธ์ที่แม่นยำระหว่างความสว่างและคาบ",
+        "ความสัมพันธ์คาบ-ความสว่าง (1912) หมายความว่า: ถ้าคุณวัดคาบการส่องแสงเป็นจังหวะของ Cepheid (เซเฟอิด) คุณจะรู้ความสว่างที่แท้จริงของมัน เปรียบเทียบกับความสว่างที่ปรากฏ แล้วคุณสามารถคำนวณระยะทางของมันได้!",
+        "นี่เป็น 'เทียนมาตรฐาน' แรกสำหรับวัดระยะทางจักรวาลที่ไกลเกินขีดจำกัดของพารัลแลกซ์",
+        "การค้นพบของ Leavitt (ลีวิตต์) ถูกใช้โดย Edwin Hubble (เอ็ดวิน ฮับเบิล) เพื่อพิสูจน์ว่าเอกภพกำลังขยายตัว — เขาวัด Cepheid (เซเฟอิด) ใน Andromeda Galaxy (กาแล็กซีแอนโดรเมดา) และพบว่ามันอยู่ไกลเกินทางช้างเผือก",
+        "Leavitt (ลีวิตต์) ทำงานที่ Harvard (ฮาร์วาร์ด) ต่อไปจนเสียชีวิตด้วยมะเร็งในปี 1921 เธอไม่เคยได้รับการยอมรับอย่างเต็มที่ในชีวิต — แต่การค้นพบของเธอเปลี่ยนแปลงดาราศาสตร์อย่างสิ้นเชิง"
+      ],
+      "contributions_th": [
+        "ค้นพบความสัมพันธ์คาบ-ความสว่างสำหรับดาวแปรแสง Cepheid (เซเฟอิด)",
+        "ให้ 'เทียนมาตรฐาน' แรกสำหรับวัดระยะทางถึงกาแล็กซี",
+        "บันทึกดาวแปรแสงกว่า 2,400 ดวงในเมฆแมกเจลแลน"
+      ],
+      "legacy_th": [
+        "ความสัมพันธ์ของ Leavitt (ลีวิตต์) ทำให้ Hubble (ฮับเบิล) ค้นพบเอกภพกำลังขยายตัว",
+        "Cepheid (เซเฟอิด) ยังคงเป็นขั้นพื้นฐานบนบันไดระยะทางจักรวาล",
+        "กล้องโทรทรรศน์อวกาศ Hubble (ฮับเบิล) ใช้ Cepheid (เซเฟอิด) วัดค่าคงที่ฮับเบิล",
+        "หลุม Leavitt (ลีวิตต์) บนดวงจันทร์และดาวเคราะห์น้อย (5383 Leavitt) ตั้งชื่อตามเธอ"
+      ],
+      "key_quote_th": "Cepheid (เซเฟอิด) ที่สว่างกว่ามีคาบยาวกว่า — ความสัมพันธ์นี้แม่นยำมากจนสามารถใช้วัดระยะทางของดวงดาวได้"
     },
     {
       "id": "hubble",
@@ -5087,13 +5474,19 @@
           "title": "Andromeda — A Separate Galaxy (1923-1924)",
           "year": "1924",
           "description": "Hubble photographed the Andromeda Nebula with the 100-inch telescope and found a Cepheid variable star. Using Leavitt's period-luminosity relation, he calculated its distance as 900,000 light-years — far beyond the Milky Way. The universe was full of 'island universes' (galaxies).",
-          "myth_vs_fact": "This actually happened. Hubble wrote 'VAR' on the photographic plate to mark the variable star. The plate is preserved at the Carnegie Observatories. (The modern distance to Andromeda is 2.5 million light-years — Hubble underestimated because of dust extinction.)"
+          "myth_vs_fact": "This actually happened. Hubble wrote 'VAR' on the photographic plate to mark the variable star. The plate is preserved at the Carnegie Observatories. (The modern distance to Andromeda is 2.5 million light-years — Hubble underestimated because of dust extinction.)",
+          "title_th": "Andromeda — A Separate Galaxy (1923-1924) (แอนโดรเมดา — กาแล็กซีที่แยกออกไป (1923-1924))",
+          "desc_th": "Hubble (ฮับเบิล) ถ่ายภาพ Andromeda Nebula (เนบิวลาแอนโดรเมดา) ด้วยกล้อง 100 นิ้วและพบดาวแปรแสง Cepheid (เซเฟอิด) โดยใช้ความสัมพันธ์คาบ-ความสว่างของ Leavitt (ลีวิตต์) เขาคำนวณระยะทางของมันเป็น 900,000 ปีแสง — ไกลเกินทางช้างเผือก เอกภพเต็มไปด้วย 'จักรวาลเกาะ' (กาแล็กซี)",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Hubble (ฮับเบิล) เขียน 'VAR' บนแผ่นถ่ายภาพเพื่อระบุดาวแปรแสง แผ่นนี้ถูกเก็บรักษาที่ Carnegie Observatories (หอดูดาวคาร์เนกี) (ระยะทางสมัยใหม่ของ Andromeda (แอนโดรเมดา) คือ 2.5 ล้านปีแสง — Hubble (ฮับเบิล) ประมาณต่ำเกินไปเพราะการหักลบของฝุ่น)"
         },
         {
           "title": "Hubble's Law — The Expanding Universe (1929)",
           "year": "1929",
           "description": "Hubble measured distances to 46 galaxies and plotted them against their recessional velocities (from spectral redshifts). The graph showed a clear linear relationship: farther = faster.",
-          "myth_vs_fact": "This actually happened. Hubble's original value of H₀ ≈ 500 km/s/Mpc was too high (modern value ≈ 70), but the linear relationship was correct. Einstein called it 'the most beautiful discovery in astronomy.'"
+          "myth_vs_fact": "This actually happened. Hubble's original value of H₀ ≈ 500 km/s/Mpc was too high (modern value ≈ 70), but the linear relationship was correct. Einstein called it 'the most beautiful discovery in astronomy.'",
+          "title_th": "Hubble's Law — The Expanding Universe (1929) (กฎของฮับเบิล — เอกภพกำลังขยายตัว (1929))",
+          "desc_th": "Hubble (ฮับเบิล) วัดระยะทางถึงกาแล็กซี 46 แห่งและพล็อตมันกับความเร็วในการเคลื่อนที่ถอยห่าง (จาก spectral redshift (การเลื่อนแดงของสเปกตรัม)) กราฟแสดงความสัมพันธ์เชิงเส้นที่ชัดเจน: ยิ่งไกล = ยิ่งเร็ว",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง ค่า H₀ (เอชศูนย์) เดิมของ Hubble (ฮับเบิล) ≈ 500 กม./วินาที/เมกะพาร์เซก สูงเกินไป (ค่าสมัยใหม่ ≈ 70) แต่ความสัมพันธ์เชิงเส้นถูกต้อง Einstein (ไอน์สไตน์) เรียกมันว่า 'การค้นพบที่สวยงามที่สุดในดาราศาสตร์'"
         }
       ],
       "rating": {
@@ -5129,7 +5522,30 @@
         "summary_en": "Proved the universe is expanding — Hubble's Law is the foundation of the Big Bang theory.",
         "personality_th": "เคยเปนนกมวย — ตะตอยแชมปโลก, เรียนกฎหมาย Oxford (Rhodes Scholar), แตเปลยนมาเปนนกดาราศาสตร, เขยน 'VAR' บนแผนทดาว — พสจนวา Andromeda เปนกาแลกซ, Einstein มาเยยนวน 'คนพบของคณยนยนทฤษฎของฉน', ตายกอนไดรบรางวลโนเบล",
         "personality_en": "Was a boxer — once knocked out the German heavyweight champion!, studied law at Oxford as a Rhodes Scholar before switching to astronomy, wrote \"VAR\" on a photographic plate proving Andromeda is a separate galaxy, Einstein visited to thank him, died before winning the Nobel."
-      }
+      },
+      "summary_th": "Edwin Hubble (เอ็ดวิน ฮับเบิล) ผู้พิสูจน์ว่าเอกภพกำลังขยายตัว — กฎของฮับเบิล (Hubble's Law) คือรากฐานของทฤษฎี Big Bang",
+      "biography_th": [
+        "Edwin Powell Hubble (เอ็ดวิน พาวเวลล์ ฮับเบิล) เกิดในปี 1889 ที่ Marshfield (มาร์ชฟิลด์), Missouri (มิสซูรี), USA (สหรัฐฯ) เขาเป็นนักกีฬาที่มีพรสวรรค์ — ครั้งหนึ่งเคยน็อกแชมป์มวยรุ่นเฮฟวี่เวทของเยอรมนี",
+        "เขาเรียนกฎหมายที่ Oxford (ออกซ์ฟอร์ด) ในฐานะทุน Rhodes (โรดส์) แต่กลับมาที่ USA (สหรัฐฯ) และเปลี่ยนเป็นดาราศาสตร์ ได้รับปริญญาเอกจาก University of Chicago (มหาวิทยาลัยชิคาโก)",
+        "Hubble (ฮับเบิล) เข้าร่วม Mount Wilson Observatory (หอดูดาวเมานต์วิลสัน) ใน California (แคลิฟอร์เนีย) ซึ่งเขาได้ใช้กล้องโทรทรรศน์ที่ทรงพลังที่สุดในโลก — กล้อง Hooker (ฮุกเกอร์) ขนาด 100 นิ้ว",
+        "ในปี 1923-1924 Hubble (ฮับเบิล) ระบุดาวแปรแสง Cepheid (เซเฟอิด) ใน Andromeda Nebula (เนบิวลาแอนโดรเมดา) โดยใช้ความสัมพันธ์คาบ-ความสว่างของ Leavitt (ลีวิตต์) เขาคำนวณว่า Andromeda (แอนโดรเมดา) อยู่ห่าง 900,000 ปีแสง — ไกลเกินทางช้างเผือก! นี่พิสูจน์ว่าเอกภพเต็มไปด้วยกาแล็กซี ไม่ใช่แค่ดวงดาว",
+        "ในปี 1929 Hubble (ฮับเบิล) ค้นพบที่ลึกซึ้งยิ่งกว่า เขาวัดระยะทางและ redshift (การเลื่อนแดง) ของกาแล็กซี 46 แห่งและพบความสัมพันธ์เชิงเส้น: ยิ่งกาแล็กซีไกลออกไปเท่าใด มันก็เคลื่อนที่หนีเราเร็วขึ้นเท่านั้น — v = H₀ × d (Hubble's Law (กฎของฮับเบิล))",
+        "นี่พิสูจน์ว่าเอกภพกำลังขยายตัว — รากฐานของทฤษฎี Big Bang Einstein (ไอน์สไตน์) ไปเยี่ยม Hubble (ฮับเบิล) ในปี 1931 เพื่อขอบคุณ: 'การค้นพบของคุณยืนยันทฤษฎีของฉัน'",
+        "Hubble (ฮับเบิล) พยายามชนะรางวัลโนเบลสาขาฟิสิกส์ ล็อบบี้อย่างหนัก เขาเสียชีวิตในปี 1953 น่าขันที่รางวัลโนเบลสาขาฟิสิกส์ได้รับรางวัลสำหรับการค้นพบทางดาราศาสตร์เป็นครั้งแรกในปีนั้น"
+      ],
+      "contributions_th": [
+        "พิสูจน์ว่า Andromeda Nebula (เนบิวลาแอนโดรเมดา) เป็นกาแล็กซีที่แยกออกไปไกลเกินทางช้างเผือก — สร้างการมีอยู่ของกาแล็กซี",
+        "Hubble's Law (กฎของฮับเบิล): v = H₀ × d — ความเร็วของกาแล็กซีเป็นสัดส่วนกับระยะทางของมัน",
+        "สาธิตว่าเอกภพกำลังขยายตัว (พื้นฐานของทฤษฎี Big Bang)",
+        "พัฒนาระบบการจำแนกประเภทของกาแล็กซีของฮับเบิล (elliptical (วงรี), spiral (ก้นหอย), barred spiral (ก้นหอยมีคาน))"
+      ],
+      "legacy_th": [
+        "Hubble Space Telescope (กล้องโทรทรรศน์อวกาศฮับเบิล) (เปิดตัว 1990) ตั้งชื่อเพื่อเป็นเกียรติแก่เขา",
+        "Hubble's Law (กฎของฮับเบิล) เป็นหลักฐานสำคัญของ Big Bang (บิ๊กแบง) และเอกภพที่กำลังขยายตัว",
+        "Hubble constant (H₀) (ค่าคงที่ฮับเบิล) วัดอัตราการขยายตัวของเอกภพ",
+        "การจำแนกกาแล็กซีของฮับเบิลยังคงใช้อยู่ในปัจจุบัน"
+      ],
+      "key_quote_th": "มนุษย์สำรวจจักรวาลรอบตัวด้วยประสาทสัมผัสทั้งห้า และเรียกการผจญภัยนี้ว่าวิทยาศาสตร์"
     },
     {
       "id": "lemaitre",
@@ -5177,13 +5593,19 @@
           "title": "The Primeval Atom Hypothesis (1931)",
           "year": "1931",
           "description": "Lemaitre proposed that the universe began as a single quantum — the 'primeval atom' — containing all the mass and energy of the cosmos. It exploded, and the fragments (galaxies) have been flying apart ever since.",
-          "myth_vs_fact": "This was a theoretical proposal, not an experiment. At the time, the name 'Big Bang' was derisive — from Fred Hoyle. Lemaitre preferred 'hypothesis of the primeval atom'."
+          "myth_vs_fact": "This was a theoretical proposal, not an experiment. At the time, the name 'Big Bang' was derisive — from Fred Hoyle. Lemaitre preferred 'hypothesis of the primeval atom'.",
+          "title_th": "The Primeval Atom Hypothesis (1931) (สมมติฐานอะตอมดึกดำบรรพ์ (1931))",
+          "desc_th": "Lemaître (เลอแม็ทร์) เสนอว่าเอกภพเริ่มต้นเป็นควอนตัมเดียว — 'อะตอมดึกดำบรรพ์' — ที่ประกอบด้วยมวลและพลังงานทั้งหมดของจักรวาล มันระเบิด และชิ้นส่วน (กาแล็กซี) แตกกระจายออกจากกันมาตั้งแต่นั้น",
+          "myth_th": "นี่เป็นข้อเสนอทางทฤษฎี ไม่ใช่การทดลอง ในเวลานั้น ชื่อ 'Big Bang' เป็นการเยาะเย้ย — จาก Fred Hoyle (เฟรด ฮอยล์) Lemaître (เลอแม็ทร์) ชอบ 'สมมติฐานอะตอมดึกดำบรรพ์' มากกว่า"
         },
         {
           "title": "The Expanding Universe Paper (1927)",
           "year": "1927",
           "description": "Lemaitre solved Einstein's field equations and derived a solution showing the universe must expand. He calculated the expansion rate before Hubble did. Einstein dismissed his paper, saying 'Your calculations are correct, but your physics is abominable.'",
-          "myth_vs_fact": "This actually happened. Einstein later admitted his mistake. When Hubble's observational data confirmed the expansion, Einstein visited Lemaitre to congratulate him."
+          "myth_vs_fact": "This actually happened. Einstein later admitted his mistake. When Hubble's observational data confirmed the expansion, Einstein visited Lemaitre to congratulate him.",
+          "title_th": "The Expanding Universe Paper (1927) (บทความเอกภพกำลังขยายตัว (1927))",
+          "desc_th": "Lemaître (เลอแม็ทร์) แก้สมการสนามของ Einstein (ไอน์สไตน์) และได้ผลเฉลยที่แสดงว่าเอกภพต้องขยายตัว เขาคำนวณอัตราการขยายตัวก่อน Hubble (ฮับเบิล) Einstein (ไอน์สไตน์) ปัดบทความของเขา โดยกล่าวว่า 'การคำนวณของคุณถูกต้อง แต่ฟิสิกส์ของคุณน่ากลัว'",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Einstein (ไอน์สไตน์) ภายหลังยอมรับความผิดพลาดของเขา เมื่อข้อมูลสังเกตการณ์ของ Hubble (ฮับเบิล) ยืนยันการขยายตัว Einstein (ไอน์สไตน์) ไปเยี่ยม Lemaître (เลอแม็ทร์) เพื่อแสดงความยินดี"
         }
       ],
       "rating": {
@@ -5219,7 +5641,30 @@
         "summary_en": "Proposed the Big Bang theory — the universe began as a 'primeval atom' and has been expanding.",
         "personality_th": "เป็นทั้งบาทหลวงและนักฟิสิกส์!, เสนอทฤษฎี Big Bang กอนใคร — Einstein บอกวา 'ฟิสิกส์ของคณหายนะ', Pope Pius XII บอกวาทฤษฎของเขาพสจนพระเจา — Lemaitre ขอให Papa หยุดพดแบบนน!, ชื่อ 'Big Bang' เดมเปนคำดญถก Fred Hoyle",
         "personality_en": "A Belgian Catholic priest AND physicist!, proposed the Big Bang before Hubble observed it — Einstein called his physics \"abominable,\" Pope Pius XII said his theory proved God — Lemaître asked the Pope to stop saying that! The name \"Big Bang\" was originally a joke by Fred Hoyle."
-      }
+      },
+      "summary_th": "Georges Lemaître (ฌอร์ฌ เลอแม็ทร์) ผู้เสนอทฤษฎี Big Bang — เอกภพเริ่มต้นจาก 'อะตอมดึกดำบรรพ์' เพียงจุดเดียวแล้วขยายตัวออกมา",
+      "biography_th": [
+        "Georges Lemaître (ฌอร์ฌ เลอแม็ทร์) เกิดในปี 1894 ที่ Charleroi (ชาร์เลอรัว), Belgium (เบลเยียม) เขาเรียนวิศวกรรมโยธาที่ Catholic University of Leuven (มหาวิทยาลัยคาทอลิกแห่งเลอเฟิน)",
+        "ระหว่างสงครามโลกครั้งที่ 1 เขารับราชการเป็นนายทหารปืนใหญ่ในกองทัพเบลเยียม หลังสงคราม เขาเรียนคณิตศาสตร์และฟิสิกส์ควบคู่กับการฝึกเพื่อเป็นบาทหลวงคาทอลิก",
+        "เขาได้รับการบวชเป็นบาทหลวงในปี 1923 (แม้ไม่เคยเป็นบาทหลวงประจำวัด) จากนั้นเขาเรียนที่ Cambridge (เคมบริดจ์) ภายใต้ Arthur Eddington (อาเธอร์ เอดดิงตัน) และที่ Harvard (ฮาร์วาร์ด)",
+        "ในปี 1927 Lemaître (เลอแม็ทร์) ตีพิมพ์บทความเสนอว่าเอกภพกำลังขยายตัว — โดยอิงจากสัมพัทธภาพทั่วไปของ Einstein (ไอน์สไตน์) เขาได้สิ่งที่ภายหลังจะเรียกว่า Hubble's Law (กฎของฮับเบิล) — สองปีก่อน Hubble (ฮับเบิล)!",
+        "ในปี 1931 Lemaître (เลอแม็ทร์) เสนอ 'สมมติฐานอะตอมดึกดำบรรพ์': เอกภพเริ่มต้นเป็นจุดเดียวที่หนาแน่นอย่างไม่น่าเชื่อที่ระเบิดและขยายตัวมาตั้งแต่นั้น นี่เป็นรูปแบบแรกของทฤษฎี Big Bang",
+        "ชื่อ 'Big Bang' (บิ๊กแบง) เดิมเป็นคำเยาะเย้ยที่คิดโดย Fred Hoyle (เฟรด ฮอยล์) (ผู้เชื่อในทฤษฎีสภาวะคงตัว) แต่มันติด",
+        "Lemaître (เลอแม็ทร์) เข้าร่วมการประชุมของวาติกันเกี่ยวกับจักรวาลวิทยา Pope Pius XII (สมเด็จพระสันตะปาปาปิอุสที่ 12) เรียกทฤษฎีของเขาว่า 'หลักฐานทางวิทยาศาสตร์ของการสร้าง' Lemaître (เลอแม็ทร์) — ซึ่งเป็นบาทหลวง — ขอให้พระสันตะปาปาหยุดพูดอย่างนั้นอย่างสุภาพ เนื่องจากวิทยาศาสตร์ควรแยกจากเทววิทยา"
+      ],
+      "contributions_th": [
+        "เป็นคนแรกที่เสนอว่าเอกภพกำลังขยายตัว (1927) — โดยอิงจากสัมพัทธภาพทั่วไปของ Einstein (ไอน์สไตน์)",
+        "กำหนดสมมติฐาน 'อะตอมดึกดำบรรพ์' (Big Bang) — เอกภพเริ่มต้นเป็นจุดเดียว",
+        "ได้กฎ Hubble-Lemaître (v = H₀ × d) โดยอิสระก่อนการตีพิมพ์ของ Hubble (ฮับเบิล)",
+        "ให้รากฐานทางทฤษฎีสำหรับเอกภพที่กำลังขยายตัวและ Big Bang"
+      ],
+      "legacy_th": [
+        "ทฤษฎี Big Bang เป็นรากฐานของจักรวาลวิทยาสมัยใหม่",
+        "ในปี 2018 สหพันธ์ดาราศาสตร์สากลเปลี่ยนชื่อ Hubble's Law (กฎของฮับเบิล) เป็น 'Hubble-Lemaître Law' (กฎฮับเบิล-เลอแม็ทร์) เพื่อรับรู้ถึงการมีส่วนร่วมของเขา",
+        "หลุม Lemaître (เลอแม็ทร์) บนดวงจันทร์ตั้งชื่อตามเขา",
+        "ทฤษฎีของเขาได้รับการยืนยันโดยการค้นพบรังสีไมโครเวฟพื้นหลังของจักรวาล (1965)"
+      ],
+      "key_quote_th": "วิวัฒนาการของเอกภพเปรียบได้กับการแสดงดอกไม้ไฟที่เพิ่งจบลง — ควันจางๆ เถ้าถ่าน และควันหลงเหลืออยู่เล็กน้อย"
     },
     {
       "id": "hawking",
@@ -5269,13 +5714,19 @@
           "title": "Hawking Radiation (1974)",
           "year": "1974",
           "description": "Hawking used quantum field theory near the event horizon of a black hole. He showed that particle-antiparticle pairs are created near the horizon, with one falling in and the other escaping. The escaping particle is Hawking radiation.",
-          "myth_vs_fact": "This is a theoretical discovery, not a lab experiment. Hawking radiation has never been directly observed (it's extremely faint for stellar-mass black holes). The discovery was so profound that Hawking's paper is one of the most cited in physics."
+          "myth_vs_fact": "This is a theoretical discovery, not a lab experiment. Hawking radiation has never been directly observed (it's extremely faint for stellar-mass black holes). The discovery was so profound that Hawking's paper is one of the most cited in physics.",
+          "title_th": "Hawking Radiation (1974) (รังสีฮอว์กิง (1974))",
+          "desc_th": "Hawking (ฮอว์กิง) ใช้ทฤษฎีสนามควอนตัมใกล้ขอบฟ้าเหตุการณ์ของหลุมดำ เขาแสดงว่าคู่อนุภาค-ปฏิอนุภาคถูกสร้างขึ้นใกล้ขอบฟ้า โดยหนึ่งตกลงไปและอีกหนึ่งหลุดออกไป อนุภาคที่หลุดออกไปคือ Hawking radiation (รังสีฮอว์กิง)",
+          "myth_th": "นี่คือการค้นพบทางทฤษฎี ไม่ใช่การทดลองในห้องปฏิบัติการ Hawking radiation (รังสีฮอว์กิง) ไม่เคยถูกสังเกตโดยตรง (มันจางมากสำหรับหลุมดำมวลเท่าดาวฤกษ์) การค้นพบนี้ลึกซึ้งมากจนบทความของ Hawking (ฮอว์กิง) เป็นหนึ่งในบทความที่ถูกอ้างอิงมากที่สุดในฟิสิกส์"
         },
         {
           "title": "Singularity Theorems (1970)",
           "year": "1970",
           "description": "Hawking and Penrose proved mathematically that if general relativity is correct, the universe must have begun as a singularity (a point of infinite density) — the Big Bang. Similarly, any star collapsing into a black hole must form a singularity.",
-          "myth_vs_fact": "This is a mathematical proof, not an experiment. The theorems use topological methods and do not depend on symmetry assumptions. Penrose won the 2020 Nobel Prize in Physics partly for this work."
+          "myth_vs_fact": "This is a mathematical proof, not an experiment. The theorems use topological methods and do not depend on symmetry assumptions. Penrose won the 2020 Nobel Prize in Physics partly for this work.",
+          "title_th": "Singularity Theorems (1970) (ทฤษฎีบทภาวะเอกฐาน (1970))",
+          "desc_th": "Hawking (ฮอว์กิง) และ Penrose (เพนโรส) พิสูจน์ทางคณิตศาสตร์ว่าถ้าสัมพัทธภาพทั่วไปถูกต้อง เอกภพต้องเริ่มต้นเป็นภาวะเอกฐาน (จุดที่มีความหนาแน่นอนันต์) — Big Bang ในทำนองเดียวกัน ดาวฤกษ์ใดๆ ที่ยุบตัวเป็นหลุมดำต้องก่อตัวเป็นภาวะเอกฐาน",
+          "myth_th": "นี่คือการพิสูจน์ทางคณิตศาสตร์ ไม่ใช่การทดลอง ทฤษฎีบทใช้วิธีการทางทอพอโลยีและไม่ขึ้นกับสมมติฐานสมมาตร Penrose (เพนโรส) ชนะรางวัลโนเบลสาขาฟิสิกส์ในปี 2020 ส่วนหนึ่งจากงานนี้"
         }
       ],
       "rating": {
@@ -5311,7 +5762,31 @@
         "summary_en": "Revolutionised black hole physics — Hawking radiation, singularities, and popular cosmology.",
         "personality_th": "เกดวนเดยวกบ Galileo ตาย 300 ป, ปวย ALS ตอน 21 ป — หมอบอกอยได 2-3 ป แตอยตอไป 55 ป!, กลายเปนสญลกษณของชยชนะของจตใจเหนอรางกาย, 'A Brief History of Time' ขายได 10 ลานเลม, พดผานเครองเสยงสงเคราะห, ปรากฏใน The Simpsons และ Big Bang Theory,  ศพของเขาถกฝงขาง Newton และ Darwin",
         "personality_en": "Born exactly 300 years after Galileo died, diagnosed with ALS at 21 given 2-3 years — lived 55 more years!, symbol of mind triumphing over body, \"A Brief History of Time\" sold 10 million copies, spoke through a synthesiser, appeared on The Simpsons and Big Bang Theory, buried next to Newton and Darwin."
-      }
+      },
+      "summary_th": "Stephen Hawking (สตีเฟน ฮอว์กิง) ผู้ปฏิวัติฟิสิกส์หลุมดำ — ค้นพบ Hawking radiation และทำให้จักรวาลวิทยาเป็นที่รู้จักของคนทั่วโลก",
+      "biography_th": [
+        "Stephen William Hawking (สตีเฟน วิลเลียม ฮอว์กิง) เกิดในปี 1942 ที่ Oxford (ออกซ์ฟอร์ด), England (อังกฤษ) (ตรงกับ 300 ปีหลังจาก Galileo (กาลิเลโอ) เสียชีวิตพอดี) บิดามารดาเป็นนักวิชาการ",
+        "เขาเรียนฟิสิกส์ที่ Oxford (ออกซ์ฟอร์ด) (ซึ่งเขาพบว่างาน 'ง่ายอย่างน่าขัน') และจักรวาลวิทยาที่ Cambridge (เคมบริดจ์) ภายใต้ Dennis Sciama (เดนนิส เซียมา)",
+        "ในปี 1963 เมื่ออายุ 21 ปี Hawking (ฮอว์กิง) ถูกวินิจฉัยว่าเป็น ALS (โรคเส้นประสาทสั่งการเสื่อม) และให้เวลาอยู่ 2-3 ปี เขาไม่เชื่อคำวินิจฉัยและมีชีวิตต่อไปอีก 55 ปี",
+        "Hawking (ฮอว์กิง) ทำงานกับ Roger Penrose (โรเจอร์ เพนโรส) เกี่ยวกับทฤษฎีบทภาวะเอกฐาน พิสูจน์ว่าถ้าสัมพัทธภาพทั่วไปถูกต้อง เอกภพต้องเริ่มต้นเป็นภาวะเอกฐาน (Big Bang)",
+        "ในปี 1974 Hawking (ฮอว์กิง) ค้นพบที่มีชื่อเสียงที่สุดของเขา: หลุมดำไม่ได้ดำสนิท! เนื่องจากผลของควอนตัมใกล้ขอบฟ้าเหตุการณ์ หลุมดำปล่อยรังสีและในที่สุดระเหยไป สิ่งนี้เรียกว่า Hawking radiation (รังสีฮอว์กิง)",
+        "Hawking (ฮอว์กิง) กลายเป็นคนดังระดับโลกด้วยหนังสือ 'A Brief History of Time' ('ประวัติย่อของกาลเวลา') (1988) ซึ่งอยู่ในรายชื่อหนังสือขายดีของ Sunday Times (ซันเดย์ไทมส์) นาน 237 สัปดาห์",
+        "แม้จะเป็นอัมพาตโดยสิ้นเชิงและสื่อสารผ่านเครื่องสังเคราะห์เสียง Hawking (ฮอว์กิง) ยังคงทำงาน เดินทาง และสร้างแรงบันดาลใจให้คนนับล้านจนเสียชีวิตในปี 2018"
+      ],
+      "contributions_th": [
+        "Hawking radiation (รังสีฮอว์กิง): หลุมดำปล่อยรังสีความร้อนเนื่องจากผลของควอนตัม — พวกมันไม่ได้ดำสนิท",
+        "ทฤษฎีบทภาวะเอกฐาน (กับ Penrose (เพนโรส)): เอกภพเริ่มต้นเป็นภาวะเอกฐาน (Big Bang)",
+        "พิสูจน์ว่าหลุมดำมีเอนโทรปีเป็นสัดส่วนกับพื้นที่ผิวของมัน (Bekenstein-Hawking formula)",
+        "เสนอ 'no-boundary proposal' (ข้อเสนอไร้ขอบเขต) — เอกภพไม่มีขอบเขตในกาล-อวกาศ",
+        "พัฒนาทฤษฎีว่าหลุมดำสามารถระเหยและหายไปได้อย่างไร"
+      ],
+      "legacy_th": [
+        "Hawking radiation (รังสีฮอว์กิง) เป็นหนึ่งในการทำนายที่สำคัญที่สุดที่รวมสัมพัทธภาพทั่วไปและกลศาสตร์ควอนตัม",
+        "งานของเขาเกี่ยวกับหลุมดำเปลี่ยนความเข้าใจของเราเกี่ยวกับแรงโน้มถ่วงและทฤษฎีควอนตัม",
+        "'A Brief History of Time' ('ประวัติย่อของกาลเวลา') ทำให้จักรวาลวิทยาเข้าถึงคนนับล้าน",
+        "Hawking (ฮอว์กิง) กลายเป็นนักวิทยาศาสตร์ที่เป็นที่รู้จักมากที่สุดตั้งแต่ Einstein (ไอน์สไตน์) — สัญลักษณ์ของชัยชนะของจิตใจเหนือร่างกาย"
+      ],
+      "key_quote_th": "ไม่ว่าชีวิตจะดูยากลำบากเพียงใด ก็ยังมีสิ่งที่คุณสามารถทำได้และประสบความสำเร็จ สิ่งสำคัญคือคุณไม่ยอมแพ้"
     }
   ]
 }
