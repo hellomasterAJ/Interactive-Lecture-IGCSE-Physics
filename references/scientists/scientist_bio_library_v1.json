@@ -1947,19 +1947,28 @@
           "title": "Wave Theory of Light (1678)",
           "year": "1678",
           "description": "Huygens proposed that light propagates as a wave through the luminiferous aether. He formulated the principle that every point on a wavefront is a source of secondary spherical wavelets, and the envelope of these wavelets forms the new wavefront.",
-          "myth_vs_fact": "This was a theoretical insight, not an experiment. Huygens' Principle successfully explained reflection and refraction but could not explain interference (Young did that later) or polarization (Fresnel did that)."
+          "myth_vs_fact": "This was a theoretical insight, not an experiment. Huygens' Principle successfully explained reflection and refraction but could not explain interference (Young did that later) or polarization (Fresnel did that).",
+          "title_th": "Wave Theory of Light (1678) (ทฤษฎีคลื่นแสง (1678))",
+          "desc_th": "Huygens (เฮยเคนส์) เสนอว่าแสงเดินทางเป็นคลื่นผ่าน luminiferous aether (อีเทอร์ที่นำแสง) เขากำหนดหลักการว่าทุกจุดบนหน้าคลื่นเป็นแหล่งกำเนิดคลื่นย่อยทรงกลม และแนวคลื่นที่ห่อหุ้มคลื่นย่อยเหล่านี้ก่อตัวเป็นหน้าคลื่นใหม่",
+          "myth_th": "นี่เป็นความเข้าใจเชิงทฤษฎี ไม่ใช่การทดลอง Huygens' Principle (หลักการของเฮยเคนส์) อธิบายการสะท้อนและการหักเหได้สำเร็จ แต่ไม่สามารถอธิบายการแทรกสอด (Young (ยัง) ทำในภายหลัง) หรือโพลาไรเซชัน (Fresnel (เฟรแนล) ทำในภายหลัง)"
         },
         {
           "title": "The Pendulum Clock (1656)",
           "year": "1656",
           "description": "Huygens built the first working pendulum clock, applying Galileo's discovery that pendulum period is constant regardless of amplitude. His design used a crutch escapement to keep the pendulum swinging.",
-          "myth_vs_fact": "This actually happened. Huygens was granted a patent in 1657. The pendulum clock revolutionized timekeeping and navigation."
+          "myth_vs_fact": "This actually happened. Huygens was granted a patent in 1657. The pendulum clock revolutionized timekeeping and navigation.",
+          "title_th": "The Pendulum Clock (1656) (นาฬิกาลูกตุ้ม (1656))",
+          "desc_th": "Huygens (เฮยเคนส์) สร้างนาฬิกาลูกตุ้มที่ทำงานได้เครื่องแรก โดยประยุกต์ใช้การค้นพบของ Galileo (กาลิเลโอ) ที่ว่าคาบของลูกตุ้มคงที่โดยไม่ขึ้นกับแอมพลิจูด การออกแบบของเขาใช้กลไก crutch escapement (จักรกลกันกลับแบบค้ำ) เพื่อให้ลูกตุ้มแกว่งต่อไป",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Huygens (เฮยเคนส์) ได้รับสิทธิบัตรในปี 1657 นาฬิกาลูกตุ้มปฏิวัติการบอกเวลาและการเดินเรือ"
         },
         {
           "title": "Discovery of Saturn's Rings (1655-1659)",
           "year": "1659",
           "description": "Using an improved telescope, Huygens observed Saturn and correctly identified its 'appendages' as a thin, flat ring system tilted relative to Earth. He published this in Systema Saturnium.",
-          "myth_vs_fact": "This actually happened. Galileo had seen the rings earlier but couldn't identify them with his weaker telescope."
+          "myth_vs_fact": "This actually happened. Galileo had seen the rings earlier but couldn't identify them with his weaker telescope.",
+          "title_th": "Discovery of Saturn's Rings (1655-1659) (การค้นพบวงแหวนของดาวเสาร์ (1655-1659))",
+          "desc_th": "ด้วยกล้องโทรทรรศน์ที่ปรับปรุงแล้ว Huygens (เฮยเคนส์) สังเกต Saturn (ดาวเสาร์) และระบุอย่างถูกต้องว่า 'ส่วนยื่น' ของมันคือระบบวงแหวนบางและแบนที่เอียงเทียบกับโลก เขาตีพิมพ์ผลงานนี้ใน Systema Saturnium",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Galileo (กาลิเลโอ) เคยเห็นวงแหวนมาก่อนแต่ไม่สามารถระบุได้ด้วยกล้องโทรทรรศน์ที่อ่อนกว่าของเขา"
         }
       ],
       "rating": {
@@ -1995,7 +2004,30 @@
         "summary_en": "Proposed the wave theory of light (Huygens' Principle) and invented the pendulum clock.",
         "personality_th": "เกิดในตระกูลมีฐานะ, ค้นพบดวงจันทร์ Titan และห่วงของ Saturn, ประดิษฐ์นาฬิกาลูกตุ้ม, โต้แย้งกับ Newton เรื่องธรรมชาติของแสง, เป็นสมาชิก Académie des Sciences ฝรั่งเศส",
         "personality_en": "Born into a wealthy family, discovered Titan and Saturn's rings, invented the pendulum clock, argued with Newton about the nature of light, became a member of the French Academy of Sciences."
-      }
+      },
+      "summary_th": "Christiaan Huygens (คริสตียาน เฮยเคนส์) ผู้เสนอทฤษฎีคลื่นแสง (Huygens' Principle) และประดิษฐ์นาฬิกาลูกตุ้ม",
+      "biography_th": [
+        "Christiaan Huygens (คริสตียาน เฮยเคนส์) เกิดในปี 1629 ที่ The Hague (เดอะเฮก), Netherlands (เนเธอร์แลนด์) ในครอบครัวที่ร่ำรวยและมีอิทธิพล บิดาของเขาเป็นนักการทูตและกวี",
+        "เขาเรียนกฎหมายและคณิตศาสตร์ที่ Leiden University (มหาวิทยาลัยไลเดิน) แต่ถูกดึงดูดโดยปรัชญาธรรมชาติและดาราศาสตร์",
+        "ในปี 1655 เขาค้นพบ Titan (ไททัน) ดวงจันทร์ที่ใหญ่ที่สุดของ Saturn (ดาวเสาร์) และอธิบายอย่างถูกต้องว่าวงแหวนของ Saturn (ดาวเสาร์) เป็นระบบวงแหวน ไม่ใช่ 'หูจับ' อย่างที่ Galileo (กาลิเลโอ) คิด",
+        "ความสำเร็จที่ยิ่งใหญ่ที่สุดของ Huygens (เฮยเคนส์) คือทฤษฎีคลื่นแสง (1678 ตีพิมพ์ 1690) เขาเสนอว่าแสงเดินทางเป็นคลื่นผ่านตัวกลางที่เรียกว่า 'luminiferous aether (อีเทอร์ที่นำแสง)' และกำหนด Huygens' Principle (หลักการของเฮยเคนส์): ทุกจุดบนหน้าคลื่นเป็นแหล่งกำเนิดคลื่นย่อยทรงกลม",
+        "เขายังประดิษฐ์นาฬิกาลูกตุ้ม (1656) ซึ่งปรับปรุงการบอกเวลาจากคลาดเคลื่อน 15 นาทีเหลือเพียง 15 วินาทีต่อวัน เขาค้นพบสูตรคาบของลูกตุ้มและลูกตุ้มทรงกรวยที่ใช้ในนาฬิกา",
+        "Huygens (เฮยเคนส์) ติดต่อกับ Newton (นิวตัน), Hooke (ฮุก) และนักวิทยาศาสตร์ชั้นนำอื่นๆ เขาเป็นหนึ่งในสมาชิกคนแรกของ French Academy of Sciences (ราชบัณฑิตยสถานวิทยาศาสตร์ฝรั่งเศส) และได้รับบำนาญก้อนโตจาก Louis XIV (พระเจ้าหลุยส์ที่ 14)"
+      ],
+      "contributions_th": [
+        "Huygens' Principle (หลักการของเฮยเคนส์): ทุกจุดบนหน้าคลื่นทำหน้าที่เป็นแหล่งกำเนิดคลื่นย่อยทรงกลม — อธิบายการสะท้อน การหักเห และการเลี้ยวเบน",
+        "ทฤษฎีคลื่นแสง: เสนอว่าแสงเป็นคลื่นตามยาว (ต่อมาพิสูจน์ว่าเป็นคลื่นตามขวางโดย Fresnel (เฟรแนล))",
+        "ค้นพบสูตรคาบของลูกตุ้มอย่างง่าย (T = 2π√(L/g))",
+        "ประดิษฐ์นาฬิกาลูกตุ้ม — อุปกรณ์บอกเวลาที่แม่นยำเครื่องแรก",
+        "ค้นพบ Titan (ไททัน) ดวงจันทร์ของ Saturn (ดาวเสาร์) และอธิบายระบบวงแหวนของ Saturn (ดาวเสาร์)"
+      ],
+      "legacy_th": [
+        "Huygens' Principle (หลักการของเฮยเคนส์) เป็นรากฐานของทัศนศาสตร์คลื่น อธิบายการเลี้ยวเบน การหักเห และการแทรกสอด",
+        "นาฬิกาลูกตุ้มของเขาเป็นเครื่องบอกเวลาที่แม่นยำที่สุดนานกว่า 200 ปี สำคัญต่อการเดินเรือในทะเล",
+        "ยานอวกาศ Huygens (เฮยเคนส์) (ลงจอดบน Titan (ไททัน) ในปี 2005) ตั้งชื่อเพื่อเป็นเกียรติแก่เขา",
+        "แม้ทฤษฎีคลื่นของเขาจะถูกแทนที่โดยทฤษฎีแม่เหล็กไฟฟ้าของ Maxwell (แมกซ์เวลล์) แต่หลักการการแผ่คลื่นที่เขากำหนดขึ้นยังคงเป็นพื้นฐาน"
+      ],
+      "key_quote_th": "โลกคือประเทศของฉัน วิทยาศาสตร์คือศาสนาของฉัน"
     },
     {
       "id": "young",
@@ -2044,13 +2076,19 @@
           "title": "The Double-Slit Experiment (1801)",
           "year": "1801",
           "description": "Young passed a beam of sunlight through a single pinhole, then through two closely spaced pinholes. On the screen, he observed alternating bright and dark bands - an interference pattern that could ONLY be explained by waves.",
-          "myth_vs_fact": "This actually happened. Young's original experiment used pinholes, not slits. The modern 'double-slit' version uses narrow slits for a clearer pattern. His results were initially met with skepticism from Newton's supporters."
+          "myth_vs_fact": "This actually happened. Young's original experiment used pinholes, not slits. The modern 'double-slit' version uses narrow slits for a clearer pattern. His results were initially met with skepticism from Newton's supporters.",
+          "title_th": "The Double-Slit Experiment (1801) (การทดลองช่องคู่ (1801))",
+          "desc_th": "Young (ยัง) ส่องลำแสงอาทิตย์ผ่านรูเข็มเดี่ยว จากนั้นผ่านรูเข็มสองรูที่อยู่ชิดกัน บนฉากเขาสังเกตเห็นแถบสว่างและแถบมืดสลับกัน — รูปแบบการแทรกสอดที่สามารถอธิบายได้ด้วยคลื่นเท่านั้น",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง การทดลองดั้งเดิมของ Young (ยัง) ใช้รูเข็ม ไม่ใช่ช่อง slit เวอร์ชัน 'double-slit' สมัยใหม่ใช้ช่องแคบเพื่อให้รูปแบบชัดเจนขึ้น ผลลัพธ์ของเขาในตอนแรกพบกับความกังขาจากผู้สนับสนุน Newton (นิวตัน)"
         },
         {
           "title": "Young's Modulus Experiment (1807)",
           "year": "1807",
           "description": "Young measured the stretching of wires under known weights and established that the extension is proportional to force and inversely proportional to cross-sectional area - defining the elastic modulus E = stress/strain.",
-          "myth_vs_fact": "This actually happened. Hooke had previously discovered the force-extension relationship (Hooke's Law), but Young generalized it to material properties independent of shape."
+          "myth_vs_fact": "This actually happened. Hooke had previously discovered the force-extension relationship (Hooke's Law), but Young generalized it to material properties independent of shape.",
+          "title_th": "Young's Modulus Experiment (1807) (การทดลองมอดุลัสของยัง (1807))",
+          "desc_th": "Young (ยัง) วัดการยืดตัวของลวดภายใต้น้ำหนักที่ทราบค่า และกำหนดว่าการยืดตัวเป็นสัดส่วนกับแรงและผกผันกับพื้นที่หน้าตัด — กำหนด elastic modulus (มอดุลัสยืดหยุ่น) E = stress/strain",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Hooke (ฮุก) เคยค้นพบความสัมพันธ์แรง-การยืดตัว (Hooke's Law (กฎของฮุก)) มาก่อน แต่ Young (ยัง) ขยายเป็นสมบัติของวัสดุที่ไม่ขึ้นกับรูปร่าง"
         }
       ],
       "rating": {
@@ -2086,7 +2124,29 @@
         "summary_en": "Proved light is a wave with the double-slit experiment — and helped decipher the Rosetta Stone.",
         "personality_th": "เด็กอัจฉริยะอ่านหนังสือได้ตอน 2 ขวบ, เรียนภาษากรีก-ฮีบรูตอนเด็ก, เป็นหมอ-นักฟิสิกส์-นักภาษาศาสตร์, ช่วยถอดรหัส Rosetta Stone, ถูกเรียกว่า 'คนสุดท้ายที่รู้ทุกอย่าง'",
         "personality_en": "Child prodigy reading by age 2, learned Greek and Hebrew as a child, was a physician, physicist, and linguist, helped decipher Egyptian hieroglyphs, called \"the last man who knew everything.\""
-      }
+      },
+      "summary_th": "Thomas Young (โทมัส ยัง) ผู้พิสูจน์ธรรมชาติของคลื่นแสงด้วยการทดลอง Double-Slit และช่วยถอดรหัส Rosetta Stone",
+      "biography_th": [
+        "Thomas Young (โทมัส ยัง) เกิดในปี 1773 ที่ Milverton (มิลเวอร์ตัน), England (อังกฤษ) เขาเป็นเด็กอัจฉริยะ — อ่านหนังสือคล่องเมื่ออายุ 2 ขวบ เรียนภาษาละตินเมื่อ 6 ขวบ ภาษากรีกเมื่อ 7 ขวบ และภาษาฮีบรูเมื่อ 14 ขวบ",
+        "เขาเรียนแพทย์ใน London (ลอนดอน), Edinburgh (เอดินบะระ) และ Gottingen (เกิททิงเงิน) กลายเป็นแพทย์ แต่ความหลงใหลที่แท้จริงคือฟิสิกส์",
+        "ในปี 1801 เมื่ออายุเพียง 28 ปี Young (ยัง) ทำการทดลอง double-slit (ช่องคู่) อันโด่งดัง โดยส่องแสงผ่านช่องแคบสองช่อง เขาสร้างรูปแบบการแทรกสอดบนฉาก — พิสูจน์ว่าแสงมีพฤติกรรมเป็นคลื่น",
+        "เขายังกำหนด Young's modulus (มอดุลัสของยัง) ซึ่งเป็นค่าความแข็งของวัสดุ (stress/strain) ที่ยังคงใช้ในตำราวิศวกรรมทุกเล่ม",
+        "ที่น่าทึ่งคือ Young (ยัง) ยังเป็นนักภาษาศาสตร์ที่ยอดเยี่ยม เขาช่วยถอดรหัสอักษรอียิปต์โบราณบน Rosetta Stone (ศิลาโรเซตตา) โดยมีส่วนสำคัญก่อนที่ Champollion (ช็องโปลียง) จะแปลสำเร็จ",
+        "Young (ยัง) เป็นพหูสูตที่แท้จริง — แพทย์ นักฟิสิกส์ นักภาษาศาสตร์ และนักอียิปต์วิทยา เขาตีพิมพ์บทความทางวิทยาศาสตร์มากกว่า 60 เรื่อง และถูกเรียกว่า 'ชายคนสุดท้ายที่รู้ทุกอย่าง'"
+      ],
+      "contributions_th": [
+        "การทดลอง double-slit (ช่องคู่): พิสูจน์ธรรมชาติของคลื่นแสงผ่านรูปแบบการแทรกสอด",
+        "Young's modulus (มอดุลัสของยัง) (E): อัตราส่วนของความเค้นต่อความเครียด — พื้นฐานของวิทยาศาสตร์วัสดุ",
+        "กำหนดหลักการการแทรกสอดของคลื่นแสง (แบบเสริมและแบบหักล้าง)",
+        "เป็นคนแรกที่อธิบายว่าดวงตาปรับโฟกัสวัตถุที่ระยะต่างกันอย่างไร"
+      ],
+      "legacy_th": [
+        "การทดลอง double-slit (ช่องคู่) เป็นหนึ่งในการทดลองที่โด่งดังที่สุดในฟิสิกส์ — ต่อมาขยายไปถึงอิเล็กตรอนและกลศาสตร์ควอนตัม",
+        "Young's modulus (มอดุลัสของยัง) สอนในทุกหลักสูตรวิศวกรรมและฟิสิกส์ที่เกี่ยวข้องกับวัสดุ",
+        "งานของเขาเกี่ยวกับทัศนศาสตร์คลื่นวางรากฐานให้ Fresnel (เฟรแนล), Maxwell (แมกซ์เวลล์) และทัศนศาสตร์สมัยใหม่",
+        "การทดลอง double-slit (ช่องคู่) ได้รับการโหวตให้เป็น 'การทดลองที่สวยงามที่สุดในฟิสิกส์' โดยผู้อ่าน Physics World ในปี 2002"
+      ],
+      "key_quote_th": "ฉันพบว่าแสงเป็นคลื่น — และโลกจะต้องยอมรับมัน"
     },
     {
       "id": "maxwell",
@@ -2136,19 +2196,28 @@
           "title": "Maxwell's Equations (1861-1873)",
           "year": "1873",
           "description": "Maxwell formulated four equations that describe all electromagnetic phenomena. The key insight was that a changing electric field creates a magnetic field and vice versa - allowing EM waves to propagate.",
-          "myth_vs_fact": "This was a theoretical breakthrough, not a lab experiment. The equations were expressed in quaternion form; Oliver Heaviside later simplified them to the modern vector form."
+          "myth_vs_fact": "This was a theoretical breakthrough, not a lab experiment. The equations were expressed in quaternion form; Oliver Heaviside later simplified them to the modern vector form.",
+          "title_th": "Maxwell's Equations (1861-1873) (สมการของแมกซ์เวลล์ (1861-1873))",
+          "desc_th": "Maxwell (แมกซ์เวลล์) กำหนดสมการสี่สมการที่อธิบายปรากฏการณ์แม่เหล็กไฟฟ้าทั้งหมด ความเข้าใจสำคัญคือการเปลี่ยนแปลงของสนามไฟฟ้าสร้างสนามแม่เหล็ก และในทางกลับกัน — ทำให้คลื่นแม่เหล็กไฟฟ้าแผ่กระจายได้",
+          "myth_th": "นี่เป็นความก้าวหน้าทางทฤษฎี ไม่ใช่การทดลองในห้องปฏิบัติการ สมการถูกแสดงในรูป quaternion (ควอเทอร์เนียน) Oliver Heaviside (โอลิเวอร์ ฮีวิไซด์) ทำให้เป็นรูปเวกเตอร์สมัยใหม่ในภายหลัง"
         },
         {
           "title": "Speed of Light Calculation (1861)",
           "year": "1861",
           "description": "Maxwell calculated the speed of EM waves from his equations and found it matched the measured speed of light (310,740,000 m/s vs Foucault's 298,000,000 m/s). This was strong evidence that light IS an EM wave.",
-          "myth_vs_fact": "This actually happened. Maxwell's calculation was a momentous discovery - the first unification of optics with electromagnetism."
+          "myth_vs_fact": "This actually happened. Maxwell's calculation was a momentous discovery - the first unification of optics with electromagnetism.",
+          "title_th": "Speed of Light Calculation (1861) (การคำนวณความเร็วแสง (1861))",
+          "desc_th": "Maxwell (แมกซ์เวลล์) คำนวณความเร็วของคลื่นแม่เหล็กไฟฟ้าจากสมการของเขาและพบว่ามันตรงกับความเร็วแสงที่วัดได้ (310,740,000 ม./วินาที เทียบกับ 298,000,000 ม./วินาทีของ Foucault (ฟูโก)) นี่เป็นหลักฐานชัดเจนว่าแสงคือคลื่นแม่เหล็กไฟฟ้า",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง การคำนวณของ Maxwell (แมกซ์เวลล์) เป็นการค้นพบที่สำคัญ — การรวมทัศนศาสตร์กับแม่เหล็กไฟฟ้าเป็นครั้งแรก"
         },
         {
           "title": "First Colour Photograph (1861)",
           "year": "1861",
           "description": "Maxwell demonstrated the first durable colour photograph by projecting three black-and-white photographs taken through red, green, and blue filters simultaneously through the same filters.",
-          "myth_vs_fact": "This actually happened. A tartan ribbon was the subject. Modern analysis shows the red filter plate was insensitive to red light - the success was partly due to UV light, but Maxwell's three-colour principle was correct."
+          "myth_vs_fact": "This actually happened. A tartan ribbon was the subject. Modern analysis shows the red filter plate was insensitive to red light - the success was partly due to UV light, but Maxwell's three-colour principle was correct.",
+          "title_th": "First Colour Photograph (1861) (ภาพถ่ายสีภาพแรก (1861))",
+          "desc_th": "Maxwell (แมกซ์เวลล์) สาธิตภาพถ่ายสีที่คงทนภาพแรกโดยฉายภาพถ่ายขาวดำสามภาพที่ถ่ายผ่านฟิลเตอร์สีแดง สีเขียว และสีน้ำเงิน พร้อมกันผ่านฟิลเตอร์เดียวกัน",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง ภาพริบบิ้นลายสก๊อตเป็นวัตถุ การวิเคราะห์สมัยใหม่แสดงว่าแผ่นฟิลเตอร์สีแดงไม่ไวต่อแสงแดง — ความสำเร็จส่วนหนึ่งเกิดจากแสง UV แต่หลักการสามสีของ Maxwell (แมกซ์เวลล์) ถูกต้อง"
         }
       ],
       "rating": {
@@ -2184,7 +2253,29 @@
         "summary_en": "Unified electricity, magnetism, and light into one electromagnetic theory — one of the greatest physicists ever.",
         "personality_th": "เขียนบทความวาดวงรีได้ตอน 14 ปี, จบคณิตศาสตร์ Cambridge, เป็นคนอ่อนน้อมและใจดี, ก่อตั้ง Cavendish Laboratory, Einstein ยกย่องว่ามีผลงานยอดเยี่ยมสุดตั้งแต่ Newton, ตายด้วยมะเร็งตอน 48 ปี",
         "personality_en": "Wrote a paper on drawing ovals at 14, graduated from Cambridge, was gentle and kind, founded the Cavendish Laboratory, Einstein called his work the greatest since Newton, died of cancer at 48."
-      }
+      },
+      "summary_th": "James Clerk Maxwell (เจมส์ เคลิร์ก แมกซ์เวลล์) ผู้รวมไฟฟ้า แม่เหล็ก และแสงเข้าด้วยกันเป็นทฤษฎีแม่เหล็กไฟฟ้า — หนึ่งในนักฟิสิกส์ที่ยิ่งใหญ่ที่สุดในประวัติศาสตร์",
+      "biography_th": [
+        "James Clerk Maxwell (เจมส์ เคลิร์ก แมกซ์เวลล์) เกิดในปี 1831 ที่ Edinburgh (เอดินบะระ), Scotland (สกอตแลนด์) มารดาเสียชีวิตเมื่อเขาอายุ 8 ปี และเขาได้รับการเลี้ยงดูโดยบิดา — ชายผู้อยากรู้อยากเห็นและช่างประดิษฐ์",
+        "Maxwell (แมกซ์เวลล์) วัยหนุ่มแสดงความสามารถทางคณิตศาสตร์ที่พิเศษ เมื่ออายุ 14 ปี เขาเขียนบทความเกี่ยวกับการวาดวงรีสมบูรณ์แบบ ซึ่งถูกอ่านต่อ Royal Society of Edinburgh (ราชสมาคมแห่งเอดินบะระ)",
+        "เขาเรียนที่ Cambridge University (มหาวิทยาลัยเคมบริดจ์) จบที่สองของชั้น (Second Wrangler) และชนะรางวัล Smith's Prize (รางวัลสมิธ) สาขาคณิตศาสตร์",
+        "ความสำเร็จที่ยิ่งใหญ่ที่สุดของ Maxwell (แมกซ์เวลล์) คือการรวมไฟฟ้า แม่เหล็ก และแสงเข้าด้วยกัน ในตำราของเขาในปี 1873 เขากำหนดชุดสมการ (Maxwell's equations) ที่แสดงว่าสนามไฟฟ้าและสนามแม่เหล็กแผ่เป็นคลื่นด้วยความเร็วแสง — พิสูจน์ว่าแสงคือคลื่นแม่เหล็กไฟฟ้า",
+        "เขายังมีส่วนสำคัญต่อทฤษฎีจลน์ (การแจกแจง Maxwell-Boltzmann), อุณหพลศาสตร์, การมองเห็นสี (ภาพถ่ายสีภาพแรก), และวงแหวนของ Saturn (ดาวเสาร์)",
+        "Maxwell (แมกซ์เวลล์) ก่อตั้ง Cavendish Laboratory (ห้องปฏิบัติการคาเวนดิช) ที่ Cambridge (เคมบริดจ์) ในปี 1874 — หนึ่งในห้องปฏิบัติการฟิสิกส์ที่มีชื่อเสียงที่สุดในโลก เขาเสียชีวิตด้วยมะเร็งช่องท้องเมื่ออายุเพียง 48 ปี"
+      ],
+      "contributions_th": [
+        "Maxwell's equations (สมการของแมกซ์เวลล์): รวมไฟฟ้า แม่เหล็ก และแสงเป็นทฤษฎีแม่เหล็กไฟฟ้าเดียว",
+        "ทำนายว่าคลื่นแม่เหล็กไฟฟ้าเดินทางด้วยความเร็วแสง — พิสูจน์ว่าแสงคือคลื่นแม่เหล็กไฟฟ้า",
+        "พัฒนา Maxwell-Boltzmann distribution (การแจกแจงแมกซ์เวลล์-โบลทซ์มันน์) ของความเร็วโมเลกุลในแก๊ส",
+        "บุกเบิกสีมิติ (colorimetry) และผลิตภาพถ่ายสีที่คงทนภาพแรก (1861)"
+      ],
+      "legacy_th": [
+        "Maxwell's equations (สมการของแมกซ์เวลล์) ถือเป็นหนึ่งในความสำเร็จที่ยิ่งใหญ่ที่สุดในฟิสิกส์ เคียงข้างกฎของ Newton (นิวตัน) และสัมพัทธภาพของ Einstein (ไอน์สไตน์)",
+        "การทำนายคลื่นแม่เหล็กไฟฟ้าของเขานำไปสู่วิทยุ โทรทัศน์ เรดาร์ Wi-Fi และการสื่อสารไร้สายทั้งหมดโดยตรง",
+        "Einstein (ไอน์สไตน์) กล่าวว่า 'งานของ Maxwell (แมกซ์เวลล์) เปลี่ยนโลกตลอดกาล' และยกให้ Maxwell (แมกซ์เวลล์) เป็นแรงบันดาลใจสำคัญต่อสัมพัทธภาพพิเศษ",
+        "หน่วย SI (เอสไอ) ของฟลักซ์แม่เหล็ก — Weber (Wb) (เวเบอร์ (ดับเบิลยูบี)) — เชื่อมโยงกับงานของเขาโดยอ้อม และ Maxwell (Mx) (แมกซ์เวลล์ (เอ็มเอกซ์)) เป็นหน่วย CGS ของฟลักซ์แม่เหล็ก"
+      ],
+      "key_quote_th": "งานของ Maxwell (แมกซ์เวลล์) ล้ำลึกและอุดมสมบูรณ์ที่สุดเท่าที่ฟิสิกส์เคยประสบมานับตั้งแต่สมัยของ Newton (นิวตัน)"
     },
     {
       "id": "hertz",
@@ -2232,13 +2323,19 @@
           "title": "Generation and Detection of EM Waves (1887)",
           "year": "1887",
           "description": "Hertz used an induction coil connected to two metal plates and a spark gap to generate high-frequency EM waves. A loop antenna with a tiny gap detected the waves when a spark jumped across.",
-          "myth_vs_fact": "This actually happened. Hertz's apparatus could detect waves across a room. He meticulously measured wavelength and frequency, calculating the wave speed."
+          "myth_vs_fact": "This actually happened. Hertz's apparatus could detect waves across a room. He meticulously measured wavelength and frequency, calculating the wave speed.",
+          "title_th": "Generation and Detection of EM Waves (1887) (การกำเนิดและตรวจจับคลื่นแม่เหล็กไฟฟ้า (1887))",
+          "desc_th": "Hertz (เฮิรตซ์) ใช้ขดลวดเหนี่ยวนำต่อกับแผ่นโลหะสองแผ่นและ spark gap (ช่องว่างประกายไฟ) เพื่อกำเนิดคลื่นแม่เหล็กไฟฟ้าความถี่สูง loop antenna (สายอากาศแบบห่วง) ที่มีช่องว่างเล็กๆ ตรวจจับคลื่นเมื่อมีประกายไฟกระโดดข้าม",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง อุปกรณ์ของ Hertz (เฮิรตซ์) สามารถตรวจจับคลื่นได้ทั่วห้อง เขาวัดความยาวคลื่นและความถี่อย่างพิถีพิถัน คำนวณความเร็วคลื่น"
         },
         {
           "title": "Polarization of EM Waves (1888)",
           "year": "1888",
           "description": "Hertz built a 2-metre wire grid and showed that radio waves passing through the grid are polarized - proving they are transverse waves (like light), not longitudinal.",
-          "myth_vs_fact": "This actually happened and was a crucial proof that EM waves are transverse, settling a debate about the nature of light."
+          "myth_vs_fact": "This actually happened and was a crucial proof that EM waves are transverse, settling a debate about the nature of light.",
+          "title_th": "Polarization of EM Waves (1888) (โพลาไรเซชันของคลื่นแม่เหล็กไฟฟ้า (1888))",
+          "desc_th": "Hertz (เฮิรตซ์) สร้างตะแกรงลวดยาว 2 เมตรและแสดงว่าคลื่นวิทยุที่ผ่านตะแกรงถูกโพลาไรซ์ — พิสูจน์ว่าคลื่นเหล่านี้เป็นคลื่นตามขวาง (เหมือนแสง) ไม่ใช่คลื่นตามยาว",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริงและเป็นการพิสูจน์สำคัญว่าคลื่นแม่เหล็กไฟฟ้าเป็นคลื่นตามขวาง ยุติการถกเถียงเกี่ยวกับธรรมชาติของแสง"
         }
       ],
       "rating": {
@@ -2274,7 +2371,29 @@
         "summary_en": "Proved that electromagnetic waves exist — the first person to transmit and receive radio waves.",
         "personality_th": "ศิษย์ของ Helmholtz, บอกว่าค้นพบของเขา 'ไม่มีประโยชน์อะไรเลย', ตายตอน 36 ปีตอนที่ยังไม่รู้ว่าค้นพบของเขาจะเปลี่ยนโลก, หน่วย Hz เป็นเกียรติแห่งเขา",
         "personality_en": "Student of Helmholtz, said his discovery \"is of no use whatsoever,\" died at 36 before seeing how his work would change the world. The unit Hz honours his name."
-      }
+      },
+      "summary_th": "Heinrich Hertz (ไฮน์ริช เฮิรตซ์) ผู้พิสูจน์ว่าคลื่นแม่เหล็กไฟฟ้ามีอยู่จริง — เป็นคนแรกที่ส่งและรับคลื่นวิทยุ หน่วยความถี่ Hz ตั้งชื่อตามเขา",
+      "biography_th": [
+        "Heinrich Hertz (ไฮน์ริช เฮิรตซ์) เกิดในปี 1857 ที่ Hamburg (ฮัมบูร์ก), Germany (เยอรมนี) ในครอบครัวชาวยิวที่ร่ำรวยซึ่งเปลี่ยนไปนับถือคริสต์",
+        "เขาเรียนวิศวกรรมและฟิสิกส์ที่ University of Berlin (มหาวิทยาลัยเบอร์ลิน) ภายใต้ Hermann von Helmholtz (แฮร์มันน์ ฟอน เฮล์มโฮลทซ์) หนึ่งในนักวิทยาศาสตร์ที่ยิ่งใหญ่ที่สุดแห่งยุค",
+        "ในปี 1886-1888 Hertz (เฮิรตซ์) ทำชุดการทดลองที่ทำให้เขามีชื่อเสียง เขาสร้างอุปกรณ์ที่กำเนิดและตรวจจับคลื่นแม่เหล็กไฟฟ้า — คลื่นวิทยุคลื่นแรกที่มนุษย์สร้างขึ้น",
+        "ด้วยเครื่องส่งแบบ spark gap (ช่องว่างประกายไฟ) และเครื่องรับแบบ loop antenna (สายอากาศแบบห่วง) Hertz (เฮิรตซ์) แสดงว่าคลื่นเหล่านี้สามารถสะท้อน หักเห โพลาไรซ์ และเลี้ยวเบนได้ — เหมือนแสงทุกประการ แต่ที่ความถี่ต่างกัน เขายังวัดความเร็วและพบว่าตรงกับความเร็วแสง",
+        "เมื่อถูกถามเกี่ยวกับการประยุกต์ใช้ในทางปฏิบัติของสิ่งที่ค้นพบ Hertz (เฮิรตซ์) ตอบอย่างโด่งดังว่า: 'มันไม่มีประโยชน์อะไรเลย นี่เป็นเพียงการทดลองที่พิสูจน์ว่า Maestro Maxwell (แมกซ์เวลล์) ถูกต้อง'",
+        "Hertz (เฮิรตซ์) เสียชีวิตเมื่ออายุเพียง 36 ปีจากการติดเชื้อในกระดูก (หรือพิษในเลือด) เขาไม่เคยมีชีวิตอยู่เห็นวิทยุ โทรทัศน์ หรือการสื่อสารไร้สาย — ทั้งหมดสร้างขึ้นจากการค้นพบของเขา"
+      ],
+      "contributions_th": [
+        "เป็นคนแรกที่กำเนิด ส่ง และตรวจจับคลื่นแม่เหล็กไฟฟ้า (วิทยุ) ได้โดยการทดลอง",
+        "พิสูจน์ว่าคลื่นแม่เหล็กไฟฟ้าเดินทางด้วยความเร็วแสงและมีสมบัติของคลื่นทั้งหมด (การสะท้อน การหักเห โพลาไรเซชัน การเลี้ยวเบน)",
+        "ค้นพบปรากฏการณ์โฟโตอิเล็กทริก (สังเกตว่าแสง UV ช่วยเพิ่มการคายประจุของ spark gap) — ต่อมา Einstein (ไอน์สไตน์) อธิบาย",
+        "หน่วย SI (เอสไอ) ของความถี่ — Hertz (Hz) (เฮิรตซ์ (เฮิรตซ์)) — หนึ่งรอบต่อวินาที — ตั้งชื่อตามเขา"
+      ],
+      "legacy_th": [
+        "การทดลองของ Hertz (เฮิรตซ์) ยืนยันทฤษฎีของ Maxwell (แมกซ์เวลล์) และเปิดประตูสู่การสื่อสารไร้สายทั้งหมด",
+        "หน่วย hertz (Hz) (เฮิรตซ์) ใช้ทุกที่ — ตั้งแต่ความถี่วิทยุถึงความเร็วสัญญาณนาฬิกาของ CPU",
+        "การค้นพบปรากฏการณ์โฟโตอิเล็กทริกของเขามีส่วนสนับสนุนกลศาสตร์ควอนตัม",
+        "เทคโนโลยีไร้สายสมัยใหม่ทั้งหมด — วิทยุ ทีวี Wi-Fi Bluetooth 5G — มีรากฐานมาจาก spark gap ของ Hertz (เฮิรตซ์)"
+      ],
+      "key_quote_th": "มันไม่มีประโยชน์อะไรเลย นี่เป็นเพียงการทดลองที่พิสูจน์ว่า Maestro Maxwell (แมกซ์เวลล์) ถูกต้อง"
     },
     {
       "id": "rontgen",
@@ -2324,13 +2443,19 @@
           "title": "Discovery of X-Rays (8 November 1895)",
           "year": "1895",
           "description": "While experimenting with a Crookes tube covered in black cardboard, Rontgen noticed a fluorescent screen glowing across the room. The invisible rays passed through cardboard and caused fluorescence. He spent weeks testing properties before announcing.",
-          "myth_vs_fact": "This actually happened. Rontgen worked alone for seven weeks, eating and sleeping in his lab, to fully characterize X-rays before publishing."
+          "myth_vs_fact": "This actually happened. Rontgen worked alone for seven weeks, eating and sleeping in his lab, to fully characterize X-rays before publishing.",
+          "title_th": "Discovery of X-Rays (8 November 1895) (การค้นพบรังสีเอกซ์ (8 พฤศจิกายน 1895))",
+          "desc_th": "ขณะทดลองกับหลอด Crookes (ครุกส์) ที่คลุมด้วยกระดาษแข็งสีดำ Röntgen (เรินต์เกน) สังเกตเห็นฉากเรืองแสงเรืองแสงอยู่ไกลออกไปทั่วห้อง รังสีที่มองไม่เห็นทะลุผ่านกระดาษแข็งและทำให้เกิดการเรืองแสง เขาใช้เวลาหลายสัปดาห์ทดสอบสมบัติก่อนประกาศ",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Röntgen (เรินต์เกน) ทำงานคนเดียวเป็นเวลาเจ็ดสัปดาห์ กินและนอนในห้องปฏิบัติการ เพื่อศึกษารังสีเอกซ์อย่างละเอียดก่อนตีพิมพ์"
         },
         {
           "title": "First X-Ray Image - 'Hand with Ring' (22 December 1895)",
           "year": "1895",
           "description": "Rontgen asked his wife Anna Bertha to place her hand on a photographic plate for 15 minutes while X-rays passed through it. The image showed her bones clearly and the outline of her wedding ring - the first radiograph.",
-          "myth_vs_fact": "This actually happened. When Anna Bertha saw her skeleton, she exclaimed, 'I have seen my death!' The original plate is preserved in the Deutsches Museum, Munich."
+          "myth_vs_fact": "This actually happened. When Anna Bertha saw her skeleton, she exclaimed, 'I have seen my death!' The original plate is preserved in the Deutsches Museum, Munich.",
+          "title_th": "First X-Ray Image — 'Hand with Ring' (22 December 1895) (ภาพรังสีเอกซ์ภาพแรก — 'มือกับแหวน' (22 ธันวาคม 1895))",
+          "desc_th": "Röntgen (เรินต์เกน) ให้ Anna Bertha (อันนา แบร์ทา) ภรรยาของเขาวางมือบนแผ่นถ่ายภาพนาน 15 นาทีขณะที่รังสีเอกซ์ผ่านมือ ภาพแสดงกระดูกของเธออย่างชัดเจนและโครงร่างของแหวนแต่งงาน — ภาพถ่ายรังสีภาพแรก",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง เมื่อ Anna Bertha (อันนา แบร์ทา) เห็นโครงกระดูกของตนเอง เธออุทานว่า 'ฉันเห็นความตายของตัวเอง!' แผ่นภาพต้นฉบับถูกเก็บรักษาที่ Deutsches Museum (พิพิธภัณฑ์ดอยช์), Munich (มิวนิก)"
         }
       ],
       "rating": {
@@ -2366,7 +2491,31 @@
         "summary_en": "Discovered X-rays by accident — and won the first Nobel Prize in Physics (1901).",
         "personality_th": "ค้นพบรังสีเอกซ์โดยบังเอิญ, ถ่ายภาพมือภรรยาของเขา, ปฏิเสธการจดสิทธิบัตรเพื่อให้มนุษย์ชาติใช้ประโยชน์ฟรี, บริจาคเงินรางวัลโนเบลให้มหาวิทยาลัย, เป็นคนถ่อมตนและมีจริยธรรมสูง",
         "personality_en": "Discovered X-rays by accident while testing cathode rays in a dark room, photographed his wife's hand showing her bones and ring, refused to patent X-rays so humanity could benefit, donated his Nobel money to his university."
-      }
+      },
+      "summary_th": "Wilhelm Röntgen (วิลเฮล์ม เรินต์เกน) ผู้ค้นพบรังสีเอกซ์โดยบังเอิญ — และได้รับรางวัลโนเบลสาขาฟิสิกส์คนแรก (1901)",
+      "biography_th": [
+        "Wilhelm Röntgen (วิลเฮล์ม เรินต์เกน) เกิดในปี 1845 ที่ Lennep (เลนเน็พ), Prussia (ปรัสเซีย) (ปัจจุบันคือ Germany (เยอรมนี)) เขาเรียนวิศวกรรมเครื่องกลใน Zurich (ซูริก), Switzerland (สวิตเซอร์แลนด์)",
+        "เขากลายเป็นศาสตราจารย์ฟิสิกส์ที่มหาวิทยาลัยหลายแห่งในเยอรมนี ขึ้นชื่อเรื่องเทคนิคการทดลองที่รอบคอบ",
+        "ในวันที่ 8 พฤศจิกายน 1895 Röntgen (เรินต์เกน) กำลังทดลองกับหลอดรังสีแคโทดในห้องมืด เขาสังเกตเห็นฉากเคลือบ barium platinocyanide (แบเรียมแพลทิโนไซยาไนด์) เรืองแสงอยู่ห่างออกไปหลายเมตร — ทั้งที่หลอดถูกคลุมด้วยกระดาษแข็งสีดำ",
+        "เขาตระหนักว่ารังสีที่ไม่รู้จักบางอย่างผ่านกระดาษแข็งและทำให้ฉากเรืองแสง เขาเรียกมันว่า 'รังสีเอกซ์' (X แทนสิ่งที่ไม่รู้)",
+        "Röntgen (เรินต์เกน) ทดสอบพลังทะลุทะลวงของรังสีเอกซ์ทันที เมื่อเขาวางมือของภรรยาระหว่างหลอดกับแผ่นถ่ายภาพ ภาพที่ได้แสดงกระดูกและแหวนแต่งงานของเธอ — ภาพรังสีเอกซ์ภาพแรกเท่าที่เคยทำมา",
+        "การค้นพบของเขาประกาศเมื่อวันที่ 28 ธันวาคม 1895 และสร้างความตื่นเต้นไปทั่วโลก เครื่องเอกซ์เรย์ถูกใช้ในโรงพยาบาลภายในไม่กี่เดือน Röntgen (เรินต์เกน) ได้รับรางวัลโนเบลสาขาฟิสิกส์คนแรกในปี 1901",
+        "ตามอุปนิสัยของเขา Röntgen (เรินต์เกน) ปฏิเสธที่จะจดสิทธิบัตรรังสีเอกซ์ — เขาต้องการให้มันเป็นประโยชน์ต่อมวลมนุษยชาติ เขาบริจาคเงินรางวัลโนเบลให้มหาวิทยาลัยของเขา"
+      ],
+      "contributions_th": [
+        "ค้นพบรังสีเอกซ์ (X-rays) — รังสีแม่เหล็กไฟฟ้าพลังงานสูงในสเปกตรัม EM",
+        "สร้างภาพรังสีเอกซ์ (radiographs) ภาพแรก รวมถึงภาพ 'มือกับแหวน' ที่มีชื่อเสียง",
+        "ศึกษาสมบัติของรังสีเอกซ์: การทะลุทะลวงวัสดุ ผลต่อแผ่นถ่ายภาพ และการเรืองแสง",
+        "สาธิตว่ารังสีเอกซ์เดินทางเป็นเส้นตรงและไม่ถูกเบี่ยงเบนโดยสนามแม่เหล็ก"
+      ],
+      "legacy_th": [
+        "รังสีเอกซ์ปฏิวัติการแพทย์ — ทำให้แพทย์มองเห็นภายในร่างกายโดยไม่ต้องผ่าตัด",
+        "การค้นพบนี้ทำให้ Röntgen (เรินต์เกน) ได้รับรางวัลโนเบลสาขาฟิสิกส์คนแรก (1901)",
+        "รังสีเอกซ์เป็นส่วนหนึ่งของสเปกตรัม EM (ระหว่าง UV และรังสีแกมมา) และสอนในทุกหลักสูตร IGCSE Physics",
+        "การปฏิเสธจดสิทธิบัตรของ Röntgen (เรินต์เกน) ทำให้รังสีเอกซ์ถูกนำมาใช้ทางการแพทย์อย่างรวดเร็วทั่วโลก",
+        "เทคโนโลยีรังสีเอกซ์ขยายไปถึงเครื่อง CT scan การรักษาความปลอดภัยสนามบิน การตรวจสอบทางอุตสาหกรรม และดาราศาสตร์"
+      ],
+      "key_quote_th": "ฉันไม่ได้คิด ฉันทดลอง"
     },
     {
       "id": "doppler",
@@ -2415,13 +2564,19 @@
           "title": "Doppler Effect Paper (1842)",
           "year": "1842",
           "description": "Doppler published his theory that the observed frequency of a wave depends on the relative motion between source and observer. For light, motion toward = blue shift, motion away = red shift.",
-          "myth_vs_fact": "This was a theoretical insight, not an experiment. Doppler himself never performed experimental verification - that was done by Buys Ballot in 1845 using trumpeters on a train."
+          "myth_vs_fact": "This was a theoretical insight, not an experiment. Doppler himself never performed experimental verification - that was done by Buys Ballot in 1845 using trumpeters on a train.",
+          "title_th": "Doppler Effect Paper (1842) (บทความปรากฏการณ์ดอปเพลอร์ (1842))",
+          "desc_th": "Doppler (ดอปเพลอร์) ตีพิมพ์ทฤษฎีของเขาว่าความถี่ของคลื่นที่สังเกตได้ขึ้นอยู่กับการเคลื่อนที่สัมพัทธ์ระหว่างแหล่งกำเนิดและผู้สังเกต สำหรับแสง การเคลื่อนที่เข้า = blueshift (เลื่อนน้ำเงิน), การเคลื่อนที่ออก = redshift (เลื่อนแดง)",
+          "myth_th": "นี่เป็นความเข้าใจเชิงทฤษฎี ไม่ใช่การทดลอง Doppler (ดอปเพลอร์) เองไม่เคยทำการตรวจสอบเชิงทดลอง — Buys Ballot (เบยส์ บัลล็อต) เป็นผู้ทำในปี 1845 โดยใช้ผู้เป่าแตรบนรถไฟ"
         },
         {
           "title": "Buys Ballot's Trumpet Experiment (1845)",
           "year": "1845",
           "description": "Dutch meteorologist Buys Ballot placed trumpeters on a moving train playing a constant note. Stationary musicians with perfect pitch recorded the note as higher when the train approached and lower when it receded.",
-          "myth_vs_fact": "This actually happened and was the first experimental confirmation of the Doppler effect for sound waves. The train was slow by modern standards, but the pitch change was clearly audible."
+          "myth_vs_fact": "This actually happened and was the first experimental confirmation of the Doppler effect for sound waves. The train was slow by modern standards, but the pitch change was clearly audible.",
+          "title_th": "Buys Ballot's Trumpet Experiment (1845) (การทดลองแตรของบัลล็อต (1845))",
+          "desc_th": "นักอุตุนิยมวิทยาชาวดัตช์ Buys Ballot (เบยส์ บัลล็อต) วางผู้เป่าแตรบนรถไฟที่กำลังเคลื่อนที่ เป่าโน้ตคงที่ นักดนตรีที่อยู่กับที่ซึ่งมี perfect pitch (การได้ยินเสียงสมบูรณ์) บันทึกว่าโน้ตสูงขึ้นเมื่อรถไฟเข้าใกล้และต่ำลงเมื่อรถไฟถอยห่าง",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริงและเป็นการยืนยันเชิงทดลองครั้งแรกของปรากฏการณ์ดอปเพลอร์สำหรับคลื่นเสียง รถไฟช้าตามมาตรฐานสมัยใหม่ แต่การเปลี่ยนแปลงระดับเสียงได้ยินชัดเจน"
         }
       ],
       "rating": {
@@ -2457,7 +2612,29 @@
         "summary_en": "Discovered the Doppler effect — the change in wave frequency due to relative motion.",
         "personality_th": "พ่อเป็นช่างก่อสร้าง, สุขภาพไม่ดีตลอดชีวิต, ดิ้นรนทางการเงินตลอด, เสนอทฤษฎีตอนอายุ 39, ตายด้วยวัณโรคตอน 49 ปีอย่างยากจน, ไม่เคยเห็นว่าค้นพบของเขาจะใช้ประโยชน์ได้มากมายขนาดไหน",
         "personality_en": "His father was a stonemason, struggled with poor health his entire life, proposed his theory at 39, died of tuberculosis at 49 in poverty, never lived to see how his discovery would be used."
-      }
+      },
+      "summary_th": "Christian Doppler (คริสเตียน ดอปเพลอร์) ผู้ค้นพบปรากฏการณ์ดอปเพลอร์ — การเปลี่ยนแปลงความถี่ของคลื่นเมื่อแหล่งกำเนิดและผู้สังเกตเคลื่อนที่สัมพัทธ์กัน",
+      "biography_th": [
+        "Christian Andreas Doppler (คริสเตียน อันเดรียส ดอปเพลอร์) เกิดในปี 1803 ที่ Salzburg (ซาลซ์บูร์ก), Austria (ออสเตรีย) บิดาของเขาเป็นช่างก่อสร้างหิน และ Christian (คริสเตียน) ถูกคาดหวังให้ทำอาชีพต่อจากครอบครัว",
+        "แม้ครอบครัวจะมีปัญหาทางการเงินและสุขภาพของเขาเองก็ไม่แข็งแรง แต่พรสวรรค์ทางคณิตศาสตร์ของ Doppler (ดอปเพลอร์) ได้รับการยอมรับ และเขาได้รับอนุญาตให้เรียนที่ Vienna Polytechnic Institute (สถาบันโปลีเทคนิคเวียนนา) และ University of Vienna (มหาวิทยาลัยเวียนนา)",
+        "ในปี 1842 Doppler (ดอปเพลอร์) ตีพิมพ์บทความชื่อ 'On the Coloured Light of Double Stars and Certain Other Stars in the Heavens' ('เกี่ยวกับแสงสีของดาวคู่และดาวอื่นๆ ในท้องฟ้า') ในนั้นเขาเสนอว่าความถี่ของคลื่นที่สังเกตได้เปลี่ยนไปถ้าแหล่งกำเนิดและผู้สังเกตเคลื่อนที่สัมพัทธ์กัน",
+        "เขาให้เหตุผลว่าสีของดาวที่เคลื่อนที่เข้าใกล้โลกจะเลื่อนไปทางสีน้ำเงิน และดาวที่เคลื่อนที่ออกไปจะเลื่อนไปทางสีแดง ภายหลังนี้ได้รับการยืนยันและกลายเป็น 'ปรากฏการณ์ดอปเพลอร์'",
+        "ในตอนแรก ทฤษฎีของเขาเป็นที่ถกเถียง และถูกทดสอบโดย Buys Ballot (เบยส์ บัลล็อต) ในปี 1845 โดยใช้รถไฟที่บรรทุกนักเป่าแตร — พวกเขาเป่าโน้ตขณะที่รถไฟเข้าใกล้และถอยห่าง และผู้สังเกตยืนยันการเปลี่ยนแปลงของระดับเสียง",
+        "Doppler (ดอปเพลอร์) ดิ้นรนทางการเงินตลอดชีวิต เขาเสียชีวิตด้วยวัณโรคในปี 1853 ที่ Venice (เวนิส) เมื่ออายุ 49 ปี อย่างยากจนและไม่ได้รับการยอมรับอย่างเต็มที่สำหรับการค้นพบที่ยิ่งใหญ่ของเขา"
+      ],
+      "contributions_th": [
+        "ค้นพบปรากฏการณ์ดอปเพลอร์: ความถี่ของคลื่นเปลี่ยนไปเมื่อแหล่งกำเนิดและผู้สังเกตเคลื่อนที่สัมพัทธ์กัน",
+        "ประยุกต์หลักการกับทั้งคลื่นเสียง (การเปลี่ยนระดับเสียง) และคลื่นแสง (redshift/blueshift)",
+        "อธิบายสีของดาวคู่โดยใช้หลักการของเขา"
+      ],
+      "legacy_th": [
+        "ปรากฏการณ์ดอปเพลอร์สอนในทุกหลักสูตร IGCSE Physics (ฟิสิกส์ไอจีซีเอสอี) (เสียงและแสง)",
+        "เรดาร์ดอปเพลอร์ใช้ในการพยากรณ์อากาศ ปืนวัดความเร็ว และการควบคุมจราจรทางอากาศ",
+        "อัลตราซาวด์ดอปเพลอร์เป็นเทคนิคการถ่ายภาพทางการแพทย์มาตรฐาน",
+        "ในดาราศาสตร์ การเลื่อนแดงของกาแล็กซีนำไปสู่การค้นพบเอกภพกำลังขยายตัว",
+        "ปรากฏการณ์นี้ใช้ได้กับคลื่นทั้งหมด — เสียง แสง น้ำ และแม้แต่คลื่นความโน้มถ่วง"
+      ],
+      "key_quote_th": "ดาวปรากฏเป็นสีแดงเมื่อมันเคลื่อนที่ออกไป และเป็นสีน้ำเงินเมื่อมันเข้าใกล้ — ความแตกต่างนี้เผยให้เห็นการเคลื่อนที่ของมันผ่านอวกาศ"
     },
     {
       "id": "marconi",
@@ -2505,13 +2682,19 @@
           "title": "First Transatlantic Signal (12 December 1901)",
           "year": "1901",
           "description": "Marconi sent the Morse code letter 'S' from Poldhu, Cornwall, to Signal Hill, Newfoundland - 3,500 km away. The signal was received using a kite-supported antenna and a sensitive coherer detector.",
-          "myth_vs_fact": "This actually happened. Some scientists doubted it, saying radio waves couldn't follow Earth's curvature. The signal actually reflected off the ionosphere (a discovery in itself). Modern recreations confirm it was possible."
+          "myth_vs_fact": "This actually happened. Some scientists doubted it, saying radio waves couldn't follow Earth's curvature. The signal actually reflected off the ionosphere (a discovery in itself). Modern recreations confirm it was possible.",
+          "title_th": "First Transatlantic Signal (12 December 1901) (สัญญาณข้ามมหาสมุทรแอตแลนติกครั้งแรก (12 ธันวาคม 1901))",
+          "desc_th": "Marconi (มาร์โกนี) ส่งตัวอักษร 'S' ในรหัสมอร์สจาก Poldhu (พอลดู), Cornwall (คอร์นวอลล์) ไปยัง Signal Hill (ซิกแนลฮิลล์), Newfoundland (นิวฟันด์แลนด์) — ระยะทาง 3,500 กม. สัญญาณถูกรับโดยใช้สายอากาศที่ยกด้วยว่าวและเครื่องตรวจจับ coherer (โคฮีเรอร์) ที่ไวสูง",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง นักวิทยาศาสตร์บางคนสงสัย โดยบอกว่าคลื่นวิทยุไม่สามารถตามความโค้งของโลกได้ สัญญาณสะท้อนจากชั้นบรรยากาศไอโอโนสเฟียร์ (เป็นการค้นพบในตัวมันเอง) การจำลองสมัยใหม่ยืนยันว่าเป็นไปได้"
         },
         {
           "title": "First Wireless Transmission Across Land (1895)",
           "year": "1895",
           "description": "Marconi set up a transmitter on one side of a hill and a receiver on the other side, 2.4 km apart. The signal went over the hill and was received clearly - proving radio waves could travel beyond line of sight.",
-          "myth_vs_fact": "This actually happened. Marconi's brother helped him fire the rifle that signalled successful reception. This experiment convinced Marconi that radio had practical communication potential."
+          "myth_vs_fact": "This actually happened. Marconi's brother helped him fire the rifle that signalled successful reception. This experiment convinced Marconi that radio had practical communication potential.",
+          "title_th": "First Wireless Transmission Across Land (1895) (การส่งสัญญาณไร้สายข้ามพื้นดินครั้งแรก (1895))",
+          "desc_th": "Marconi (มาร์โกนี) ตั้งเครื่องส่งบนด้านหนึ่งของเนินเขาและเครื่องรับอีกด้านหนึ่ง ห่างกัน 2.4 กม. สัญญาณข้ามเนินเขาไปและถูกรับอย่างชัดเจน — พิสูจน์ว่าคลื่นวิทยุสามารถเดินทางเกินแนวสายตา",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง พี่ชายของ Marconi (มาร์โกนี) ช่วยเขายิงปืนไรเฟิลเพื่อส่งสัญญาณว่าการรับสัญญาณสำเร็จ การทดลองนี้ทำให้ Marconi (มาร์โกนี) เชื่อว่าวิทยุมีศักยภาพในการสื่อสารเชิงปฏิบัติ"
         }
       ],
       "rating": {
@@ -2547,7 +2730,29 @@
         "summary_en": "Built the first practical radio communication system — sending signals across the Atlantic.",
         "personality_th": "ทำการทดลองในห้องใต้ชายคาบ้านตอนอายุ 21, อิตาลีไม่สนใจเขาเลยต้องไปอังกฤษ, ได้รับรางวัลโนเบล, รัฐบาลอิตาลีตั้งเขาเป็นสมาชิกสภาชนิด, เคยสมัครเป็นสมาชิกรัฐสภาอเมริกา",
         "personality_en": "Experimented in his attic at 21, Italy ignored him so he went to England, won the Nobel Prize, the Italian government made him a senator, once ran for US Congress."
-      }
+      },
+      "summary_th": "Guglielmo Marconi (กูกลีเอลโม มาร์โกนี) ผู้สร้างระบบสื่อสารวิทยุที่ใช้งานได้จริงเป็นคนแรก — ส่งสัญญาณไร้สายข้ามมหาสมุทรแอตแลนติก",
+      "biography_th": [
+        "Guglielmo Marconi (กูกลีเอลโม มาร์โกนี) เกิดในปี 1874 ที่ Bologna (โบโลญญา), Italy (อิตาลี) บิดาเป็นเจ้าของที่ดินชาวอิตาลี มารดาเป็นชาวไอริช",
+        "Marconi (มาร์โกนี) หลงใหลการทดลองของ Hertz (เฮิรตซ์) กับคลื่นแม่เหล็กไฟฟ้า เขาตระหนักว่าคลื่นเหล่านี้สามารถใช้ในการสื่อสาร — ส่งข้อความโดยไม่ต้องใช้สาย",
+        "ในปี 1895 เมื่ออายุเพียง 21 ปี Marconi (มาร์โกนี) สร้างเครื่องส่งและเครื่องรับไร้สายเครื่องแรกในห้องใต้ชายคาของบ้าน เขาส่งสัญญาณข้ามที่ดินของครอบครัวได้สำเร็จ",
+        "เขาย้ายไป England (อังกฤษ) ในปี 1896 เพราะทางการอิตาลีไม่สนใจ British Post Office (ไปรษณีย์อังกฤษ) ให้การสนับสนุนและเขาก่อตั้งบริษัท Wireless Telegraph & Signal Company",
+        "ในวันที่ 12 ธันวาคม 1901 Marconi (มาร์โกนี) รับสัญญาณไร้สายข้ามมหาสมุทรแอตแลนติกครั้งแรกที่ Signal Hill (ซิกแนลฮิลล์), Newfoundland (นิวฟันด์แลนด์) — ตัวอักษร 'S' ในรหัสมอร์ส ส่งจาก Poldhu (พอลดู), Cornwall (คอร์นวอลล์) (ระยะทาง 3,500 กม.)",
+        "ความสำเร็จนี้ทำให้โลกตะลึง Marconi (มาร์โกนี) ได้รับรางวัลโนเบลสาขาฟิสิกส์ในปี 1909 ร่วมกับ Karl Ferdinand Braun (คาร์ล แฟร์ดินานด์ เบราน์) สำหรับการมีส่วนร่วมในโทรเลขไร้สาย"
+      ],
+      "contributions_th": [
+        "สร้างระบบสื่อสารวิทยุที่ใช้งานได้จริงเป็นระบบแรก",
+        "ประสบความสำเร็จในการส่งสัญญาณไร้สายข้ามมหาสมุทรแอตแลนติกครั้งแรก (1901)",
+        "พัฒนา magnetic detector (เครื่องตรวจจับแม่เหล็ก) และการปรับปรุงอื่นๆ ในการรับสัญญาณวิทยุ",
+        "บุกเบิกการสื่อสารคลื่นสั้นสำหรับการส่งสัญญาณทางไกล"
+      ],
+      "legacy_th": [
+        "งานของ Marconi (มาร์โกนี) วางรากฐานสำหรับการสื่อสารไร้สายสมัยใหม่ทั้งหมด: วิทยุ โทรทัศน์ โทรศัพท์มือถือ Wi-Fi",
+        "สัญญาณข้ามมหาสมุทรแอตแลนติกพิสูจน์ว่าคลื่นวิทยุสามารถเดินทางเกินขอบฟ้าได้ (ผ่านชั้นบรรยากาศไอโอโนสเฟียร์)",
+        "โทรเลขไร้สายช่วยชีวิตคนนับไม่ถ้วนในทะเล (รวมถึงผู้รอดชีวิตจาก Titanic (ไททานิก))",
+        "คําว่า 'Marconi (มาร์โกนี)' กลายเป็นคำพ้องกับวิทยุ — วิทยุมาร์โกนีอยู่ในบ้านหลายล้านหลัง"
+      ],
+      "key_quote_th": "ฉันได้ทำดีต่อโลก หรือฉันได้เพิ่มภัยคุกคาม? ฉันไม่รู้จริงๆ แต่ฉันภูมิใจในสิ่งที่ฉันได้ทำ"
     },
     {
       "id": "michelson",
@@ -2594,13 +2799,19 @@
           "title": "Michelson-Morley Experiment (1887)",
           "year": "1887",
           "description": "Michelson and Morley built an interferometer mounted on a stone block floating in mercury (to eliminate vibration). They split a light beam, sent the two beams at right angles, and compared their speeds. No difference was found - no aether wind.",
-          "myth_vs_fact": "This actually happened. The apparatus was exquisitely sensitive - capable of detecting a wavelength shift of 0.01 fringe. The null result was a shock to the physics community."
+          "myth_vs_fact": "This actually happened. The apparatus was exquisitely sensitive - capable of detecting a wavelength shift of 0.01 fringe. The null result was a shock to the physics community.",
+          "title_th": "Michelson-Morley Experiment (1887) (การทดลองมิเคลสัน-มอร์ลีย์ (1887))",
+          "desc_th": "Michelson (มิเคลสัน) และ Morley (มอร์ลีย์) สร้าง interferometer (อินเทอร์เฟอโรมิเตอร์) บนแผ่นหินที่ลอยในปรอท (เพื่อกำจัดการสั่นสะเทือน) พวกเขาแยกสำแสง ส่งสองสำแสงในมุมฉาก และเปรียบเทียบความเร็ว ไม่พบความแตกต่าง — ไม่มีลมอีเทอร์",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง อุปกรณ์มีความไวสูงมาก — สามารถตรวจจับการเลื่อนของความยาวคลื่นได้ถึง 0.01 แถบ ผลลัพธ์ที่ว่างเปล่าเป็นความตกตะลึงต่อวงการฟิสิกส์"
         },
         {
           "title": "Speed of Light Measurement (1926)",
           "year": "1926",
           "description": "Michelson measured the speed of light between Mount Wilson and Mount San Antonio in California (35 km apart) using a rotating octagonal mirror. He obtained c = 299,796 km/s, accurate to within 4 km/s.",
-          "myth_vs_fact": "This actually happened. Michelson worked on this for years, making it the most precise measurement of c in its time."
+          "myth_vs_fact": "This actually happened. Michelson worked on this for years, making it the most precise measurement of c in its time.",
+          "title_th": "Speed of Light Measurement (1926) (การวัดความเร็วแสง (1926))",
+          "desc_th": "Michelson (มิเคลสัน) วัดความเร็วแสงระหว่าง Mount Wilson (เมานต์วิลสัน) และ Mount San Antonio (เมานต์ซานอันโตนิโอ) ใน California (แคลิฟอร์เนีย) (ห่างกัน 35 กม.) โดยใช้กระจกแปดเหลี่ยมหมุน เขาได้ c = 299,796 กม./วินาที แม่นยำภายใน 4 กม./วินาที",
+          "myth_th": "เหตุการณ์นี้เกิดขึ้นจริง Michelson (มิเคลสัน) ทำงานนี้เป็นเวลาหลายปี ทำให้เป็นการวัดค่า c ที่แม่นยำที่สุดในยุคนั้น"
         }
       ],
       "rating": {
@@ -2636,7 +2847,29 @@
         "summary_en": "Measured the speed of light with incredible precision — the Michelson-Morley experiment paved the way for relativity.",
         "personality_th": "เกิดในโปแลนด์, ครอบครัวอพยพไปสหรัฐฯ, เรียนที่ Naval Academy, เป็นชาวอเมริกันคนแรกที่ได้รับรางวัลโนเบลสาขาวิทยาศาสตร์, พิถีพิถันในการวัดความเร็วแสง",
         "personality_en": "Born in Poland, family emigrated to the US, studied at the Naval Academy, first American to win a Nobel Prize in science, meticulous and obsessive about measuring the speed of light."
-      }
+      },
+      "summary_th": "Albert Michelson (อัลเบิร์ต มิเคลสัน) ผู้วัดความเร็วแสงได้แม่นยำอย่างไม่เคยมีมาก่อน — การทดลอง Michelson-Morley ปูทางไปสู่สัมพัทธภาพของ Einstein",
+      "biography_th": [
+        "Albert Abraham Michelson (อัลเบิร์ต อับราฮัม มิเคลสัน) เกิดในปี 1852 ที่ Strzelno (สต์เชลโน), Prussia (ปรัสเซีย) (ปัจจุบันคือ Poland (โปแลนด์)) ครอบครัวของเขาอพยพไปยังสหรัฐอเมริกาเมื่อเขาอายุ 2 ปี",
+        "เขาเติบโตในเมืองเหมืองแร่ของ California (แคลิฟอร์เนีย) และ Nevada (เนวาดา) ความอัจฉริยะของเขาทำให้เขาได้รับตำแหน่งที่ US Naval Academy (โรงเรียนนายเรือสหรัฐฯ) ซึ่งเขาโดดเด่นด้านวิทยาศาสตร์",
+        "Michelson (มิเคลสัน) หมกมุ่นอยู่กับการวัดความเร็วแสงให้แม่นยำกว่าใครๆ ในปี 1878 โดยใช้อุปกรณ์กระจกหมุน เขาวัด c = 299,910 กม./วินาที — ใกล้เคียงกับค่าสมัยใหม่มาก",
+        "การทดลองที่มีชื่อเสียงที่สุดของเขา ร่วมกับ Edward Morley (เอ็ดเวิร์ด มอร์ลีย์) ในปี 1887 ออกแบบมาเพื่อตรวจจับ 'ลมอีเทอร์' — การเคลื่อนที่ของโลกผ่าน luminiferous aether (อีเทอร์ที่นำแสง) ที่มีอยู่ในสมมติฐาน การทดลอง Michelson-Morley (มิเคลสัน-มอร์ลีย์) พบว่าลมอีเทอร์เป็นศูนย์",
+        "ผลลัพธ์ที่ 'ว่างเปล่า' นี้เป็นหนึ่งในการค้นพบที่สำคัญที่สุดในประวัติศาสตร์ฟิสิกส์ มันแสดงว่าความเร็วแสงคงที่ในทุกทิศทาง โดยไม่ขึ้นกับการเคลื่อนที่ของโลก — รากฐานสำคัญสำหรับสัมพัทธภาพพิเศษของ Einstein (ไอน์สไตน์) (1905)",
+        "Michelson (มิเคลสัน) ได้รับรางวัลโนเบลสาขาฟิสิกส์ในปี 1907 — ชาวอเมริกันคนแรกที่ได้รับรางวัลโนเบลสาขาวิทยาศาสตร์"
+      ],
+      "contributions_th": [
+        "วัดความเร็วแสงด้วยความแม่นยำที่ไม่เคยมีมาก่อนโดยใช้ interferometry (อินเทอร์เฟอโรเมทรี)",
+        "การทดลอง Michelson-Morley (1887): พิสูจน์ว่าความเร็วแสงคงที่ ไม่ขึ้นกับการเคลื่อนที่ของโลก",
+        "ประดิษฐ์ Michelson interferometer (อินเทอร์เฟอโรมิเตอร์ของมิเคลสัน) — อุปกรณ์ที่วัดระยะทางเล็กมากโดยใช้การแทรกสอดของแสง",
+        "กำหนดให้ความเร็วแสงเป็นค่าคงที่พื้นฐาน ปูทางไปสู่สัมพัทธภาพของ Einstein (ไอน์สไตน์)"
+      ],
+      "legacy_th": [
+        "การทดลอง Michelson-Morley (มิเคลสัน-มอร์ลีย์) เป็น 'การทดลองที่ล้มเหลว' ที่โด่งดังที่สุดในประวัติศาสตร์ — ผลลัพธ์ที่ว่างเปล่าของมันหักล้างทฤษฎีอีเทอร์",
+        "สัมพัทธภาพพิเศษของ Einstein (ไอน์สไตน์) (1905) แก้ปัญหาผลลัพธ์ของ Michelson-Morley (มิเคลสัน-มอร์ลีย์) โดยการละทิ้งแนวคิดอีเทอร์",
+        "Michelson interferometer (อินเทอร์เฟอโรมิเตอร์ของมิเคลสัน) ยังคงใช้ในปัจจุบันสำหรับการตรวจจับคลื่นความโน้มถ่วง (LIGO)",
+        "การวัดความเร็วแสงของเขาเป็นมาตรฐานนานหลายทศวรรษ"
+      ],
+      "key_quote_th": "กฎพื้นฐานและข้อเท็จจริงที่สำคัญของวิทยาศาสตร์กายภาพได้ถูกค้นพบหมดแล้ว และมันถูกยึดมั่นอย่างแน่นหนาจนความเป็นไปได้ที่จะถูกแทนที่ด้วยการค้นพบใหม่นั้นช่างห่างไกลเหลือเกิน"
     },
     {
       "id": "volta",
