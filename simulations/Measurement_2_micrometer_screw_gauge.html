@@ -460,7 +460,8 @@ function drawSleeve(p) {
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   for (let mm = 0; mm <= RANGE; mm++) {
     const x = s0 + mm * p;
-    if (x > tx - 2.5) break;
+    if (x > tx + 0.5) break;   // draw right up to the thimble edge — a mark 0.3 mm
+                               // from the edge is still visible on a real micrometer
     const isMSR = S.guide && Math.abs(mm - msr) < 1e-9;
     ctx.strokeStyle = isMSR ? "#c98800" : "#222b36";
     ctx.lineWidth = isMSR ? Math.max(1.4, lw * 1.5) : lw;
@@ -475,7 +476,7 @@ function drawSleeve(p) {
   }
   for (let mm = 0; mm < RANGE; mm++) {                 // half-mm marks BELOW the datum
     const x = s0 + (mm + 0.5) * p;
-    if (x > tx - 2.5) break;
+    if (x > tx + 0.5) break;
     const isMSR = S.guide && Math.abs(mm + 0.5 - msr) < 1e-9;
     ctx.strokeStyle = isMSR ? "#c98800" : "#222b36";
     ctx.lineWidth = isMSR ? Math.max(1.4, lw * 1.5) : lw;
