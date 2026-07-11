@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Refraction of Light — Snell's Law + TIR | HAUS Academy</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
 <style>
 /* ── Dark (default) ── */
 :root {
@@ -200,6 +201,19 @@ input[type=range]{accent-color:var(--accent);width:170px;cursor:pointer;}
 .badges{display:flex;flex-wrap:wrap;gap:6px;}
 .badge{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11.5px;color:var(--text-dim);}
 .badge b{color:var(--text);font-family:'JetBrains Mono',monospace;}
+/* Current-Values style grid (kinematics standard) */
+.val-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.val-item{background:var(--bg);border-radius:8px;padding:7px 10px;border:1px solid var(--border);
+  display:flex;flex-direction:column;gap:2px;}
+.val-item .v-label{font-size:.55rem;text-transform:uppercase;color:var(--text-muted);
+  font-family:'JetBrains Mono',monospace;letter-spacing:.04em;}
+.val-item .v-value{font-size:1.02rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+.val-item.vi-blue .v-value{color:var(--blue);}
+.val-item.vi-orange .v-value{color:var(--orange);}
+/* Equation display (kinematics standard) */
+.eq-box{background:var(--graph-bg);border-radius:8px;padding:12px 10px;border:1px solid var(--border);
+  min-height:72px;display:flex;align-items:center;justify-content:center;overflow:hidden;max-width:100%;}
+.eq-box .katex{font-size:1.02rem;color:var(--text);}
 .sol{font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.75;color:var(--text-dim);white-space:pre-wrap;word-break:break-word;}
 .sol b{color:var(--text);}
 .sol .frm{color:var(--blue);}
@@ -295,17 +309,18 @@ table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px 
   <div class="side">
     <!-- SIMULATE -->
     <div class="panel" id="panelSim">
-      <h3>Readouts</h3>
-      <div class="badges">
-        <span class="badge">θ₁ <b id="bT1">30.0°</b></span>
-        <span class="badge">θ₂ <b id="bT2">—</b></span>
-        <span class="badge">n₁ <b id="bN1">1.00</b></span>
-        <span class="badge">n₂ <b id="bN2">1.33</b></span>
-        <span class="badge">θc <b id="bTc">—</b></span>
-        <span class="badge">Status <b id="bStat">—</b></span>
+      <h3>📊 Current Values</h3>
+      <div class="val-grid">
+        <div class="val-item"><span class="v-label">θ₁ (angle of incidence)</span><span class="v-value" id="bT1">30.0°</span></div>
+        <div class="val-item vi-blue"><span class="v-label">θ₂ (angle of refraction)</span><span class="v-value" id="bT2">—</span></div>
+        <div class="val-item"><span class="v-label">n₁ (medium 1)</span><span class="v-value" id="bN1">1.00</span></div>
+        <div class="val-item vi-blue"><span class="v-label">n₂ (medium 2)</span><span class="v-value" id="bN2">1.33</span></div>
+        <div class="val-item vi-orange"><span class="v-label">θc (critical angle)</span><span class="v-value" id="bTc">—</span></div>
+        <div class="val-item vi-orange"><span class="v-label">Status</span><span class="v-value" id="bStat">—</span></div>
       </div>
-      <h3 style="margin-top:12px;">Snell's Law</h3>
-      <div class="sol" id="fPanel"></div>
+      <h3 style="margin-top:12px;">📐 Equation</h3>
+      <div class="eq-box" id="eqDisplay"></div>
+      <div class="sol" id="fPanel" style="margin-top:8px;"></div>
     </div>
 
     <!-- PRACTICE -->
@@ -338,6 +353,7 @@ table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px 
 </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
@@ -555,7 +571,62 @@ function drawWavefronts(di, dr, df, start, s, ph, p1, p2){
   ctx.restore();
 }
 
-// ===== FORMULA PANEL =====
+// ===== EQUATION BOX (KaTeX, kinematics standard) =====
+const DARK_THEMES = ["dark","neon","vintage","cosmic","onedark","hausnight"];
+const isDark = () => DARK_THEMES.includes(S.theme);
+function getC(name){
+  const map = {
+    gold:   isDark() ? "#e3b341" : "#b45309",
+    blue:   isDark() ? "#58a6ff" : "#0369a1",
+    orange: isDark() ? "#f0883e" : "#c2410c"
+  };
+  return map[name];
+}
+function renderEquation(){
+  const el = $("eqDisplay");
+  if(typeof katex === "undefined"){ el.innerHTML = `<div class="sol">${formulaHTML()}</div>`; return; }
+  const ph = physics(), N1 = n1(), N2 = n2();
+  const G = getC("gold"), B = getC("blue"), O = getC("orange");
+  let tex, single = false;
+  if(ph.c === 0){
+    tex = `n_1 = n_2 = ${fmt2(N1)} \\;\\Rightarrow\\; \\text{no refraction}`;
+    single = true;
+  } else if(ph.status === "tir"){
+    tex = `\\begin{aligned}
+      \\theta_c &= \\sin^{-1}\\!\\left(\\tfrac{n_2}{n_1}\\right) = \\sin^{-1}\\!\\left(\\tfrac{${fmt2(N2)}}{${fmt2(N1)}}\\right) = ${fmtA(ph.tc)}^\\circ \\\\
+      {\\color{${G}} \\theta_1 = ${fmtA(S.t1)}^\\circ} &> \\theta_c \\;\\Rightarrow\\; {\\color{${O}} \\textbf{TIR}},\\; {\\color{${O}} \\theta_r = ${fmtA(S.t1)}^\\circ}
+    \\end{aligned}`;
+  } else if(ph.status === "crit"){
+    tex = `\\begin{aligned}
+      \\theta_c &= \\sin^{-1}\\!\\left(\\tfrac{${fmt2(N2)}}{${fmt2(N1)}}\\right) = ${fmtA(ph.tc)}^\\circ \\\\
+      {\\color{${G}} \\theta_1 \\approx \\theta_c} &\\;\\Rightarrow\\; {\\color{${B}} \\theta_2 = 90^\\circ}
+    \\end{aligned}`;
+  } else {
+    const sinT2 = N1*Math.sin(S.t1*D2R)/N2;
+    tex = `\\begin{aligned}
+      {\\color{${G}} n_1\\sin\\theta_1} &= {\\color{${B}} n_2\\sin\\theta_2} \\\\
+      {\\color{${G}} ${fmt2(N1)}\\times\\sin ${fmtA(S.t1)}^\\circ} &= {\\color{${B}} ${fmt2(N2)}\\times\\sin\\theta_2} \\\\
+      \\theta_2 = \\sin^{-1}(${fmt3(sinT2)}) &= {\\color{${B}} ${fmtA(ph.t2)}^\\circ}
+    \\end{aligned}`;
+  }
+  try { katex.render(tex, el, { displayMode: !single, throwOnError: false }); }
+  catch(e){ el.innerHTML = `<div class="sol">${formulaHTML()}</div>`; }
+}
+function subFormulaHTML(){          // small supplementary lines under the equation box
+  if(typeof katex === "undefined") return "";   // fallback text already includes these lines
+  const ph = physics(), N1 = n1(), N2 = n2();
+  if(ph.c === 0 || ph.status === "tir" || ph.status === "crit") return "";
+  let t = "";
+  if(S.m1 === 0 || S.m2 === 0){
+    t += ph.c === 1
+      ? `<span class="stp">IGCSE:</span> n = sin i / sin r = ${fmt3(Math.sin(S.t1*D2R))}/${fmt3(Math.sin(ph.t2*D2R))} = <b>${fmt2(N2)}</b>`
+      : `<span class="stp">IGCSE:</span> n = sin r / sin i = ${fmt3(Math.sin(S.t1*D2R))}/${fmt3(Math.sin(ph.t2*D2R))} = <b>${fmt2(N1)}</b>`;
+  }
+  if(ph.tc !== null) t += (t ? "\n" : "") + `θc = sin⁻¹(${fmt2(N2)}/${fmt2(N1)}) = <b>${fmtA(ph.tc)}°</b>`;
+  return t;
+}
+
+// ===== FORMULA PANEL (plain-text fallback) =====
 function formulaHTML(){
   const ph = physics(), N1 = n1(), N2 = n2();
   if(ph.c === 0) return `n₁ = n₂ = ${fmt2(N1)} → <span class="ans">no refraction — ray passes straight through</span>`;
@@ -622,7 +693,8 @@ function updateUI(){
     $("bN1").textContent = fmt2(n1()); $("bN2").textContent = fmt2(n2());
     $("bTc").textContent = ph.tc === null ? "— (no TIR possible)" : fmtA(ph.tc) + "°";
     $("bStat").textContent = ph.status === "tir" ? "TIR" : ph.status === "crit" ? "Critical" : ph.status === "straight" ? "Straight" : "Refraction";
-    $("fPanel").innerHTML = formulaHTML();
+    renderEquation();
+    $("fPanel").innerHTML = subFormulaHTML();
   }
   $("pScore").textContent = `${S.prac.score}/${S.prac.tries}`;
   draw();
@@ -743,7 +815,7 @@ function setTheme(name){
   const cls = ["theme-neon","theme-vintage","theme-cosmic","theme-onedark","theme-warm","theme-sage","theme-light","theme-mist","theme-clay","theme-haus","theme-hausnight"];
   document.body.classList.remove(...cls);
   if(name !== "dark") document.body.classList.add("theme-" + name);
-  S.theme = name; draw();
+  S.theme = name; updateUI();      // re-render equation colors too
 }
 
 // ===== QUESTION GENERATOR (shared by practice & quiz) =====
