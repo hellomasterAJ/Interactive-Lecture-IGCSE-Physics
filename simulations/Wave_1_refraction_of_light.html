@@ -212,8 +212,12 @@ input[type=range]{accent-color:var(--accent);width:170px;cursor:pointer;}
 .val-item.vi-orange .v-value{color:var(--orange);}
 /* Equation display (kinematics standard) */
 .eq-box{background:var(--graph-bg);border-radius:8px;padding:12px 10px;border:1px solid var(--border);
-  min-height:72px;display:flex;align-items:center;justify-content:center;overflow:hidden;max-width:100%;}
-.eq-box .katex{font-size:1.02rem;color:var(--text);}
+  min-height:72px;display:flex;align-items:center;justify-content:center;overflow:hidden;max-width:100%;
+  font-size:16px;}
+.eq-box .katex{font-size:1em;color:var(--text);}
+.eq-sm{margin-top:7px;font-size:13px;overflow:hidden;}
+.eq-sm .katex{font-size:1em;color:var(--text-dim);}
+.v-label sub{text-transform:none;font-size:.9em;}
 .sol{font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.75;color:var(--text-dim);white-space:pre-wrap;word-break:break-word;}
 .sol b{color:var(--text);}
 .sol .frm{color:var(--blue);}
@@ -245,6 +249,7 @@ table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px 
       <button class="mode-tab" data-mode="practice">Practice</button>
       <button class="mode-tab" data-mode="quiz">Quiz</button>
     </div>
+    <button class="tbtn" id="btnRayTheme" title="Cycle ray colour palette">🎨 Classic</button>
     <select class="theme-select" id="themeSel">
       <option value="dark">🌙 Classic Dark</option>
       <option value="hausnight">⌂ HAUS Night</option>
@@ -315,7 +320,7 @@ table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px 
         <div class="val-item vi-blue"><span class="v-label">θ₂ (angle of refraction)</span><span class="v-value" id="bT2">—</span></div>
         <div class="val-item"><span class="v-label">n₁ (medium 1)</span><span class="v-value" id="bN1">1.00</span></div>
         <div class="val-item vi-blue"><span class="v-label">n₂ (medium 2)</span><span class="v-value" id="bN2">1.33</span></div>
-        <div class="val-item vi-orange"><span class="v-label">θc (critical angle)</span><span class="v-value" id="bTc">—</span></div>
+        <div class="val-item vi-orange"><span class="v-label">θ<sub>c</sub> (critical angle)</span><span class="v-value" id="bTc">—</span></div>
         <div class="val-item vi-orange"><span class="v-label">Status</span><span class="v-value" id="bStat">—</span></div>
       </div>
       <h3 style="margin-top:12px;">📐 Equation</h3>
@@ -369,7 +374,15 @@ const MEDIA = [
   { name:"Crown Glass", n:1.52, fill:"rgba(195,205,210,0.22)" },
   { name:"Diamond",     n:2.42, fill:"rgba(200,210,220,0.18)" }
 ];
-const C_INC = "#e3b341", C_REF = "#58a6ff", C_RFL = "#f0883e", C_GREY = "#8b949e";
+const C_GREY = "#8b949e";
+// ── Ray colour palettes (cycled by 🎨 button) ──
+const RAYSETS = [
+  { name:"Classic",   inc:"#e3b341", ref:"#58a6ff", rfl:"#f0883e" },
+  { name:"Triadic",   inc:"#a855f7", ref:"#facc15", rfl:"#22c55e" },   // purple / yellow / green
+  { name:"Pastel",    inc:"#c4b5fd", ref:"#fde68a", rfl:"#86efac" },   // pastel purple / yellow / green
+  { name:"Analogous", inc:"#f9a8d4", ref:"#bef264", rfl:"#fbbf24" }    // light pink / light green / orange-yellow
+];
+let C_INC = RAYSETS[0].inc, C_REF = RAYSETS[0].ref, C_RFL = RAYSETS[0].rfl;
 
 // ===== STATE =====
 const S = {
@@ -382,7 +395,7 @@ const S = {
   prac: { score: 0, tries: 0 },
   quiz: { qs: [], i: 0, done: false },
   zoom: false, zoomF: 2.5, focus: { x: 320, y: 320 },
-  drag: null, theme: "dark"
+  drag: null, theme: "dark", raySet: 0
 };
 
 // ===== PHYSICS =====
@@ -543,9 +556,7 @@ function drawWavefronts(di, dr, df, start, s, ph, p1, p2){
   const L0 = 26;                                   // wavelength at n = 1 (px)
   const lam1 = L0/n1(), lam2 = L0/n2();
   const frac = S.phase % 1;                        // shared phase → continuity at boundary
-  const half = 15;
-  ctx.save();
-  ctx.strokeStyle = "rgba(56,178,255,0.3)"; ctx.lineWidth = 2;
+  const half = 60;                                 // wavefront half-width (4× wider)
   const front = (o, d, dist) => {                  // segment ⟂ ray at distance along d from o
     const cx = o.x + dist*d.x, cy = o.y + dist*d.y;
     const px = -d.y, py = d.x;
@@ -554,19 +565,35 @@ function drawWavefronts(di, dr, df, start, s, ph, p1, p2){
     ctx.lineTo(cx + half*px, cy + half*py);
     ctx.stroke();
   };
-  // incident: fronts measured back from P
+  // clip each medium's fronts to its own half-plane — a wavefront must never
+  // cross the boundary with the wrong spacing (physics!)
+  const clipHalf = srcSide => {                    // srcSide=true → source medium half
+    ctx.beginPath();
+    const topIsSrc = s === 1;
+    if(srcSide === topIsSrc) ctx.rect(-W, P.y - 3*H, 3*W, 3*H);   // top half
+    else                     ctx.rect(-W, P.y,        3*W, 3*H);  // bottom half
+    ctx.clip();
+  };
+  ctx.save();
+  ctx.strokeStyle = "rgba(56,178,255,0.3)"; ctx.lineWidth = 2;
+  // incident: fronts measured back from P (source medium only)
+  ctx.save(); clipHalf(true);
   for(let k = frac; k*lam1 <= RL*p1; k++){
     const d = k*lam1; if(d < 0) continue;
     front(P, { x:-di.x, y:-di.y }, d);
   }
-  // transmitted (or reflected under TIR): fronts forward from P with medium-2 λ
-  const out = ph.status === "tir" ? df : dr;
-  const lamOut = ph.status === "tir" ? lam1 : lam2;
-  if(out && !(hideT2() && ph.status !== "tir")){
+  ctx.restore();
+  // transmitted (or reflected under TIR): fronts forward from P
+  const tir = ph.status === "tir";
+  const out = tir ? df : dr;
+  const lamOut = tir ? lam1 : lam2;
+  if(out && !(hideT2() && !tir)){
+    ctx.save(); clipHalf(tir);                     // reflected stays in source medium
     for(let k = 1 - frac; k*lamOut <= RL*p2; k++){
       const d = k*lamOut; if(d < 0) continue;
       front(P, out, d);
     }
+    ctx.restore();
   }
   ctx.restore();
 }
@@ -575,12 +602,18 @@ function drawWavefronts(di, dr, df, start, s, ph, p1, p2){
 const DARK_THEMES = ["dark","neon","vintage","cosmic","onedark","hausnight"];
 const isDark = () => DARK_THEMES.includes(S.theme);
 function getC(name){
-  const map = {
-    gold:   isDark() ? "#e3b341" : "#b45309",
-    blue:   isDark() ? "#58a6ff" : "#0369a1",
-    orange: isDark() ? "#f0883e" : "#c2410c"
-  };
+  // equation colours follow the active ray palette
+  const map = { gold: C_INC, blue: C_REF, orange: C_RFL };
   return map[name];
+}
+function fitEq(el){
+  // shrink the equation until it fits the box (never overflow, never unreadable)
+  el.style.fontSize = "";
+  const k = el.querySelector(".katex-display") || el.querySelector(".katex");
+  if(!k) return;
+  const base = parseFloat(getComputedStyle(el).fontSize) || 16;
+  const avail = el.clientWidth - 22, w = k.scrollWidth;
+  if(w > avail && w > 0) el.style.fontSize = Math.max(10.5, base * avail / w) + "px";
 }
 function renderEquation(){
   const el = $("eqDisplay");
@@ -609,21 +642,32 @@ function renderEquation(){
       \\theta_2 = \\sin^{-1}(${fmt3(sinT2)}) &= {\\color{${B}} ${fmtA(ph.t2)}^\\circ}
     \\end{aligned}`;
   }
-  try { katex.render(tex, el, { displayMode: !single, throwOnError: false }); }
+  try { katex.render(tex, el, { displayMode: !single, throwOnError: false }); fitEq(el); }
   catch(e){ el.innerHTML = `<div class="sol">${formulaHTML()}</div>`; }
 }
-function subFormulaHTML(){          // small supplementary lines under the equation box
-  if(typeof katex === "undefined") return "";   // fallback text already includes these lines
+function renderSubEq(){             // small supplementary lines (KaTeX) under the equation box
+  const el = $("fPanel");
+  el.innerHTML = "";
+  if(typeof katex === "undefined") return;        // fallback text already includes these lines
   const ph = physics(), N1 = n1(), N2 = n2();
-  if(ph.c === 0 || ph.status === "tir" || ph.status === "crit") return "";
-  let t = "";
+  if(ph.c === 0 || ph.status === "tir" || ph.status === "crit") return;
+  const lines = [];
   if(S.m1 === 0 || S.m2 === 0){
-    t += ph.c === 1
-      ? `<span class="stp">IGCSE:</span> n = sin i / sin r = ${fmt3(Math.sin(S.t1*D2R))}/${fmt3(Math.sin(ph.t2*D2R))} = <b>${fmt2(N2)}</b>`
-      : `<span class="stp">IGCSE:</span> n = sin r / sin i = ${fmt3(Math.sin(S.t1*D2R))}/${fmt3(Math.sin(ph.t2*D2R))} = <b>${fmt2(N1)}</b>`;
+    const si = fmt3(Math.sin(S.t1*D2R)), sr = fmt3(Math.sin(ph.t2*D2R));
+    lines.push(ph.c === 1
+      ? `{\\color{${C_INC}}\\textbf{IGCSE:}}\\; n = \\tfrac{\\sin i}{\\sin r} = \\tfrac{${si}}{${sr}} = \\mathbf{${fmt2(N2)}}`
+      : `{\\color{${C_INC}}\\textbf{IGCSE:}}\\; n = \\tfrac{\\sin r}{\\sin i} = \\tfrac{${si}}{${sr}} = \\mathbf{${fmt2(N1)}}`);
   }
-  if(ph.tc !== null) t += (t ? "\n" : "") + `θc = sin⁻¹(${fmt2(N2)}/${fmt2(N1)}) = <b>${fmtA(ph.tc)}°</b>`;
-  return t;
+  if(ph.tc !== null)
+    lines.push(`\\theta_c = \\sin^{-1}\\!\\left(\\tfrac{n_2}{n_1}\\right) = \\sin^{-1}\\!\\left(\\tfrac{${fmt2(N2)}}{${fmt2(N1)}}\\right) = \\mathbf{${fmtA(ph.tc)}^\\circ}`);
+  for(const tex of lines){
+    const d = document.createElement("div");
+    d.className = "eq-sm";
+    try { katex.render(tex, d, { displayMode: false, throwOnError: false }); }
+    catch(e){ d.textContent = tex; }
+    el.appendChild(d);
+    fitEq(d);
+  }
 }
 
 // ===== FORMULA PANEL (plain-text fallback) =====
@@ -666,11 +710,11 @@ function updateUI(){
   $("chipMedBot").textContent = s === 1 ? m2txt : m1txt;
   // status chip
   const st = $("chipStatus");
-  const stTxt = ph.status === "tir" ? "θ₁ > θc — Total Internal Reflection"
-    : ph.status === "crit" ? "θ₁ ≈ θc — Critical Angle"
+  const stTxt = ph.status === "tir" ? "θ₁ &gt; θ<sub>c</sub> — Total Internal Reflection"
+    : ph.status === "crit" ? "θ₁ ≈ θ<sub>c</sub> — Critical Angle"
     : ph.status === "straight" ? "n₁ = n₂ — No bending"
-    : (ph.tc !== null ? "θ₁ < θc — Normal Refraction" : "Normal Refraction");
-  st.textContent = (!S.reveal && (hideT2() || hideTc())) ? "Status hidden — answer first!" : stTxt;
+    : (ph.tc !== null ? "θ₁ &lt; θ<sub>c</sub> — Normal Refraction" : "Normal Refraction");
+  st.innerHTML = (!S.reveal && (hideT2() || hideTc())) ? "Status hidden — answer first!" : stTxt;
   st.className = "chip " + (ph.status === "tir" ? "tir" : ph.status === "crit" ? "crit" : "ok");
   $("chipZoom").style.display = S.zoom ? "block" : "none";
   // toolbar
@@ -691,10 +735,14 @@ function updateUI(){
     $("bT1").textContent = fmtA(S.t1) + "°";
     $("bT2").textContent = ph.status === "tir" ? "— (TIR)" : fmtA(ph.t2) + "°";
     $("bN1").textContent = fmt2(n1()); $("bN2").textContent = fmt2(n2());
-    $("bTc").textContent = ph.tc === null ? "— (no TIR possible)" : fmtA(ph.tc) + "°";
+    $("bTc").textContent = ph.tc === null ? "—" : fmtA(ph.tc) + "°";
     $("bStat").textContent = ph.status === "tir" ? "TIR" : ph.status === "crit" ? "Critical" : ph.status === "straight" ? "Straight" : "Refraction";
+    // value colours follow the ray palette
+    $("bT1").style.color = C_INC; $("bN1").style.color = C_INC;
+    $("bT2").style.color = C_REF; $("bN2").style.color = C_REF;
+    $("bTc").style.color = C_RFL; $("bStat").style.color = C_RFL;
     renderEquation();
-    $("fPanel").innerHTML = subFormulaHTML();
+    renderSubEq();
   }
   $("pScore").textContent = `${S.prac.score}/${S.prac.tries}`;
   draw();
@@ -810,6 +858,13 @@ $("btnWave").addEventListener("click", () => {
   updateUI();
 });
 $("btnAngles").addEventListener("click", () => { S.showAngles = !S.showAngles; updateUI(); });
+$("btnRayTheme").addEventListener("click", () => {
+  S.raySet = (S.raySet + 1) % RAYSETS.length;
+  const set = RAYSETS[S.raySet];
+  C_INC = set.inc; C_REF = set.ref; C_RFL = set.rfl;
+  $("btnRayTheme").textContent = "🎨 " + set.name;
+  updateUI();
+});
 $("themeSel").addEventListener("change", e => setTheme(e.target.value));
 function setTheme(name){
   const cls = ["theme-neon","theme-vintage","theme-cosmic","theme-onedark","theme-warm","theme-sage","theme-light","theme-mist","theme-clay","theme-haus","theme-hausnight"];
