@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-11T19:06:40.842187",
+  "last_updated": "2026-07-11T19:15:32.813347",
   "projects": [
     {
       "id": "interactive-lecture-physics",
@@ -9,7 +9,7 @@
       "path": "/Users/masteraj/InteractiveLecture",
       "status": "active",
       "priority": 1,
-      "description": "Interactive teaching materials for CIE IGCSE Physics 0625 Topic 1: Motion, forces and energy. 5-part lecture structure → HTML + PDF + JSON.",
+      "description": "Interactive teaching materials for CIE IGCSE Physics 0625. Visual-First approach: Animations + Simulations as core teaching tools, with Question Banks for assessment.",
       "lecture_count": 8,
       "lectures_completed": 0,
       "lectures_built": 8,
@@ -34,7 +34,7 @@
             "topic18_energy_resources.md"
           ],
           "status": "source_complete",
-          "notes": "Source MD ทั้ง 8 topics พร้อม ยังไม่ได้สอน/อัด lecture"
+          "notes": "Source MD ทั้ง 8 topics พร้อม — Strategy Pivot: Visual-First (Sims+Graphs > Text), MD ใช้เป็น reference source ไม่ใช่ lecture หลัก"
         },
         "output": {
           "path": "output/",
@@ -66,7 +66,7 @@
           ],
           "dashboard": "dashboard.html",
           "status": "built_v1",
-          "notes": "HTML+JSON+PDF built for 8 topics, dashboard auto-gen"
+          "notes": "HTML+JSON+PDF built for 8 topics — Strategy Pivot: สร้าง Question Banks ต่อท้าย sims/graphs แทน lecture text-heavy"
         },
         "graphs": {
           "path": "graphs/",
@@ -160,18 +160,26 @@
         {
           "title": "PP Agent Created",
           "date": "2026-07-11"
+        },
+        {
+          "title": "Strategy Pivot: Visual-First + Question Banks",
+          "date": "2026-07-11"
         }
       ],
       "next_actions": [
-        "สอน/อัด lecture topic 1.1–1.8",
-        "สร้าง simulation เพิ่มสำหรับ Topics 1.4–1.6",
-        "สร้าง graph เพิ่มสำหรับ Topics 1.3–1.5",
-        "อัปเดต dashboards ให้รวม simulations",
-        "Expand to Topic 2: Thermal Physics"
+        "🔄 ทบทวน Lecture Strategy: Visual-First (Animations + Simulations > Text)",
+        "สร้าง Question Banks สำหรับ Topics 1.1–1.8 (ต่อท้าย simulations/graphs)",
+        "สร้าง simulation เพิ่ม Topics 1.4: Density",
+        "สร้าง simulation เพิ่ม Topics 1.5: Forces (Hooke's Law)",
+        "สร้าง simulation เพิ่ม Topics 1.6: Effects of Forces (Moments, Pressure)",
+        "สร้าง graph เพิ่ม Topics 1.3: Mass & Weight",
+        "สร้าง graph เพิ่ม Topics 1.4: Density",
+        "สร้าง graph เพิ่ม Topics 1.5: Forces",
+        "Expand to Topic 2: Thermal Physics (Visual-First approach)"
       ],
       "cost": {
-        "estimated_total_tokens": 1500000,
-        "estimated_total_cost_usd": 0.45,
+        "estimated_total_tokens": 2500000,
+        "estimated_total_cost_usd": 0.75,
         "currency": "USD"
       }
     }
