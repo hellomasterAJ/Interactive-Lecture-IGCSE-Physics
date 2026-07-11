@@ -202,12 +202,12 @@ input[type=range]{accent-color:var(--accent);width:170px;cursor:pointer;}
 .badge{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11.5px;color:var(--text-dim);}
 .badge b{color:var(--text);font-family:'JetBrains Mono',monospace;}
 /* Current-Values style grid (kinematics standard) */
-.val-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
-.val-item{background:var(--bg);border-radius:8px;padding:7px 10px;border:1px solid var(--border);
-  display:flex;flex-direction:column;gap:2px;}
-.val-item .v-label{font-size:.55rem;text-transform:uppercase;color:var(--text-muted);
-  font-family:'JetBrains Mono',monospace;letter-spacing:.04em;}
-.val-item .v-value{font-size:1.02rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+.val-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.val-item{background:var(--bg);border-radius:6px;padding:5px 8px;border:1px solid var(--border);
+  display:flex;flex-direction:column;gap:1px;min-width:0;}
+.val-item .v-label{font-size:.5rem;text-transform:uppercase;color:var(--text-muted);
+  font-family:'JetBrains Mono',monospace;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.val-item .v-value{font-size:.82rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent);}
 .val-item.vi-blue .v-value{color:var(--blue);}
 .val-item.vi-orange .v-value{color:var(--orange);}
 /* Equation display (kinematics standard) */
@@ -524,16 +524,17 @@ function arcBetween(aFrom, aTo, r, color, label, labelR){
   ctx.beginPath(); ctx.arc(P.x, P.y, r, aFrom, aFrom + sweep, sweep < 0); ctx.stroke();
   const mid = aFrom + sweep/2;
   let lx = P.x + labelR*Math.cos(mid), ly = P.y + labelR*Math.sin(mid);
-  // push the label perpendicular away from the ray (aTo direction) so text never overlaps it
-  const ux = Math.cos(aTo), uy = Math.sin(aTo);
-  const d = (lx - P.x)*(-uy) + (ly - P.y)*ux;          // signed ⊥ distance to ray line
-  const need = 22;
-  if(Math.abs(d) < need){
-    // too close → jump to the OUTER side of the ray (away from the normal), where space is empty
-    const push = -(d >= 0 ? 1 : -1) * need - d;
-    lx += push * (-uy); ly += push * ux;
-  }
-  ctx.fillStyle = color; ctx.font = "600 11px Inter, sans-serif";
+  // place the label on the OUTER side of the ray with true text-box clearance:
+  // required ⊥ distance = margin + projection of the text box onto the ray normal
+  ctx.font = "600 11px Inter, sans-serif";
+  const wTxt = ctx.measureText(label).width;
+  const ux = Math.cos(aTo), uy = Math.sin(aTo);        // ray direction
+  const nx = -uy, ny = ux;                             // ray normal
+  const needed = 8 + (wTxt/2)*Math.abs(nx) + 8*Math.abs(ny);
+  const d = (lx - P.x)*nx + (ly - P.y)*ny;             // signed ⊥ distance of label centre
+  const target = -(d >= 0 ? 1 : -1) * needed;          // outer side (away from the normal)
+  lx += (target - d)*nx; ly += (target - d)*ny;
+  ctx.fillStyle = color;
   ctx.textAlign = "center"; ctx.textBaseline = "middle";
   ctx.fillText(label, lx, ly);
   ctx.restore();
@@ -553,48 +554,55 @@ function drawAngles(s, ph, tirNow){
   }
 }
 function drawWavefronts(di, dr, df, start, s, ph, p1, p2){
+  // Plane-wave picture: each crest j lies at signed distance u = (Φ − j)·λ along the
+  // propagation direction, in BOTH media (same j, same Φ). Because Snell's law gives
+  // λ₁/sinθ₁ = λ₂/sinθ₂, the two straight pieces of every crest meet at the SAME
+  // boundary point automatically → continuous kinked wavefronts, physically exact.
+  // As Φ grows, u grows → crests move WITH the ray, never against it.
   const L0 = 26;                                   // wavelength at n = 1 (px)
   const lam1 = L0/n1(), lam2 = L0/n2();
-  const frac = S.phase % 1;                        // shared phase → continuity at boundary
-  const half = 60;                                 // wavefront half-width (4× wider)
-  const front = (o, d, dist) => {                  // segment ⟂ ray at distance along d from o
-    const cx = o.x + dist*d.x, cy = o.y + dist*d.y;
-    const px = -d.y, py = d.x;
+  const frac = S.phase - Math.floor(S.phase);      // Φ fractional part (shared by both media)
+  const beamHalf = 60;                             // beam ribbon half-width
+  const tir = ph.status === "tir";
+  const topIsSrc = s === 1;
+  const clipHalf = srcSide => {                    // srcSide=true → source medium half-plane
     ctx.beginPath();
-    ctx.moveTo(cx - half*px, cy - half*py);
-    ctx.lineTo(cx + half*px, cy + half*py);
-    ctx.stroke();
-  };
-  // clip each medium's fronts to its own half-plane — a wavefront must never
-  // cross the boundary with the wrong spacing (physics!)
-  const clipHalf = srcSide => {                    // srcSide=true → source medium half
-    ctx.beginPath();
-    const topIsSrc = s === 1;
     if(srcSide === topIsSrc) ctx.rect(-W, P.y - 3*H, 3*W, 3*H);   // top half
     else                     ctx.rect(-W, P.y,        3*W, 3*H);  // bottom half
     ctx.clip();
   };
-  ctx.save();
-  ctx.strokeStyle = "rgba(56,178,255,0.3)"; ctx.lineWidth = 2;
-  // incident: fronts measured back from P (source medium only)
-  ctx.save(); clipHalf(true);
-  for(let k = frac; k*lam1 <= RL*p1; k++){
-    const d = k*lam1; if(d < 0) continue;
-    front(P, { x:-di.x, y:-di.y }, d);
-  }
-  ctx.restore();
-  // transmitted (or reflected under TIR): fronts forward from P
-  const tir = ph.status === "tir";
-  const out = tir ? df : dr;
-  const lamOut = tir ? lam1 : lam2;
-  if(out && !(hideT2() && !tir)){
-    ctx.save(); clipHalf(tir);                     // reflected stays in source medium
-    for(let k = 1 - frac; k*lamOut <= RL*p2; k++){
-      const d = k*lamOut; if(d < 0) continue;
-      front(P, out, d);
+  const drawSet = (dvec, lam, srcSide, half) => {  // crest lines for one medium
+    const px = -dvec.y, py = dvec.x;               // ⟂ to propagation
+    ctx.save();
+    clipHalf(srcSide);
+    ctx.beginPath();                               // beam ribbon along dvec, width 2·half
+    ctx.moveTo(P.x - RL*dvec.x + half*px, P.y - RL*dvec.y + half*py);
+    ctx.lineTo(P.x + RL*dvec.x + half*px, P.y + RL*dvec.y + half*py);
+    ctx.lineTo(P.x + RL*dvec.x - half*px, P.y + RL*dvec.y - half*py);
+    ctx.lineTo(P.x - RL*dvec.x - half*px, P.y - RL*dvec.y - half*py);
+    ctx.closePath(); ctx.clip();
+    const kMax = Math.ceil(RL/lam) + 1;
+    for(let k = -kMax; k <= kMax; k++){
+      const u = (frac + k) * lam;                  // same crest index in both media
+      if(Math.abs(u) > RL) continue;
+      const cx = P.x + u*dvec.x, cy = P.y + u*dvec.y;
+      ctx.beginPath();
+      ctx.moveTo(cx - RL*px, cy - RL*py);          // long line → reaches the boundary,
+      ctx.lineTo(cx + RL*px, cy + RL*py);          // ribbon + half-plane clips shape it
+      ctx.stroke();
     }
     ctx.restore();
-  }
+  };
+  ctx.save();
+  ctx.strokeStyle = "rgba(56,178,255,0.35)"; ctx.lineWidth = 2;
+  drawSet(di, lam1, true, beamHalf);                              // incident (source medium)
+  const out = tir ? df : dr;
+  const lamOut = tir ? lam1 : lam2;
+  // refracted beam width changes so its boundary footprint matches the incident beam:
+  // w₂ = w₁ · cosθ₂ / cosθ₁  (reflected beam keeps w₁)
+  const halfOut = tir ? beamHalf
+    : beamHalf * Math.cos((ph.t2 || 0)*D2R) / Math.max(0.05, Math.cos(S.t1*D2R));
+  if(out && !(hideT2() && !tir)) drawSet(out, lamOut, tir, halfOut);  // refracted / reflected(TIR)
   ctx.restore();
 }
 
