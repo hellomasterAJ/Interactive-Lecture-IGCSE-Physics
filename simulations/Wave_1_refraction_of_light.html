@@ -197,7 +197,7 @@ input[type=range]{accent-color:var(--accent);width:170px;cursor:pointer;}
 /* ── Side panel ── */
 .side{display:flex;flex-direction:column;gap:10px;min-width:0;}
 .panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
-.panel h3{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px;}
+.panel h3{font-size:.8rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px;}
 .badges{display:flex;flex-wrap:wrap;gap:6px;}
 .badge{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11.5px;color:var(--text-dim);}
 .badge b{color:var(--text);font-family:'JetBrains Mono',monospace;}
@@ -205,20 +205,20 @@ input[type=range]{accent-color:var(--accent);width:170px;cursor:pointer;}
 .val-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
 .val-item{background:var(--bg);border-radius:6px;padding:5px 8px;border:1px solid var(--border);
   display:flex;flex-direction:column;gap:1px;min-width:0;align-items:center;text-align:center;}
-.val-item .v-label{font-size:.5rem;text-transform:uppercase;color:var(--text-muted);
-  font-family:'JetBrains Mono',monospace;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.val-item .v-value{font-size:.82rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+.val-item .v-label{font-size:.62rem;text-transform:uppercase;color:var(--text-muted);
+  font-family:'JetBrains Mono',monospace;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.val-item .v-value{font-size:1.05rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent);}
 .val-item.vi-blue .v-value{color:var(--blue);}
 .val-item.vi-orange .v-value{color:var(--orange);}
 /* Equation display (kinematics standard) */
 .eq-box{background:var(--graph-bg);border-radius:8px;padding:12px 10px;border:1px solid var(--border);
   min-height:72px;display:flex;align-items:center;justify-content:center;overflow:hidden;max-width:100%;
-  font-size:16px;}
+  font-size:18px;}
 .eq-box .katex{font-size:1em;color:var(--text);}
-.eq-sm{margin-top:7px;font-size:15.5px;overflow:hidden;}
+.eq-sm{margin-top:8px;font-size:17px;overflow:hidden;}
 .eq-sm .katex{font-size:1em;color:var(--text-dim);}
 .v-label sub{text-transform:none;font-size:.9em;}
-.sol{font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.75;color:var(--text-dim);white-space:pre-wrap;word-break:break-word;}
+.sol{font-family:'JetBrains Mono',monospace;font-size:12.5px;line-height:1.75;color:var(--text-dim);white-space:pre-wrap;word-break:break-word;}
 .sol b{color:var(--text);}
 .sol .frm{color:var(--blue);}
 .sol .ans{color:var(--amber);font-weight:700;}
@@ -230,8 +230,8 @@ input[type=range]{accent-color:var(--accent);width:170px;cursor:pointer;}
   font-family:'JetBrains Mono',monospace;}
 .feed.good{display:block;background:rgba(52,211,153,.1);border:1px solid var(--green);color:var(--text);}
 .feed.bad{display:block;background:rgba(251,113,133,.1);border:1px solid var(--rose);color:var(--text);}
-.qtext{font-size:12.5px;line-height:1.65;color:var(--text);background:var(--bg);border:1px solid var(--border);
-  border-radius:9px;padding:9px 11px;margin-top:6px;font-family:'JetBrains Mono',monospace;}
+.qtext{font-size:14.5px;line-height:1.65;color:var(--text);background:var(--bg);border:1px solid var(--border);
+  border-radius:9px;padding:10px 13px;margin-top:6px;font-family:'Inter',sans-serif;font-weight:500;}
 table.dt{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:11px;margin-top:8px;}
 table.dt th{color:var(--text-muted);font-weight:600;text-align:left;padding:4px 5px;border-bottom:1px solid var(--border);font-size:10px;}
 table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px solid var(--border);}
@@ -249,7 +249,6 @@ table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px 
       <button class="mode-tab" data-mode="practice">Practice</button>
       <button class="mode-tab" data-mode="quiz">Quiz</button>
     </div>
-    <button class="tbtn" id="btnRayTheme" title="Cycle ray colour palette">🎨 Classic</button>
     <select class="theme-select" id="themeSel">
       <option value="dark">🌙 Classic Dark</option>
       <option value="hausnight">⌂ HAUS Night</option>
@@ -297,6 +296,7 @@ table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px 
       <button class="tbtn" id="btnRefl">↖ Reflected</button>
       <button class="tbtn" id="btnWave">〰 Wavefront</button>
       <button class="tbtn on" id="btnAngles">∠ Angles</button>
+      <button class="tbtn" id="btnRayTheme" title="Cycle ray colour palette">🎨 Classic</button>
     </div>
   </div>
 </div>
@@ -320,6 +320,8 @@ table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px 
         <div class="val-item vi-blue"><span class="v-label">θ₂ (angle of refraction)</span><span class="v-value" id="bT2">—</span></div>
         <div class="val-item"><span class="v-label">n₁ (medium 1)</span><span class="v-value" id="bN1">1.00</span></div>
         <div class="val-item vi-blue"><span class="v-label">n₂ (medium 2)</span><span class="v-value" id="bN2">1.33</span></div>
+        <div class="val-item"><span class="v-label">v₁ (speed in medium 1)</span><span class="v-value" id="bV1">—</span></div>
+        <div class="val-item vi-blue"><span class="v-label">v₂ (speed in medium 2)</span><span class="v-value" id="bV2">—</span></div>
         <div class="val-item vi-orange"><span class="v-label">θ<sub>c</sub> (critical angle)</span><span class="v-value" id="bTc">—</span></div>
         <div class="val-item vi-orange"><span class="v-label">Status</span><span class="v-value" id="bStat">—</span></div>
       </div>
@@ -748,11 +750,14 @@ function updateUI(){
     $("bT1").textContent = fmtA(S.t1) + "°";
     $("bT2").textContent = ph.status === "tir" ? "— (TIR)" : fmtA(ph.t2) + "°";
     $("bN1").textContent = fmt2(n1()); $("bN2").textContent = fmt2(n2());
+    // v = c / n with c = 3.00 × 10⁸ m/s (IGCSE)
+    $("bV1").innerHTML = fmt2(3.00/n1()) + " × 10<sup>8</sup> m/s";
+    $("bV2").innerHTML = fmt2(3.00/n2()) + " × 10<sup>8</sup> m/s";
     $("bTc").textContent = ph.tc === null ? "—" : fmtA(ph.tc) + "°";
     $("bStat").textContent = ph.status === "tir" ? "TIR" : ph.status === "crit" ? "Critical" : ph.status === "straight" ? "Straight" : "Refraction";
     // value colours follow the ray palette
-    $("bT1").style.color = C_INC; $("bN1").style.color = C_INC;
-    $("bT2").style.color = C_REF; $("bN2").style.color = C_REF;
+    $("bT1").style.color = C_INC; $("bN1").style.color = C_INC; $("bV1").style.color = C_INC;
+    $("bT2").style.color = C_REF; $("bN2").style.color = C_REF; $("bV2").style.color = C_REF;
     $("bTc").style.color = C_RFL; $("bStat").style.color = C_RFL;
     renderEquation();
     renderSubEq();
