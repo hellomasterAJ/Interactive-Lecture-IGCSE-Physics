@@ -207,7 +207,8 @@ input[type=range]{accent-color:var(--accent);width:170px;cursor:pointer;}
   display:flex;flex-direction:column;gap:1px;min-width:0;align-items:center;text-align:center;}
 .val-item .v-label{font-size:.62rem;text-transform:uppercase;color:var(--text-muted);
   font-family:'JetBrains Mono',monospace;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
-.val-item .v-value{font-size:1.05rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+.val-item .v-value{font-size:.95rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent);}
+.v-label .sym{text-transform:none;}
 .val-item.vi-blue .v-value{color:var(--blue);}
 .val-item.vi-orange .v-value{color:var(--orange);}
 /* Equation display (kinematics standard) */
@@ -318,10 +319,10 @@ table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px 
       <div class="val-grid">
         <div class="val-item"><span class="v-label">θ₁ (angle of incidence)</span><span class="v-value" id="bT1">30.0°</span></div>
         <div class="val-item vi-blue"><span class="v-label">θ₂ (angle of refraction)</span><span class="v-value" id="bT2">—</span></div>
-        <div class="val-item"><span class="v-label">n₁ (medium 1)</span><span class="v-value" id="bN1">1.00</span></div>
-        <div class="val-item vi-blue"><span class="v-label">n₂ (medium 2)</span><span class="v-value" id="bN2">1.33</span></div>
-        <div class="val-item"><span class="v-label">v₁ (speed in medium 1)</span><span class="v-value" id="bV1">—</span></div>
-        <div class="val-item vi-blue"><span class="v-label">v₂ (speed in medium 2)</span><span class="v-value" id="bV2">—</span></div>
+        <div class="val-item"><span class="v-label"><span class="sym">n</span>₁ (medium 1)</span><span class="v-value" id="bN1">1.00</span></div>
+        <div class="val-item vi-blue"><span class="v-label"><span class="sym">n</span>₂ (medium 2)</span><span class="v-value" id="bN2">1.33</span></div>
+        <div class="val-item"><span class="v-label"><span class="sym">v</span>₁ (speed in medium 1)</span><span class="v-value" id="bV1">—</span></div>
+        <div class="val-item vi-blue"><span class="v-label"><span class="sym">v</span>₂ (speed in medium 2)</span><span class="v-value" id="bV2">—</span></div>
         <div class="val-item vi-orange"><span class="v-label">θ<sub>c</sub> (critical angle)</span><span class="v-value" id="bTc">—</span></div>
         <div class="val-item vi-orange"><span class="v-label">Status</span><span class="v-value" id="bStat">—</span></div>
       </div>
@@ -673,8 +674,16 @@ function renderSubEq(){             // small supplementary lines (KaTeX) under t
       ? `{\\color{${C_INC}}\\textbf{IGCSE:}}\\; n = \\sin i \\,/ \\sin r = ${si}/${sr} = \\mathbf{${fmt2(N2)}}`
       : `{\\color{${C_INC}}\\textbf{IGCSE:}}\\; n = \\sin r \\,/ \\sin i = ${si}/${sr} = \\mathbf{${fmt2(N1)}}`);
   }
-  if(ph.tc !== null)
+  if(ph.tc !== null){
+    // IGCSE derivation of the critical angle (fast medium = air):
+    // n = sin θ₂ / sin θ₁ with θ₁ = c and θ₂ = 90° (sin 90° = 1) → n = 1/sin c
+    if(S.m2 === 0){
+      lines.push(`{\\color{${C_INC}}\\textbf{IGCSE:}}\\; n = \\sin\\theta_2 \\,/ \\sin\\theta_1` +
+        `\\quad(\\theta_1 = c,\\; \\theta_2 = 90^\\circ)`);
+      lines.push(`\\sin 90^\\circ = 1 \\;\\Rightarrow\\; n = 1/\\sin c \\;\\Rightarrow\\; c = \\sin^{-1}(1/n)`);
+    }
     lines.push(`\\theta_c = \\sin^{-1}(n_2/n_1) = \\sin^{-1}(${fmt2(N2)}/${fmt2(N1)}) = \\mathbf{${fmtA(ph.tc)}^\\circ}`);
+  }
   for(const tex of lines){
     const d = document.createElement("div");
     d.className = "eq-sm";
