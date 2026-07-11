@@ -176,7 +176,7 @@ body{
 input[type=range]{accent-color:var(--accent);width:170px;cursor:pointer;}
 
 /* ── Main layout ── */
-.main-grid{display:grid;grid-template-columns:3fr 1fr;gap:12px;align-items:start;}
+.main-grid{display:grid;grid-template-columns:65fr 35fr;gap:12px;align-items:start;}
 @media(max-width:1020px){.main-grid{grid-template-columns:1fr;}}
 .canvas-card{position:relative;background:var(--card);border:1px solid var(--border);border-radius:12px;
   padding:0;overflow:hidden;width:100%;}
@@ -1049,7 +1049,7 @@ function setupCanvas(){
   draw();
 }
 new ResizeObserver(setupCanvas).observe(cv);
-window.addEventListener("resize", setupCanvas);
+window.addEventListener("resize", () => { setupCanvas(); updateUI(); });   // refit equation too
 
 // ===== INIT =====
 setupCanvas();
