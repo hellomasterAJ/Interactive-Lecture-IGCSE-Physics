@@ -204,7 +204,7 @@ input[type=range]{accent-color:var(--accent);width:170px;cursor:pointer;}
 /* Current-Values style grid (kinematics standard) */
 .val-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
 .val-item{background:var(--bg);border-radius:6px;padding:5px 8px;border:1px solid var(--border);
-  display:flex;flex-direction:column;gap:1px;min-width:0;}
+  display:flex;flex-direction:column;gap:1px;min-width:0;align-items:center;text-align:center;}
 .val-item .v-label{font-size:.5rem;text-transform:uppercase;color:var(--text-muted);
   font-family:'JetBrains Mono',monospace;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .val-item .v-value{font-size:.82rem;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--accent);}
@@ -215,7 +215,7 @@ input[type=range]{accent-color:var(--accent);width:170px;cursor:pointer;}
   min-height:72px;display:flex;align-items:center;justify-content:center;overflow:hidden;max-width:100%;
   font-size:16px;}
 .eq-box .katex{font-size:1em;color:var(--text);}
-.eq-sm{margin-top:7px;font-size:13px;overflow:hidden;}
+.eq-sm{margin-top:7px;font-size:15.5px;overflow:hidden;}
 .eq-sm .katex{font-size:1em;color:var(--text-dim);}
 .v-label sub{text-transform:none;font-size:.9em;}
 .sol{font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.75;color:var(--text-dim);white-space:pre-wrap;word-break:break-word;}
@@ -540,15 +540,20 @@ function arcBetween(aFrom, aTo, r, color, label, labelR){
   ctx.restore();
 }
 function drawAngles(s, ph, tirNow){
+  // arcs + labels appear only AFTER their ray has finished drawing:
+  // incident arc at prog ≥ 0.5 (incident done), outgoing arcs at prog ≥ 1
   const aNormSrc = s === 1 ? -Math.PI/2 : Math.PI/2;    // normal on source side
   const aNormTr  = -aNormSrc;
-  const aInc = Math.atan2(-(s*Math.cos(S.t1*D2R)), -Math.sin(S.t1*D2R)); // direction from P back toward source start
-  arcBetween(aNormSrc, aInc, 26, C_INC, `θ₁ = ${fmtA(S.t1)}°`, 60);
-  if(!tirNow && ph.t2 !== null && ph.c !== 0 && !hideT2() && S.prog > 0.55){
-    const aRef = Math.atan2(s*Math.cos(ph.t2*D2R), Math.sin(ph.t2*D2R));
-    arcBetween(aNormTr, aRef, 32, C_REF, hideT2() ? "θ₂ = ?" : `θ₂ = ${fmtA(ph.t2)}°`, 68);
+  if(S.prog >= 0.5){
+    const aInc = Math.atan2(-(s*Math.cos(S.t1*D2R)), -Math.sin(S.t1*D2R)); // back toward source start
+    arcBetween(aNormSrc, aInc, 26, C_INC, `θ₁ = ${fmtA(S.t1)}°`, 60);
   }
-  if((S.showRefl || tirNow) && S.prog > 0.55){
+  if(S.prog < 0.999) return;
+  if(!tirNow && ph.t2 !== null && ph.c !== 0 && !hideT2()){
+    const aRef = Math.atan2(s*Math.cos(ph.t2*D2R), Math.sin(ph.t2*D2R));
+    arcBetween(aNormTr, aRef, 32, C_REF, `θ₂ = ${fmtA(ph.t2)}°`, 68);
+  }
+  if(S.showRefl || tirNow){
     const aRfl = Math.atan2(-s*Math.cos(S.t1*D2R), Math.sin(S.t1*D2R));
     arcBetween(aNormSrc, aRfl, 40, C_RFL, `θᵣ = ${fmtA(S.t1)}°`, 78);
   }
@@ -663,11 +668,11 @@ function renderSubEq(){             // small supplementary lines (KaTeX) under t
   if(S.m1 === 0 || S.m2 === 0){
     const si = fmt3(Math.sin(S.t1*D2R)), sr = fmt3(Math.sin(ph.t2*D2R));
     lines.push(ph.c === 1
-      ? `{\\color{${C_INC}}\\textbf{IGCSE:}}\\; n = \\tfrac{\\sin i}{\\sin r} = \\tfrac{${si}}{${sr}} = \\mathbf{${fmt2(N2)}}`
-      : `{\\color{${C_INC}}\\textbf{IGCSE:}}\\; n = \\tfrac{\\sin r}{\\sin i} = \\tfrac{${si}}{${sr}} = \\mathbf{${fmt2(N1)}}`);
+      ? `{\\color{${C_INC}}\\textbf{IGCSE:}}\\; n = \\sin i \\,/ \\sin r = ${si}/${sr} = \\mathbf{${fmt2(N2)}}`
+      : `{\\color{${C_INC}}\\textbf{IGCSE:}}\\; n = \\sin r \\,/ \\sin i = ${si}/${sr} = \\mathbf{${fmt2(N1)}}`);
   }
   if(ph.tc !== null)
-    lines.push(`\\theta_c = \\sin^{-1}\\!\\left(\\tfrac{n_2}{n_1}\\right) = \\sin^{-1}\\!\\left(\\tfrac{${fmt2(N2)}}{${fmt2(N1)}}\\right) = \\mathbf{${fmtA(ph.tc)}^\\circ}`);
+    lines.push(`\\theta_c = \\sin^{-1}(n_2/n_1) = \\sin^{-1}(${fmt2(N2)}/${fmt2(N1)}) = \\mathbf{${fmtA(ph.tc)}^\\circ}`);
   for(const tex of lines){
     const d = document.createElement("div");
     d.className = "eq-sm";
