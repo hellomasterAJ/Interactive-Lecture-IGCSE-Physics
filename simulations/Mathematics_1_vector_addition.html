@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Vector Addition — 3 Methods | HAUS Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ── Dark (default) ── */
+:root {
+  --bg: #0f172a; --card: #1e293b; --border: #334155;
+  --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
+  --accent: #22d3ee; --accent-glow: rgba(34,211,238,0.12);
+  --grid: #1e293b; --graph-bg: #0a0f1a;
+  --green: #34d399; --rose: #fb7185; --violet: #a78bfa;
+  --amber: #fbbf24; --blue: #38bdf8; --orange: #fb923c;
+}
+/* ── Light Theme 1: Warm Taupe ── */
+.theme-warm {
+  --bg: #cdc7bc; --card: #ddd7cc; --border: #bdb5a8;
+  --text: #2d2a24; --text-dim: #635d52; --text-muted: #8c8578;
+  --accent: #0f766e; --accent-glow: rgba(15,118,110,0.1);
+  --grid: #c9c2b5; --graph-bg: #e8e2d7;
+  --green: #047857; --rose: #be123c; --violet: #6d28d9;
+  --amber: #b45309; --blue: #0369a1; --orange: #c2410c;
+}
+/* ── Light Theme 2: Soft Sage ── */
+.theme-sage {
+  --bg: #d4d9cc; --card: #e3e7db; --border: #c2c9b5;
+  --text: #2d2a24; --text-dim: #5d6b52; --text-muted: #8a9a78;
+  --accent: #3d7a5a; --accent-glow: rgba(61,122,90,0.1);
+  --grid: #c9d0bd; --graph-bg: #eef2e7;
+  --green: #2d6a4f; --rose: #9d4e3c; --violet: #6b4d8a;
+  --amber: #9a7b3d; --blue: #3a6b8a; --orange: #b0692d;
+}
+/* ── Light Theme 3: Classic Light ── */
+.theme-light {
+  --bg: #ffffff; --card: #f3f4f6; --border: #d1d5db;
+  --text: #111827; --text-dim: #4b5563; --text-muted: #9ca3af;
+  --accent: #2563eb; --accent-glow: rgba(37,99,235,0.1);
+  --grid: #e5e7eb; --graph-bg: #f9fafb;
+  --green: #059669; --rose: #dc2626; --violet: #7c3aed;
+  --amber: #d97706; --blue: #2563eb; --orange: #ea580c;
+}
+/* ── Light Theme 4: Mist Blue ── */
+.theme-mist {
+  --bg: #c8ced6; --card: #dadfe8; --border: #b5bcc9;
+  --text: #22262d; --text-dim: #4d5663; --text-muted: #7a8492;
+  --accent: #3a6a8a; --accent-glow: rgba(58,106,138,0.1);
+  --grid: #c2c8d2; --graph-bg: #e6eaf0;
+  --green: #3a7a5a; --rose: #8a4a5a; --violet: #5a4d8a;
+  --amber: #8a7a3a; --blue: #2a5a7a; --orange: #9a5a2a;
+}
+/* ── Light Theme 5: Warm Clay ── */
+.theme-clay {
+  --bg: #d4c8be; --card: #e5d9d0; --border: #c2b5aa;
+  --text: #2d2622; --text-dim: #6a5a4d; --text-muted: #928078;
+  --accent: #a55a3a; --accent-glow: rgba(165,90,58,0.1);
+  --grid: #ccbfb5; --graph-bg: #eee6de;
+  --green: #5a7a4a; --rose: #a03a3a; --violet: #6a4d7a;
+  --amber: #b07a2a; --blue: #3a5a7a; --orange: #b05a2a;
+}
+/* ── Dark Theme 1: Cyberpunk Neon ── */
+.theme-neon {
+  --bg: #0d0f1a; --card: #1a1c2e; --border: #2a2d4a;
+  --text: #e0e0f0; --text-dim: #8888b8; --text-muted: #5a5a8a;
+  --accent: #00ffc8; --accent-glow: rgba(0,255,200,0.1);
+  --grid: #1a1c2e; --graph-bg: #080a14;
+  --green: #00ff88; --rose: #ff4499; --violet: #8844ff;
+  --amber: #ffcc00; --blue: #4488ff; --orange: #ff6633;
+}
+/* ── Dark Theme 2: Vintage Dark ── */
+.theme-vintage {
+  --bg: #141210; --card: #22201c; --border: #3a3530;
+  --text: #d4cfc4; --text-dim: #8a8578; --text-muted: #6a655a;
+  --accent: #c49a5a; --accent-glow: rgba(196,154,90,0.1);
+  --grid: #22201c; --graph-bg: #0e0c0a;
+  --green: #6a9a5a; --rose: #aa5555; --violet: #7a5a8a;
+  --amber: #c4a040; --blue: #4a6a8a; --orange: #b07a3a;
+}
+/* ── Dark Theme 3: Cosmic Void ── */
+.theme-cosmic {
+  --bg: #070b14; --card: #111827; --border: #1e293b;
+  --text: #c8d0e0; --text-dim: #7a84a0; --text-muted: #4a5470;
+  --accent: #a78bfa; --accent-glow: rgba(167,139,250,0.1);
+  --grid: #111827; --graph-bg: #040810;
+  --green: #34d399; --rose: #fb7185; --violet: #c084fc;
+  --amber: #fbbf24; --blue: #60a5fa; --orange: #fb923c;
+}
+/* ── Dark Theme 4: One Dark ── */
+.theme-onedark {
+  --bg: #282c34; --card: #353b45; --border: #4b5263;
+  --text: #abb2bf; --text-dim: #7a8294; --text-muted: #5c6370;
+  --accent: #61afef; --accent-glow: rgba(97,175,239,0.1);
+  --grid: #353b45; --graph-bg: #21252b;
+  --green: #98c379; --rose: #e06c75; --violet: #c678dd;
+  --amber: #e5c07b; --blue: #61afef; --orange: #d19a66;
+}
+/* ── HAUS Academy (light: cream + gold + ink) ── */
+.theme-haus {
+  --bg: #F4EEE0; --card: #FFFFFF; --border: #E4DAC4;
+  --text: #1A1712; --text-dim: #5B5344; --text-muted: #948A74;
+  --accent: #A9820F; --accent-glow: rgba(169,130,15,0.12);
+  --grid: #EBE3D0; --graph-bg: #FCFAF2;
+  --green: #4E7A3F; --rose: #B5502E; --violet: #8A6D3B;
+  --amber: #A9820F; --blue: #4A7AB8; --orange: #A87A4A;
+}
+/* ── HAUS Night (dark: charcoal + brand gold + white) ── */
+.theme-hausnight {
+  --bg: #1a1c20; --card: #26282d; --border: #3a3c42;
+  --text: #FFFFFF; --text-dim: #e0e2e8; --text-muted: #a8aab2;
+  --accent: #F4C01E; --accent-glow: rgba(244,192,30,0.10);
+  --grid: #2a2c32; --graph-bg: #121418;
+  --green: #A6B36A; --rose: #D68B57; --violet: #CBAA6A;
+  --amber: #F4C01E; --blue: #5FB0C4; --orange: #D68B57;
+}
+.theme-haus .top-bar h1,.theme-haus .top-bar h1 span{color:#1A1712;}
+.theme-haus .badge-top{background:#F4C01E;color:#1A1712;border-color:#1A1712;}
+.theme-hausnight .top-bar h1,.theme-hausnight .top-bar h1 span{color:#FFFFFF;}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',sans-serif; transition:background .3s,color .3s;
+  min-height:100vh; display:flex; flex-direction:column; align-items:center;
+  padding:12px;
+}
+.container{max-width:1160px;width:100%;}
+
+/* ── Top bar ── */
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;}
+.top-bar h1{font-size:1.25rem;font-weight:700;display:flex;align-items:center;gap:8px;}
+.top-bar h1 span{color:var(--accent);}
+.badge-top{font-family:'JetBrains Mono',monospace;font-size:.55rem;padding:2px 8px;border-radius:12px;
+  background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent);}
+.top-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.mode-tabs{display:flex;gap:4px;background:var(--card);border-radius:8px;padding:3px;border:1px solid var(--border);}
+.mode-tab{padding:5px 12px;border-radius:6px;border:none;font-family:'JetBrains Mono',monospace;font-size:.65rem;
+  cursor:pointer;transition:all .2s;background:transparent;color:var(--text-dim);}
+.mode-tab:hover{color:var(--text);}
+.mode-tab.active{background:var(--accent-glow);color:var(--accent);}
+.theme-select{background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;
+  border-radius:8px;cursor:pointer;font-size:.7rem;font-family:'JetBrains Mono',monospace;outline:none;min-width:110px;}
+.theme-select:hover{border-color:var(--accent);}
+.brand{background:#F4C01E;border-radius:10px;padding:5px 9px;box-shadow:0 2px 6px rgba(0,0,0,.25);display:flex;align-items:center;}
+.brand img{width:52px;height:auto;display:block;}
+@media(max-width:640px){.brand{display:none;}}
+
+/* ── Toolbar: fixed rows, zero layout shift ── */
+.toolbar{display:flex;flex-direction:column;gap:8px;background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:10px 14px;margin-bottom:10px;}
+.trow{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;}
+.tgroup{display:flex;align-items:center;gap:6px;}
+.tlabel{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
+.pills{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px;}
+.pill{border:none;background:transparent;color:var(--text-dim);font-size:11.5px;padding:3px 11px;border-radius:16px;
+  cursor:pointer;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.pill.active{background:var(--blue);color:#fff;}
+.pills.locked,.tgroup.locked{opacity:.45;pointer-events:none;}
+.tin{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:4px 8px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;}
+.tin:focus{border-color:var(--accent);}
+.tin.w52{width:52px;}.tin.w60{width:60px;}.tin.w46{width:46px;}
+.tbtn{background:var(--bg);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:4px 12px;
+  font-size:12px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .15s;}
+.tbtn:hover{border-color:var(--accent);color:var(--accent);}
+.tbtn.on{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+.tbtn.gold{border-color:var(--amber);color:var(--amber);}
+.tbtn.gold.on{background:var(--amber);color:#1a1a1a;}
+.tbtn.primary{background:var(--blue);border-color:var(--blue);color:#fff;}
+.tbtn:disabled{opacity:.45;pointer-events:none;}
+.tbtn.locked{opacity:.45;pointer-events:none;}
+.tsep{width:1px;height:22px;background:var(--border);}
+
+/* ── Main layout ── */
+.main-grid{display:grid;grid-template-columns:644px 1fr;gap:12px;align-items:start;}
+@media(max-width:1020px){.main-grid{grid-template-columns:1fr;}}
+.canvas-card{position:relative;background:var(--card);border:1px solid var(--border);border-radius:12px;
+  padding:0;overflow:hidden;width:644px;max-width:100%;}
+#cv{display:block;width:640px;height:640px;max-width:100%;touch-action:none;cursor:crosshair;margin:1px;}
+.chip{position:absolute;font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 9px;border-radius:8px;
+  background:var(--card);border:1px solid var(--border);color:var(--text-dim);pointer-events:none;}
+#chipScale{top:8px;left:10px;color:var(--accent);border-color:var(--accent);}
+#chipInfo{top:8px;right:10px;}
+#chipZoom{top:34px;right:10px;color:var(--amber);border-color:var(--amber);pointer-events:auto;cursor:pointer;}
+#hintEl{position:absolute;bottom:20px;right:10px;font-size:10.5px;color:var(--text-muted);pointer-events:none;
+  font-family:'JetBrains Mono',monospace;background:var(--card);border:1px solid var(--border);
+  border-radius:8px;padding:2px 8px;opacity:.92;}
+#tipEl{position:absolute;display:none;font-family:'JetBrains Mono',monospace;font-size:11.5px;padding:3px 9px;
+  border-radius:8px;background:var(--card);border:1px solid var(--accent);color:var(--text);pointer-events:none;z-index:5;}
+
+/* edit popup */
+#editPop{position:absolute;display:none;z-index:10;background:var(--card);border:1px solid var(--accent);
+  border-radius:12px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.4);min-width:210px;}
+#editPop .ep-title{font-size:12px;font-weight:700;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+#editPop .ep-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;font-size:11.5px;color:var(--text-dim);}
+#editPop .ep-row label{width:88px;}
+#editPop input[type=color]{width:40px;height:26px;border:none;background:transparent;cursor:pointer;padding:0;}
+#editPop .ep-btns{display:flex;gap:6px;margin-top:9px;}
+.xbtn{background:transparent;border:none;color:var(--text-muted);cursor:pointer;font-size:14px;}
+
+/* ── Side panel ── */
+.side{display:flex;flex-direction:column;gap:10px;min-width:0;}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;}
+.panel h3{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:8px;}
+.badges{display:flex;flex-wrap:wrap;gap:6px;}
+.badge{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:11.5px;color:var(--text-dim);}
+.badge b{color:var(--text);font-family:'JetBrains Mono',monospace;}
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px;}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:9px 10px;text-align:center;}
+.card .cvl{font-size:19px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text);}
+.card .cvl.gold{color:var(--amber);}
+.card .cl{font-size:10.5px;color:var(--text-dim);margin-top:2px;}
+table.dt{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:11.5px;}
+table.dt th{color:var(--text-muted);font-weight:600;text-align:right;padding:4px 6px;border-bottom:1px solid var(--border);font-size:10.5px;}
+table.dt td{color:var(--text);text-align:right;padding:4px 6px;border-bottom:1px solid var(--border);}
+table.dt th:first-child,table.dt td:first-child{text-align:left;}
+table.dt tr.sum td{color:var(--amber);font-weight:700;border-top:2px solid var(--border);}
+.sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:baseline;}
+.sol{font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:1.75;color:var(--text-dim);white-space:pre-wrap;word-break:break-word;}
+.sol b{color:var(--text);}
+.sol .frm{color:var(--blue);}
+.sol .ans{color:var(--amber);font-weight:700;}
+.sol .stp{color:var(--accent);font-weight:700;}
+.note{font-size:11.5px;color:var(--text-muted);line-height:1.5;}
+.hidden{display:none !important;}
+
+/* practice */
+.prac-row{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin-top:6px;}
+.feed{margin-top:8px;padding:9px 11px;border-radius:9px;font-size:11.5px;line-height:1.7;display:none;
+  font-family:'JetBrains Mono',monospace;}
+.feed.good{display:block;background:rgba(52,211,153,.1);border:1px solid var(--green);color:var(--text);}
+.feed.bad{display:block;background:rgba(251,113,133,.1);border:1px solid var(--rose);color:var(--text);}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="top-bar">
+  <h1>➡️ <span>Vector Addition</span> <span class="badge-top">v1.0.0</span></h1>
+  <div class="top-right">
+    <div class="mode-tabs">
+      <button class="mode-tab active" data-tab="1">1 · Scale Diagram</button>
+      <button class="mode-tab" data-tab="2">2 · Triangle Rules</button>
+      <button class="mode-tab" data-tab="3">3 · Components</button>
+    </div>
+    <select class="theme-select" id="themeSel">
+      <option value="dark">🌙 Classic Dark</option>
+      <option value="hausnight">⌂ HAUS Night</option>
+      <option value="vintage">📜 Vintage Dark</option>
+      <option value="neon">🌃 Cyberpunk Neon</option>
+      <option value="cosmic">🌌 Cosmic Void</option>
+      <option value="onedark">💎 One Dark</option>
+      <option value="light">☀️ Classic Light</option>
+      <option value="haus">⌂ HAUS Day</option>
+      <option value="clay">🏺 Warm Clay</option>
+      <option value="sage">🌿 Soft Sage</option>
+      <option value="mist">🌫️ Mist Blue</option>
+    </select>
+    <div class="brand" aria-label="HAUS Academy"><img src="data:image/png;base64,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" alt="HAUS Academy"></div>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="trow">
+    <div class="tgroup"><span class="tlabel">Scale</span>
+      <span style="font-size:12px;color:var(--text-dim);font-family:'JetBrains Mono',monospace;">1 cm =</span>
+      <input class="tin w52" id="scaleInp" type="number" value="10" min="0.1" step="any">
+      <input class="tin w46" id="unitInp" type="text" value="N" maxlength="5">
+    </div>
+    <div class="tsep"></div>
+    <div class="tgroup"><span class="tlabel">Grid</span>
+      <div class="pills" id="gridPills">
+        <button class="pill" data-g="1">1</button>
+        <button class="pill" data-g="5">5</button>
+        <button class="pill active" data-g="10">10</button>
+        <button class="pill" data-g="50">50</button>
+      </div>
+    </div>
+    <div class="tsep"></div>
+    <div class="tgroup"><span class="tlabel">Angle</span>
+      <div class="pills" id="angPills">
+        <button class="pill active" data-a="east">0° → East</button>
+        <button class="pill" data-a="north">0° ↑ North</button>
+      </div>
+    </div>
+    <div class="tsep"></div>
+    <div class="tgroup"><span class="tlabel">Snap</span>
+      <button class="tbtn on" id="btnSnapGrid">⊞ Grid</button>
+      <button class="tbtn on" id="btnSnapTip">🔗 Tip-to-tail</button>
+    </div>
+    <div class="tgroup">
+      <button class="tbtn" id="btnLabels">🏷 Labels</button>
+    </div>
+  </div>
+  <div class="trow">
+    <div class="tgroup"><span class="tlabel">Add</span>
+      <input class="tin w60" id="magInp" type="number" placeholder="mag" min="0" step="any">
+      <input class="tin w60" id="angInpM" type="number" placeholder="angle°" step="any">
+      <button class="tbtn primary" id="btnAdd">＋ Add</button>
+    </div>
+    <div class="tsep"></div>
+    <div class="tgroup">
+      <button class="tbtn" id="btnReset">↺ Reset</button>
+      <button class="tbtn" id="btnRand">🎲 Random</button>
+      <button class="tbtn gold" id="btnRes">⭐ Resultant</button>
+    </div>
+    <div class="tsep"></div>
+    <div class="tgroup" id="grpTools"><span class="tlabel">Tools</span>
+      <button class="tbtn" id="btnRuler">📏 Ruler</button>
+      <button class="tbtn" id="btnProtr">📐 Protractor</button>
+      <button class="tbtn" id="btnPractice">🎯 Practice</button>
+      <button class="tbtn" id="btnEraser">🧽 Eraser</button>
+      <button class="tbtn" id="btnUndo" disabled>↶ Undo</button>
+    </div>
+    <div class="tsep"></div>
+    <div class="tgroup" id="grpComp"><span class="tlabel">View</span>
+      <button class="tbtn" id="btnComp">⊥ Components</button>
+      <button class="tbtn" id="btnSteps">🧮 Steps</button>
+    </div>
+  </div>
+</div>
+
+<div class="main-grid">
+  <div class="canvas-card">
+    <canvas id="cv" width="640" height="640"></canvas>
+    <div class="chip" id="chipScale">1 cm = 10 N</div>
+    <div class="chip" id="chipInfo">Vectors: 0/6</div>
+    <div class="chip" id="chipZoom" style="display:none;">🔍 2.5× — drag = pan · dbl-click/Esc = exit</div>
+    <div id="hintEl">drag = draw · dbl-click vector = edit · dbl-click space = zoom</div>
+    <div id="tipEl"></div>
+    <div id="editPop">
+      <div class="ep-title"><span>Edit vector</span><button class="xbtn" id="btnEdClose">✕</button></div>
+      <div class="ep-row"><label id="edMagL">Magnitude (N)</label><input class="tin w60" id="edMag" type="number" min="0" step="any"></div>
+      <div class="ep-row"><label id="edAngL">Angle (° East)</label><input class="tin w60" id="edAng" type="number" step="any"></div>
+      <div class="ep-row"><label>Color</label><input id="edColor" type="color" value="#58a6ff"></div>
+      <div class="ep-btns">
+        <button class="tbtn primary" id="btnEdApply">Apply</button>
+        <button class="tbtn" id="btnEdDel" style="border-color:var(--rose);color:var(--rose);">🗑 Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="side">
+    <div class="panel">
+      <h3>Readouts</h3>
+      <div class="badges" id="badges">
+        <span class="badge">Vectors <b id="vecCount">0</b></span>
+        <span class="badge">ΣFx <b id="bSFx">—</b></span>
+        <span class="badge">ΣFy <b id="bSFy">—</b></span>
+        <span class="badge">|R| <b id="bR">—</b></span>
+        <span class="badge">θ_R <b id="bTh">—</b></span>
+      </div>
+    </div>
+
+    <!-- TAB 1 -->
+    <div class="panel" id="panel1">
+      <h3>Method 1 — Drawing to Scale</h3>
+      <div class="note">Draw each vector tip-to-tail using the grid and scale. The resultant runs
+        from the tail of the first vector to the head of the last. Measure its length with the
+        <b>📏 Ruler</b> (convert cm → units with the scale) and its direction with the <b>📐 Protractor</b>.</div>
+      <div class="cards">
+        <div class="card"><div class="cvl" id="rulerOut">—</div><div class="cl">📏 Ruler measurement</div></div>
+        <div class="card"><div class="cvl" id="protrOut">—</div><div class="cl">📐 Protractor angle</div></div>
+      </div>
+      <div id="pracPanel" class="hidden" style="margin-top:10px;">
+        <h3>🎯 Practice — measure the resultant</h3>
+        <div class="note">The dashed vectors are given (locked). Draw / measure their resultant, then enter it:</div>
+        <div class="prac-row">
+          <button class="tbtn" id="btnPNew">↺ New</button>
+          <input class="tin" id="pMag" type="number" step="any" placeholder="magnitude" style="width:110px;">
+          <input class="tin" id="pAng" type="number" step="any" placeholder="angle °" style="width:90px;">
+          <button class="tbtn primary" id="btnPCheck">✓ Check</button>
+          <span class="badge">Score <b id="pScore">0/0</b></span>
+        </div>
+        <div class="feed" id="pFeed"></div>
+      </div>
+    </div>
+
+    <!-- TAB 2 -->
+    <div class="panel hidden" id="panel2">
+      <h3>Method 2 — Triangle + Sine/Cosine Rule</h3>
+      <div class="note" id="triNote">Add 2 vectors — they chain tip-to-tail and the gold third side closes the triangle.</div>
+      <table class="dt" style="margin-top:8px;">
+        <thead><tr><th>Side / Angle</th><th>Value</th><th></th><th>Value</th></tr></thead>
+        <tbody id="triBody"></tbody>
+      </table>
+      <div class="sol" id="triSol" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- TAB 3 -->
+    <div class="panel hidden" id="panel3">
+      <h3>Method 3 — Component Method</h3>
+      <table class="dt">
+        <thead><tr id="compHead"><th>Vector</th><th>F</th><th>θ</th><th>Fx</th><th>Fy</th></tr></thead>
+        <tbody id="compBody"></tbody>
+      </table>
+      <div class="cards">
+        <div class="card"><div class="cvl" id="cardFx">—</div><div class="cl">ΣFx</div></div>
+        <div class="card"><div class="cvl" id="cardFy">—</div><div class="cl">ΣFy</div></div>
+        <div class="card"><div class="cvl gold" id="cardR">—</div><div class="cl">R = √(ΣFx² + ΣFy²)</div></div>
+        <div class="card"><div class="cvl gold" id="cardTh">—</div><div class="cl" id="cardThL">θ = tan⁻¹(ΣFy/ΣFx)</div></div>
+      </div>
+      <div class="sol hidden" id="stepsPanel" style="margin-top:8px;"></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const cv = $("cv"), ctx = cv.getContext("2d");
+const CSSW = 640, CSSH = 640, PX = 40, CM = 16;      // 40 px = 1 cm, 16×16 cm
+const D2R = Math.PI/180, R2D = 180/Math.PI;
+const PALETTE = ["#58a6ff","#3fb950","#f0883e","#bc8cff","#39c5cf","#d29922"];
+
+// ===== STATE =====
+const S = {
+  tab: 1, theme: "dark",
+  scaleVal: 10, unit: "N",
+  gridUnits: 10,
+  angleMode: "east",          // 'east' | 'north'
+  snapGrid: true, snapTip: true, showLabels: false,
+  vectors: [],                // {id, mag, ang(deg East CCW), tail:{x,y} cm, color, locked}
+  nextId: 1,
+  showRes: false,
+  tool: null,                 // null | 'ruler' | 'protractor'
+  ruler: [],                  // [{x,y}] up to 2 (cm)
+  protr: [],                  // [{x,y}] up to 3: vertex, A, B
+  toolLive: null,             // live cursor pt during tool use
+  practice: {on:false, score:0, tries:0, revealed:false},
+  showComp: false, showSteps: false,
+  hover: null,                // vector id
+  drag: null,                 // {kind:'create'|'head'|'move', id, off:{x,y}}
+  edit: null,                 // vector id in popup
+  zoom: false, zoomF: 2.5, focus: { x: 8, y: 8 }   // double-click zoom
+};
+
+// ===== HELPERS =====
+const css = () => getComputedStyle(document.body);
+const col = n => css().getPropertyValue(n).trim();
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const fmt = v => { const r = Math.round(v*100)/100; return (Object.is(r,-0)?0:r).toString(); };
+const fmtA = v => (Math.round(v*10)/10).toFixed(1);
+const normA = a => ((a % 360) + 360) % 360;
+const e2n = e => normA(90 - e);
+const n2e = n => normA(90 - n);
+const dispA = e => S.angleMode === "east" ? normA(e) : e2n(e);
+const parseA = d => S.angleMode === "east" ? normA(d) : n2e(d);
+const angLabel = () => S.angleMode === "east" ? "from East (↻+CCW)" : "from North (↻ CW)";
+const maxVec = () => S.tab === 2 ? 3 : 6;
+const lenCm = v => v.mag / S.scaleVal;
+const toPx = p => [p.x * PX, CSSH - p.y * PX];
+const gridCm = () => S.gridUnits / S.scaleVal;
+
+function evtCm(e){
+  const r = cv.getBoundingClientRect();
+  let sx = (e.clientX - r.left) * CSSW / r.width;
+  let sy = (e.clientY - r.top) * CSSH / r.height;
+  if(S.zoom){                                   // invert the zoom transform
+    const f = S.zoomF, [fx, fy] = toPx(S.focus);
+    sx = (sx - (CSSW/2 - fx*f)) / f;
+    sy = (sy - (CSSH/2 - fy*f)) / f;
+  }
+  return { x: clamp(sx / PX, 0, CM),
+           y: clamp((CSSH - sy) / PX, 0, CM) };
+}
+function snapPt(p){
+  if(!S.snapGrid) return p;
+  const g = gridCm();
+  if(g < 0.05) return p;
+  return { x: clamp(Math.round(p.x/g)*g, 0, CM), y: clamp(Math.round(p.y/g)*g, 0, CM) };
+}
+// effective tail: tab 2 chains everything tip-to-tail
+function effTail(i){
+  const vs = visVecs();
+  if(S.tab !== 2 || i === 0) return vs[i].tail;
+  let t = vs[0].tail;
+  for(let k = 0; k < i; k++){
+    t = { x: t.x + lenCm(vs[k]) * Math.cos(vs[k].ang*D2R),
+          y: t.y + lenCm(vs[k]) * Math.sin(vs[k].ang*D2R) };
+  }
+  return t;
+}
+function vecPts(i){
+  const vs = visVecs(), v = vs[i], t = effTail(i);
+  return { t, h: { x: t.x + lenCm(v)*Math.cos(v.ang*D2R), y: t.y + lenCm(v)*Math.sin(v.ang*D2R) } };
+}
+function visVecs(){ return S.tab === 2 ? S.vectors.slice(0,3) : S.vectors; }
+function sums(){
+  let sx = 0, sy = 0;
+  for(const v of visVecs()){ sx += v.mag*Math.cos(v.ang*D2R); sy += v.mag*Math.sin(v.ang*D2R); }
+  return { sx, sy, R: Math.hypot(sx,sy), th: normA(Math.atan2(sy,sx)*R2D) };
+}
+function nextColor(){
+  for(const c of PALETTE) if(!S.vectors.some(v => v.color === c)) return c;
+  return PALETTE[S.vectors.length % PALETTE.length];
+}
+function addVector(mag, angE, tail, locked){
+  if(S.vectors.length >= maxVec()) return null;
+  const v = { id: S.nextId++, mag, ang: normA(angE), tail: {...tail}, color: nextColor(), locked: !!locked };
+  S.vectors.push(v);
+  return v;
+}
+function chainEnd(){
+  if(!S.vectors.length) return { x: 3, y: 3 };
+  const vs = visVecs(), p = vecPts(vs.length - 1);
+  return p.h;
+}
+
+// ===== UNDO HISTORY (vectors + measurement tools) =====
+const HIST = [];
+const snapState = () => JSON.stringify({ v: S.vectors, n: S.nextId, r: S.ruler, p: S.protr, t: S.tool });
+function pushHistory(){
+  HIST.push(snapState());
+  if(HIST.length > 60) HIST.shift();
+}
+function undo(){
+  if(!HIST.length) return;
+  const s = JSON.parse(HIST.pop());
+  S.vectors = s.v; S.nextId = s.n;
+  S.ruler = s.r || []; S.protr = s.p || []; S.tool = s.t || null;
+  S.toolLive = null; S.hover = null; S.drag = null;
+  closeEdit(); updateUI();
+}
+
+// ===== DRAW =====
+function draw(){
+  ctx.clearRect(0, 0, CSSW, CSSH);
+  ctx.fillStyle = col("--graph-bg");
+  ctx.fillRect(0, 0, CSSW, CSSH);
+  ctx.save();
+  if(S.zoom){                                   // zoom about the focus point
+    const f = S.zoomF, [fx, fy] = toPx(S.focus);
+    ctx.translate(CSSW/2 - fx*f, CSSH/2 - fy*f);
+    ctx.scale(f, f);
+  }
+  drawGrid();
+  const vs = visVecs();
+  if(S.tab === 3 && S.showComp) vs.forEach((v,i) => drawComponents(i));
+  if(S.tab === 2) drawTriangleExtras();
+  vs.forEach((v,i) => drawVector(i));
+  if(S.showRes && vs.length >= (S.tab===2?2:1) && !(S.tab===2)) drawResultant();
+  if(S.tab === 1) drawTools();
+  ctx.restore();
+}
+function drawGrid(){
+  const g = gridCm(), gp = g * PX;
+  const cGrid = col("--grid"), cDim = col("--text-muted"), cAx = col("--text-dim");
+  if(gp >= 6){
+    ctx.strokeStyle = cGrid; ctx.lineWidth = 1;
+    ctx.beginPath();
+    for(let x = 0; x <= CM + 1e-9; x += g){ const px = Math.round(x*PX)+.5; ctx.moveTo(px,0); ctx.lineTo(px,CSSH); }
+    for(let y = 0; y <= CM + 1e-9; y += g){ const py = Math.round(CSSH - y*PX)+.5; ctx.moveTo(0,py); ctx.lineTo(CSSW,py); }
+    ctx.stroke();
+  }
+  // axes
+  ctx.strokeStyle = cAx; ctx.lineWidth = 1.5;
+  ctx.beginPath();
+  ctx.moveTo(.5, 0); ctx.lineTo(.5, CSSH); ctx.moveTo(0, CSSH-.5); ctx.lineTo(CSSW, CSSH-.5);
+  ctx.stroke();
+  // tick labels in units
+  ctx.fillStyle = cDim; ctx.font = "10px 'JetBrains Mono',monospace";
+  const every = Math.max(1, Math.ceil(26 / gp));
+  ctx.textAlign = "center"; ctx.textBaseline = "top";
+  for(let i = every; i * g <= CM + 1e-9; i += every){
+    const u = i * S.gridUnits, px = i*g*PX;
+    if(px < CSSW - 12) ctx.fillText(fmt(u), px, CSSH - 13);
+  }
+  ctx.textAlign = "left"; ctx.textBaseline = "middle";
+  for(let i = every; i * g <= CM + 1e-9; i += every){
+    const u = i * S.gridUnits, py = CSSH - i*g*PX;
+    if(py > 12) ctx.fillText(fmt(u), 4, py);
+  }
+  ctx.fillText(S.unit, 4, 10);
+}
+function arrow(p1, p2, color, w, dash, glow){
+  const [x1,y1] = toPx(p1), [x2,y2] = toPx(p2);
+  const ang = Math.atan2(y2-y1, x2-x1), L = Math.hypot(x2-x1, y2-y1);
+  const hd = Math.min(13, Math.max(8, L*0.18));
+  ctx.save();
+  if(glow){ ctx.shadowColor = color; ctx.shadowBlur = 12; }
+  ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = w;
+  ctx.setLineDash(dash || []);
+  ctx.beginPath(); ctx.moveTo(x1,y1);
+  ctx.lineTo(x2 - hd*0.72*Math.cos(ang), y2 - hd*0.72*Math.sin(ang));
+  ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.beginPath();
+  ctx.moveTo(x2, y2);
+  ctx.lineTo(x2 - hd*Math.cos(ang - 0.42), y2 - hd*Math.sin(ang - 0.42));
+  ctx.lineTo(x2 - hd*Math.cos(ang + 0.42), y2 - hd*Math.sin(ang + 0.42));
+  ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+function drawVector(i){
+  const vs = visVecs(), v = vs[i], { t, h } = vecPts(i);
+  const hovered = S.hover === v.id;
+  arrow(t, h, v.color, hovered ? 3.5 : 2.5, v.locked ? [7,4] : []);
+  // tail dot
+  const [tx,ty] = toPx(t);
+  ctx.fillStyle = v.color; ctx.beginPath(); ctx.arc(tx,ty,3,0,7); ctx.fill();
+  // head handle
+  if(hovered && !v.locked){
+    const [hx,hy] = toPx(h);
+    ctx.strokeStyle = v.color; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(hx,hy,8,0,7); ctx.stroke();
+  }
+  if(S.showLabels || hovered){
+    const [hx,hy] = toPx(h);
+    const mx = (tx+hx)/2, my = (ty+hy)/2;
+    ctx.font = "600 11px 'JetBrains Mono',monospace";
+    const txt = `F${i+1}  ${fmt(v.mag)} ${S.unit} ∠${fmtA(dispA(v.ang))}°`;
+    const wTxt = ctx.measureText(txt).width;
+    const lx = clamp(mx + 10, 4, CSSW - wTxt - 8), ly = clamp(my - 10, 14, CSSH - 8);
+    ctx.fillStyle = col("--graph-bg"); ctx.globalAlpha = .82;
+    ctx.fillRect(lx - 3, ly - 10, wTxt + 6, 14);
+    ctx.globalAlpha = 1; ctx.fillStyle = v.color;
+    ctx.textAlign = "left"; ctx.textBaseline = "middle";
+    ctx.fillText(txt, lx, ly - 3);
+  }
+}
+function drawComponents(i){
+  const v = visVecs()[i], { t, h } = vecPts(i);
+  const cx = { x: h.x, y: t.y };  // corner of the component rectangle
+  arrow(t, cx, col("--blue"), 1.8, [6,4]);            // Fx along x
+  arrow(cx, h, col("--green"), 1.8, [6,4]);           // Fy along y
+  const [px1,py1] = toPx({x:(t.x+cx.x)/2, y:t.y}), [px2,py2] = toPx({x:h.x, y:(cx.y+h.y)/2});
+  ctx.font = "10.5px 'JetBrains Mono',monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  const fx = v.mag*Math.cos(v.ang*D2R), fy = v.mag*Math.sin(v.ang*D2R);
+  if(Math.abs(fx) > 1e-9){ ctx.fillStyle = col("--blue"); ctx.fillText(`F${i+1}x=${fmt(fx)}`, px1, py1 + (fy>=0?12:-12)); }
+  if(Math.abs(fy) > 1e-9){ ctx.fillStyle = col("--green"); ctx.fillText(`F${i+1}y=${fmt(fy)}`, px2 + (fx>=0?30:-30), py2); }
+}
+function drawResultant(){
+  const vs = visVecs(); if(!vs.length) return;
+  const s = sums(); if(s.R < 1e-9) return;
+  const t = vs[0].tail;
+  const h = { x: t.x + s.R/S.scaleVal*Math.cos(s.th*D2R), y: t.y + s.R/S.scaleVal*Math.sin(s.th*D2R) };
+  arrow(t, h, col("--amber"), 3.5, [], true);
+  const [hx,hy] = toPx(h);
+  ctx.font = "700 12px 'JetBrains Mono',monospace"; ctx.fillStyle = col("--amber");
+  ctx.textAlign = "left"; ctx.textBaseline = "bottom";
+  ctx.fillText(`R = ${fmt(s.R)} ${S.unit} ∠${fmtA(dispA(s.th))}°`, clamp(hx + 8, 4, CSSW-170), clamp(hy - 6, 16, CSSH-4));
+}
+function interiorAngle(V, P, Q){   // angle at vertex V between VP and VQ (deg)
+  const a1 = Math.atan2(P.y - V.y, P.x - V.x), a2 = Math.atan2(Q.y - V.y, Q.x - V.x);
+  let d = Math.abs(a1 - a2) * R2D; if(d > 180) d = 360 - d;
+  return d;
+}
+function triPts(){
+  const vs = visVecs(); if(vs.length < 2) return null;
+  const P0 = effTail(0), p1 = vecPts(0), p2 = vecPts(1);
+  return { P0, P1: p1.h, P2: p2.h };
+}
+function drawTriangleExtras(){
+  const T = triPts(); if(!T) return;
+  const vs = visVecs();
+  // closing side (gold) unless a 3rd vector already closes it
+  let closed = false;
+  if(vs.length >= 3){
+    const p3 = vecPts(2);
+    closed = Math.hypot(p3.h.x - T.P0.x, p3.h.y - T.P0.y) < 0.25;
+  }
+  if(vs.length === 2) arrow(T.P0, T.P2, col("--amber"), 3, [], true);
+  // vertex angle arcs + labels A,B,C (opposite sides a,b,c)
+  const marks = [
+    { V: T.P2, P: T.P0, Q: T.P1, lab: "A" },
+    { V: T.P0, P: T.P1, Q: T.P2, lab: "B" },
+    { V: T.P1, P: T.P0, Q: T.P2, lab: "C" }
+  ];
+  ctx.font = "700 12px 'JetBrains Mono',monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+  for(const m of marks){
+    const [vx,vy] = toPx(m.V);
+    const a1 = Math.atan2(...(()=>{ const [px,py] = toPx(m.P); return [py - vy, px - vx]; })());
+    const a2 = Math.atan2(...(()=>{ const [px,py] = toPx(m.Q); return [py - vy, px - vx]; })());
+    let d1 = a1, d2 = a2;
+    let sweep = d2 - d1;
+    while(sweep < -Math.PI) sweep += 2*Math.PI;
+    while(sweep >  Math.PI) sweep -= 2*Math.PI;
+    ctx.strokeStyle = col("--violet"); ctx.lineWidth = 1.6;
+    ctx.beginPath(); ctx.arc(vx, vy, 18, d1, d1 + sweep, sweep < 0); ctx.stroke();
+    const mid = d1 + sweep/2;
+    ctx.fillStyle = col("--violet");
+    ctx.fillText(m.lab, vx + 30*Math.cos(mid), vy + 30*Math.sin(mid));
+  }
+  // side labels a,b,c at midpoints
+  const sides = [
+    { A: T.P0, B: T.P1, lab: "a" },
+    { A: T.P1, B: T.P2, lab: "b" },
+    { A: T.P0, B: T.P2, lab: "c" }
+  ];
+  ctx.font = "italic 700 13px 'JetBrains Mono',monospace";
+  for(const sd of sides){
+    const [x1,y1] = toPx(sd.A), [x2,y2] = toPx(sd.B);
+    const mx = (x1+x2)/2, my = (y1+y2)/2;
+    const nx = -(y2-y1), ny = (x2-x1), nl = Math.hypot(nx,ny) || 1;
+    ctx.fillStyle = sd.lab === "c" ? col("--amber") : col("--text-dim");
+    ctx.fillText(sd.lab, mx + 14*nx/nl, my + 14*ny/nl);
+  }
+}
+function drawTools(){
+  const cA = col("--accent");
+  // Ruler
+  if(S.tool === "ruler" && (S.ruler.length || S.toolLive)){
+    const p1 = S.ruler[0], p2 = S.ruler[1] || S.toolLive;
+    if(p1 && p2){
+      const [x1,y1] = toPx(p1), [x2,y2] = toPx(p2);
+      ctx.save();
+      ctx.strokeStyle = cA; ctx.lineWidth = 2; ctx.setLineDash([2,3]);
+      ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+      ctx.setLineDash([]);
+      // end ticks perpendicular
+      const a = Math.atan2(y2-y1, x2-x1);
+      for(const [ex,ey] of [[x1,y1],[x2,y2]]){
+        ctx.beginPath();
+        ctx.moveTo(ex - 7*Math.sin(a), ey + 7*Math.cos(a));
+        ctx.lineTo(ex + 7*Math.sin(a), ey - 7*Math.cos(a));
+        ctx.stroke();
+      }
+      const dCm = Math.hypot(p2.x-p1.x, p2.y-p1.y);
+      ctx.font = "700 12px 'JetBrains Mono',monospace"; ctx.fillStyle = cA;
+      ctx.textAlign = "center"; ctx.textBaseline = "bottom";
+      ctx.fillText(`${dCm.toFixed(2)} cm = ${fmt(dCm*S.scaleVal)} ${S.unit}`, (x1+x2)/2, Math.min(y1,y2) - 8);
+      ctx.restore();
+    } else if(p1){
+      const [x1,y1] = toPx(p1);
+      ctx.fillStyle = cA; ctx.beginPath(); ctx.arc(x1,y1,4,0,7); ctx.fill();
+    }
+  }
+  // Protractor
+  if(S.tool === "protractor" && S.protr.length){
+    const V = S.protr[0], A = S.protr[1] || S.toolLive, B = S.protr[2] || (S.protr[1] ? S.toolLive : null);
+    const [vx,vy] = toPx(V);
+    ctx.save();
+    ctx.strokeStyle = cA; ctx.fillStyle = cA;
+    ctx.beginPath(); ctx.arc(vx,vy,4,0,7); ctx.fill();
+    const ray = P => {
+      const [px,py] = toPx(P);
+      ctx.setLineDash([5,4]); ctx.lineWidth = 1.8;
+      ctx.beginPath(); ctx.moveTo(vx,vy); ctx.lineTo(px,py); ctx.stroke(); ctx.setLineDash([]);
+    };
+    if(A) ray(A);
+    if(B) ray(B);
+    if(A && B){
+      const a1 = Math.atan2(...(()=>{ const [px,py]=toPx(A); return [py-vy, px-vx]; })());
+      const a2 = Math.atan2(...(()=>{ const [px,py]=toPx(B); return [py-vy, px-vx]; })());
+      let sweep = a2 - a1;
+      while(sweep < -Math.PI) sweep += 2*Math.PI;
+      while(sweep >  Math.PI) sweep -= 2*Math.PI;
+      ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(vx,vy,26,a1,a1+sweep,sweep<0); ctx.stroke();
+      const deg = interiorAngle(V, A, B);
+      const mid = a1 + sweep/2;
+      ctx.font = "700 13px 'JetBrains Mono',monospace";
+      ctx.textAlign = "center"; ctx.textBaseline = "middle";
+      ctx.fillText(`${fmtA(deg)}°`, vx + 44*Math.cos(mid), vy + 44*Math.sin(mid));
+    }
+    ctx.restore();
+  }
+}
+
+// ===== UI =====
+function updateUI(){
+  // chips + badges
+  $("chipScale").textContent = `1 cm = ${fmt(S.scaleVal)} ${S.unit}`;
+  $("chipInfo").textContent = `Vectors: ${visVecs().length}/${maxVec()}` + (S.tool ? ` · ${S.tool}` : "");
+  $("chipZoom").style.display = S.zoom ? "block" : "none";
+  $("vecCount").textContent = visVecs().length;
+  const s = sums(), has = visVecs().length > 0;
+  const hideAns = S.practice.on && !S.practice.revealed;   // practice: answers hidden until ✓ Check
+  $("bSFx").textContent = !has ? "—" : hideAns ? "?" : fmt(s.sx) + " " + S.unit;
+  $("bSFy").textContent = !has ? "—" : hideAns ? "?" : fmt(s.sy) + " " + S.unit;
+  $("bR").textContent  = !has ? "—" : hideAns ? "?" : fmt(s.R) + " " + S.unit;
+  $("bTh").textContent = !has || s.R <= 1e-9 ? "—" : hideAns ? "?" : fmtA(dispA(s.th)) + "°";
+  // toolbar toggles
+  $("btnSnapGrid").classList.toggle("on", S.snapGrid);
+  $("btnSnapTip").classList.toggle("on", S.snapTip);
+  $("btnLabels").classList.toggle("on", S.showLabels);
+  $("btnRes").classList.toggle("on", S.showRes);
+  $("btnRuler").classList.toggle("on", S.tool === "ruler");
+  $("btnProtr").classList.toggle("on", S.tool === "protractor");
+  $("btnPractice").classList.toggle("on", S.practice.on);
+  $("btnEraser").classList.toggle("on", S.tool === "eraser");
+  $("btnUndo").disabled = !HIST.length;
+  $("btnComp").classList.toggle("on", S.showComp);
+  $("btnSteps").classList.toggle("on", S.showSteps);
+  ["btnRuler","btnProtr","btnPractice"].forEach(id => $(id).classList.toggle("locked", S.tab !== 1));
+  $("grpComp").classList.toggle("locked", S.tab !== 3);
+  $("btnRes").disabled = S.tab === 2 || hideAns;
+  if(hideAns) S.showRes = false;                           // no peeking at the gold vector
+  // tabs + panels
+  document.querySelectorAll(".mode-tab").forEach(b => b.classList.toggle("active", +b.dataset.tab === S.tab));
+  $("panel1").classList.toggle("hidden", S.tab !== 1);
+  $("panel2").classList.toggle("hidden", S.tab !== 2);
+  $("panel3").classList.toggle("hidden", S.tab !== 3);
+  $("pracPanel").classList.toggle("hidden", !S.practice.on);
+  // angle placeholder text
+  $("angInpM").placeholder = S.angleMode === "east" ? "°East" : "°North";
+  // tool readouts
+  if(S.ruler.length === 2){
+    const d = Math.hypot(S.ruler[1].x - S.ruler[0].x, S.ruler[1].y - S.ruler[0].y);
+    $("rulerOut").textContent = `${d.toFixed(2)} cm = ${fmt(d*S.scaleVal)} ${S.unit}`;
+  } else $("rulerOut").textContent = "—";
+  if(S.protr.length === 3){
+    $("protrOut").textContent = fmtA(interiorAngle(S.protr[0], S.protr[1], S.protr[2])) + "°";
+  } else $("protrOut").textContent = "—";
+  $("pScore").textContent = `${S.practice.score}/${S.practice.tries}`;
+  if(S.tab === 2) updateTriangle();
+  if(S.tab === 3) updateComponents();
+  draw();
+}
+
+function updateTriangle(){
+  const vs = visVecs(), body = $("triBody"), sol = $("triSol");
+  if(vs.length < 2){
+    $("triNote").textContent = "Add 2 vectors — they chain tip-to-tail and the gold third side closes the triangle.";
+    body.innerHTML = ""; sol.innerHTML = ""; return;
+  }
+  const T = triPts();
+  const a = vs[0].mag, b = vs[1].mag;
+  const c = Math.hypot(T.P2.x - T.P0.x, T.P2.y - T.P0.y) * S.scaleVal;
+  const A = interiorAngle(T.P2, T.P0, T.P1);
+  const B = interiorAngle(T.P0, T.P1, T.P2);
+  const Cg = interiorAngle(T.P1, T.P0, T.P2);
+  let note = "Sides a = F1, b = F2 · gold side c = resultant.";
+  if(vs.length >= 3){
+    const p3 = vecPts(2);
+    const gap = Math.hypot(p3.h.x - T.P0.x, p3.h.y - T.P0.y) * S.scaleVal;
+    note = gap < S.scaleVal*0.25
+      ? "✓ Closed triangle — three vectors in equilibrium (ΣF = 0)."
+      : `Third vector doesn't close the triangle (gap ${fmt(gap)} ${S.unit}) — drag its head to the start point.`;
+  }
+  $("triNote").textContent = note;
+  const degenerate = c < 1e-6 || a < 1e-6 || b < 1e-6;
+  body.innerHTML =
+    `<tr><td>a (F1)</td><td>${fmt(a)} ${S.unit}</td><td style="color:var(--violet)">∠A</td><td>${fmtA(A)}°</td></tr>` +
+    `<tr><td>b (F2)</td><td>${fmt(b)} ${S.unit}</td><td style="color:var(--violet)">∠B</td><td>${fmtA(B)}°</td></tr>` +
+    `<tr class="sum"><td>c ${vs.length>=3?"(F3)":"(R)"}</td><td>${fmt(c)} ${S.unit}</td><td style="color:var(--violet)">∠C</td><td>${fmtA(Cg)}°</td></tr>`;
+  if(degenerate){ sol.innerHTML = "<i>Triangle is degenerate — make both vectors non-zero and non-collinear.</i>"; return; }
+  const cosC = Math.cos(Cg*D2R);
+  const cCalc = Math.sqrt(Math.max(0, a*a + b*b - 2*a*b*cosC));
+  const Acalc = Math.asin(clamp(a*Math.sin(Cg*D2R)/(cCalc||1), -1, 1)) * R2D;
+  const dir = normA(Math.atan2(T.P2.y - T.P0.y, T.P2.x - T.P0.x) * R2D);
+  sol.innerHTML =
+    `<span class="stp">① Cosine rule (side c):</span>\n` +
+    `<span class="frm">c² = a² + b² − 2ab·cos C</span>\n` +
+    `c² = ${fmt(a)}² + ${fmt(b)}² − 2(${fmt(a)})(${fmt(b)})·cos ${fmtA(Cg)}°\n` +
+    `c  = <span class="ans">${fmt(cCalc)} ${S.unit}</span>\n` +
+    `<span class="stp">② Sine rule (angle A):</span>\n` +
+    `<span class="frm">a / sin A = c / sin C</span>\n` +
+    `sin A = ${fmt(a)} × sin ${fmtA(Cg)}° / ${fmt(cCalc)}  →  A = <span class="ans">${fmtA(Acalc)}°</span>\n` +
+    `<span class="stp">③ Angle sum:</span>  B = 180° − ${fmtA(Cg)}° − ${fmtA(Acalc)}° = <span class="ans">${fmtA(180 - Cg - Acalc)}°</span>\n` +
+    (vs.length < 3 ? `<span class="stp">④ Resultant direction:</span>  θ_R = <span class="ans">${fmtA(dispA(dir))}° ${angLabel()}</span>` : "");
+}
+
+function updateComponents(){
+  const vs = visVecs(), body = $("compBody");
+  const east = S.angleMode === "east";
+  $("compHead").innerHTML = `<th>Vector</th><th>F (${S.unit})</th><th>θ (°)</th>` +
+    `<th>Fx = F·${east?"cos":"sin"} θ</th><th>Fy = F·${east?"sin":"cos"} θ</th>`;
+  let rows = "", sx = 0, sy = 0;
+  vs.forEach((v,i) => {
+    const fx = v.mag*Math.cos(v.ang*D2R), fy = v.mag*Math.sin(v.ang*D2R);
+    sx += fx; sy += fy;
+    rows += `<tr><td><span class="sw" style="background:${v.color}"></span>F${i+1}</td>` +
+      `<td>${fmt(v.mag)}</td><td>${fmtA(dispA(v.ang))}</td><td>${fmt(fx)}</td><td>${fmt(fy)}</td></tr>`;
+  });
+  if(vs.length) rows += `<tr class="sum"><td>Σ</td><td></td><td></td><td>${fmt(sx)}</td><td>${fmt(sy)}</td></tr>`;
+  body.innerHTML = rows || `<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">no vectors yet</td></tr>`;
+  const s = sums(), has = vs.length > 0;
+  $("cardFx").textContent = has ? fmt(s.sx) + " " + S.unit : "—";
+  $("cardFy").textContent = has ? fmt(s.sy) + " " + S.unit : "—";
+  $("cardR").textContent  = has ? fmt(s.R) + " " + S.unit : "—";
+  $("cardTh").textContent = has && s.R > 1e-9 ? fmtA(dispA(s.th)) + "°" : "—";
+  $("stepsPanel").classList.toggle("hidden", !S.showSteps);
+  if(S.showSteps && has){
+    let t = `<span class="stp">① Resolve each vector:</span>\n`;
+    vs.forEach((v,i) => {
+      const fx = v.mag*Math.cos(v.ang*D2R), fy = v.mag*Math.sin(v.ang*D2R);
+      const dth = fmtA(dispA(v.ang));
+      t += east
+        ? `F${i+1}x = ${fmt(v.mag)}·cos ${dth}° = ${fmt(fx)}   F${i+1}y = ${fmt(v.mag)}·sin ${dth}° = ${fmt(fy)}\n`
+        : `F${i+1}x = ${fmt(v.mag)}·sin ${dth}° = ${fmt(fx)}   F${i+1}y = ${fmt(v.mag)}·cos ${dth}° = ${fmt(fy)}\n`;
+    });
+    t += `<span class="stp">② Sum the components:</span>\n` +
+      `ΣFx = ${vs.map(v => fmt(v.mag*Math.cos(v.ang*D2R))).join(" + ").replace(/\+ -/g,"− ")} = <b>${fmt(s.sx)}</b>\n` +
+      `ΣFy = ${vs.map(v => fmt(v.mag*Math.sin(v.ang*D2R))).join(" + ").replace(/\+ -/g,"− ")} = <b>${fmt(s.sy)}</b>\n` +
+      `<span class="stp">③ Magnitude (Pythagoras):</span>\n` +
+      `<span class="frm">R = √(ΣFx² + ΣFy²)</span> = √(${fmt(s.sx)}² + ${fmt(s.sy)}²) = <span class="ans">${fmt(s.R)} ${S.unit}</span>\n` +
+      `<span class="stp">④ Direction:</span>\n` +
+      `<span class="frm">θ = tan⁻¹(ΣFy / ΣFx)</span> = tan⁻¹(${fmt(s.sy)} / ${fmt(s.sx)}) → <span class="ans">${fmtA(dispA(s.th))}° ${angLabel()}</span>` +
+      ((s.sx < 0) ? `\n<i>(ΣFx &lt; 0 → adjust the calculator angle into the correct quadrant)</i>` : "");
+    $("stepsPanel").innerHTML = t;
+  } else $("stepsPanel").innerHTML = "";
+}
+
+// ===== INTERACTION =====
+function hitTest(p){       // p in cm → {kind, id} | null
+  const vs = visVecs();
+  for(let i = vs.length - 1; i >= 0; i--){          // heads first, topmost first
+    if(vs[i].locked) continue;
+    const { h } = vecPts(i);
+    if(Math.hypot(p.x - h.x, p.y - h.y) * PX < 11) return { kind: "head", id: vs[i].id, idx: i };
+  }
+  for(let i = vs.length - 1; i >= 0; i--){
+    const { t, h } = vecPts(i);
+    const dx = h.x - t.x, dy = h.y - t.y, L2 = dx*dx + dy*dy;
+    if(L2 < 1e-12) continue;
+    const u = clamp(((p.x - t.x)*dx + (p.y - t.y)*dy) / L2, 0, 1);
+    const qx = t.x + u*dx, qy = t.y + u*dy;
+    if(Math.hypot(p.x - qx, p.y - qy) * PX < 8) return { kind: "move", id: vs[i].id, idx: i };
+  }
+  return null;
+}
+function setHead(v, hp){    // update mag/ang from a head point (cm)
+  const t = effTail(visVecs().indexOf(v));
+  let h = snapPt(hp);
+  const dx = h.x - t.x, dy = h.y - t.y;
+  const L = Math.hypot(dx, dy);
+  if(L < 0.05) return;
+  v.mag = L * S.scaleVal;
+  v.ang = normA(Math.atan2(dy, dx) * R2D);
+}
+function snapTail(p, excludeId){
+  if(!S.snapTip) return p;
+  const vs = visVecs();
+  for(let i = 0; i < vs.length; i++){
+    if(vs[i].id === excludeId) continue;
+    const { h } = vecPts(i);
+    if(Math.hypot(p.x - h.x, p.y - h.y) < 0.35) return { x: h.x, y: h.y };
+  }
+  return p;
+}
+
+cv.addEventListener("pointerdown", e => {
+  closeEdit();
+  const raw = evtCm(e);
+  cv.setPointerCapture(e.pointerId);
+  if(S.tool === "eraser"){
+    const hit = hitTest(raw);
+    if(hit){
+      const v = S.vectors.find(x => x.id === hit.id);
+      if(v && !v.locked){
+        pushHistory();
+        S.vectors = S.vectors.filter(x => x.id !== hit.id);
+        S.hover = null;
+      }
+    }
+    updateUI(); return;
+  }
+  if(S.tab === 1 && S.tool === "ruler"){
+    pushHistory();
+    if(S.ruler.length >= 2) S.ruler = [];
+    S.ruler = [snapPt(raw)]; S.toolLive = raw;
+    S.drag = { kind: "tool" }; updateUI(); return;
+  }
+  if(S.tab === 1 && S.tool === "protractor"){
+    pushHistory();
+    if(S.protr.length >= 3) S.protr = [];
+    S.protr.push(snapPt(raw)); S.toolLive = raw;
+    updateUI(); return;
+  }
+  const hit = hitTest(raw);
+  if(hit){
+    const v = S.vectors.find(x => x.id === hit.id);
+    if(hit.kind === "head"){ pushHistory(); S.drag = { kind: "head", id: v.id }; }
+    else {
+      if(v.locked || S.tab === 2){ S.drag = null; return; }
+      pushHistory();
+      S.drag = { kind: "move", id: v.id, off: { x: raw.x - v.tail.x, y: raw.y - v.tail.y } };
+    }
+    updateUI(); return;
+  }
+  // while zoomed: hold left-click on empty space = pan the view
+  if(S.zoom){
+    const r = cv.getBoundingClientRect();
+    S.drag = { kind: "pan", sf: { ...S.focus },
+               sx: (e.clientX - r.left) * CSSW / r.width,
+               sy: (e.clientY - r.top) * CSSH / r.height };
+    cv.style.cursor = "grabbing";
+    return;
+  }
+  // create new vector by dragging
+  if(S.vectors.length >= maxVec()) return;
+  pushHistory();
+  let tail = S.tab === 2 && S.vectors.length ? chainEnd() : snapTail(snapPt(raw));
+  const v = addVector(0.001, 0, tail, false);
+  S.drag = { kind: "create", id: v.id };
+  updateUI();
+});
+cv.addEventListener("pointermove", e => {
+  const raw = evtCm(e);
+  if(S.drag){
+    if(S.drag.kind === "pan"){
+      const r = cv.getBoundingClientRect(), f = S.zoomF;
+      const sx = (e.clientX - r.left) * CSSW / r.width;
+      const sy = (e.clientY - r.top) * CSSH / r.height;
+      S.focus = { x: clamp(S.drag.sf.x - (sx - S.drag.sx) / (f*PX), 0, CM),
+                  y: clamp(S.drag.sf.y + (sy - S.drag.sy) / (f*PX), 0, CM) };
+      updateUI(); return;
+    }
+    if(S.drag.kind === "tool"){ S.toolLive = snapPt(raw); updateUI(); return; }
+    const v = S.vectors.find(x => x.id === S.drag.id);
+    if(!v) { S.drag = null; return; }
+    if(S.drag.kind === "create" || S.drag.kind === "head"){ setHead(v, raw); }
+    else if(S.drag.kind === "move"){
+      let t = snapPt({ x: raw.x - S.drag.off.x, y: raw.y - S.drag.off.y });
+      t = snapTail(t, v.id);
+      const l = lenCm(v);
+      t.x = clamp(t.x, 0, CM); t.y = clamp(t.y, 0, CM);
+      v.tail = t;
+    }
+    updateUI(); return;
+  }
+  if(S.tab === 1 && S.tool === "protractor" && S.protr.length && S.protr.length < 3){
+    S.toolLive = snapPt(raw); updateUI(); return;
+  }
+  // hover
+  const hit = hitTest(raw);
+  const newHover = hit ? hit.id : null;
+  if(newHover !== S.hover){ S.hover = newHover; updateUI(); }
+  const tip = $("tipEl");
+  if(hit){
+    const idx = visVecs().findIndex(x => x.id === hit.id), v = visVecs()[idx];
+    tip.textContent = `F${idx+1}: ${fmt(v.mag)} ${S.unit} ∠${fmtA(dispA(v.ang))}°`;
+    tip.style.display = "block";
+    const r = cv.getBoundingClientRect(), cc = cv.parentElement.getBoundingClientRect();
+    tip.style.left = clamp(e.clientX - cc.left + 14, 4, cc.width - 150) + "px";
+    tip.style.top  = clamp(e.clientY - cc.top - 26, 4, cc.height - 30) + "px";
+    cv.style.cursor = hit.kind === "head" ? "grab" : "move";
+  } else {
+    tip.style.display = "none";
+    cv.style.cursor = S.zoom && !S.tool ? "grab" : "crosshair";
+  }
+  if(S.tool === "eraser") cv.style.cursor = hit ? "pointer" : "not-allowed";
+});
+cv.addEventListener("pointerup", e => {
+  if(!S.drag) return;
+  if(S.drag.kind === "pan"){
+    S.drag = null; cv.style.cursor = "grab"; updateUI(); return;
+  }
+  if(S.drag.kind === "tool"){
+    const raw = snapPt(evtCm(e));
+    if(S.ruler.length === 1 && Math.hypot(raw.x - S.ruler[0].x, raw.y - S.ruler[0].y) > 0.12){
+      S.ruler.push(raw);
+    }
+    S.toolLive = null;
+    if(HIST.length && HIST[HIST.length-1] === snapState()) HIST.pop();  // no-op measurement
+  } else if(S.drag.kind === "create"){
+    const v = S.vectors.find(x => x.id === S.drag.id);
+    if(v && v.mag < S.scaleVal*0.1){                 // too tiny → discard
+      S.vectors = S.vectors.filter(x => x.id !== v.id);
+      HIST.pop();                                    // nothing happened → drop the snapshot
+    }
+  } else if(S.drag.kind === "head" || S.drag.kind === "move"){
+    // click without actual change → drop the no-op snapshot
+    if(HIST.length && HIST[HIST.length-1] === snapState()) HIST.pop();
+  }
+  S.drag = null;
+  updateUI();
+});
+cv.addEventListener("dblclick", e => {
+  const p = evtCm(e);
+  const hit = hitTest(p);
+  if(hit){
+    const v = S.vectors.find(x => x.id === hit.id);
+    if(!v.locked) openEdit(v, e);
+    return;
+  }
+  // empty space → toggle zoom (in-progress tool points are cleared)
+  if(S.tool){ S.ruler = []; S.protr = []; S.toolLive = null; }
+  if(!S.zoom){ S.focus = p; S.zoom = true; }
+  else S.zoom = false;
+  updateUI();
+});
+$("chipZoom").addEventListener("click", () => { S.zoom = false; updateUI(); });
+window.addEventListener("keydown", e => {
+  if(e.key === "Escape"){
+    if(S.edit !== null) closeEdit();
+    else if(S.zoom) S.zoom = false;
+    else if(S.tool){ S.tool = null; S.ruler = []; S.protr = []; }
+    updateUI();
+  }
+  if((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z"){
+    if(e.target.tagName === "INPUT") return;
+    e.preventDefault(); undo();
+  }
+});
+
+// ===== EDIT POPUP =====
+function openEdit(v, e){
+  S.edit = v.id;
+  const idx = visVecs().findIndex(x => x.id === v.id);
+  $("edMagL").textContent = `Magnitude (${S.unit})`;
+  $("edAngL").textContent = S.angleMode === "east" ? "Angle (° East)" : "Angle (° North)";
+  $("edMag").value = fmt(v.mag);
+  $("edAng").value = fmtA(dispA(v.ang));
+  $("edColor").value = v.color;
+  const pop = $("editPop"), cc = cv.parentElement.getBoundingClientRect();
+  pop.style.display = "block";
+  pop.style.left = clamp(e.clientX - cc.left + 10, 4, cc.width - 230) + "px";
+  pop.style.top  = clamp(e.clientY - cc.top + 10, 4, cc.height - 190) + "px";
+  pop.querySelector(".ep-title span").textContent = `Edit F${idx+1}`;
+}
+function closeEdit(){ S.edit = null; $("editPop").style.display = "none"; }
+$("btnEdApply").addEventListener("click", () => {
+  const v = S.vectors.find(x => x.id === S.edit);
+  if(v){
+    pushHistory();
+    const m = parseFloat($("edMag").value), a = parseFloat($("edAng").value);
+    if(isFinite(m) && m > 0) v.mag = m;
+    if(isFinite(a)) v.ang = parseA(a);
+    v.color = $("edColor").value;
+  }
+  closeEdit(); updateUI();
+});
+$("btnEdDel").addEventListener("click", () => {
+  pushHistory();
+  S.vectors = S.vectors.filter(x => x.id !== S.edit);
+  closeEdit(); updateUI();
+});
+$("btnEdClose").addEventListener("click", () => { closeEdit(); updateUI(); });
+
+// ===== TOOLBAR EVENTS =====
+$("themeSel").addEventListener("change", e => setTheme(e.target.value));
+function setTheme(name){
+  const cls = ["theme-neon","theme-vintage","theme-cosmic","theme-onedark","theme-warm","theme-sage","theme-light","theme-mist","theme-clay","theme-haus","theme-hausnight"];
+  document.body.classList.remove(...cls);
+  if(name !== "dark") document.body.classList.add("theme-" + name);
+  S.theme = name;
+  draw();
+}
+document.querySelectorAll(".mode-tab").forEach(b => b.addEventListener("click", () => {
+  S.tab = +b.dataset.tab;
+  S.tool = null; S.ruler = []; S.protr = []; S.toolLive = null;
+  if(S.tab !== 1 && S.practice.on) exitPractice();
+  if(S.tab === 2){ S.showRes = false; S.vectors = S.vectors.slice(0, 3); }
+  closeEdit(); updateUI();
+}));
+$("scaleInp").addEventListener("change", e => {
+  const v = parseFloat(e.target.value);
+  if(isFinite(v) && v > 0){ S.scaleVal = v; } else e.target.value = S.scaleVal;
+  updateUI();
+});
+$("unitInp").addEventListener("change", e => {
+  S.unit = e.target.value.trim() || "N";
+  e.target.value = S.unit;
+  updateUI();
+});
+function bindPills(id, cb){
+  $(id).addEventListener("click", e => {
+    const b = e.target.closest(".pill"); if(!b) return;
+    [...$(id).children].forEach(x => x.classList.remove("active"));
+    b.classList.add("active"); cb(b.dataset);
+  });
+}
+bindPills("gridPills", d => { S.gridUnits = +d.g; updateUI(); });
+bindPills("angPills", d => { S.angleMode = d.a; updateUI(); });
+$("btnSnapGrid").addEventListener("click", () => { S.snapGrid = !S.snapGrid; updateUI(); });
+$("btnSnapTip").addEventListener("click", () => { S.snapTip = !S.snapTip; updateUI(); });
+$("btnLabels").addEventListener("click", () => { S.showLabels = !S.showLabels; updateUI(); });
+$("btnAdd").addEventListener("click", () => {
+  const m = parseFloat($("magInp").value), a = parseFloat($("angInpM").value);
+  if(!isFinite(m) || m <= 0 || !isFinite(a)) return;
+  pushHistory();
+  const tail = S.vectors.length && S.snapTip ? chainEnd() : { x: 3, y: 3 };
+  addVector(m, parseA(a), tail, false);
+  $("magInp").value = ""; $("angInpM").value = "";
+  updateUI();
+});
+$("btnReset").addEventListener("click", () => {
+  if(S.vectors.length) pushHistory();
+  S.vectors = []; S.showRes = false; S.ruler = []; S.protr = []; S.toolLive = null;
+  S.hover = null; if(S.practice.on) exitPractice();
+  closeEdit(); updateUI();
+});
+$("btnRand").addEventListener("click", () => { doRandom(); updateUI(); });
+$("btnRes").addEventListener("click", () => { S.showRes = !S.showRes; updateUI(); });
+$("btnRuler").addEventListener("click", () => {
+  S.tool = S.tool === "ruler" ? null : "ruler"; S.ruler = []; S.toolLive = null;
+  if(S.tool === "ruler") S.snapGrid = false;   // free measuring — user can re-enable manually
+  updateUI();
+});
+$("btnProtr").addEventListener("click", () => {
+  S.tool = S.tool === "protractor" ? null : "protractor"; S.protr = []; S.toolLive = null;
+  if(S.tool === "protractor") S.snapGrid = false;
+  updateUI();
+});
+$("btnEraser").addEventListener("click", () => {
+  S.tool = S.tool === "eraser" ? null : "eraser";
+  S.ruler = []; S.protr = []; S.toolLive = null; updateUI();
+});
+$("btnUndo").addEventListener("click", undo);
+
+// ===== RANDOM =====
+function rnd(n){ return Math.floor(Math.random()*n); }
+function niceMag(){
+  const step = S.scaleVal / 2;
+  return step * (2 + rnd(7));               // 1.0 … 4.0 cm long
+}
+function doRandom(locked){
+  if(S.vectors.length) pushHistory();
+  S.vectors = []; S.showRes = false; S.nextId = 1;
+  const n = S.tab === 2 ? 2 : 2 + rnd(2);
+  let tail = { x: 3 + rnd(3), y: 3 + rnd(3) }, prevAng = null;
+  for(let i = 0; i < n; i++){
+    let placed = false;
+    for(let t = 0; t < 60 && !placed; t++){
+      const mag = niceMag(), ang = 15 * rnd(24);
+      if(prevAng !== null && t < 50){            // avoid near-collinear pairs
+        let dA = Math.abs(ang - prevAng) % 360; if(dA > 180) dA = 360 - dA;
+        if(dA < 30 || dA > 150) continue;
+      }
+      const hx = tail.x + mag/S.scaleVal*Math.cos(ang*D2R);
+      const hy = tail.y + mag/S.scaleVal*Math.sin(ang*D2R);
+      if(hx > 0.5 && hx < CM-0.5 && hy > 0.5 && hy < CM-0.5){
+        addVector(mag, ang, tail, locked);
+        tail = { x: hx, y: hy }; prevAng = ang;
+        placed = true;
+      }
+    }
+    if(!placed){ addVector(niceMag(), 15*rnd(24), {x:8,y:8}, locked); break; }
+  }
+}
+
+// ===== PRACTICE (Tab 1) =====
+$("btnPractice").addEventListener("click", () => {
+  if(S.practice.on) exitPractice(); else enterPractice();
+  updateUI();
+});
+function enterPractice(){
+  S.practice.on = true; S.practice.revealed = false;
+  newPracticeSet();
+}
+function exitPractice(){
+  S.practice.on = false;
+  S.vectors = S.vectors.filter(v => !v.locked);
+  $("pFeed").className = "feed"; $("pFeed").innerHTML = "";
+}
+function newPracticeSet(){
+  S.showRes = false; S.ruler = []; S.protr = []; S.practice.revealed = false;
+  const keepTab = S.tab; S.tab = 1;
+  doRandom(true);
+  S.tab = keepTab;
+  $("pMag").value = ""; $("pAng").value = "";
+  $("pFeed").className = "feed"; $("pFeed").innerHTML = "";
+}
+$("btnPNew").addEventListener("click", () => { newPracticeSet(); updateUI(); });
+$("btnPCheck").addEventListener("click", checkPractice);
+$("pAng").addEventListener("keydown", e => { if(e.key === "Enter") checkPractice(); });
+function checkPractice(){
+  if(!S.practice.on || S.practice.revealed) return;
+  const am = parseFloat($("pMag").value), aa = parseFloat($("pAng").value);
+  if(!isFinite(am) || !isFinite(aa)) return;
+  const locked = S.vectors.filter(v => v.locked);
+  let sx = 0, sy = 0;
+  for(const v of locked){ sx += v.mag*Math.cos(v.ang*D2R); sy += v.mag*Math.sin(v.ang*D2R); }
+  const R = Math.hypot(sx, sy), th = normA(Math.atan2(sy, sx)*R2D);
+  // measurement always carries error → grade by percentage error
+  const pctErr = R > 1e-9 ? Math.abs(am - R) / R * 100 : Math.abs(am) * 100;
+  const magOK = pctErr <= 5;                                   // ≤ 5 % → method correct
+  let dAng = Math.abs(parseA(aa) - th) % 360; if(dAng > 180) dAng = 360 - dAng;
+  const angOK = dAng <= 3;                                     // ± 3° protractor tolerance
+  S.practice.tries++;
+  if(magOK && angOK) S.practice.score++;
+  S.practice.revealed = true;
+  S.showRes = true;
+  const f = $("pFeed");
+  f.className = "feed " + (magOK && angOK ? "good" : "bad");
+  const verdict = magOK && angOK
+    ? (pctErr < 0.5 && dAng < 0.5
+        ? "✓ Perfect — spot on!"
+        : "✓ Method correct! — within measurement tolerance")
+    : "✗ Not quite — check your diagram and measurement.";
+  f.innerHTML =
+    `<b>${verdict}</b><br>` +
+    `Magnitude: ${fmt(am)} vs ${fmt(R)} ${S.unit} → error <b>${pctErr.toFixed(1)}%</b> ` +
+    `${magOK ? "✓ (≤ 5%)" : "✗ (&gt; 5%)"}<br>` +
+    `Direction: ${fmtA(normA(aa))}° vs ${fmtA(dispA(th))}° → off by <b>${dAng.toFixed(1)}°</b> ` +
+    `${angOK ? "✓ (≤ 3°)" : "✗ (&gt; 3°)"}<br>` +
+    `<b>Worked solution (component check):</b><br>` +
+    locked.map((v,i) => `F${i+1} = ${fmt(v.mag)} ${S.unit} ∠${fmtA(dispA(v.ang))}°`).join(" ,  ") + `<br>` +
+    `ΣFx = ${fmt(sx)}, ΣFy = ${fmt(sy)} → R = √(ΣFx²+ΣFy²) = <b>${fmt(R)} ${S.unit}</b>, ` +
+    `θ = <b>${fmtA(dispA(th))}°</b> ${angLabel()}`;
+  updateUI();
+}
+
+// ===== TAB-3 TOGGLES =====
+$("btnComp").addEventListener("click", () => { S.showComp = !S.showComp; updateUI(); });
+$("btnSteps").addEventListener("click", () => { S.showSteps = !S.showSteps; updateUI(); });
+
+// ===== DPR-aware canvas =====
+function setupCanvas(){
+  const dpr = window.devicePixelRatio || 1;
+  cv.width = Math.round(CSSW * dpr); cv.height = Math.round(CSSH * dpr);
+  cv.style.width = CSSW + "px"; cv.style.height = CSSH + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  draw();
+}
+window.addEventListener("resize", setupCanvas);
+
+// ===== INIT =====
+setupCanvas();
+$("themeSel").value = "dark";
+updateUI();
+</script>
+</body>
+</html>

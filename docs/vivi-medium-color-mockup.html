@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Medium Color Mockup — Refraction | Vivi</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+  background:#0d1117; color:#e6edf3;
+  font-family:'Inter',sans-serif;
+  padding:30px 20px;
+  display:flex;flex-direction:column;align-items:center;
+}
+h1{font-size:1.5rem;margin-bottom:6px;}
+h2{font-size:.9rem;color:#8b949e;margin-bottom:25px;font-weight:400;}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:16px;
+  max-width:1100px;width:100%;
+}
+.card{
+  background:#161b22;border:1px solid #30363d;border-radius:14px;
+  overflow:hidden;padding-bottom:12px;
+}
+.medium-preview{
+  position:relative;height:140px;overflow:hidden;
+}
+.medium-fill{
+  position:absolute;inset:0;
+}
+.ray-sample{
+  position:absolute;top:50%;left:0;right:0;height:2px;transform:translateY(-50%);
+}
+.ray-sample::before,.ray-sample::after{
+  content:'';position:absolute;top:0;height:100%;
+}
+.ray-sample .incoming{
+  position:absolute;left:10%;width:25%;height:100%;
+  background:linear-gradient(90deg,#e3b341 0%,rgba(227,179,65,0) 100%);
+  top:50%;transform:translateY(-50%) rotate(-20deg);transform-origin:right center;
+}
+.ray-sample .refracted{
+  position:absolute;right:10%;width:25%;height:100%;
+  background:linear-gradient(270deg,#58a6ff 0%,rgba(88,166,255,0) 100%);
+  top:50%;transform:translateY(-50%) rotate(-12deg);transform-origin:left center;
+}
+.ray-sample .boundary{
+  position:absolute;left:0;right:0;top:50%;height:1px;
+  background:#8b949e;opacity:.5;
+}
+.ray-sample .normal{
+  position:absolute;left:50%;top:0;bottom:0;width:1px;
+  background:#8b949e;opacity:.3;
+  transform:translateX(-50%);
+}
+.card-info{padding:10px 14px;}
+.card-info .name{font-weight:700;font-size:1rem;}
+.card-info .nval{font-family:'JetBrains Mono',monospace;color:#58a6ff;font-size:.85rem;margin-top:2px;}
+.card-info .hex{font-family:'JetBrains Mono',monospace;color:#8b949e;font-size:.7rem;margin-top:6px;}
+
+/* Color variation buttons */
+.var-bar{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;}
+.var-btn{
+  padding:3px 10px;border-radius:8px;border:1px solid #30363d;background:transparent;
+  color:#8b949e;font-size:.65rem;cursor:pointer;font-family:'JetBrains Mono',monospace;transition:all .15s;
+}
+.var-btn:hover{border-color:#58a6ff;color:#e6edf3;}
+.var-btn.active{border-color:#e3b341;color:#e3b341;background:rgba(227,179,65,.1);}
+
+/* Panel */
+.panel{background:#161b22;border:1px solid #30363d;border-radius:12px;padding:16px 20px;margin-top:20px;max-width:1100px;width:100%;}
+.panel h3{font-size:.8rem;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.panel p{font-size:.85rem;line-height:1.6;color:#8b949e;}
+.panel .hl{color:#e3b341;}
+
+/* Fake ray test */
+.raytest{
+  margin-top:20px;max-width:1100px;width:100%;
+}
+.raytest h3{font-size:.8rem;color:#8b949e;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;}
+.raytest-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;}
+.test-card{
+  background:#161b22;border:1px solid #30363d;border-radius:12px;padding:14px;position:relative;height:100px;
+}
+.test-card .test-label{font-size:.7rem;color:#8b949e;margin-bottom:6px;}
+.test-card .ray-line{
+  height:2px;width:100%;margin-top:10px;position:relative;
+}
+</style>
+</head>
+<body>
+
+<h1>🔬 Medium Color Mockup</h1>
+<h2>Refraction of Light — 6 Mediums · Vivi's Color Proposals</h2>
+
+<div class="grid" id="mediumGrid"></div>
+
+<div class="panel">
+  <h3>⚠️ Notes</h3>
+  <p>
+    1. All medium fills should be <span class="hl">semi-transparent</span> so white rays and colored rays are clearly visible.<br>
+    2. <span class="hl">Air</span> = fully dark (black) — user specified "we use white light rays, so air is black background".<br>
+    3. Colors can be adjusted — click the variation buttons under each medium to preview alternatives.<br>
+    4. The sample rays show approximate incident (gold) and refracted (blue) paths through the medium.
+  </p>
+</div>
+
+<div class="raytest">
+  <h3>🧪 Proposed Colors (Default Selection)</h3>
+  <div class="raytest-grid" id="rayTestGrid"></div>
+</div>
+
+<script>
+"use strict";
+
+const MEDIA = [
+  {
+    name: 'Air',
+    n: 1.00,
+    symbol: '—',
+    variants: [
+      { label: 'Black (bg)', fill: '#000000', note: 'User specified — black bg for white rays' },
+      { label: 'Very dark', fill: '#050505', note: 'Slightly lighter than pure black' },
+      { label: 'Dark grey', fill: '#0a0a0a', note: 'Subtle grey tint' },
+    ],
+    defaultVar: 0,
+  },
+  {
+    name: 'Water',
+    n: 1.33,
+    symbol: 'H₂O',
+    variants: [
+      { label: 'Deep blue', fill: 'rgba(25, 80, 160, 0.38)', note: 'Richer blue, bolder' },
+      { label: 'Bright blue', fill: 'rgba(30, 100, 180, 0.32)', note: 'Standard proposal — visible but light' },
+      { label: 'Teal tint', fill: 'rgba(20, 120, 140, 0.35)', note: 'Slightly green-blue' },
+      { label: 'Light blue', fill: 'rgba(60, 130, 200, 0.25)', note: 'Very subtle blue wash' },
+    ],
+    defaultVar: 1,
+  },
+  {
+    name: 'Ice',
+    n: 1.31,
+    symbol: 'H₂O(s)',
+    variants: [
+      { label: 'Icy white', fill: 'rgba(200, 225, 240, 0.25)', note: 'Cold, pale icy blue' },
+      { label: 'Frost blue', fill: 'rgba(180, 215, 235, 0.3)', note: 'Slightly stronger blue tint' },
+      { label: 'Pale cyan', fill: 'rgba(160, 220, 230, 0.2)', note: 'Very subtle cyan' },
+      { label: 'Milky ice', fill: 'rgba(210, 220, 230, 0.2)', note: 'More white/grey — like solid ice' },
+    ],
+    defaultVar: 0,
+  },
+  {
+    name: 'Perspex',
+    n: 1.49,
+    symbol: 'Acrylic',
+    variants: [
+      { label: 'Warm clear', fill: 'rgba(220, 215, 200, 0.22)', note: 'Warm tint — like real acrylic' },
+      { label: 'Neutral clear', fill: 'rgba(210, 215, 220, 0.2)', note: 'Neutral grey-white' },
+      { label: 'Slightly blue', fill: 'rgba(200, 215, 225, 0.2)', note: 'Very faint blue-white' },
+      { label: 'Bright clear', fill: 'rgba(230, 230, 225, 0.18)', note: 'Brightest, most transparent' },
+    ],
+    defaultVar: 0,
+  },
+  {
+    name: 'Crown Glass',
+    n: 1.52,
+    symbol: '—',
+    variants: [
+      { label: 'Greenish glass', fill: 'rgba(185, 200, 190, 0.25)', note: 'Slight green — authentic crown glass' },
+      { label: 'Neutral glass', fill: 'rgba(195, 205, 210, 0.22)', note: 'Neutral grey-white' },
+      { label: 'Blue glass', fill: 'rgba(190, 205, 215, 0.22)', note: 'Blueish cast' },
+      { label: 'Warmer glass', fill: 'rgba(200, 195, 185, 0.22)', note: 'Slightly warm/amber' },
+    ],
+    defaultVar: 0,
+  },
+  {
+    name: 'Diamond',
+    n: 2.42,
+    symbol: 'C',
+    variants: [
+      { label: 'Silver grey', fill: 'rgba(175, 185, 200, 0.2)', note: 'Bright grey — diamond sparkle' },
+      { label: 'Cool white', fill: 'rgba(200, 210, 220, 0.18)', note: 'Very light grey-white' },
+      { label: 'Warm grey', fill: 'rgba(190, 185, 175, 0.2)', note: 'Slight warm grey' },
+      { label: 'Dark grey', fill: 'rgba(140, 150, 165, 0.25)', note: 'Darker grey, stronger contrast' },
+    ],
+    defaultVar: 0,
+  },
+];
+
+function renderCard(m, idx){
+  const card = document.createElement('div');
+  card.className = 'card';
+  card.innerHTML = `
+    <div class="medium-preview" id="preview-${idx}">
+      <div class="medium-fill" id="fill-${idx}" style="background:${m.variants[m.defaultVar].fill};"></div>
+      <div class="ray-sample">
+        <div class="boundary"></div>
+        <div class="normal"></div>
+        <div class="incoming"></div>
+        <div class="refracted"></div>
+      </div>
+    </div>
+    <div class="card-info">
+      <div class="name">${m.name}</div>
+      <div class="nval">n = ${m.n.toFixed(2)}  ${m.symbol}</div>
+      <div class="hex" id="hex-${idx}">${m.variants[m.defaultVar].fill}</div>
+      <div class="var-bar" id="varbar-${idx}">
+        ${m.variants.map((v, vi) => `<button class="var-btn ${vi === m.defaultVar ? 'active' : ''}" data-m="${idx}" data-v="${vi}">${v.label}</button>`).join('')}
+      </div>
+    </div>
+  `;
+  return card;
+}
+
+function renderTestCard(m, idx){
+  const d = m.variants[m.defaultVar];
+  const card = document.createElement('div');
+  card.className = 'test-card';
+  card.style.background = d.fill;
+  card.style.border = '1px solid #30363d';
+  card.innerHTML = `
+    <div class="test-label"><b>${m.name}</b> (n=${m.n.toFixed(2)})</div>
+    <div style="font-size:.7rem;color:#8b949e;margin-bottom:8px;">${d.label} · ${d.fill}</div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <span style="color:#e3b341;font-family:'JetBrains Mono',monospace;font-size:.65rem;">← incident</span>
+      <span style="color:#8b949e;font-family:'JetBrains Mono',monospace;font-size:.65rem;">| boundary |</span>
+      <span style="color:#58a6ff;font-family:'JetBrains Mono',monospace;font-size:.65rem;">refracted →</span>
+    </div>
+    <div style="margin-top:6px;display:flex;gap:0;align-items:center;height:16px;">
+      <div style="width:30%;height:2px;background:#e3b341;"></div>
+      <div style="width:1px;height:16px;background:#8b949e;"></div>
+      <div style="width:30%;height:2px;background:#58a6ff;"></div>
+    </div>
+    <div style="margin-top:4px;display:flex;gap:0;font-size:.6rem;color:#8b949e;font-family:'JetBrains Mono',monospace;">
+      <span style="width:30%;text-align:center;">Ray visible? <span style="color:${isRayVisible(d.fill) ? '#3fb950' : '#f85149'}">${isRayVisible(d.fill) ? '✓' : '✗'}</span></span>
+      <span style="width:1px;"></span>
+      <span style="width:30%;text-align:center;">Ray visible? <span style="color:${isRayVisible(d.fill) ? '#3fb950' : '#f85149'}">${isRayVisible(d.fill) ? '✓' : '✗'}</span></span>
+    </div>
+  `;
+  return card;
+}
+
+function isRayVisible(bg){
+  // Helper: check if light rays would be visible against a bg color
+  if(typeof bg !== 'string') return true;
+  // Simple check — transparent backgrounds are fine for ray visibility
+  if(bg.startsWith('rgba') || bg.startsWith('hsla')) return true;
+  if(bg.startsWith('#') && bg.length === 7){
+    const r = parseInt(bg.slice(1,3),16), g = parseInt(bg.slice(3,5),16), b = parseInt(bg.slice(5,7),16);
+    const lum = 0.299*r + 0.587*g + 0.114*b;
+    return lum > 30; // dark enough for white/gold/blue rays to show
+  }
+  return true;
+}
+
+// Init
+const grid = document.getElementById('mediumGrid');
+MEDIA.forEach((m, i) => grid.appendChild(renderCard(m, i)));
+
+const testGrid = document.getElementById('rayTestGrid');
+MEDIA.forEach((m, i) => testGrid.appendChild(renderTestCard(m, i)));
+
+// Event delegation for var buttons
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.var-btn');
+  if(!btn) return;
+  const mi = +btn.dataset.m, vi = +btn.dataset.v;
+  const m = MEDIA[mi];
+  const fill = m.variants[vi].fill;
+  // Update fill
+  document.getElementById(`fill-${mi}`).style.background = fill;
+  document.getElementById(`hex-${mi}`).textContent = fill;
+  // Highlight active
+  document.querySelectorAll(`#varbar-${mi} .var-btn`).forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+});
+</script>
+</body>
+</html>
