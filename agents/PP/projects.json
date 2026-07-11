@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "last_updated": "2026-07-11T12:51:25.364198",
+  "last_updated": "2026-07-11T19:06:40.842187",
   "projects": [
     {
       "id": "interactive-lecture-physics",
@@ -66,7 +66,7 @@
           ],
           "dashboard": "dashboard.html",
           "status": "built_v1",
-          "notes": "HTML+JSON+PDF buil for 8 topics (-topic12_motion missing?), dashboard auto-gen"
+          "notes": "HTML+JSON+PDF built for 8 topics, dashboard auto-gen"
         },
         "graphs": {
           "path": "graphs/",
@@ -172,82 +172,6 @@
       "cost": {
         "estimated_total_tokens": 1500000,
         "estimated_total_cost_usd": 0.45,
-        "currency": "USD"
-      }
-    },
-    {
-      "id": "ial-physics",
-      "name": "IAL Physics — WPH11 Unit 1",
-      "short_name": "IAL Physics",
-      "path": "/Users/masteraj/Desktop/IAL",
-      "status": "exploring",
-      "priority": 3,
-      "description": "International A-Level Physics — Mechanics & Materials",
-      "components": {},
-      "next_actions": [
-        "สแกนเนื้อหาในโฟลเดอร์",
-        "ตรวจสอบ syllabus QP WPH11 U1",
-        "วางแผนสร้าง interactive content"
-      ],
-      "cost": {
-        "estimated_total_tokens": 0,
-        "estimated_total_cost_usd": 0,
-        "currency": "USD"
-      }
-    },
-    {
-      "id": "maths-0580",
-      "name": "IGCSE Mathematics 0580",
-      "short_name": "Maths 0580",
-      "path": "/Users/masteraj/Desktop/Maths 0580",
-      "status": "exploring",
-      "priority": 4,
-      "description": "IGCSE Mathematics — syllabus & teaching materials",
-      "components": {},
-      "next_actions": [
-        "สแกนเนื้อหาในโฟลเดอร์",
-        "ตรวจสอบ syllabus",
-        "วางแผนสร้าง interactive content"
-      ],
-      "cost": {
-        "estimated_total_tokens": 0,
-        "estimated_total_cost_usd": 0,
-        "currency": "USD"
-      }
-    },
-    {
-      "id": "iso-project",
-      "name": "ISO Project",
-      "short_name": "ISO",
-      "path": "/Users/masteraj/Desktop/ISO",
-      "status": "exploring",
-      "priority": 5,
-      "description": "International Standards Organization / ISO-related project",
-      "components": {},
-      "next_actions": [
-        "สแกนเนื้อหาในโฟลเดอร์"
-      ],
-      "cost": {
-        "estimated_total_tokens": 0,
-        "estimated_total_cost_usd": 0,
-        "currency": "USD"
-      }
-    },
-    {
-      "id": "api-docs",
-      "name": "API Documentation",
-      "short_name": "API Docs",
-      "path": "/Users/masteraj/Documents/API",
-      "status": "exploring",
-      "priority": 6,
-      "description": "API documentation project",
-      "components": {},
-      "next_actions": [
-        "สแกนเนื้อหาในโฟลเดอร์"
-      ],
-      "cost": {
-        "estimated_total_tokens": 0,
-        "estimated_total_cost_usd": 0,
         "currency": "USD"
       }
     }
