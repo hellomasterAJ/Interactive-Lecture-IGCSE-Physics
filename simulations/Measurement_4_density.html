@@ -120,11 +120,11 @@ body{
 #cv{display:block;width:100%;touch-action:none;cursor:grab;}
 .chip{position:absolute;font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 9px;border-radius:8px;
   background:var(--card);border:1px solid var(--border);color:var(--text-dim);pointer-events:none;opacity:.94;}
-#chipZoom{top:8px;right:10px;color:var(--amber);border-color:var(--amber);pointer-events:auto;cursor:pointer;display:none;}
+#chipZoom{top:42px;right:10px;color:var(--amber);border-color:var(--amber);pointer-events:auto;cursor:pointer;display:none;}
 #hintEl{position:absolute;bottom:6px;right:10px;font-size:10.5px;color:var(--text-muted);pointer-events:none;
   font-family:'JetBrains Mono',monospace;background:var(--card);border:1px solid var(--border);
   border-radius:8px;padding:2px 8px;opacity:.92;}
-#btnRand{position:absolute;top:8px;left:10px;pointer-events:auto;}
+#btnRand{position:absolute;top:8px;right:10px;pointer-events:auto;}
 
 /* ── Outputs (Layout 3) ── */
 .out{display:grid;grid-template-columns:38fr 62fr;gap:10px;align-items:start;}
@@ -295,7 +295,7 @@ table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px 
 const $ = id => document.getElementById(id);
 const cv = $("cv"), ctx = cv.getContext("2d");
 const DW = 1120, DH = 520;                       // logical canvas size
-const Z1B = 148;                                 // zone 1 bottom (object shelf)
+const Z1B = 122;                                 // zone 1 bottom (object shelf)
 const MIDX = 560;                                // zone 2 | zone 3 divider
 
 /* ================= DATA ================= */
@@ -344,12 +344,14 @@ const gVal = () => S.gSimple ? 10 : 9.81;
 
 /* ================= OBJECTS ================= */
 function makeKnownObjects(){
-  S.objects = KNOWN.map((k, i) => ({
-    id: i + 1, name: k.name, mat: k.mat, rho: MATS[k.mat].rho,
-    V: k.V, m: +(MATS[k.mat].rho * k.V).toFixed(2),
-    seed: k.seed, sphere: !!k.sphere, block: !!k.block,
-    unknown: false, loc: "shelf", slot: i
-  }));
+  // permanent Unknown Object in slot 0 (left of Copper Statue), knowns after it
+  S.objects = [Object.assign(makeUnknown(), { slot: 0 })].concat(
+    KNOWN.map((k, i) => ({
+      id: i + 1, name: k.name, mat: k.mat, rho: MATS[k.mat].rho,
+      V: k.V, m: +(MATS[k.mat].rho * k.V).toFixed(2),
+      seed: k.seed, sphere: !!k.sphere, block: !!k.block,
+      unknown: false, loc: "shelf", slot: i + 1
+    })));
 }
 function rnd(n){ return Math.floor(Math.random()*n); }
 function makeUnknown(){
@@ -359,7 +361,7 @@ function makeUnknown(){
   const V = M.vmin + rnd(M.vmax - M.vmin + 1);
   S.unknownN++;
   return {
-    id: 100 + S.unknownN, name: `Unknown Object #${S.unknownN}`, mat,
+    id: 100 + S.unknownN, name: "Unknown Object", mat,
     rho: M.rho, V, m: +(M.rho * V).toFixed(2),
     seed: 1 + rnd(9999), sphere: false, block: false,
     unknown: true, loc: "shelf", slot: 3.5
@@ -370,7 +372,7 @@ function shelfPos(o){
   const n = S.objects.length;
   const gap = Math.min(132, (DW - 140) / Math.max(1, n));
   const x0 = DW/2 - gap*(n-1)/2;
-  return { x: n === 1 ? DW/2 : x0 + o.slot*gap, y: 96 };
+  return { x: n === 1 ? DW/2 : x0 + o.slot*gap, y: 54 };   // vertically centred in zone 1
 }
 function objAt(loc){ return S.objects.find(o => o.loc === loc) || null; }
 
@@ -490,12 +492,12 @@ function drawZones(){
   ctx.font = "700 11px 'JetBrains Mono',monospace";
   ctx.fillStyle = col("--text-muted");
   ctx.textAlign = "left"; ctx.textBaseline = "top";
-  ctx.fillText("ZONE 1 · OBJECTS", 14, Z1B - 18);
-  ctx.fillText("ZONE 2 · FINDING MASS", 14, Z1B + 8);
-  ctx.fillText("ZONE 3 · FINDING VOLUME", MIDX + 14, Z1B + 8);
+  ctx.fillText("OBJECTS", 14, 8);
+  ctx.fillText("FINDING MASS", 14, Z1B + 8);
+  ctx.fillText("FINDING VOLUME", MIDX + 14, Z1B + 8);
   // shelf
   ctx.fillStyle = "rgba(128,128,128,.18)";
-  ctx.fillRect(50, 118, DW-100, 6);
+  ctx.fillRect(50, 84, DW-100, 5);
 }
 function drawShelfObjects(){
   for(const o of S.objects){
@@ -506,7 +508,7 @@ function drawShelfObjects(){
     ctx.font = "10.5px 'JetBrains Mono',monospace";
     ctx.fillStyle = col("--text-dim");
     ctx.textAlign = "center"; ctx.textBaseline = "top";
-    ctx.fillText(o.name, p.x, 126);
+    ctx.fillText(o.name, p.x, 94);
   }
 }
 function drawObject(o, cx, cy, scale){
@@ -777,13 +779,13 @@ function drawEureka(){
 }
 /* ---- status ticks ---- */
 function drawStatus(){
-  ctx.font = "700 13px Inter,sans-serif";
+  ctx.font = "700 12px Inter,sans-serif";
   ctx.textAlign = "left"; ctx.textBaseline = "top";
   const okM = S.results.m !== null, okV = S.results.V !== null;
   ctx.fillStyle = okM ? col("--green") : col("--text-muted");
-  ctx.fillText(okM ? "✅ mass measured" : "◻ mass not measured", 14, DH - 26);
+  ctx.fillText(okM ? "✅ mass measured" : "◻ mass not measured", 132, Z1B + 7);
   ctx.fillStyle = okV ? col("--green") : col("--text-muted");
-  ctx.fillText(okV ? "✅ volume measured" : "◻ volume not measured", MIDX + 14, DH - 26);
+  ctx.fillText(okV ? "✅ volume measured" : "◻ volume not measured", MIDX + 152, Z1B + 7);
 }
 
 /* ================= INTERACTION ================= */
@@ -1005,11 +1007,15 @@ $("btnReset").addEventListener("click", () => {
   clearResults();
 });
 $("btnRand").addEventListener("click", () => {
-  if(S.locked) return;
-  if(S.mode === "simulate"){
-    S.objects = [makeUnknown()];
-  }
-  clearResults();
+  if(S.locked || S.mode !== "simulate") return;
+  // re-roll ONLY the Unknown Object — every other object stays put
+  const idx = S.objects.findIndex(o => o.unknown);
+  const oldId = idx >= 0 ? S.objects[idx].id : null;
+  const u = Object.assign(makeUnknown(), { slot: 0 });
+  if(idx >= 0) S.objects[idx] = u; else S.objects.unshift(u);
+  if(S.results.objId === oldId) clearResults();     // its measurements are void now
+  S.eureka = S.eureka.phase !== "idle" && objAt("vol") === null ? { phase:"idle", t:0 } : S.eureka;
+  syncOut();
 });
 
 /* ================= MODES ================= */
