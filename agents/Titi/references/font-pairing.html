@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎯 Font Pairing — masterAJ's Lecture Identity</title>
+<link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;0,700;1,400&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;600&family=Roboto+Slab:wght@300;400;600;700&family=Figtree:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #0d1117;
+  color: #e6edf3;
+  font-size: 14px;
+  padding: 40px;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+h1 {
+  font-family: 'Inter', sans-serif;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #e3b341;
+}
+.subtitle {
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  color: #8b949e;
+  margin-bottom: 36px;
+}
+.section-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #e3b341;
+  margin: 32px 0 12px;
+  border-bottom: 1px solid #21262d;
+  padding-bottom: 6px;
+}
+.pairing-card {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  transition: 0.2s;
+  cursor: pointer;
+}
+.pairing-card:hover {
+  border-color: #e3b341;
+}
+.pairing-card.selected {
+  border: 2px solid #e3b341;
+  position: relative;
+}
+.pairing-card.selected::after {
+  content: '✅ SELECTED';
+  position: absolute;
+  top: -1px;
+  right: -1px;
+  background: #e3b341;
+  color: #0d1117;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 0 12px 0 8px;
+}
+.pair-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: #f0f6fc;
+  margin-bottom: 10px;
+}
+.role-grid {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 6px 16px;
+  margin-bottom: 10px;
+}
+.role-label {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: #8b949e;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-top: 4px;
+}
+.role-sample { font-size: 15px; line-height: 1.5; }
+.pair-mood {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #8b949e;
+  margin-top: 8px;
+  font-style: italic;
+}
+.pair-badge {
+  display: inline-block;
+  font-family: 'Inter', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-right: 6px;
+}
+.badge-academic { background: #1c3a1c; color: #7ee787; }
+.badge-modern { background: #1c2a3a; color: #58a6ff; }
+.badge-friendly { background: #3a2a1c; color: #e3b341; }
+.badge-tech { background: #2a1c3a; color: #d2a8ff; }
+
+.single-preview {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 12px;
+  padding: 20px 24px;
+  margin-bottom: 12px;
+}
+.single-name {
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  color: #e3b341;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+}
+.single-mood {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px;
+  color: #8b949e;
+  margin-bottom: 12px;
+}
+.single-heading { font-size: 26px; font-weight: 700; margin-bottom: 6px; line-height: 1.2; }
+.single-body { font-size: 15px; line-height: 1.5; margin-bottom: 4px; }
+
+.info-box {
+  background: #1c2128;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin-top: 28px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  line-height: 1.6;
+  color: #8b949e;
+}
+.info-box strong { color: #e6edf3; }
+</style>
+</head>
+<body>
+
+<h1>🎯 Font Pairing for masterAJ's Lecture</h1>
+<p class="subtitle">5 fonts you picked → 3 recommended pairings → you choose the final identity</p>
+
+<div class="section-label">📐 Your 5 fonts (preview)</div>
+
+<div class="single-preview">
+  <div class="single-name">1. Crimson Pro</div>
+  <div class="single-mood">🟡 Serif · Warm / Academic · Textbook feel</div>
+  <div class="single-heading" style="font-family: 'Crimson Pro', serif">Newton’s Laws of Motion</div>
+  <div class="single-body" style="font-family: 'Crimson Pro', serif">An object at rest stays at rest, and an object in motion stays in motion.</div>
+</div>
+
+<div class="single-preview">
+  <div class="single-name">2. Atkinson Hyperlegible</div>
+  <div class="single-mood">🔵 Sans-serif · Ultra Readable · Accessibility-first</div>
+  <div class="single-heading" style="font-family: 'Atkinson Hyperlegible', sans-serif">Newton’s Laws of Motion</div>
+  <div class="single-body" style="font-family: 'Atkinson Hyperlegible', sans-serif">An object at rest stays at rest, and an object in motion stays in motion.</div>
+</div>
+
+<div class="single-preview">
+  <div class="single-name">3. JetBrains Mono</div>
+  <div class="single-mood">🟢 Monospace · Developer / Formula · Clean code feel</div>
+  <div class="single-heading" style="font-family: 'JetBrains Mono', monospace">v = u + at</div>
+  <div class="single-body" style="font-family: 'JetBrains Mono', monospace">F = ma  |  Eₖ = ½mv²  |  s = ut + ½at²</div>
+</div>
+
+<div class="single-preview">
+  <div class="single-name">4. Roboto Slab</div>
+  <div class="single-mood">🟡 Slab Serif · Solid / Sturdy · Confident</div>
+  <div class="single-heading" style="font-family: 'Roboto Slab', serif">Newton’s Laws of Motion</div>
+  <div class="single-body" style="font-family: 'Roboto Slab', serif">An object at rest stays at rest, and an object in motion stays in motion.</div>
+</div>
+
+<div class="single-preview">
+  <div class="single-name">5. Figtree</div>
+  <div class="single-mood">🔵 Sans-serif · Geometric / Warm · Modern friendly</div>
+  <div class="single-heading" style="font-family: 'Figtree', sans-serif">Newton’s Laws of Motion</div>
+  <div class="single-body" style="font-family: 'Figtree', sans-serif">An object at rest stays at rest, and an object in motion stays in motion.</div>
+</div>
+
+<div class="section-label">🎯 Recommended Pairings (click to select)</div>
+
+<!-- Pairing 1 -->
+<div class="pairing-card" onclick="selectPairing(this)" id="pair1">
+  <div class="pair-name">Pairing A: <span class="pair-badge badge-academic">Academic Premium</span></div>
+  <div class="role-grid">
+    <div class="role-label">Heading</div>
+    <div class="role-sample" style="font-family: 'Crimson Pro', serif; font-weight: 700; font-size: 22px;">1.1 Scalars and Vectors</div>
+    <div class="role-label">Body</div>
+    <div class="role-sample" style="font-family: 'Figtree', sans-serif; font-weight: 400;">A scalar quantity has only magnitude, while a vector quantity has both magnitude and direction.</div>
+    <div class="role-label">Formula</div>
+    <div class="role-sample" style="font-family: 'JetBrains Mono', monospace; font-weight: 400;">F = ma  |  v = u + at  |  Eₖ = ½mv²</div>
+  </div>
+  <div class="pair-mood">Crimson Pro (headings) + Figtree (body) + JetBrains Mono (formulas) — Classic elegant headings + modern warm body. Best balance of tradition and readability.</div>
+</div>
+
+<!-- Pairing 2 -->
+<div class="pairing-card" onclick="selectPairing(this)" id="pair2">
+  <div class="pair-name">Pairing B: <span class="pair-badge badge-friendly">🥇 Friendly & Clear — WINNER</span></div>
+  <div class="role-grid">
+    <div class="role-label">Heading</div>
+    <div class="role-sample" style="font-family: 'Roboto Slab', serif; font-weight: 700; font-size: 22px;">1.1 Scalars and Vectors</div>
+    <div class="role-label">Body</div>
+    <div class="role-sample" style="font-family: 'Atkinson Hyperlegible', sans-serif; font-weight: 400;">A scalar quantity has only magnitude, while a vector quantity has both magnitude and direction.</div>
+    <div class="role-label">Formula</div>
+    <div class="role-sample" style="font-family: 'JetBrains Mono', monospace; font-weight: 400;">F = ma  |  v = u + at  |  Eₖ = ½mv²</div>
+  </div>
+  <div class="pair-mood">Roboto Slab (headings) + Atkinson Hyperlegible (body) + JetBrains Mono (formulas) — Maximum readability. Perfect for younger students or dense content.</div>
+</div>
+
+<!-- Pairing 3 -->
+<div class="pairing-card" onclick="selectPairing(this)" id="pair3">
+  <div class="pair-name">Pairing C: <span class="pair-badge badge-modern">Modern STEM</span></div>
+  <div class="role-grid">
+    <div class="role-label">Heading</div>
+    <div class="role-sample" style="font-family: 'Figtree', sans-serif; font-weight: 700; font-size: 22px;">1.1 Scalars and Vectors</div>
+    <div class="role-label">Body</div>
+    <div class="role-sample" style="font-family: 'Crimson Pro', serif; font-weight: 400;">A scalar quantity has only magnitude, while a vector quantity has both magnitude and direction.</div>
+    <div class="role-label">Formula</div>
+    <div class="role-sample" style="font-family: 'JetBrains Mono', monospace; font-weight: 400;">F = ma  |  v = u + at  |  Eₖ = ½mv²</div>
+  </div>
+  <div class="pair-mood">Figtree (headings) + Crimson Pro (body) + JetBrains Mono (formulas) — Modern clean headings with warm academic body text. Best for digital-first + print.</div>
+</div>
+
+<div class="section-label">💡 Optional Extra</div>
+
+<div class="pairing-card" onclick="selectPairing(this)" id="pair4">
+  <div class="pair-name">Pairing D: <span class="pair-badge badge-tech">Tech Bold</span></div>
+  <div class="role-grid">
+    <div class="role-label">Heading</div>
+    <div class="role-sample" style="font-family: 'Roboto Slab', serif; font-weight: 700; font-size: 22px;">1.1 Scalars and Vectors</div>
+    <div class="role-label">Body</div>
+    <div class="role-sample" style="font-family: 'Figtree', sans-serif; font-weight: 400;">A scalar quantity has only magnitude, while a vector quantity has both magnitude and direction.</div>
+    <div class="role-label">Formula</div>
+    <div class="role-sample" style="font-family: 'JetBrains Mono', monospace; font-weight: 400;">F = ma  |  v = u + at  |  Eₖ = ½mv²</div>
+  </div>
+  <div class="pair-mood">Roboto Slab (headings) + Figtree (body) + JetBrains Mono (formulas) — Sturdy headings + warm modern body. Strong, structured, confident.</div>
+</div>
+
+<div class="info-box">
+  <strong>💡 How to choose?</strong><br>
+  • <strong>A (Academic Premium):</strong> ดีที่สุดถ้าอยากให้ Lecture ดูมีระดับ คลาสสิก — เหมาะทั้ง PDF และ HTML<br>
+  • <strong>B (Friendly & Clear):</strong> ดีที่สุดถ้านักเรียนคือกลุ่มเป้าหมายหลัก — Atkinson Hyperlegible อ่านง่ายสุด<br>
+  • <strong>C (Modern STEM):</strong> ดีที่สุดถ้าเน้น digital-first — หัวข้อทันสมัย เนื้อหาอบอุ่น<br>
+  • <strong>D (Tech Bold):</strong> ดีที่สุดถ้าอยากได้ลุคแข็งแรง มั่นคง เหมาะวิชาเลข/คอม
+</div>
+
+<script>
+function selectPairing(el) {
+  document.querySelectorAll('.pairing-card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+}
+</script>
+
+</body>
+</html>
