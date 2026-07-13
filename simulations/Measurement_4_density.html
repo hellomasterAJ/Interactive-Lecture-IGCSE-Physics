@@ -309,9 +309,9 @@ const MATS = {
   "Glass":      { rho: 2.50,  vmin: 5,  vmax: 300, c1:"#9fd0d8", c2:"#5f98a8" }
 };
 const KNOWN = [
-  { name:"Copper Statue",   mat:"Copper",     V:25,  seed:11 },
+  { name:"Copper Statue",   mat:"Copper",     V:25,  seed:11, statue:true },
   { name:"Granite Rock",    mat:"Granite",    V:50,  seed:23 },
-  { name:"Die-cast Toy",    mat:"Zinc Alloy", V:20,  seed:37 },
+  { name:"Die-cast Toy",    mat:"Zinc Alloy", V:20,  seed:37, car:true },
   { name:"Steel Sphere",    mat:"Steel",      V:100, seed:41, sphere:true },
   { name:"Lead Block",      mat:"Lead",       V:50,  seed:53, block:true },
   { name:"Cast Aluminium",  mat:"Aluminium",  V:20,  seed:67 },
@@ -349,6 +349,7 @@ function makeKnownObjects(){
       id: i + 1, name: k.name, mat: k.mat, rho: MATS[k.mat].rho,
       V: k.V, m: +(MATS[k.mat].rho * k.V).toFixed(2),
       seed: k.seed, sphere: !!k.sphere, block: !!k.block,
+      statue: !!k.statue, car: !!k.car,
       unknown: false, loc: "shelf", slot: i + 1
     })));
 }
@@ -438,9 +439,9 @@ function cylLevel(){                              // current water level in mL
   const o = objAt("vol");
   return baseFor(cylCap()) + (o && S.volDev === "cyl" ? o.V : 0);
 }
-// eureka can on a bench — spout at the water line, HIGHER than the catch-cylinder mouth
-const EK = { x: 700, w: 110, h: 148, benchY: 392, spoutY: 272 };   // can bottom = benchY
-const CC = { x: 892, bot: 470, h: 168, w: 80 };                    // mouth top = 302 < spout 272 ✓
+// eureka can on a bench — raised & close to the cylinder so displaced water falls near-vertically
+const EK = { x: 760, w: 110, h: 148, benchY: 352, spoutY: 232 };   // can bottom = benchY
+const CC = { x: 900, bot: 470, h: 168, w: 80 };                    // mouth top = 302, spout tip ≈ 259 ✓
 const CC_CAPS = [50, 100, 250, 500];
 function ccCap(){
   const o = objAt("vol") || (S.drag && S.drag.o) || null;
@@ -519,7 +520,32 @@ function drawObject(o, cx, cy, scale){
   grad.addColorStop(0, o.unknown ? "#8d95a2" : M.c1);
   grad.addColorStop(1, o.unknown ? "#565e6a" : M.c2);
   ctx.fillStyle = grad;
-  if(o.sphere){
+  if(o.statue){
+    // seated statue: lotus base + body + head
+    ctx.beginPath(); ctx.ellipse(cx, cy + r*.62, r*1.02, r*.3, 0, 0, 7); ctx.fill();   // base
+    ctx.beginPath();                                                                    // body
+    ctx.moveTo(cx - r*.78, cy + r*.55);
+    ctx.quadraticCurveTo(cx - r*.55, cy - r*.15, cx - r*.3, cy - r*.32);
+    ctx.quadraticCurveTo(cx, cy - r*.5, cx + r*.3, cy - r*.32);
+    ctx.quadraticCurveTo(cx + r*.55, cy - r*.15, cx + r*.78, cy + r*.55);
+    ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx, cy - r*.66, r*.3, 0, 7); ctx.fill();                  // head
+  } else if(o.car){
+    // toy car: body + cabin + wheels
+    rr(cx - r*1.15, cy - r*.22, r*2.3, r*.55, r*.18); ctx.fill();                       // body
+    ctx.beginPath();                                                                    // cabin
+    ctx.moveTo(cx - r*.6,  cy - r*.22);
+    ctx.lineTo(cx - r*.28, cy - r*.6);
+    ctx.lineTo(cx + r*.38, cy - r*.6);
+    ctx.lineTo(cx + r*.72, cy - r*.22);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#22262c";                                                          // wheels
+    ctx.beginPath(); ctx.arc(cx - r*.62, cy + r*.36, r*.27, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + r*.62, cy + r*.36, r*.27, 0, 7); ctx.fill();
+    ctx.fillStyle = "#5a626c";
+    ctx.beginPath(); ctx.arc(cx - r*.62, cy + r*.36, r*.1, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(cx + r*.62, cy + r*.36, r*.1, 0, 7); ctx.fill();
+  } else if(o.sphere){
     ctx.beginPath(); ctx.arc(cx, cy, r, 0, 7); ctx.fill();
   } else if(o.block){
     rr(cx - r*1.1, cy - r*.75, r*2.2, r*1.5, 3); ctx.fill();
@@ -929,26 +955,28 @@ function syncOut(){
   if(S.mode === "simulate") $("fPanel").innerHTML = formulaHTML();
   syncInfo();
 }
-function conversionSteps(m, V){                    // returns {lines, rhoTxt}
+function conversionSteps(m, V){
+  // only show a unit conversion when one is actually needed
   const gcm = S.unit === "gcm";
-  let t = "";
   const spring = S.massDev === "spring";
+  const steps = [];
   if(spring){
     const W = m/1000*gVal();
-    t += `<span class="stp">① Weight → mass:</span>  <span class="frm">m = W / g</span> = ${fmt(W)} / ${gVal()} = <b>${fmtKg(m)} kg</b>\n`;
+    steps.push(`<span class="stp">Weight → mass:</span>  <span class="frm">m = W / g</span> = ${fmt(W)} / ${gVal()} = <b>${fmtKg(m)} kg</b>`);
+    if(gcm) steps.push(`<span class="stp">Convert mass:</span>  ${fmtKg(m)} kg → <b>${fmt(m)} g</b>  (× 1000)`);
   } else {
-    t += `<span class="stp">① Mass from balance:</span>  m = <b>${fmt(m)} g</b>\n`;
+    steps.push(`<span class="stp">Mass from balance:</span>  m = <b>${fmt(m)} g</b>  (already in grams)`);
+    if(!gcm) steps.push(`<span class="stp">Convert mass:</span>  ${fmt(m)} g → <b>${fmtKg(m)} kg</b>  (÷ 1000)`);
   }
   if(gcm){
-    t += `<span class="stp">② Convert mass:</span>  ${fmtKg(m)} kg → <b>${fmt(m)} g</b>  (× 1000)\n` +
-         `<span class="stp">③ Volume:</span>  V = <b>${fmt(V)} cm³</b>  (1 mL = 1 cm³)\n` +
-         `<span class="stp">④ Substitute:</span>  <span class="frm">ρ = m / V</span> = ${fmt(m)} / ${fmt(V)} = <span class="ans">${fmt(m/V)} g/cm³</span>`;
+    steps.push(`<span class="stp">Volume:</span>  V = <b>${fmt(V)} cm³</b>  (1 mL = 1 cm³ — no conversion needed)`);
+    steps.push(`<span class="stp">Substitute:</span>  <span class="frm">ρ = m / V</span> = ${fmt(m)} / ${fmt(V)} = <span class="ans">${fmt(m/V)} g/cm³</span>`);
   } else {
-    t += `<span class="stp">② Convert mass:</span>  ${fmt(m)} g → <b>${fmtKg(m)} kg</b>  (÷ 1000)\n` +
-         `<span class="stp">③ Convert volume:</span>  ${fmt(V)} cm³ → <b>${V/1e6} m³</b>  (÷ 1,000,000)\n` +
-         `<span class="stp">④ Substitute:</span>  <span class="frm">ρ = m / V</span> = ${fmtKg(m)} / ${V/1e6} = <span class="ans">${fmtSci(m/V*1000)} kg/m³</span>`;
+    steps.push(`<span class="stp">Convert volume:</span>  ${fmt(V)} cm³ → <b>${V/1e6} m³</b>  (÷ 1,000,000)`);
+    steps.push(`<span class="stp">Substitute:</span>  <span class="frm">ρ = m / V</span> = ${fmtKg(m)} / ${V/1e6} = <span class="ans">${fmtSci(m/V*1000)} kg/m³</span>`);
   }
-  return t;
+  const NUM = ["①","②","③","④","⑤"];
+  return steps.map((s, i) => `<span class="stp">${NUM[i]}</span> ` + s).join("\n");
 }
 function formulaHTML(){
   const { m, V } = S.results;
