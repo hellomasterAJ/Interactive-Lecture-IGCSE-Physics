@@ -120,11 +120,10 @@ body{
 #cv{display:block;width:100%;touch-action:none;cursor:grab;}
 .chip{position:absolute;font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 9px;border-radius:8px;
   background:var(--card);border:1px solid var(--border);color:var(--text-dim);pointer-events:none;opacity:.94;}
-#chipZoom{top:42px;right:10px;color:var(--amber);border-color:var(--amber);pointer-events:auto;cursor:pointer;display:none;}
+#chipZoom{top:8px;right:10px;color:var(--amber);border-color:var(--amber);pointer-events:auto;cursor:pointer;display:none;}
 #hintEl{position:absolute;bottom:6px;right:10px;font-size:10.5px;color:var(--text-muted);pointer-events:none;
   font-family:'JetBrains Mono',monospace;background:var(--card);border:1px solid var(--border);
   border-radius:8px;padding:2px 8px;opacity:.92;}
-#btnRand{position:absolute;top:8px;right:10px;pointer-events:auto;}
 
 /* ── Outputs (Layout 3) ── */
 .out{display:grid;grid-template-columns:38fr 62fr;gap:10px;align-items:start;}
@@ -218,6 +217,7 @@ table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px 
     </div>
     <div class="tsep"></div>
     <div class="tgroup">
+      <button class="tbtn" id="btnRand">🎲 Random object</button>
       <button class="tbtn" id="btnReset">↺ Reset</button>
     </div>
   </div>
@@ -226,7 +226,6 @@ table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px 
 <!-- Layout 2 — experiment area -->
 <div class="canvas-card">
   <canvas id="cv" width="1120" height="520"></canvas>
-  <button class="tbtn" id="btnRand">🎲 Random object</button>
   <div class="chip" id="chipZoom">🔍 2.5× — drag = pan · dbl-click/Esc = exit</div>
   <div id="hintEl">drag object onto a device · dbl-click = zoom</div>
 </div>
@@ -412,8 +411,8 @@ function evtPt(e){
 const hideVals = () => S.mode !== "simulate" && !S.reveal;
 
 /* ================= DEVICE GEOMETRY & READINGS ================= */
-// spring balance
-const SP = { x: 285, armY: 186, tubeT: 208, tubeB: 356, tubeW: 62, slen: 118, y0: 222 };
+// spring balance (5% smaller meter)
+const SP = { x: 285, armY: 186, tubeT: 210, tubeB: 350, tubeW: 59, slen: 112, y0: 224 };
 const SP_RANGES = [1, 2, 5, 10, 20];
 function springLoad(){                            // N — object on hook (or dragged over)
   const o = objAt("mass");
@@ -424,10 +423,10 @@ function springRange(){
   if(S.drag && S.drag.o) w = Math.max(w, S.drag.o.m/1000*gVal());
   return SP_RANGES.find(r => w <= r + 1e-9) || 20;
 }
-// top-pan balance
-const TP = { x: 285, panY: 300, panW: 200, bodyT: 318, bodyB: 396 };
-// measuring cylinder
-const CYL = { x: 812, bot: 486, h: 288, w: 118 };
+// top-pan balance (moved ~10% of zone height lower)
+const TP = { x: 285, panY: 340, panW: 200, bodyT: 358, bodyB: 436 };
+// measuring cylinder (raised ~5% of zone height)
+const CYL = { x: 812, bot: 466, h: 288, w: 118 };
 const CAPS = [100, 250, 500, 1000];
 function cylCap(){
   const o = objAt("vol") || (S.drag && S.drag.o) || null;
@@ -439,9 +438,9 @@ function cylLevel(){                              // current water level in mL
   const o = objAt("vol");
   return baseFor(cylCap()) + (o && S.volDev === "cyl" ? o.V : 0);
 }
-// eureka can + catch cylinder
-const EK = { x: 726, bot: 468, w: 128, h: 208, spoutY: 320 };
-const CC = { x: 960, bot: 486, h: 210, w: 84 };
+// eureka can on a bench — spout at the water line, HIGHER than the catch-cylinder mouth
+const EK = { x: 700, w: 110, h: 148, benchY: 392, spoutY: 272 };   // can bottom = benchY
+const CC = { x: 892, bot: 470, h: 168, w: 80 };                    // mouth top = 302 < spout 272 ✓
 const CC_CAPS = [50, 100, 250, 500];
 function ccCap(){
   const o = objAt("vol") || (S.drag && S.drag.o) || null;
@@ -727,45 +726,60 @@ function drawCylinder(){
 function drawEureka(){
   const o = objAt("vol");
   const ph = S.eureka;
-  const x = EK.x - EK.w/2, top = EK.bot - EK.h;
-  // can body
+  const x = EK.x - EK.w/2, bot = EK.benchY, top = bot - EK.h;
+  // ── bench (the can must stand higher than the cylinder mouth) ──
+  ctx.fillStyle = "#6e563a";
+  rr(x - 26, bot, EK.w + 52, 9, 3); ctx.fill();                    // bench top
+  ctx.fillStyle = "#57432c";
+  ctx.fillRect(x - 14, bot + 9, 9, DH - 24 - bot - 9);             // legs
+  ctx.fillRect(x + EK.w + 5, bot + 9, 9, DH - 24 - bot - 9);
+  // ── can body ──
   ctx.save();
   ctx.shadowColor = "rgba(0,0,0,.3)"; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
-  ctx.fillStyle = metal(x, 0, x+EK.w, 0);
-  rr(x, top, EK.w, EK.h, 6); ctx.fill();
+  ctx.fillStyle = metal(x, 0, x + EK.w, 0);
+  rr(x, top, EK.w, EK.h, 5); ctx.fill();
   ctx.restore();
-  // water inside (always full to spout level)
-  waterFill(x+5, EK.spoutY, EK.w-10, EK.bot - 6 - EK.spoutY);
-  meniscus(x+5, EK.w-10, EK.spoutY);
-  // object inside
+  // water — surface exactly AT the spout opening (it cannot sit any higher)
+  waterFill(x + 5, EK.spoutY, EK.w - 10, bot - 5 - EK.spoutY);
+  meniscus(x + 5, EK.w - 10, EK.spoutY);
+  // object resting on the can bottom
   if(o && S.volDev === "eureka" && ph.phase !== "idle"){
     ctx.save(); ctx.globalAlpha = .85;
-    drawObject(o, EK.x, EK.bot - 26, Math.min(1, (EK.w-30)/(2*objRadius(o))));
+    drawObject(o, EK.x, bot - 22, Math.min(1, (EK.w - 30)/(2*objRadius(o))));
     ctx.restore();
   }
-  // spout
-  ctx.fillStyle = metal(x+EK.w, 0, x+EK.w+34, 0);
+  // spout — starts at the water line, slopes down and clears the cylinder mouth
+  const sx0 = x + EK.w - 2, sy0 = EK.spoutY - 2;
+  const sx1 = x + EK.w + 34, sy1 = EK.spoutY + 16;
+  ctx.fillStyle = metal(sx0, 0, sx1, 0);
   ctx.beginPath();
-  ctx.moveTo(x+EK.w-2, EK.spoutY);
-  ctx.lineTo(x+EK.w+30, EK.spoutY+16);
-  ctx.lineTo(x+EK.w+30, EK.spoutY+30);
-  ctx.lineTo(x+EK.w-2, EK.spoutY+18);
+  ctx.moveTo(sx0, sy0);
+  ctx.lineTo(sx1, sy1);
+  ctx.lineTo(sx1, sy1 + 11);
+  ctx.lineTo(sx0, sy0 + 13);
   ctx.closePath(); ctx.fill();
   ctx.font = "10px 'JetBrains Mono',monospace"; ctx.fillStyle = col("--text-muted");
   ctx.textAlign = "center";
-  ctx.fillText("Eureka can", EK.x, EK.bot + 16);
-  // pour stream
+  ctx.fillText("Eureka can", EK.x, DH - 14);
+  // ── pour: displaced water falls from the spout into the cylinder below ──
   const cap = ccCap();
   const V = o ? o.V : 0;
   const frac = ph.phase === "pour" ? ph.t : (ph.phase === "done" ? 1 : 0);
   if(ph.phase === "pour"){
-    ctx.strokeStyle = "rgba(120,190,245,.8)"; ctx.lineWidth = 3.5;
+    ctx.strokeStyle = "rgba(120,190,245,.85)"; ctx.lineWidth = 3;
     ctx.beginPath();
-    ctx.moveTo(x+EK.w+28, EK.spoutY+24);
-    ctx.quadraticCurveTo(CC.x - 10, EK.spoutY+40, CC.x, CC.bot - CC.h + 26);
+    ctx.moveTo(sx1 - 2, sy1 + 8);
+    ctx.quadraticCurveTo(sx1 + (CC.x - sx1)*0.55, sy1 + 14, CC.x, CC.bot - CC.h + 20);
     ctx.stroke();
+    // droplets
+    ctx.fillStyle = "rgba(140,200,250,.9)";
+    for(let i = 0; i < 3; i++){
+      const tt = ((ph.t * 3 + i/3) % 1);
+      const dx = sx1 - 2 + (CC.x - sx1 + 2) * tt;
+      const dy = sy1 + 8 + (CC.bot - CC.h + 20 - sy1 - 8) * tt * tt;
+      ctx.beginPath(); ctx.ellipse(dx, dy, 2.2, 3.4, 0, 0, 7); ctx.fill();
+    }
   }
-  // catch cylinder with collected volume
   const collected = V * frac;
   const lvlY = drawCylGlass(CC.x, CC.bot, CC.h, CC.w, cap, collected, null);
   ctx.font = "10px 'JetBrains Mono',monospace"; ctx.fillStyle = col("--text-muted");
@@ -800,7 +814,7 @@ function hitObject(p){
       else { cx = TP.x; cy = TP.panY - objRadius(o)*.8; }
     } else { // vol
       cx = S.volDev === "cyl" ? CYL.x : EK.x;
-      cy = S.volDev === "cyl" ? CYL.bot - 20 : EK.bot - 26;
+      cy = S.volDev === "cyl" ? CYL.bot - 20 : EK.benchY - 22;
     }
     if(Math.hypot(p.x - cx, p.y - cy) < objRadius(o) + 10) return o;
   }
@@ -939,8 +953,8 @@ function conversionSteps(m, V){                    // returns {lines, rhoTxt}
 function formulaHTML(){
   const { m, V } = S.results;
   if(m === null && V === null) return "Measure mass <b>and</b> volume to see the calculation.";
-  if(m === null) return "✅ Volume done — now measure the <b>mass</b> (Zone 2).";
-  if(V === null) return "✅ Mass done — now measure the <b>volume</b> (Zone 3).";
+  if(m === null) return `✅ Volume done — now measure the <b>mass</b> with the ${S.massDev === "spring" ? "Spring Balance" : "Top-pan Balance"}.`;
+  if(V === null) return `✅ Mass done — now measure the <b>volume</b> with the ${S.volDev === "cyl" ? "Measuring Cylinder" : "Eureka Can"}.`;
   return conversionSteps(m, V);
 }
 function syncInfo(){
