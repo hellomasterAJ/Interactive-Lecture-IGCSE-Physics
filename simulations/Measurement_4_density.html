@@ -266,6 +266,10 @@ table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px 
       <div class="qtext" id="pQText">—</div>
       <div class="prac-row">
         <button class="tbtn" id="btnPNew">↺ New Question</button>
+        <input class="tin" id="pM" type="number" step="any" placeholder="m (g)" style="width:92px;">
+        <span style="color:var(--text-dim);font-family:'JetBrains Mono',monospace;">÷</span>
+        <input class="tin" id="pV" type="number" step="any" placeholder="V (cm³)" style="width:92px;">
+        <span style="color:var(--text-dim);font-family:'JetBrains Mono',monospace;">=</span>
         <input class="tin" id="pRho" type="number" step="any" placeholder="ρ (g/cm³)" style="width:110px;">
         <button class="tbtn primary" id="btnPCheck">✓ Check</button>
         <span class="badge">Score <b id="pScore">0/0</b></span>
@@ -277,6 +281,10 @@ table.dt td{color:var(--text);text-align:left;padding:4px 5px;border-bottom:1px 
       <h3>🏆 Quiz — <span id="qHead">Q 1/5</span></h3>
       <div class="qtext" id="qText">—</div>
       <div class="prac-row" id="qRow">
+        <input class="tin" id="qM" type="number" step="any" placeholder="m (g)" style="width:92px;">
+        <span style="color:var(--text-dim);font-family:'JetBrains Mono',monospace;">÷</span>
+        <input class="tin" id="qV" type="number" step="any" placeholder="V (cm³)" style="width:92px;">
+        <span style="color:var(--text-dim);font-family:'JetBrains Mono',monospace;">=</span>
         <input class="tin" id="qRho" type="number" step="any" placeholder="ρ (g/cm³)" style="width:110px;">
         <button class="tbtn primary" id="btnQSub">Submit</button>
         <button class="tbtn" id="btnQNew">↺ New Quiz</button>
@@ -645,7 +653,7 @@ function drawSpring(){
     ctx.fillStyle = col("--accent"); ctx.textAlign = "left";
     ctx.fillText(`W = ${fmt(load)} N`, x+52, SP.y0+38);
     ctx.fillStyle = col("--text-dim"); ctx.font = "11px 'JetBrains Mono',monospace";
-    ctx.fillText(`m = W/g = ${fmt(o.m)} g`, x+52, SP.y0+56);
+    ctx.fillText(`m = W/g = ${fmtKg(o.m)} kg = ${fmt(o.m)} g`, x+52, SP.y0+56);
   }
   ctx.font = "10px 'JetBrains Mono',monospace"; ctx.fillStyle = col("--text-muted");
   ctx.textAlign = "left";
@@ -1105,6 +1113,28 @@ function lockDevices(){
   ["grpMass","grpVol"].forEach(id => $(id).classList.add("locked"));
   $("btnRand").classList.add("locked");
 }
+/* ---- helper: m ÷ V auto-fills the density answer ---- */
+function bindAutoRho(mId, vId, rhoId){
+  const upd = () => {
+    const m = parseFloat($(mId).value), V = parseFloat($(vId).value);
+    if(isFinite(m) && isFinite(V) && V > 0) $(rhoId).value = (m/V).toFixed(2);
+  };
+  $(mId).addEventListener("input", upd);
+  $(vId).addEventListener("input", upd);
+}
+bindAutoRho("pM", "pV", "pRho");
+bindAutoRho("qM", "qV", "qRho");
+/* ---- friendly step-by-step instructions ---- */
+function questionText(objName, massDev, volDev, btnName){
+  const s1 = massDev === "spring"
+    ? `① Hang ${objName} on the Spring Balance and read the weight W in newtons. Mass: m = W ÷ g (g = ${gVal()} N/kg) → then × 1000 to get grams.`
+    : `① Place ${objName} on the Top-pan Balance — the display shows its mass in grams directly.`;
+  const s2 = volDev === "cyl"
+    ? `② Lower it into the Measuring Cylinder. Volume = water level after − level before (1 mL = 1 cm³).`
+    : `② Lower it into the Eureka Can. The water it pushes out runs into the small cylinder — that reading IS its volume in cm³.`;
+  const s3 = `③ Type m (g) and V (cm³) below — ρ = m ÷ V is worked out for you. Press ${btnName}.`;
+  return s1 + "<br>" + s2 + "<br>" + s3;
+}
 /* ---- practice ---- */
 function newPractice(){
   S.reveal = false;
@@ -1113,11 +1143,10 @@ function newPractice(){
   S.eureka = { phase: "idle", t: 0 };
   S.prac.revealed = false;
   lockDevices();
-  $("pQText").textContent =
-    `Measure the mass and volume of ${S.objects[0].name}, then calculate its density in g/cm³. ` +
-    `(Device: ${S.massDev === "spring" ? "Spring Balance — remember m = W/g" : "Top-pan Balance"} + ` +
-    `${S.volDev === "cyl" ? "Measuring Cylinder" : "Eureka Can"})`;
-  $("pRho").value = "";
+  $("pQText").innerHTML =
+    `Find the density of <b>${S.objects[0].name}</b> in g/cm³:<br>` +
+    questionText("the object", S.massDev, S.volDev, "✓ Check");
+  $("pM").value = ""; $("pV").value = ""; $("pRho").value = "";
   $("pFeed").className = "feed"; $("pFeed").innerHTML = "";
   syncOut();
 }
@@ -1144,9 +1173,10 @@ function checkPractice(){
   syncOut();
 }
 /* ---- quiz ---- */
+const QUIZ_N = 3;
 function newQuiz(){
   S.quiz = { qs: [], i: 0, done: false, res: [] };
-  for(let i = 0; i < 5; i++){
+  for(let i = 0; i < QUIZ_N; i++){
     S.quiz.qs.push({
       obj: makeUnknown(),
       massDev: Math.random() < .5 ? "spring" : "toppan",
@@ -1166,12 +1196,11 @@ function showQuizQ(){
   clearResults();
   S.eureka = { phase: "idle", t: 0 };
   lockDevices();
-  $("qHead").textContent = `Q ${z.i+1}/5`;
-  $("qText").textContent =
-    `Find the density of ${q.obj.name} in g/cm³ using the ` +
-    `${q.massDev === "spring" ? "Spring Balance (m = W/g)" : "Top-pan Balance"} and the ` +
-    `${q.volDev === "cyl" ? "Measuring Cylinder" : "Eureka Can"}.`;
-  $("qRho").value = "";
+  $("qHead").textContent = `Q ${z.i+1}/${QUIZ_N}`;
+  $("qText").innerHTML =
+    `Find the density of <b>${q.obj.name}</b> in g/cm³:<br>` +
+    questionText("the object", q.massDev, q.volDev, "Submit");
+  $("qM").value = ""; $("qV").value = ""; $("qRho").value = "";
   $("qResults").innerHTML = "";
   $("qRow").classList.remove("hidden");
   syncOut();
@@ -1187,11 +1216,11 @@ function submitQuiz(){
   const q = z.qs[z.i];
   const err = Math.abs(a - q.obj.rho)/q.obj.rho*100;
   z.res.push({ q, a, err, ok: err <= 5 });
-  if(z.i < 4){ z.i++; showQuizQ(); return; }
+  if(z.i < QUIZ_N - 1){ z.i++; showQuizQ(); return; }
   z.done = true; S.reveal = true;
   const score = z.res.filter(r => r.ok).length;
-  const stars = score === 5 ? "★★★" : score === 4 ? "★★" : score >= 3 ? "★" : "—";
-  $("qHead").textContent = `Done — ${score}/5`;
+  const stars = score === 3 ? "★★★" : score === 2 ? "★★" : score === 1 ? "★" : "—";
+  $("qHead").textContent = `Done — ${score}/${QUIZ_N}`;
   $("qText").textContent = "Quiz complete!";
   $("qRow").classList.add("hidden");
   const rows = z.res.map((r, i) =>
