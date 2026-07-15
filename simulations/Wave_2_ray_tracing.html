@@ -1,0 +1,2029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Ray Tracing — Refraction &amp; Dispersion v2 | HAUS Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+<style>
+:root {
+  --bg: #0f172a; --card: #1e293b; --border: #334155;
+  --text: #e2e8f0; --text-dim: #94a3b8; --text-muted: #64748b;
+  --accent: #e3b341; --accent-glow: rgba(227,179,65,0.12);
+  --grid: #1e293b; --graph-bg: #0a0f1a;
+  --green: #34d399; --rose: #fb7185; --violet: #a78bfa;
+  --amber: #fbbf24; --blue: #38bdf8; --orange: #fb923c;
+}
+.theme-hausnight {
+  --bg: #1a1c20; --card: #26282d; --border: #3a3c42;
+  --text: #FFFFFF; --text-dim: #e0e2e8; --text-muted: #a8aab2;
+  --accent: #F4C01E; --accent-glow: rgba(244,192,30,0.10);
+  --grid: #2a2c32; --graph-bg: #121418;
+  --green: #A6B36A; --rose: #D68B57; --violet: #CBAA6A;
+  --amber: #F4C01E; --blue: #5FB0C4; --orange: #D68B57;
+}
+.theme-neon {
+  --bg: #0d0f1a; --card: #1a1c2e; --border: #2a2d4a;
+  --text: #e0e0f0; --text-dim: #8888b8; --text-muted: #5a5a8a;
+  --accent: #00ffc8; --accent-glow: rgba(0,255,200,0.1);
+  --grid: #1a1c2e; --graph-bg: #080a14;
+  --green: #00ff88; --rose: #ff4499; --violet: #8844ff;
+  --amber: #ffcc00; --blue: #4488ff; --orange: #ff6633;
+}
+.theme-light {
+  --bg: #ffffff; --card: #f3f4f6; --border: #d1d5db;
+  --text: #111827; --text-dim: #4b5563; --text-muted: #9ca3af;
+  --accent: #2563eb; --accent-glow: rgba(37,99,235,0.1);
+  --grid: #e5e7eb; --graph-bg: #f9fafb;
+  --green: #059669; --rose: #dc2626; --violet: #7c3aed;
+  --amber: #d97706; --blue: #2563eb; --orange: #ea580c;
+}
+.theme-haus {
+  --bg: #F4EEE0; --card: #FFFFFF; --border: #E4DAC4;
+  --text: #1A1712; --text-dim: #5B5344; --text-muted: #948A74;
+  --accent: #A9820F; --accent-glow: rgba(169,130,15,0.12);
+  --grid: #EBE3D0; --graph-bg: #FCFAF2;
+  --green: #4E7A3F; --rose: #B5502E; --violet: #8A6D3B;
+  --amber: #A9820F; --blue: #4A7AB8; --orange: #A87A4A;
+}
+.theme-clay {
+  --bg: #d4c8be; --card: #e5d9d0; --border: #c2b5aa;
+  --text: #2d2622; --text-dim: #6a5a4d; --text-muted: #928078;
+  --accent: #a55a3a; --accent-glow: rgba(165,90,58,0.1);
+  --grid: #ccbfb5; --graph-bg: #eee6de;
+  --green: #5a7a4a; --rose: #a03a3a; --violet: #6a4d7a;
+  --amber: #b07a2a; --blue: #3a5a7a; --orange: #b05a2a;
+}
+.theme-haus .top-bar h1,.theme-haus .top-bar h1 span{color:#1A1712;}
+.theme-haus .badge-top{background:#F4C01E;color:#1A1712;border-color:#1A1712;}
+.theme-hausnight .top-bar h1,.theme-hausnight .top-bar h1 span{color:#FFFFFF;}
+
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',sans-serif; transition:background .3s,color .3s;
+  height:100vh; overflow:hidden;
+  display:flex; flex-direction:column; align-items:center;
+  padding:8px 12px;
+}
+.container{max-width:1420px;width:100%;height:100%;display:flex;flex-direction:column;min-height:0;}
+
+/* ── Top bar ── */
+.top-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:8px;flex:0 0 auto;}
+.top-bar h1{font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:8px;}
+.top-bar h1 span{color:var(--accent);}
+.badge-top{font-family:'JetBrains Mono',monospace;font-size:.55rem;padding:2px 8px;border-radius:12px;
+  background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent);}
+.top-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.theme-select{background:var(--card);border:1px solid var(--border);color:var(--text);padding:4px 10px;
+  border-radius:8px;cursor:pointer;font-size:.7rem;font-family:'JetBrains Mono',monospace;outline:none;min-width:110px;}
+.theme-select:hover{border-color:var(--accent);}
+.brand{background:#F4C01E;border-radius:10px;padding:4px 8px;box-shadow:0 2px 6px rgba(0,0,0,.25);display:flex;align-items:center;}
+.brand img{width:46px;height:auto;display:block;}
+@media(max-width:640px){.brand{display:none;}}
+
+/* ── Section tabs ── */
+.sec-tabs{display:flex;gap:4px;background:var(--card);border-radius:10px;padding:4px;border:1px solid var(--border);
+  margin-bottom:6px;flex-wrap:wrap;flex:0 0 auto;}
+.sec-tab{padding:5px 10px;border-radius:7px;border:none;font-family:'JetBrains Mono',monospace;font-size:.68rem;
+  cursor:pointer;transition:all .2s;background:transparent;color:var(--text-dim);white-space:nowrap;flex:1;}
+.sec-tab:hover{color:var(--text);}
+.sec-tab.active{background:var(--accent-glow);color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent);}
+
+/* ── Toolbar ── */
+.toolbar{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--border);
+  border-radius:12px;padding:8px 14px;margin-bottom:6px;flex:0 0 auto;}
+.trow{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;}
+.tgroup{display:flex;align-items:center;gap:6px;}
+.tlabel{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
+.tsel{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:3px 8px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;cursor:pointer;}
+.tsel:hover{border-color:var(--accent);}
+.tin{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:3px 8px;
+  font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;}
+.tin:focus{border-color:var(--accent);}
+.tbtn{background:var(--bg);border:1px solid var(--border);color:var(--text-dim);border-radius:8px;padding:3px 11px;
+  font-size:12px;cursor:pointer;font-family:'JetBrains Mono',monospace;white-space:nowrap;transition:all .15s;}
+.tbtn:hover{border-color:var(--accent);color:var(--accent);}
+.tbtn.on{background:var(--accent-glow);border-color:var(--accent);color:var(--accent);}
+.tbtn.primary{background:var(--blue);border-color:var(--blue);color:#fff;}
+.tbtn:disabled{opacity:.45;pointer-events:none;}
+.tbtn.locked,.tgroup.locked,.pills.locked{opacity:.45;pointer-events:none;}
+.tsep{width:1px;height:22px;background:var(--border);}
+.pills{display:flex;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:2px;}
+.pill{border:none;background:transparent;color:var(--text-dim);font-size:11.5px;padding:2px 10px;border-radius:16px;
+  cursor:pointer;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
+.pill.active{background:var(--blue);color:#fff;}
+input[type=range]{accent-color:var(--accent);width:140px;cursor:pointer;}
+.cpills{display:flex;gap:5px;align-items:center;}
+.cpill{width:19px;height:19px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;
+  opacity:.35;transition:all .15s;outline:none;}
+.cpill.on{opacity:1;border-color:var(--text);box-shadow:0 0 6px rgba(255,255,255,.25);}
+.cpill:hover{opacity:.85;}
+.badge{background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:3px 12px;font-size:11.5px;color:var(--text-dim);}
+.badge b{color:var(--text);font-family:'JetBrains Mono',monospace;}
+
+/* ── Canvas (full width) ── */
+.canvas-card{position:relative;background:var(--card);border:1px solid var(--border);border-radius:12px;
+  overflow:hidden;width:100%;flex:0 0 auto;margin-bottom:6px;}
+#cv{display:block;width:100%;height:clamp(360px, calc(100vh - 336px), 600px);touch-action:none;cursor:crosshair;}
+.chip{position:absolute;font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 9px;border-radius:8px;
+  background:var(--card);border:1px solid var(--border);color:var(--text-dim);pointer-events:none;opacity:.94;}
+#chipInfo{top:8px;left:10px;}
+#chipStatus{top:8px;right:10px;}
+#chipStatus.ok{color:var(--green);border-color:var(--green);}
+#chipStatus.crit{color:var(--amber);border-color:var(--amber);}
+#chipStatus.tir{color:var(--orange);border-color:var(--orange);}
+#chipWarn{top:36px;left:50%;transform:translateX(-50%);color:var(--orange);border-color:var(--orange);display:none;}
+#chipZoom{top:34px;right:10px;color:var(--amber);border-color:var(--amber);pointer-events:auto;cursor:pointer;}
+#hintEl{position:absolute;bottom:6px;right:10px;font-size:10.5px;color:var(--text-muted);pointer-events:none;
+  font-family:'JetBrains Mono',monospace;background:var(--card);border:1px solid var(--border);
+  border-radius:8px;padding:2px 8px;opacity:.92;max-width:60%;text-align:right;}
+
+/* ── Below-canvas panels (scrollable region) ── */
+.below{flex:1 1 auto;overflow-y:auto;min-height:110px;display:flex;flex-direction:column;gap:8px;padding-bottom:4px;}
+.brow{display:grid;grid-template-columns:46fr 54fr;gap:8px;align-items:start;}
+@media(max-width:900px){.brow{grid-template-columns:1fr;}}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:10px 14px;}
+.panel h3{font-size:.74rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-bottom:6px;}
+table.dt{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:11px;}
+table.dt th{color:var(--text-muted);font-weight:600;text-align:left;padding:3px 5px;border-bottom:1px solid var(--border);font-size:10px;}
+table.dt td{color:var(--text);text-align:left;padding:3px 5px;border-bottom:1px solid var(--border);}
+table.dt td .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px;}
+.summary-text{font-size:12.5px;line-height:1.7;color:var(--text-dim);}
+.summary-text b{color:var(--text);}
+.summary-text .hl{color:var(--accent);font-weight:600;}
+.note{font-size:11.5px;color:var(--text-muted);line-height:1.6;}
+.note b{color:var(--text-dim);}
+.hist{background:var(--bg);border-left:3px solid var(--accent);border-radius:0 8px 8px 0;padding:7px 11px;
+  font-size:11.5px;line-height:1.6;color:var(--text-dim);margin-top:6px;}
+.hist b{color:var(--accent);}
+.eq-box{background:var(--graph-bg);border-radius:8px;padding:10px;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;overflow:hidden;max-width:100%;font-size:16px;min-height:48px;}
+.eq-box .katex{font-size:1em;color:var(--text);}
+.eq-sm{margin-top:6px;font-size:15px;overflow:hidden;text-align:center;}
+.eq-sm .katex{font-size:1em;color:var(--text-dim);}
+.hidden{display:none !important;}
+.feed{margin-top:6px;padding:8px 11px;border-radius:9px;font-size:11.5px;line-height:1.6;display:none;
+  font-family:'JetBrains Mono',monospace;}
+.feed.good{display:block;background:rgba(52,211,153,.1);border:1px solid var(--green);color:var(--text);}
+.adv-toggle{font-size:11px;color:var(--text-muted);cursor:pointer;user-select:none;margin-top:8px;display:inline-block;
+  border:1px solid var(--border);border-radius:14px;padding:2px 10px;font-family:'JetBrains Mono',monospace;}
+.adv-toggle.on{color:var(--accent);border-color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="container">
+
+<div class="top-bar">
+  <h1>🌈 <span>Ray Tracing — Refraction &amp; Dispersion</span> <span class="badge-top">v2.0.0</span></h1>
+  <div class="top-right">
+    <select class="theme-select" id="themeSel">
+      <option value="dark">🌙 Classic Dark</option>
+      <option value="hausnight">⌂ HAUS Night</option>
+      <option value="neon">🌃 Cyberpunk Neon</option>
+      <option value="light">☀️ Classic Light</option>
+      <option value="haus">⌂ HAUS Day</option>
+      <option value="clay">🏺 Warm Clay</option>
+    </select>
+    <div class="brand" aria-label="HAUS Academy"><img src="data:image/png;base64,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" alt="HAUS Academy"></div>
+  </div>
+</div>
+
+<div class="sec-tabs" id="secTabs">
+  <button class="sec-tab active" data-s="0">🔺 Prism</button>
+  <button class="sec-tab" data-s="1">🪟 Glass Blocks</button>
+  <button class="sec-tab" data-s="2">🔵 Half Circle</button>
+  <button class="sec-tab" data-s="3">📐 Right Triangle</button>
+  <button class="sec-tab" data-s="4">💎 Diamond</button>
+  <button class="sec-tab" data-s="5">💧 Rainbow</button>
+</div>
+
+<div class="toolbar">
+  <!-- Row 1: light source + colours -->
+  <div class="trow">
+    <div class="tgroup" id="grpSrc"><span class="tlabel">Light</span>
+      <div class="pills" id="srcPills">
+        <button class="pill active" data-src="mono">🔦 Mono</button>
+        <button class="pill" data-src="visible">🌈 Visible</button>
+        <button class="pill" data-src="sun">☀️ Sun</button>
+      </div>
+    </div>
+    <div class="tgroup" id="grpCols">
+      <div class="cpills" id="cpills"></div>
+      <button class="tbtn" id="btnColReset" title="Reset colour selection">↺</button>
+    </div>
+    <div class="tsep"></div>
+    <div class="tgroup" id="grpMedium"><span class="tlabel" id="medLabel">Medium</span>
+      <select class="tsel" id="medSel" style="min-width:172px;"></select>
+      <span class="badge hidden" id="medLocked"><b id="medLockedName">—</b></span>
+    </div>
+  </div>
+
+  <!-- Row 2: section-specific + shared -->
+  <div class="trow">
+    <div class="tgroup hidden" id="gApex"><span class="tlabel">Apex</span>
+      <input type="range" id="apexSl" min="45" max="75" step="1" value="45" style="width:100px;">
+      <span class="badge"><b id="apexV">45°</b></span>
+    </div>
+    <div class="tgroup hidden" id="gCount"><span class="tlabel">Blocks</span>
+      <div class="pills" id="cntPills">
+        <button class="pill active" data-n="1">1</button>
+        <button class="pill" data-n="2">2</button>
+      </div>
+      <select class="tsel hidden" id="med2Sel" style="min-width:150px;" title="Block 2 medium"></select>
+    </div>
+    <div class="tgroup hidden" id="gDir">
+      <button class="tbtn" id="dirBtn">◀ from left</button>
+    </div>
+    <div class="tgroup hidden" id="gTri"><span class="tlabel">Angle A</span>
+      <select class="tsel" id="triPreset">
+        <option value="45">45-45-90</option>
+        <option value="30">30-60-90</option>
+        <option value="custom">Custom</option>
+      </select>
+      <input type="range" id="triSl" min="20" max="70" step="1" value="45" style="width:90px;">
+      <span class="badge"><b id="triV">45°</b></span>
+    </div>
+    <div class="tgroup hidden" id="gRain"><span class="tlabel">Rainbow</span>
+      <div class="pills" id="rainPills">
+        <button class="pill active" data-r="1">Single</button>
+        <button class="pill" data-r="2">Double</button>
+      </div>
+    </div>
+    <div class="tgroup" id="grpAngle"><span class="tlabel" id="angLabel">θ₁</span>
+      <input type="range" id="angSlider" min="0" max="75" step="0.5" value="50">
+      <input class="tin" id="angInput" type="number" min="0" max="75" step="0.5" value="50" style="width:60px;">°
+    </div>
+    <div class="tsep"></div>
+    <div class="tgroup">
+      <button class="tbtn primary" id="btnPlay">▶ Play</button>
+      <div class="pills" id="speedPills">
+        <button class="pill" data-s="0.5">0.5×</button>
+        <button class="pill active" data-s="1">1×</button>
+        <button class="pill" data-s="2">2×</button>
+      </div>
+    </div>
+    <div class="tsep"></div>
+    <div class="tgroup"><span class="tlabel">Show</span>
+      <button class="tbtn on" id="btnAngles">∠</button>
+      <button class="tbtn on" id="btnLabels">🏷</button>
+      <button class="tbtn on" id="btnNormals">⊥</button>
+      <button class="tbtn hidden" id="btnDev">⸻ δ</button>
+      <button class="tbtn" id="btnEq">📐 Equations</button>
+    </div>
+    <div class="tsep"></div>
+    <button class="tbtn" id="btnReset" title="Reset everything to defaults">↺ Reset All</button>
+  </div>
+</div>
+
+<div class="canvas-card">
+  <canvas id="cv"></canvas>
+  <div class="chip" id="chipInfo">—</div>
+  <div class="chip" id="chipStatus">—</div>
+  <div class="chip" id="chipWarn">⚠</div>
+  <div class="chip" id="chipZoom" style="display:none;">🔍 2.5× — drag = pan · dbl-click/Esc = exit</div>
+  <div id="hintEl">—</div>
+</div>
+
+<div class="below">
+  <div class="brow">
+    <div class="panel">
+      <h3>🎨 Color Spectrum Table</h3>
+      <table class="dt" id="specTable"><thead><tr>
+        <th>Colour</th><th>λ nm</th><th>f THz</th><th>n</th><th>θ₂ °</th><th>Deviation °</th>
+      </tr></thead><tbody></tbody></table>
+    </div>
+    <div>
+      <div class="panel">
+        <h3>📊 Summary</h3>
+        <div class="summary-text" id="sumText">—</div>
+        <div class="hist hidden" id="herschelBox">
+          <b>🧪 Herschel's experiment (1800):</b> Sir William Herschel passed sunlight through a prism
+          and placed thermometers along the spectrum. The temperature was <b>highest just beyond the red
+          end</b> — the <b>infrared</b> region. Invisible radiation beyond the visible spectrum carries
+          heat energy. Drag the thermometer 🌡️ across the spectrum!
+        </div>
+        <div class="feed" id="irMsg"></div>
+      </div>
+      <div class="panel" style="margin-top:8px;">
+        <h3>💡 Info</h3>
+        <div class="note" id="infoText">—</div>
+      </div>
+    </div>
+  </div>
+  <div class="panel hidden" id="eqPanel">
+    <h3>📐 Equations (IGCSE)</h3>
+    <div class="eq-box" id="eqMain"></div>
+    <div id="eqSub"></div>
+    <span class="adv-toggle" id="advToggle">▸ Show advanced equations (beyond IGCSE)</span>
+    <div class="hidden" id="advBox" style="margin-top:6px;">
+      <div class="eq-box" id="eqAdv"></div>
+      <div class="note" style="margin-top:6px;">The Cauchy equation n(λ) = A + B/λ² models how the refractive
+      index varies with wavelength — this is the origin of dispersion. It is beyond the IGCSE syllabus.</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+const cv = $("cv"), ctx = cv.getContext("2d");
+const W = 1200, H = 520;                     // logical drawing space
+const D2R = Math.PI/180, R2D = 180/Math.PI;
+
+/* ── media (Cauchy) ── */
+const MEDIA = [
+  { name:"Crown Glass (BK7)", A:1.5046, B:0.00420, fill:"rgba(195,205,210,0.20)", edge:"rgba(200,215,225,0.85)" },
+  { name:"Flint Glass (F2)",  A:1.5809, B:0.01426, fill:"rgba(215,190,165,0.24)", edge:"rgba(225,200,175,0.85)" },
+  { name:"Water",             A:1.3242, B:0.00285, fill:"rgba(25,80,160,0.30)",  edge:"rgba(90,150,220,0.85)" },
+  { name:"Ice",               A:1.3050, B:0.00150, fill:"rgba(180,215,235,0.30)", edge:"rgba(200,225,245,0.85)" },
+  { name:"Perspex",           A:1.4840, B:0.00285, fill:"rgba(220,215,200,0.18)", edge:"rgba(225,220,205,0.8)" },
+  { name:"Diamond",           A:2.3758, B:0.01188, fill:"rgba(200,225,235,0.22)", edge:"rgba(210,235,245,0.9)" }
+];
+const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);   // wl in nm
+const nWhite = mi => nOf(mi, 550);
+const COLORS = [
+  { name:"Red",    wl:700, f:428, hex:"#FF3B30", lab:"R" },
+  { name:"Orange", wl:610, f:492, hex:"#FF9500", lab:null },
+  { name:"Yellow", wl:550, f:545, hex:"#FFCC00", lab:null },
+  { name:"Green",  wl:500, f:600, hex:"#34C759", lab:"G" },
+  { name:"Blue",   wl:460, f:652, hex:"#007AFF", lab:"B" },
+  { name:"Indigo", wl:425, f:705, hex:"#5856D6", lab:null },
+  { name:"Violet", wl:400, f:750, hex:"#AF52DE", lab:"V" }
+];
+const IR = { name:"IR", wl:850, hex:"#FF3B30" }, UV = { name:"UV", wl:360, hex:"#AF52DE" };
+const C_GREY = "#8b949e", C_WHITE_RAY = "#f5f0dc";
+const RAY_W_MONO = 1.6, RAY_W_MULTI = 1;
+
+/* ── state (factories so ↺ Reset All can rebuild) ── */
+const mkS  = () => ({ sec:0, src:"mono", mono:0, vis:[true,true,true,true,true,true,true],
+  playing:false, prog:1, speed:1,
+  showAngles:true, showLabels:true, showNormals:true, showDev:false, showEq:false, showAdv:false,
+  zoom:false, zoomF:2.5, focus:{x:600,y:260}, drag:null, theme:"dark" });
+const mkS1 = () => ({ apex:60, t1:50, pos:0.5, thermo:{x:1050,y:330} });
+const mkS2 = () => ({ count:1, med1:0, med2:2, t1:40, ex:560 });
+const mkS3 = () => ({ med:0, t1:30, side:-1 });
+const mkS4 = () => ({ med:0, t1:45, angA:45, ey:0.45 });
+const mkS5 = () => ({ t1:30, pos:0.5 });
+const mkS6 = () => ({ type:1 });
+let S = mkS(), S1 = mkS1(), S2 = mkS2(), S3 = mkS3(), S4 = mkS4(), S5 = mkS5(), S6 = mkS6();
+
+/* ── math helpers ── */
+const clamp = (v,a,b) => Math.max(a, Math.min(b, v));
+const fmtA = v => (Math.round(v*10)/10).toFixed(1);
+const fmt2 = v => (Math.round(v*100)/100).toFixed(2);
+const fmt3 = v => (Math.round(v*1000)/1000).toFixed(3);
+const fmt4 = v => (Math.round(v*10000)/10000).toFixed(4);
+const css = () => getComputedStyle(document.body);
+const col = n => css().getPropertyValue(n).trim();
+const vsub = (a,b) => ({x:a.x-b.x, y:a.y-b.y});
+const vadd = (a,b) => ({x:a.x+b.x, y:a.y+b.y});
+const vmul = (a,k) => ({x:a.x*k, y:a.y*k});
+const vlen = a => Math.hypot(a.x, a.y);
+const vnorm = a => { const L = vlen(a) || 1; return {x:a.x/L, y:a.y/L}; };
+const vdot = (a,b) => a.x*b.x + a.y*b.y;
+const rotV = (v, deg) => { const a = deg*D2R, c = Math.cos(a), s = Math.sin(a);
+  return { x: v.x*c - v.y*s, y: v.x*s + v.y*c }; };
+function refractV(d, n, n1, n2){
+  const cosi = -vdot(d, n), eta = n1/n2;
+  const k = 1 - eta*eta*(1 - cosi*cosi);
+  if(k < 0) return null;
+  return vnorm({ x: eta*d.x + (eta*cosi - Math.sqrt(k))*n.x,
+                 y: eta*d.y + (eta*cosi - Math.sqrt(k))*n.y });
+}
+const reflectV = (d, n) => { const dn = 2*vdot(d,n); return vnorm({x:d.x-dn*n.x, y:d.y-dn*n.y}); };
+function raySeg(o, d, a, b){
+  const rx = b.x-a.x, ry = b.y-a.y;
+  const den = d.x*ry - d.y*rx;
+  if(Math.abs(den) < 1e-12) return null;
+  const t = ((a.x-o.x)*ry - (a.y-o.y)*rx) / den;
+  const u = Math.abs(rx) > Math.abs(ry) ? (o.x + t*d.x - a.x)/rx : (o.y + t*d.y - a.y)/ry;
+  if(t < 1e-7 || u < -1e-9 || u > 1+1e-9) return null;
+  return { t, u: clamp(u,0,1), pt: { x:o.x+t*d.x, y:o.y+t*d.y } };
+}
+function distToSeg(p, a, b){
+  const dx = b.x-a.x, dy = b.y-a.y, L2 = dx*dx+dy*dy;
+  if(L2 < 1e-9) return Math.hypot(p.x-a.x, p.y-a.y);
+  const u = clamp(((p.x-a.x)*dx + (p.y-a.y)*dy)/L2, 0, 1);
+  return Math.hypot(p.x-(a.x+u*dx), p.y-(a.y+u*dy));
+}
+function lineLine(p1, d1, p2, d2){
+  const den = d1.x*d2.y - d1.y*d2.x;
+  if(Math.abs(den) < 1e-12) return null;
+  const t = ((p2.x-p1.x)*d2.y - (p2.y-p1.y)*d2.x) / den;
+  return { x: p1.x + t*d1.x, y: p1.y + t*d1.y };
+}
+/* canvas display transform: uniform scale, centred */
+let VS = { s:1, ox:0, oy:0 };
+function evtPt(e){
+  const r = cv.getBoundingClientRect();
+  let sx = ((e.clientX - r.left) * (cv.width/(window.devicePixelRatio||1)) / r.width - VS.ox) / VS.s;
+  let sy = ((e.clientY - r.top) * (cv.height/(window.devicePixelRatio||1)) / r.height - VS.oy) / VS.s;
+  if(S.zoom){
+    const f = S.zoomF;
+    sx = (sx - (W/2 - S.focus.x*f)) / f;
+    sy = (sy - (H/2 - S.focus.y*f)) / f;
+  }
+  return { x:sx, y:sy };
+}
+
+/* ── active colours ── */
+function activeCols(){
+  if(S.src === "mono") return [S.mono];
+  if(S.src === "visible") return COLORS.map((_,i)=>i).filter(i=>S.vis[i]);
+  return COLORS.map((_,i)=>i);
+}
+
+/* ── drawing helpers ── */
+function pathLen(pts){ let L=0; for(let i=1;i<pts.length;i++) L+=Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y); return L; }
+function drawPath(pts, color, width, prog, opts = {}){
+  if(pts.length < 2) return;
+  const total = pathLen(pts); if(total < 1) return;
+  let budget = total * clamp(prog, 0, 1);
+  ctx.save();
+  ctx.strokeStyle = color; ctx.fillStyle = color;
+  ctx.lineWidth = width; ctx.lineJoin = "round"; ctx.lineCap = "round";
+  if(opts.alpha !== undefined) ctx.globalAlpha = opts.alpha;
+  if(opts.dash) ctx.setLineDash(opts.dash);
+  if(opts.glow !== false){ ctx.shadowColor = color; ctx.shadowBlur = 3.5; }
+  ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+  let end = pts[pts.length-1], done = true;
+  for(let i=1;i<pts.length;i++){
+    const seg = Math.hypot(pts[i].x-pts[i-1].x, pts[i].y-pts[i-1].y);
+    if(seg <= budget){ ctx.lineTo(pts[i].x, pts[i].y); budget -= seg; }
+    else {
+      const f = seg ? budget/seg : 0;
+      end = { x: pts[i-1].x + f*(pts[i].x-pts[i-1].x), y: pts[i-1].y + f*(pts[i].y-pts[i-1].y) };
+      ctx.lineTo(end.x, end.y); done = false; break;
+    }
+  }
+  ctx.stroke();
+  ctx.setLineDash([]);
+  if(opts.arrow !== false && prog >= 0.999 && done){
+    let i = pts.length-1, a = pts[i-1], b = pts[i];
+    const ang = Math.atan2(b.y-a.y, b.x-a.x), hd = 6 + width*2.4;
+    ctx.beginPath();
+    ctx.moveTo(b.x, b.y);
+    ctx.lineTo(b.x - hd*Math.cos(ang-0.38), b.y - hd*Math.sin(ang-0.38));
+    ctx.lineTo(b.x - hd*Math.cos(ang+0.38), b.y - hd*Math.sin(ang+0.38));
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+}
+function drawNormal(pt, dir, len = 48){
+  ctx.save();
+  ctx.strokeStyle = C_GREY; ctx.globalAlpha = .55; ctx.setLineDash([6,5]); ctx.lineWidth = 1.1;
+  ctx.beginPath();
+  ctx.moveTo(pt.x - dir.x*len, pt.y - dir.y*len);
+  ctx.lineTo(pt.x + dir.x*len, pt.y + dir.y*len);
+  ctx.stroke();
+  ctx.restore();
+}
+function arcAt(P, aFrom, aTo, r, color, label, labelR){
+  let sweep = aTo - aFrom;
+  while(sweep < -Math.PI) sweep += 2*Math.PI;
+  while(sweep >  Math.PI) sweep -= 2*Math.PI;
+  if(Math.abs(sweep) < 0.02) return;
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = 1.4;
+  ctx.beginPath(); ctx.arc(P.x, P.y, r, aFrom, aFrom + sweep, sweep < 0); ctx.stroke();
+  if(label){
+    const mid = aFrom + sweep/2;
+    ctx.font = "600 11px Inter, sans-serif";
+    ctx.fillStyle = color; ctx.textAlign = "center"; ctx.textBaseline = "middle";
+    ctx.fillText(label, P.x + labelR*Math.cos(mid), P.y + labelR*Math.sin(mid));
+  }
+  ctx.restore();
+}
+function txt(t, x, y, color, size = 11, align = "center", weight = 600){
+  ctx.save();
+  ctx.font = `${weight} ${size}px Inter, sans-serif`;
+  ctx.fillStyle = color; ctx.textAlign = align; ctx.textBaseline = "middle";
+  ctx.fillText(t, x, y);
+  ctx.restore();
+}
+/* generic polygon tracer (triangle, diamond): trace INSIDE polygon until exit or TIR cap */
+function tracePoly(verts, n, entry, dirIn, maxRefl){
+  let pt = {...entry}, dir = {...dirIn};
+  const pts = [{...entry}], events = [];
+  let refl = 0, lastEdge = -1;
+  for(let g = 0; g < 14; g++){
+    let best = null;
+    for(let i = 0; i < verts.length; i++){
+      if(i === lastEdge) continue;
+      const a = verts[i], b = verts[(i+1)%verts.length];
+      const h = raySeg(pt, dir, a, b);
+      if(h && h.t > 0.5 && (!best || h.t < best.h.t)) best = { h, i };
+    }
+    if(!best) return { pts, exitDir:null, events, stopped:true, refl };
+    pt = best.h.pt; pts.push({...pt}); lastEdge = best.i;
+    const a = verts[best.i], b = verts[(best.i+1)%verts.length];
+    const u = vnorm(vsub(b, a));
+    let nrm = { x:-u.y, y:u.x };
+    if(vdot(nrm, dir) > 0) nrm = vmul(nrm, -1);
+    const th = Math.acos(clamp(-vdot(dir, nrm), -1, 1))*R2D;
+    const tc = Math.asin(clamp(1/n, 0, 1))*R2D;
+    const rf = refractV(dir, nrm, n, 1);
+    if(rf === null){
+      events.push({ pt:{...pt}, edge:best.i, th, tc, type:"tir", nrm });
+      refl++;
+      if(refl > maxRefl) return { pts, exitDir:null, events, stopped:true, refl };
+      dir = reflectV(dir, nrm);
+    } else {
+      const thOut = Math.asin(clamp(n*Math.sin(th*D2R), -1, 1))*R2D;
+      events.push({ pt:{...pt}, edge:best.i, th, tc, thOut, type:"exit", nrm });
+      return { pts, exitDir:rf, exitPt:pt, thIn:th, thOut, events, refl };
+    }
+  }
+  return { pts, exitDir:null, events, stopped:true, refl };
+}
+
+/* ── warning chip ── */
+let warnTimer = null;
+function showWarn(msg){
+  const el = $("chipWarn");
+  el.textContent = msg; el.style.display = "block";
+  clearTimeout(warnTimer);
+  warnTimer = setTimeout(() => { el.style.display = "none"; }, 2600);
+}
+let lastWarnMsg = "", lastWarnT = 0;
+function showWarnOnce(msg){
+  const now = Date.now();
+  if(msg === lastWarnMsg && now - lastWarnT < 3000) return;
+  lastWarnMsg = msg; lastWarnT = now;
+  showWarn(msg);
+}
+
+/* ── KaTeX ── */
+function fitEq(el){
+  el.style.fontSize = "";
+  const k = el.querySelector(".katex-display") || el.querySelector(".katex");
+  if(!k) return;
+  const base = parseFloat(getComputedStyle(el).fontSize) || 16;
+  const avail = el.clientWidth - 22, w = k.scrollWidth;
+  if(w > avail && w > 0) el.style.fontSize = Math.max(10.5, base * avail / w) + "px";
+}
+function renderTex(el, tex, display = true){
+  if(typeof katex === "undefined"){ el.innerHTML = `<span class="note">${tex}</span>`; return; }
+  try { katex.render(tex, el, { displayMode: display, throwOnError: false }); fitEq(el); }
+  catch(e){ el.textContent = tex; }
+}
+
+/* ═══════════ 1 · PRISM (light enters LEFT face → exits RIGHT) ═══════════ */
+function prismGeom(){
+  const half = 150;                                   // base half-width: 25% of canvas
+  const h = half / Math.tan(S1.apex/2*D2R);
+  const cy = 285 - H*0.10;                            // shifted 10% of canvas height upward
+  const baseY = cy + h/2;
+  const T = { x:600, y: baseY - h };
+  const BL = { x:600-half, y:baseY }, BR = { x:600+half, y:baseY };
+  const uL = vnorm(vsub(BL, T)), uR = vnorm(vsub(BR, T));
+  let nL = { x:uL.y, y:-uL.x }; if(nL.x > 0) nL = vmul(nL,-1);      // outward left
+  let nR = { x:uR.y, y:-uR.x }; if(nR.x < 0) nR = vmul(nR,-1);      // outward right
+  return { T, BL, BR, nL, nR, baseY };
+}
+function s1Trace(wl){
+  const g = prismGeom();
+  const n = nOf(0, wl);                               // Crown Glass only
+  const E = vadd(g.T, vmul(vsub(g.BL, g.T), S1.pos)); // entry on LEFT face
+  const ni = vmul(g.nL, -1);
+  const dInc = rotV(ni, -S1.t1);                      // source left, travels rightward
+  const start = vadd(E, vmul(dInc, -430));
+  const r1 = Math.asin(clamp(Math.sin(S1.t1*D2R)/n, -1, 1))*R2D;
+  const dIn = rotV(ni, -r1);
+  const hitR = raySeg(E, dIn, g.T, g.BR);
+  const r2 = S1.apex - r1;
+  const sinE = n * Math.sin(r2*D2R);
+  if(!hitR || sinE > 1){
+    const X = hitR ? hitR.pt : vadd(E, vmul(dIn, 250));
+    return { pts:[start,E,X], exitDir:null, dev:null, tir:true, E, X, start, dInc, dIn, r1, r2, n };
+  }
+  const X = hitR.pt;
+  const te = Math.asin(sinE)*R2D;
+  const dOut = rotV(g.nR, te);                        // exits rightward, bending toward base
+  const dev = S1.t1 + te - S1.apex;
+  const end = vadd(X, vmul(dOut, 430));
+  return { pts:[start,E,X,end], exitDir:dOut, dev, te, tir:false, E, X, start, dInc, dIn, r1, r2, n };
+}
+function s1MaxWl(){ return S.src === "sun" ? UV.wl : Math.min(...activeCols().map(i => COLORS[i].wl)); }
+function s1Enforce(){
+  let changed = false;
+  for(let guard = 0; guard < 12; guard++){
+    const n = nOf(0, s1MaxWl());
+    const tc = Math.asin(1/n)*R2D;
+    if(S1.apex >= 2*tc - 0.5){ S1.apex = Math.max(45, S1.apex - 1); changed = true; continue; }
+    const arg = n * Math.sin((S1.apex - tc)*D2R);
+    const t1min = arg >= 1 ? 90 : (arg <= 0 ? 0 : Math.asin(arg)*R2D);
+    if(t1min > 74){ S1.apex = Math.max(45, S1.apex - 1); changed = true; continue; }
+    if(S1.t1 < t1min + 0.5){ S1.t1 = Math.min(75, Math.ceil((t1min + 0.6)*2)/2); changed = true; }
+    break;
+  }
+  if(changed) showWarnOnce("⚠ TIR prevented — angle adjusted");
+  $("apexSl").value = S1.apex; $("apexV").textContent = S1.apex + "°";
+  return changed;
+}
+function thermoTemp(){
+  const tv = s1Trace(COLORS[6].wl), tr = s1Trace(COLORS[0].wl), ti = s1Trace(IR.wl);
+  if(tr.tir || tv.tir || !tr.exitDir || !tv.exitDir) return 22;
+  const Xc = vmul(vadd(tr.X, tv.X), 0.5);
+  const aOf = d => Math.atan2(d.y, d.x);
+  const aR = aOf(tr.exitDir), aV = aOf(tv.exitDir), aI = ti.exitDir ? aOf(ti.exitDir) : aR - (aV - aR)*0.55;
+  const p = vsub(S1.thermo, Xc);
+  if(vlen(p) < 30) return 24;
+  const a = Math.atan2(p.y, p.x);
+  const u = (a - aV) / (aR - aV || 1e-9);
+  const uIR = (aI - aV) / (aR - aV || 1e-9);
+  let temp = 22 + 6 * clamp(u, 0, 1);
+  const sig = Math.max(0.18, Math.abs(uIR - 1) * 0.7);
+  temp += 5.2 * Math.exp(-Math.pow((u - (1 + (uIR-1)*0.55))/sig, 2));
+  if(u > uIR + sig*1.6) temp = 22 + (temp-22)*Math.exp(-(u-uIR-sig*1.6)*3);
+  if(u < -0.35) temp = 22;
+  return clamp(temp, 21, 32.5);
+}
+const SEC1 = {
+  title: "Prism", medLock: "Crown Glass (BK7)",
+  hint: "drag ray = θ₁ · drag entry dot · drag 🌡 (sun) · dbl-click = zoom",
+  angle: { label:"θ₁", min:0, max:75, step:0.5, get:()=>S1.t1, set:v=>{ S1.t1 = v; s1Enforce(); } },
+  srcAllowed: { mono:true, visible:true, sun:true },
+  enter(){ s1Enforce(); },
+  draw(){
+    const g = prismGeom();
+    const med = MEDIA[0];
+    ctx.save();
+    ctx.beginPath(); ctx.moveTo(g.T.x, g.T.y); ctx.lineTo(g.BL.x, g.BL.y); ctx.lineTo(g.BR.x, g.BR.y); ctx.closePath();
+    ctx.fillStyle = med.fill; ctx.fill();
+    ctx.strokeStyle = med.edge; ctx.lineWidth = 2; ctx.stroke();
+    ctx.restore();
+    if(S.showLabels){
+      txt(med.name, 600, g.baseY + 18, col("--text-dim"), 11.5);
+      txt(`apex ${S1.apex}°`, g.T.x, g.T.y - 12, col("--text-muted"), 10.5);
+    }
+    const cols = activeCols();
+    const traces = cols.map(i => ({ c: COLORS[i], t: s1Trace(COLORS[i].wl) }));
+    const sun = S.src === "sun";
+    const mid = traces[Math.floor(traces.length/2)];
+    if(S.showNormals && mid && !mid.t.tir){
+      drawNormal(mid.t.E, g.nL); drawNormal(mid.t.X, g.nR);
+    }
+    const p1 = clamp(S.prog*2, 0, 1), p2 = clamp(S.prog*2-1, 0, 1);
+    /* deviation: undeviated dashed line + δ arc */
+    if(S.showDev && mid && !mid.t.tir && mid.t.exitDir){
+      const t = mid.t;
+      drawPath([t.E, vadd(t.E, vmul(t.dInc, 560))], C_WHITE_RAY, 1, 1,
+               {dash:[7,6], alpha:.55, arrow:false, glow:false});
+      if(p2 >= 1){
+        const I = lineLine(t.E, t.dInc, t.X, t.exitDir);
+        if(I && I.x > 40 && I.x < W-40 && I.y > 30 && I.y < H-20){
+          const aU = Math.atan2(t.dInc.y, t.dInc.x), aX = Math.atan2(t.exitDir.y, t.exitDir.x);
+          arcAt(I, aU, aX, 44, col("--amber"), `δ = ${fmtA(t.dev)}°`, 66);
+        }
+      }
+    }
+    if(sun){
+      const tIR = s1Trace(IR.wl), tUV = s1Trace(UV.wl);
+      const all = [{c:IR, t:tIR, band:true}, ...traces, {c:UV, t:tUV, band:true}];
+      if(p2 > 0){
+        for(let i = 0; i < all.length-1; i++){
+          const A = all[i].t, B = all[i+1].t;
+          if(A.tir || B.tir || !A.exitDir || !B.exitDir) continue;
+          ctx.save(); ctx.globalAlpha = (all[i].band || all[i+1].band) ? 0.16 : 0.34;
+          ctx.fillStyle = all[i].c.hex;
+          ctx.beginPath(); ctx.moveTo(A.E.x, A.E.y); ctx.lineTo(A.X.x, A.X.y); ctx.lineTo(B.X.x, B.X.y); ctx.closePath(); ctx.fill();
+          const fa = vadd(A.X, vmul(A.exitDir, 430*p2)), fb = vadd(B.X, vmul(B.exitDir, 430*p2));
+          ctx.beginPath(); ctx.moveTo(A.X.x, A.X.y); ctx.lineTo(fa.x, fa.y); ctx.lineTo(fb.x, fb.y); ctx.lineTo(B.X.x, B.X.y); ctx.closePath(); ctx.fill();
+          ctx.restore();
+        }
+      }
+      const m = traces[3].t;
+      drawPath([m.start, m.E], C_WHITE_RAY, 2.2, p1, {arrow:false});
+      [tIR, ...traces.map(x=>x.t), tUV].forEach((t, i) => {
+        if(t.tir || !t.exitDir) return;
+        const cHex = i === 0 ? IR.hex : i === 8 ? UV.hex : COLORS[i-1].hex;
+        const alpha = (i === 0 || i === 8) ? 0.35 : 0.9;
+        drawPath([t.E, t.X, vadd(t.X, vmul(t.exitDir, 430))], cHex, RAY_W_MULTI, p2, {alpha, arrow:i!==0&&i!==8});
+      });
+      if(S.showLabels && p2 >= 1){
+        const lab = (t, name, cHex, off) => { if(t && t.exitDir){ const p = vadd(t.X, vmul(t.exitDir, 442 + off));
+          txt(name, p.x, p.y, cHex, 10.5, "left"); } };
+        lab(tIR, "IR", "rgba(255,120,110,0.8)", 26);
+        lab(traces[0].t, "R", COLORS[0].hex, 0);
+        lab(traces[3].t, "G", COLORS[3].hex, 0);
+        lab(traces[4].t, "B", COLORS[4].hex, 0);
+        lab(traces[6].t, "V", COLORS[6].hex, 0);
+        lab(tUV, "UV", "rgba(200,130,240,0.8)", 26);
+      }
+      this.drawThermo();
+    } else {
+      const first = traces[0];
+      if(traces.length > 1) drawPath([first.t.start, first.t.E], C_WHITE_RAY, 1.8, p1, {arrow:false});
+      traces.forEach(({c, t}) => {
+        if(traces.length === 1) drawPath([t.start, t.E], c.hex, RAY_W_MONO, p1, {arrow:false});
+        if(!t.tir && t.exitDir){
+          drawPath([t.E, t.X, vadd(t.X, vmul(t.exitDir, 430))], c.hex,
+                   traces.length === 1 ? RAY_W_MONO : RAY_W_MULTI, p2);
+          if(S.showLabels && p2 >= 1 && c.lab){
+            const p = vadd(t.X, vmul(t.exitDir, 444));
+            txt(c.lab, p.x, p.y, c.hex, 10.5, "left");
+          }
+        }
+      });
+      if(S.showAngles && mid && !mid.t.tir && p1 >= 1){
+        const t = mid.t, ni = vmul(g.nL, -1);
+        const aN = Math.atan2(g.nL.y, g.nL.x);
+        const aInc = Math.atan2(-t.dInc.y, -t.dInc.x);
+        arcAt(t.E, aN, aInc, 26, C_WHITE_RAY, `θ₁=${fmtA(S1.t1)}°`, 52);
+        if(p2 >= 1 && t.exitDir){
+          const aIn = Math.atan2(t.dIn.y, t.dIn.x), aNi = Math.atan2(ni.y, ni.x);
+          arcAt(t.E, aNi, aIn, 30, col("--blue"), `r₁=${fmtA(t.r1)}°`, 62);
+          const aNo = Math.atan2(g.nR.y, g.nR.x), aOut = Math.atan2(t.exitDir.y, t.exitDir.x);
+          arcAt(t.X, aNo, aOut, 26, mid.c.hex, `θₑ=${fmtA(t.te)}°`, 56);
+        }
+      }
+    }
+    if(mid){
+      ctx.save();
+      ctx.fillStyle = col("--accent"); ctx.strokeStyle = col("--card");
+      ctx.beginPath(); ctx.arc(mid.t.E.x, mid.t.E.y, 5.5, 0, 7); ctx.fill(); ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.restore();
+    }
+  },
+  drawThermo(){
+    const t = S1.thermo, temp = thermoTemp();
+    ctx.save();
+    ctx.fillStyle = "rgba(240,240,245,0.92)"; ctx.strokeStyle = "#666"; ctx.lineWidth = 1;
+    const stemH = 46;
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(t.x-5, t.y-stemH, 10, stemH, 5); else ctx.rect(t.x-5, t.y-stemH, 10, stemH);
+    ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(t.x, t.y+7, 9, 0, 7); ctx.fillStyle = "#e33"; ctx.fill(); ctx.stroke();
+    const frac = clamp((temp - 20)/13, 0, 1);
+    ctx.fillStyle = "#e33";
+    ctx.fillRect(t.x-2.5, t.y - 4 - (stemH-10)*frac, 5, (stemH-10)*frac + 4);
+    ctx.font = "700 12px 'JetBrains Mono', monospace";
+    ctx.fillStyle = temp > 29 ? "#ff8844" : col("--text");
+    ctx.textAlign = "center";
+    ctx.fillText(temp.toFixed(1) + "°C", t.x, t.y - stemH - 10);
+    ctx.restore();
+  },
+  hit(p){
+    if(S.src === "sun" && Math.hypot(p.x-S1.thermo.x, p.y-S1.thermo.y) < 34) return { kind:"thermo" };
+    const mid = s1Trace(COLORS[3].wl);
+    if(Math.hypot(p.x-mid.E.x, p.y-mid.E.y) < 14) return { kind:"pos" };
+    if(distToSeg(p, mid.start, mid.E) < 14) return { kind:"ray" };
+    return null;
+  },
+  onDrag(kind, p){
+    const g = prismGeom();
+    if(kind === "thermo"){ S1.thermo = { x:clamp(p.x, 20, W-20), y:clamp(p.y, 20, H-20) }; return; }
+    if(kind === "pos"){
+      const u = vsub(g.BL, g.T), L2 = vdot(u,u);
+      S1.pos = clamp(vdot(vsub(p, g.T), u)/L2, 0.18, 0.9);
+      return;
+    }
+    const mid = s1Trace(COLORS[3].wl);
+    const v = vnorm(vsub(mid.E, p));
+    const ni = vmul(g.nL, -1);
+    const ang = Math.acos(clamp(vdot(v, ni), -1, 1))*R2D;
+    S1.t1 = clamp(Math.round(ang*2)/2, 0, 75);
+    s1Enforce();
+  },
+  rows(){
+    const out = [];
+    const sun = S.src === "sun";
+    if(sun){
+      const t = s1Trace(IR.wl);
+      out.push({ hex:IR.hex, dim:true, name:"IR", wl:"780–2500", f:"<384", n:fmt4(nOf(0,IR.wl)),
+                 th2:t.tir?"—":fmtA(t.te), dev:t.dev===null?"—":fmtA(t.dev) });
+    }
+    activeCols().forEach(i => {
+      const c = COLORS[i], t = s1Trace(c.wl);
+      out.push({ hex:c.hex, name:c.name, wl:c.wl, f:c.f, n:fmt4(nOf(0,c.wl)),
+                 th2:t.tir?"—":fmtA(t.te), dev:t.dev===null?"—":fmtA(t.dev) });
+    });
+    if(sun){
+      const t = s1Trace(UV.wl);
+      out.push({ hex:UV.hex, dim:true, name:"UV", wl:"100–400", f:">750", n:fmt4(nOf(0,UV.wl)),
+                 th2:t.tir?"—":fmtA(t.te), dev:t.dev===null?"—":fmtA(t.dev) });
+    }
+    return out;
+  },
+  summary(){
+    const cols = activeCols();
+    if(cols.length === 1){
+      const c = COLORS[cols[0]], t = s1Trace(c.wl);
+      if(t.tir) return "Adjusting to avoid total internal reflection…";
+      return `The <b>${c.name}</b> light ray enters the prism at an angle of incidence <span class="hl">θ₁ = ${fmtA(S1.t1)}°</span>. ` +
+        `Inside the Crown Glass prism (n = ${fmt4(t.n)}), the ray bends <b>toward the normal</b> to r₁ = ${fmtA(t.r1)}°. ` +
+        `It crosses the prism, strikes the right face at r₂ = ${fmtA(t.r2)}° and exits at <span class="hl">θₑ = ${fmtA(t.te)}°</span>. ` +
+        `The total deviation from the original path is <span class="hl">δ = θ₁ + θₑ − A = ${fmtA(t.dev)}°</span>.`;
+    }
+    const tR = s1Trace(COLORS[0].wl), tV = s1Trace(COLORS[6].wl);
+    const spread = (tR.dev !== null && tV.dev !== null) ? tV.dev - tR.dev : null;
+    let s = `${S.src === "sun" ? "Sunlight" : "White light"} entering the prism is <b>dispersed</b> into its component colours. ` +
+      `The angular spread between <b style="color:${COLORS[0].hex}">Red</b> (λ = 700 nm, deviation = ${tR.dev===null?"—":fmtA(tR.dev)}°) and ` +
+      `<b style="color:${COLORS[6].hex}">Violet</b> (λ = 400 nm, deviation = ${tV.dev===null?"—":fmtA(tV.dev)}°) is ` +
+      `<span class="hl">Δθ = ${spread===null?"—":fmtA(spread)}°</span>. ` +
+      `This happens because the refractive index of Crown Glass varies with wavelength — from n = ${fmt4(nOf(0,700))} for Red to ` +
+      `n = ${fmt4(nOf(0,400))} for Violet. <b>Higher-frequency light (Violet) slows down more and bends more</b>; ` +
+      `lower-frequency light (Red) bends less. The frequency of each colour does <b>not</b> change inside the glass — only its speed and wavelength do.`;
+    if(S.src === "sun") s += ` Beyond the visible band, <b>IR</b> (deviated least) and <b>UV</b> (deviated most) are also present.`;
+    return s;
+  },
+  info(){
+    return `A prism separates white light because each colour travels at a slightly different speed in glass. ` +
+      `<b>Frequency never changes</b> when light enters a medium — only speed and wavelength change (v = fλ). ` +
+      `Use the <b>⸻ δ</b> toggle to compare the exit ray with the undeviated path.`;
+  },
+  eq(){
+    const c = COLORS[S.src === "mono" ? S.mono : 3];
+    const t = s1Trace(c.wl);
+    return {
+      main: `n_1\\sin\\theta_1 = n_2\\sin\\theta_2`,
+      subs: t.tir ? [] : [
+        `\\sin ${fmtA(S1.t1)}^\\circ = ${fmt4(t.n)}\\,\\sin r_1 \\;\\Rightarrow\\; r_1 = ${fmtA(t.r1)}^\\circ`,
+        `r_2 = A - r_1 = ${S1.apex} - ${fmtA(t.r1)} = ${fmtA(t.r2)}^\\circ`,
+        `\\delta = \\theta_1 + \\theta_e - A = ${fmtA(t.dev)}^\\circ`
+      ],
+      adv: `n(\\lambda) = ${fmt4(MEDIA[0].A)} + \\tfrac{${fmt4(MEDIA[0].B)}}{\\lambda^2}\\;(\\lambda\\text{ in }\\mu m) \\;\\Rightarrow\\; n_{${c.name}} = ${fmt4(t.n)}`
+    };
+  },
+  chips(){
+    $("chipInfo").textContent = `Crown Glass · apex ${S1.apex}° · θ₁ ${fmtA(S1.t1)}°`;
+    const st = $("chipStatus");
+    st.textContent = S.src === "sun" ? "☀ Sun light — continuous spectrum" : "Dispersion — no TIR";
+    st.className = "chip ok";
+    $("herschelBox").classList.toggle("hidden", S.src !== "sun");
+    const irm = $("irMsg");
+    if(S.src === "sun"){
+      const temp = thermoTemp();
+      if(temp > 29.5){
+        irm.className = "feed good";
+        irm.innerHTML = `🌡 <b>${temp.toFixed(1)}°C — highest just beyond red!</b> This is <b>infrared radiation</b> — it carries thermal energy. Herschel's famous experiment!`;
+      } else { irm.className = "feed"; irm.innerHTML = ""; }
+    } else { irm.className = "feed"; irm.innerHTML = ""; }
+  }
+};
+/* ═══════════ 2 · GLASS BLOCKS (1–2, contiguous, all media) ═══════════ */
+function blocksGeom(){
+  const x0 = 200, x1 = 1000;                             // width = 2/3 canvas
+  if(S2.count === 1) return { x0, x1, bands:[[195,325]] };            // H/4 tall
+  return { x0, x1, bands:[[90,260],[260,430]] };                       // 2 blocks, touching
+}
+/* limit a ray leg so it stays inside the canvas (18px margin) */
+function clipLen(pt, dir, maxL){
+  let L = maxL;
+  if(dir.x > 1e-6)  L = Math.min(L, (W - 18 - pt.x)/dir.x);
+  if(dir.x < -1e-6) L = Math.min(L, (18 - pt.x)/dir.x);
+  if(dir.y > 1e-6)  L = Math.min(L, (H - 18 - pt.y)/dir.y);
+  if(dir.y < -1e-6) L = Math.min(L, (18 - pt.y)/dir.y);
+  return Math.max(30, L);
+}
+function s2Layers(wl){
+  const g = blocksGeom();
+  if(S2.count === 1) return { g, ifaces:[195,325], layers:[1, nOf(S2.med1, wl), 1] };
+  return { g, ifaces:[90,260,430], layers:[1, nOf(S2.med1, wl), nOf(S2.med2, wl), 1] };
+}
+function s2Trace(wl){
+  const { g, ifaces, layers } = s2Layers(wl);
+  let pt = { x: S2.ex, y: ifaces[0] };
+  let dir = { x: -Math.sin(S2.t1*D2R), y: Math.cos(S2.t1*D2R) };        // tilts leftward
+  const start = vadd(pt, vmul(dir, -clipLen(pt, vmul(dir,-1), 170)));
+  const pts = [start, {...pt}], events = [];
+  let layer = 0, curIface = 0;
+  for(let guard = 0; guard < 12; guard++){
+    const n1 = layers[layer], goingDown = dir.y > 0;
+    const nextLayer = goingDown ? layer + 1 : layer - 1;
+    if(nextLayer < 0 || nextLayer >= layers.length) break;
+    const n2 = layers[nextLayer];
+    const nrm = { x:0, y: goingDown ? -1 : 1 };
+    const t1 = Math.acos(clamp(Math.abs(dir.y), -1, 1))*R2D;
+    const rf = refractV(dir, nrm, n1, n2);
+    if(rf === null){
+      events.push({ pt:{...pt}, t1, t2:null, n1, n2, tir:true, iface:curIface });
+      dir = reflectV(dir, nrm);
+    } else {
+      const t2 = Math.acos(clamp(Math.abs(rf.y), -1, 1))*R2D;
+      events.push({ pt:{...pt}, t1, t2, n1, n2, tir:false, iface:curIface });
+      dir = rf; layer = nextLayer;
+    }
+    const down = dir.y > 0;
+    const targets = ifaces.map((y,i)=>({y,i})).filter(o => down ? o.y > pt.y + 0.01 : o.y < pt.y - 0.01);
+    if(!targets.length){
+      pts.push(vadd(pt, vmul(dir, clipLen(pt, dir, 150))));
+      return { pts, events, exitDir: dir, exitPt: pt };
+    }
+    targets.sort((a,b) => down ? a.y-b.y : b.y-a.y);
+    const nxt = targets[0];
+    const t = (nxt.y - pt.y)/dir.y;
+    pt = vadd(pt, vmul(dir, t));
+    pts.push({...pt});
+    curIface = nxt.i;
+    if(pt.x < g.x0 || pt.x > g.x1) return { pts, events, exitDir:dir, exitPt:pt };
+  }
+  return { pts, events, exitDir: dir, exitPt: pt };
+}
+function s2IfaceName(i){
+  if(S2.count === 1) return ["Air → B1", "B1 → Air"][i] || "—";
+  return ["Air → B1", "B1 → B2", "B2 → Air"][i] || "—";
+}
+const SEC2 = {
+  title: "Glass Blocks",
+  hint: "drag ray = θ₁ · drag entry dot = position · dbl-click = zoom",
+  angle: { label:"θ₁", min:0, max:89, step:0.5, get:()=>S2.t1, set:v=>{ S2.t1 = v; } },
+  srcAllowed: { mono:true, visible:true, sun:false },
+  enter(){},
+  draw(){
+    const g = blocksGeom();
+    ctx.save();
+    ctx.strokeStyle = C_GREY; ctx.lineWidth = 1.8;
+    g.bands.forEach((b, i) => {
+      const m = MEDIA[i === 0 ? S2.med1 : S2.med2];
+      ctx.fillStyle = m.fill; ctx.fillRect(g.x0, b[0], g.x1-g.x0, b[1]-b[0]);
+      ctx.strokeRect(g.x0, b[0], g.x1-g.x0, b[1]-b[0]);
+    });
+    ctx.restore();
+    if(S.showLabels){
+      g.bands.forEach((b, i) => {
+        const m = i === 0 ? S2.med1 : S2.med2;
+        txt(`${MEDIA[m].name} · n = ${fmt2(nWhite(m))}`, g.x1 + 12, (b[0]+b[1])/2, col("--text-dim"), 11, "left");
+      });
+      txt("Air", g.x1 + 12, g.bands[0][0] - 13, col("--text-muted"), 10.5, "left");
+      txt("Air", g.x1 + 12, g.bands[g.bands.length-1][1] + 13, col("--text-muted"), 10.5, "left");
+    }
+    const cols = activeCols();
+    const multi = cols.length > 1;
+    const traces = cols.map(i => ({ c: COLORS[i], t: s2Trace(COLORS[i].wl) }));
+    if(S.showNormals && traces.length){
+      const ref = traces[Math.floor(traces.length/2)].t;
+      drawNormal(ref.events.length ? ref.events[0].pt : {x:S2.ex, y:g.bands[0][0]}, {x:0,y:1}, 42);
+      if(!multi) ref.events.slice(1).forEach(ev => drawNormal(ev.pt, {x:0,y:1}, 42));
+    }
+    const p1 = clamp(S.prog*2, 0, 1), p2 = clamp(S.prog*2-1, 0, 1);
+    if(multi){
+      const first = traces[0].t;
+      drawPath([first.pts[0], first.pts[1]], C_WHITE_RAY, 1.8, p1, {arrow:false});
+      traces.forEach(({c, t}) => drawPath(t.pts.slice(1), c.hex, RAY_W_MULTI, p2));
+    } else if(traces.length === 1){
+      const { c, t } = traces[0];
+      drawPath(t.pts.slice(0,2), c.hex, RAY_W_MONO, p1, {arrow:false});
+      drawPath(t.pts.slice(1), c.hex, RAY_W_MONO, p2);
+    }
+    if(S.showAngles && !multi && traces.length && p2 >= 1){
+      const t = traces[0].t, c = traces[0].c;
+      const e0 = t.events[0];
+      if(e0){
+        arcAt(e0.pt, -Math.PI/2, -Math.PI/2 + S2.t1*D2R, 26, C_WHITE_RAY, `θ₁=${fmtA(S2.t1)}°`, 54);
+        if(e0.t2 !== null) arcAt(e0.pt, Math.PI/2, (90 + e0.t2)*D2R, 30, c.hex, `θ₂=${fmtA(e0.t2)}°`, 60);
+      }
+      t.events.slice(1).forEach(ev => {
+        const oy = ev.iface % 2 === 1 ? 13 : -11;        // alternate above/below so gap labels don't collide
+        if(ev.tir) txt(`TIR (θ=${fmtA(ev.t1)}° > θc)`, ev.pt.x - 12, ev.pt.y + oy, col("--orange"), 10.5, "right");
+        else if(S.showLabels) txt(`${fmtA(ev.t1)}°→${fmtA(ev.t2)}°`, ev.pt.x - 12, ev.pt.y + oy, col("--text-muted"), 10, "right");
+      });
+    }
+    ctx.save();
+    ctx.fillStyle = col("--accent"); ctx.strokeStyle = col("--card");
+    ctx.beginPath(); ctx.arc(S2.ex, g.bands[0][0], 5.5, 0, 7); ctx.fill(); ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.restore();
+    /* lateral shift guide (mono, transmitted) */
+    if(!multi && traces.length && p2 >= 1 && S.showLabels){
+      const t = traces[0].t;
+      const anyTIR = t.events.some(e => e.tir);
+      if(!anyTIR && t.exitDir && t.exitDir.y > 0.1){
+        const inDir = { x: -Math.sin(S2.t1*D2R), y: Math.cos(S2.t1*D2R) };
+        const E0 = t.pts[1], far = t.pts[t.pts.length-1];
+        ctx.save(); ctx.strokeStyle = col("--text-muted"); ctx.setLineDash([4,4]); ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(E0.x, E0.y); ctx.lineTo(E0.x + inDir.x*420, E0.y + inDir.y*420); ctx.stroke();
+        ctx.restore();
+        txt("lateral shift", Math.max(far.x - 14, 60), far.y - 8, col("--text-muted"), 10, "right");
+      }
+    }
+  },
+  hit(p){
+    const g = blocksGeom();
+    if(Math.hypot(p.x-S2.ex, p.y-g.bands[0][0]) < 14) return { kind:"pos" };
+    const dir = { x: -Math.sin(S2.t1*D2R), y: Math.cos(S2.t1*D2R) };
+    const E = { x:S2.ex, y:g.bands[0][0] };
+    if(distToSeg(p, vadd(E, vmul(dir, -clipLen(E, vmul(dir,-1), 170))), E) < 14) return { kind:"ray" };
+    return null;
+  },
+  onDrag(kind, p){
+    const g = blocksGeom();
+    if(kind === "pos"){ S2.ex = clamp(p.x, g.x0+120, g.x1-40); return; }
+    const E = { x:S2.ex, y:g.bands[0][0] };
+    const v = vsub(E, p);
+    if(v.y > 4){
+      const ang = Math.atan2(Math.abs(v.x), v.y)*R2D;
+      S2.t1 = clamp(Math.round(ang*2)/2, 0, 89);
+    }
+  },
+  rows(){
+    return activeCols().map(i => {
+      const c = COLORS[i], t = s2Trace(c.wl);
+      const e0 = t.events[0];
+      const anyTIR = t.events.some(e => e.tir);
+      return { hex:c.hex, name:c.name, wl:c.wl, f:c.f, n:fmt4(nOf(S2.med1, c.wl)),
+               th2: e0 && e0.t2 !== null ? fmtA(e0.t2) : "—",
+               dev: anyTIR ? "TIR" : "0.0" };
+    });
+  },
+  summary(){
+    const c = COLORS[S.src === "mono" ? S.mono : 3];
+    const t = s2Trace(c.wl);
+    const e0 = t.events[0];
+    const anyTIR = t.events.some(e => e.tir);
+    const n1 = nOf(S2.med1, c.wl);
+    const tcB1 = Math.asin(clamp(1/n1,0,1))*R2D;
+    if(S2.t1 < 0.25){
+      return `The ray enters the block at <span class="hl">θ₁ = 0°</span> — it is perpendicular to the surface, so <b>no change of direction</b> occurs. ` +
+        `The <b>frequency</b> of the light does not change, but its <b>speed decreases</b> and the <b>wavelength shortens</b> inside the medium (v = fλ).`;
+    }
+    if(S2.t1 > 84){
+      return `The ray is almost parallel to the surface (θ₁ ≈ 90°). The angle of refraction approaches its maximum — ` +
+        `the critical angle of ${MEDIA[S2.med1].name} (<span class="hl">θc = ${fmtA(tcB1)}°</span>). ` +
+        `For a parallel-sided block the emergent ray is still <b>parallel to the incident ray</b>, but laterally displaced.`;
+    }
+    if(anyTIR){
+      const ev = t.events.find(e => e.tir);
+      return `At the <b>${s2IfaceName(ev.iface)}</b> interface the ray arrives at θ = ${fmtA(ev.t1)}°, which exceeds the critical angle ` +
+        `θc = ${fmtA(Math.asin(clamp(ev.n2/ev.n1,0,1))*R2D)}° — so <span class="hl">Total Internal Reflection</span> occurs and the ray reflects back.`;
+    }
+    if(activeCols().length > 1){
+      return `White light refracts at every interface, and because n depends on wavelength, the colours <b>separate (dispersion)</b>. ` +
+        `Through parallel faces each colour emerges <b>parallel to the incident ray</b>, but each with a slightly different <b>lateral displacement</b> — ` +
+        `so the emerging beam is a set of parallel coloured rays.`;
+    }
+    const shift = t.exitPt && t.exitDir ? (() => {
+      const inDir = { x:-Math.sin(S2.t1*D2R), y:Math.cos(S2.t1*D2R) };
+      const E0 = t.pts[1], perp = { x:-inDir.y, y:inDir.x };
+      return Math.abs(vdot(vsub(t.exitPt, E0), perp));
+    })() : 0;
+    return `The <b>${c.name}</b> ray enters the ${S2.count === 2 ? "first " : ""}block at <span class="hl">θ₁ = ${fmtA(S2.t1)}°</span> and refracts to ` +
+      `<span class="hl">θ₂ = ${e0 && e0.t2 !== null ? fmtA(e0.t2) : "—"}°</span> inside (n = ${fmt4(n1)}). ` +
+      `${S2.count === 2 ? "At the boundary it passes directly into the second block, refracting once more. " : ""}` +
+      `It emerges <b>parallel to the incident ray</b> but with a lateral displacement of <span class="hl">${(shift/10).toFixed(1)} mm</span> (scale 1 px = 0.1 mm). ` +
+      `This lateral shift is the key signature of refraction through a parallel-sided medium.`;
+  },
+  info(){
+    return `A parallel-sided block never changes the final <b>direction</b> of light — refraction at entry is exactly undone at exit. ` +
+      `What changes is the ray's <b>position</b> (lateral displacement), which grows with θ₁, block thickness and n. ` +
+      `With two blocks of different media, watch the ray kink at each interface — and TIR can occur when light tries to leave a denser block at a steep angle.`;
+  },
+  eq(){
+    const c = COLORS[S.src === "mono" ? S.mono : 3];
+    const t = s2Trace(c.wl), e0 = t.events[0];
+    const n1 = nOf(S2.med1, c.wl);
+    if(S2.count === 1){
+      return {
+        main: `n = \\dfrac{\\sin i}{\\sin r}`,
+        subs: e0 && e0.t2 !== null ? [
+          `n = \\dfrac{\\sin ${fmtA(S2.t1)}^\\circ}{\\sin ${fmtA(e0.t2)}^\\circ} = \\dfrac{${fmt3(Math.sin(S2.t1*D2R))}}{${fmt3(Math.sin(e0.t2*D2R))}} = ${fmt2(n1)}`
+        ] : [],
+        adv: `n(\\lambda) = A + \\tfrac{B}{\\lambda^2}\\;\\Rightarrow\\; n_{${c.name}} = ${fmt4(n1)}`
+      };
+    }
+    return {
+      main: `n_1\\sin\\theta_1 = n_2\\sin\\theta_2\\;\\text{(each interface)}`,
+      subs: t.events.filter(e => !e.tir).slice(0,3).map(e =>
+        `${fmt2(e.n1)}\\,\\sin ${fmtA(e.t1)}^\\circ = ${fmt2(e.n2)}\\,\\sin ${fmtA(e.t2)}^\\circ`),
+      adv: `n(\\lambda) = A + \\tfrac{B}{\\lambda^2}`
+    };
+  },
+  chips(){
+    const anyTIR = s2Trace(COLORS[S.src === "mono" ? S.mono : 3].wl).events.some(e => e.tir);
+    if(anyTIR) showWarnOnce("⚠ TIR at interface — ray reflected");
+    $("chipInfo").textContent = `${S2.count} block${S2.count>1?"s":""} · θ₁ ${fmtA(S2.t1)}°`;
+    const st = $("chipStatus");
+    st.textContent = anyTIR ? "TIR at interface" : "Refraction through stack";
+    st.className = "chip " + (anyTIR ? "tir" : "ok");
+  }
+};
+
+/* ═══════════ 3 · HALF CIRCLE ═══════════ */
+const HC = { C: { x:600, y:140 }, R: 240 };
+function s3Trace(wl){
+  const n = nOf(S3.med, wl);
+  const phi = S3.t1, side = S3.side;
+  const a = side * phi * D2R;
+  const Pe = { x: HC.C.x + HC.R*Math.sin(a), y: HC.C.y + HC.R*Math.cos(a) };
+  const dIn = vnorm(vsub(HC.C, Pe));
+  const start = vadd(Pe, vmul(dIn, -150));
+  const tc = Math.asin(clamp(1/n, 0, 1))*R2D;
+  const sinT2 = n * Math.sin(phi*D2R);
+  const crit = Math.abs(phi - tc) < 0.35;
+  if(sinT2 <= 1 && !crit){
+    /* refracted ray continues to the OPPOSITE horizontal side (entry bottom-left → exit top-right) */
+    const t2 = Math.asin(sinT2)*R2D;
+    const dOut = { x: -side*Math.sin(t2*D2R), y: -Math.cos(t2*D2R) };
+    return { Pe, start, dIn, tc, t2, n, status:"ok",
+             pts:[start, Pe, HC.C, vadd(HC.C, vmul(dOut, 128))],
+             weakRefl: phi > tc - 9 ? s3ReflPath(phi, side) : null };
+  }
+  if(crit){
+    const dOut = { x: -side, y: 0 };
+    return { Pe, start, dIn, tc, t2:90, n, status:"crit",
+             pts:[start, Pe, HC.C, vadd(HC.C, vmul(dOut, 320))],
+             weakRefl: s3ReflPath(phi, side) };
+  }
+  return { Pe, start, dIn, tc, t2:null, n, status:"tir",
+           pts: s3ReflPath(phi, side, true), weakRefl:null };
+}
+function s3ReflPath(phi, side, full = false){
+  const dR = { x: -side*Math.sin(phi*D2R), y: Math.cos(phi*D2R) };
+  const Px = vadd(HC.C, vmul(dR, HC.R));
+  const out = vadd(Px, vmul(dR, 150));
+  if(full){
+    const a = side * phi * D2R;
+    const Pe = { x: HC.C.x + HC.R*Math.sin(a), y: HC.C.y + HC.R*Math.cos(a) };
+    const dIn = vnorm(vsub(HC.C, Pe));
+    return [vadd(Pe, vmul(dIn, -150)), Pe, HC.C, Px, out];
+  }
+  return [HC.C, Px, out];
+}
+const SEC3 = {
+  title: "Half Circle",
+  hint: "drag ray along curved face = angle · dbl-click = zoom",
+  angle: { label:"θ₁", min:0, max:89, step:0.5, get:()=>S3.t1, set:v=>{ S3.t1 = v; } },
+  srcAllowed: { mono:true, visible:true, sun:false },
+  enter(){ $("dirBtn").textContent = S3.side === 1 ? "▶ from right" : "◀ from left"; },
+  draw(){
+    const med = MEDIA[S3.med];
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(HC.C.x - HC.R, HC.C.y);
+    ctx.lineTo(HC.C.x + HC.R, HC.C.y);
+    ctx.arc(HC.C.x, HC.C.y, HC.R, 0, Math.PI, false);
+    ctx.closePath();
+    ctx.fillStyle = med.fill; ctx.fill();
+    ctx.strokeStyle = med.edge; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = C_GREY;
+    ctx.beginPath(); ctx.arc(HC.C.x, HC.C.y, 2.5, 0, 7); ctx.fill();
+    ctx.restore();
+    if(S.showLabels){
+      txt(med.name + `  (n = ${fmt2(nWhite(S3.med))})`, HC.C.x, HC.C.y + HC.R + 20, col("--text-dim"), 11.5);
+      txt("Air", HC.C.x, HC.C.y - 26, col("--text-muted"), 10.5);
+    }
+    if(S.showNormals) drawNormal(HC.C, { x:0, y:1 }, 84);
+    const cols = activeCols();
+    const multi = cols.length > 1;
+    const traces = cols.map(i => ({ c: COLORS[i], t: s3Trace(COLORS[i].wl) }));
+    const p1 = clamp(S.prog*2, 0, 1), p2 = clamp(S.prog*2-1, 0, 1);
+    const ref = traces[Math.floor(traces.length/2)];
+    if(multi){
+      drawPath([ref.t.start, ref.t.Pe, HC.C], C_WHITE_RAY, 1.8, p1, {arrow:false});
+      traces.forEach(({c, t}) => {
+        drawPath(t.pts.slice(2), c.hex, RAY_W_MULTI, p2, {alpha: t.status === "tir" ? 0.95 : 1});
+        if(t.weakRefl && t.status === "ok") drawPath(t.weakRefl, c.hex, 0.7, p2, {alpha:.35, arrow:false});
+      });
+    } else if(traces.length === 1){
+      const { c, t } = traces[0];
+      drawPath(t.pts.slice(0, 3), c.hex, RAY_W_MONO, p1, {arrow:false});
+      drawPath(t.pts.slice(2), c.hex, RAY_W_MONO, p2);
+      if(t.weakRefl && t.status !== "tir") drawPath(t.weakRefl, c.hex, 0.7, p2, {alpha:.35, arrow:false});
+    }
+    if(S.showAngles && ref && p1 >= 1){
+      const side = S3.side, phi = S3.t1;
+      const aIncBack = Math.atan2(Math.cos(phi*D2R), side*Math.sin(phi*D2R));
+      arcAt(HC.C, Math.PI/2, aIncBack, 30, C_WHITE_RAY, `θ₁=${fmtA(phi)}°`, 58);
+      if(p2 >= 1 && !multi){
+        const t = traces[0].t;
+        if(t.status === "ok"){
+          const aOut = Math.atan2(-Math.cos(t.t2*D2R), -side*Math.sin(t.t2*D2R));
+          arcAt(HC.C, -Math.PI/2, aOut, 34, traces[0].c.hex, `θ₂=${fmtA(t.t2)}°`, 64);
+        } else if(t.status === "tir"){
+          const aR = Math.atan2(Math.cos(phi*D2R), -side*Math.sin(phi*D2R));
+          arcAt(HC.C, Math.PI/2, aR, 40, col("--orange"), `θᵣ=${fmtA(phi)}°`, 74);
+        }
+      }
+    }
+    if(ref){
+      ctx.save();
+      ctx.fillStyle = col("--accent"); ctx.strokeStyle = col("--card");
+      ctx.beginPath(); ctx.arc(ref.t.Pe.x, ref.t.Pe.y, 6, 0, 7); ctx.fill(); ctx.lineWidth = 1.5; ctx.stroke();
+      ctx.restore();
+    }
+  },
+  hit(p){
+    const ref = s3Trace(COLORS[3].wl);
+    if(Math.hypot(p.x-ref.Pe.x, p.y-ref.Pe.y) < 16) return { kind:"entry" };
+    if(distToSeg(p, ref.start, ref.Pe) < 14) return { kind:"entry" };
+    return null;
+  },
+  onDrag(kind, p){
+    const v = vsub(p, HC.C);
+    if(v.y < 6) return;
+    const ang = Math.atan2(Math.abs(v.x), v.y)*R2D;
+    S3.side = v.x >= 0 ? 1 : -1;
+    S3.t1 = clamp(Math.round(ang*2)/2, 0, 89);
+    $("dirBtn").textContent = S3.side === 1 ? "▶ from right" : "◀ from left";
+  },
+  rows(){
+    return activeCols().map(i => {
+      const c = COLORS[i], t = s3Trace(c.wl);
+      return { hex:c.hex, name:c.name, wl:c.wl, f:c.f, n:fmt4(t.n),
+               th2: t.status === "tir" ? "TIR" : fmtA(t.t2),
+               dev: t.status === "tir" ? "—" : fmtA(Math.abs(t.t2 - S3.t1)) };
+    });
+  },
+  summary(){
+    const mono = S.src === "mono";
+    const c = COLORS[mono ? S.mono : 3];
+    const t = s3Trace(c.wl);
+    let s = `The light enters the <b>curved face</b> of the block along the radius, so it is <b>not refracted</b> at the entry surface. ` +
+      `It travels straight to the flat face, arriving at <span class="hl">θ₁ = ${fmtA(S3.t1)}°</span>. `;
+    if(t.status === "crit")
+      s += `This equals the <b>critical angle</b> for ${MEDIA[S3.med].name} (<span class="hl">θc = ${fmtA(t.tc)}°</span>) — the refracted ray ` +
+           `<b>skims along the boundary</b> at θ₂ = 90°. Beyond this angle, Total Internal Reflection occurs.`;
+    else if(t.status === "tir")
+      s += `Since θ₁ exceeds the critical angle (θc = ${fmtA(t.tc)}°), <span class="hl">Total Internal Reflection</span> occurs — ` +
+           `the ray reflects off the flat face (θᵣ = θ₁ = ${fmtA(S3.t1)}°) and leaves through the curved face without refraction.`;
+    else
+      s += `Since θ₁ is below the critical angle (θc = ${fmtA(t.tc)}°), the ray refracts <b>away from the normal</b> and exits into the air at ` +
+           `<span class="hl">θ₂ = ${fmtA(t.t2)}°</span>.`;
+    if(!mono) s += ` With several colours, each has a slightly different n — near the critical angle some colours can escape while others are totally internally reflected.`;
+    return s;
+  },
+  info(){
+    return `Semicircular blocks are used in IGCSE practicals to measure the <b>critical angle</b>: because light enters along a radius, ` +
+      `the only refraction happens at the flat face — so θ₁ can be set precisely. Slide the entry point along the curve and watch for the moment the refracted ray skims the surface.`;
+  },
+  eq(){
+    const c = COLORS[S.src === "mono" ? S.mono : 3];
+    const t = s3Trace(c.wl);
+    return {
+      main: t.status === "tir"
+        ? `\\theta_1 > \\theta_c = \\sin^{-1}\\!\\tfrac{1}{n} = ${fmtA(t.tc)}^\\circ \\Rightarrow \\textbf{TIR}`
+        : `n\\sin\\theta_1 = \\sin\\theta_2`,
+      subs: t.status === "ok" ? [
+        `${fmt2(t.n)}\\times\\sin ${fmtA(S3.t1)}^\\circ = \\sin\\theta_2 \\Rightarrow \\theta_2 = ${fmtA(t.t2)}^\\circ`,
+        `\\theta_c = \\sin^{-1}(1/n) = ${fmtA(t.tc)}^\\circ`
+      ] : [`\\theta_c = \\sin^{-1}(1/${fmt2(t.n)}) = ${fmtA(t.tc)}^\\circ`],
+      adv: `n(\\lambda) = A + \\tfrac{B}{\\lambda^2}\\;\\Rightarrow\\; n_{${c.name}} = ${fmt4(t.n)}`
+    };
+  },
+  chips(){
+    const mono = S.src === "mono";
+    const t = s3Trace(COLORS[mono ? S.mono : 3].wl);
+    $("chipInfo").textContent = `${MEDIA[S3.med].name} · θ₁ ${fmtA(S3.t1)}°` + (mono ? ` · θc ${fmtA(t.tc)}°` : "");
+    const st = $("chipStatus");
+    st.textContent = t.status === "tir" ? "θ₁ > θc — Total Internal Reflection"
+      : t.status === "crit" ? "θ₁ ≈ θc — ray skims the flat face"
+      : "θ₁ < θc — refracts out";
+    st.className = "chip " + (t.status === "tir" ? "tir" : t.status === "crit" ? "crit" : "ok");
+  }
+};
+
+/* ═══════════ 4 · RIGHT TRIANGLE (light enters LEFT face) ═══════════ */
+function triGeom(){
+  const tanA = Math.tan(S4.angA*D2R);
+  const hAC = Math.min(280, 620/Math.max(0.05, tanA));
+  const base = hAC * tanA;
+  const C = { x:400, y:430 };
+  const A = { x:400, y:430 - hAC };
+  const B = { x:400 + base, y:430 };
+  return { A, B, C, verts:[A, B, C], hAC, base };
+}
+function s4Trace(wl){
+  const g = triGeom();
+  const n = nOf(S4.med, wl);
+  const E = vadd(g.A, vmul(vsub(g.C, g.A), S4.ey));
+  const r = Math.asin(clamp(Math.sin(S4.t1*D2R)/n, -1, 1))*R2D;
+  const dIn = { x: Math.cos(r*D2R), y: Math.sin(r*D2R) };
+  const dInc = { x: Math.cos(S4.t1*D2R), y: Math.sin(S4.t1*D2R) };
+  const start = vadd(E, vmul(dInc, -300));
+  const tr = tracePoly(g.verts, n, E, dIn, 4);
+  const pts = [start, ...tr.pts];
+  if(tr.exitDir) pts.push(vadd(tr.exitPt, vmul(tr.exitDir, 220)));
+  return { g, E, start, dInc, dIn, r, n, tr, pts,
+           tc: Math.asin(clamp(1/n,0,1))*R2D };
+}
+const EDGE_NAMES_TRI = ["hypotenuse (AB)", "base (CB)", "left face (AC)"];
+const SEC4 = {
+  title: "Right Triangle",
+  hint: "drag ray = θ₁ · drag entry dot along left face · dbl-click = zoom",
+  angle: { label:"θ₁", min:0, max:89, step:0.5, get:()=>S4.t1, set:v=>{ S4.t1 = v; } },
+  srcAllowed: { mono:true, visible:false, sun:false },
+  enter(){
+    $("triSl").value = S4.angA; $("triV").textContent = S4.angA + "°";
+  },
+  draw(){
+    const t = s4Trace(COLORS[S.mono].wl);
+    const g = t.g, med = MEDIA[S4.med];
+    ctx.save();
+    ctx.beginPath(); ctx.moveTo(g.A.x, g.A.y); ctx.lineTo(g.B.x, g.B.y); ctx.lineTo(g.C.x, g.C.y); ctx.closePath();
+    ctx.fillStyle = med.fill; ctx.fill();
+    ctx.strokeStyle = med.edge; ctx.lineWidth = 2; ctx.stroke();
+    /* right-angle square at C */
+    ctx.strokeStyle = C_GREY; ctx.lineWidth = 1.2;
+    ctx.strokeRect(g.C.x + 2, g.C.y - 16, 14, 14);
+    ctx.restore();
+    if(S.showLabels){
+      txt(`A = ${S4.angA}°`, g.A.x + 16, g.A.y + 16, col("--text-dim"), 11, "left");
+      txt(`B = ${90 - S4.angA}°`, g.B.x - 14, g.B.y - 14, col("--text-dim"), 11, "right");
+      txt("C = 90°", g.C.x + 24, g.C.y - 26, col("--text-muted"), 10.5, "left");
+      txt(`${med.name} · n = ${fmt2(nWhite(S4.med))}`, (g.C.x + g.B.x)/2, g.C.y + 20, col("--text-dim"), 11.5);
+    }
+    if(S.showNormals){
+      drawNormal(t.E, {x:1, y:0}, 46);
+      t.tr.events.forEach(ev => drawNormal(ev.pt, ev.nrm, 42));
+    }
+    const c = COLORS[S.mono];
+    const p1 = clamp(S.prog*2, 0, 1), p2 = clamp(S.prog*2-1, 0, 1);
+    drawPath([t.start, t.E], c.hex, RAY_W_MONO, p1, {arrow:false});
+    drawPath(t.pts.slice(1), c.hex, RAY_W_MONO, p2);
+    if(S.showAngles && p1 >= 1){
+      arcAt(t.E, Math.PI, Math.PI + S4.t1*D2R, 26, C_WHITE_RAY, `θ₁=${fmtA(S4.t1)}°`, 54);
+      if(p2 >= 1){
+        arcAt(t.E, 0, t.r*D2R, 30, col("--blue"), `r=${fmtA(t.r)}°`, 60);
+        t.tr.events.forEach(ev => {
+          const tag = ev.type === "tir" ? `TIR ${fmtA(ev.th)}°>θc` : `${fmtA(ev.th)}°→${fmtA(ev.thOut)}°`;
+          const off = ev.nrm ? vmul(ev.nrm, 26) : {x:0,y:-26};
+          txt(tag, ev.pt.x + off.x, ev.pt.y + off.y, ev.type === "tir" ? col("--orange") : col("--text-muted"), 10);
+        });
+      }
+    }
+    ctx.save();
+    ctx.fillStyle = col("--accent"); ctx.strokeStyle = col("--card");
+    ctx.beginPath(); ctx.arc(t.E.x, t.E.y, 5.5, 0, 7); ctx.fill(); ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.restore();
+  },
+  hit(p){
+    const t = s4Trace(COLORS[S.mono].wl);
+    if(Math.hypot(p.x-t.E.x, p.y-t.E.y) < 14) return { kind:"pos" };
+    if(distToSeg(p, t.start, t.E) < 14) return { kind:"ray" };
+    return null;
+  },
+  onDrag(kind, p){
+    const g = triGeom();
+    if(kind === "pos"){
+      S4.ey = clamp((p.y - g.A.y)/(g.C.y - g.A.y), 0.1, 0.92);
+      return;
+    }
+    const t = s4Trace(COLORS[S.mono].wl);
+    const v = vsub(t.E, p);
+    if(v.x > 4){
+      S4.t1 = clamp(Math.round(Math.atan2(Math.abs(v.y), v.x)*R2D*2)/2, 0, 89);
+    }
+  },
+  rows(){
+    const c = COLORS[S.mono], t = s4Trace(c.wl);
+    const last = t.tr.events[t.tr.events.length-1];
+    return [{ hex:c.hex, name:c.name, wl:c.wl, f:c.f, n:fmt4(t.n),
+              th2: fmtA(t.r), dev: last && last.type === "exit" ? fmtA(last.thOut) : "TIR…" }];
+  },
+  summary(){
+    const c = COLORS[S.mono], t = s4Trace(c.wl);
+    let s = `The <b>${c.name}</b> ray enters the vertical left face at <span class="hl">θ₁ = ${fmtA(S4.t1)}°</span> and refracts to ` +
+      `<span class="hl">r = ${fmtA(t.r)}°</span> inside the ${MEDIA[S4.med].name} (n = ${fmt4(t.n)}, θc = ${fmtA(t.tc)}°). `;
+    t.tr.events.forEach(ev => {
+      if(ev.type === "tir")
+        s += `It strikes the <b>${EDGE_NAMES_TRI[ev.edge]}</b> at θ = ${fmtA(ev.th)}°, which exceeds θc — <span class="hl">Total Internal Reflection</span>. `;
+      else
+        s += `It reaches the <b>${EDGE_NAMES_TRI[ev.edge]}</b> at θ = ${fmtA(ev.th)}° (&lt; θc) and refracts out into the air at <span class="hl">θ = ${fmtA(ev.thOut)}°</span>. `;
+    });
+    if(t.tr.stopped) s += `Tracing stopped after ${t.tr.refl} internal reflections.`;
+    return s;
+  },
+  info(){
+    return `Right-angled prisms appear in many IGCSE questions: with n ≈ 1.5, θc ≈ 42°, so light hitting the hypotenuse of a 45-45-90 prism at 45° ` +
+      `is <b>totally internally reflected</b> — this is how periscopes and binoculars turn light through 90° or 180° without mirrors. ` +
+      `Change angle A and θ₁ to explore when the hypotenuse transmits instead.`;
+  },
+  eq(){
+    const c = COLORS[S.mono], t = s4Trace(c.wl);
+    return {
+      main: `n = \\dfrac{\\sin i}{\\sin r}`,
+      subs: [
+        `\\sin ${fmtA(S4.t1)}^\\circ = ${fmt4(t.n)}\\,\\sin r \\Rightarrow r = ${fmtA(t.r)}^\\circ`,
+        `\\theta_c = \\sin^{-1}(1/n) = ${fmtA(t.tc)}^\\circ`
+      ],
+      adv: `n(\\lambda) = A + \\tfrac{B}{\\lambda^2}\\;\\Rightarrow\\; n_{${c.name}} = ${fmt4(t.n)}`
+    };
+  },
+  chips(){
+    const t = s4Trace(COLORS[S.mono].wl);
+    const tirCount = t.tr.events.filter(e => e.type === "tir").length;
+    $("chipInfo").textContent = `${S4.angA}-${90-S4.angA}-90 · θ₁ ${fmtA(S4.t1)}° · θc ${fmtA(t.tc)}°`;
+    const st = $("chipStatus");
+    st.textContent = tirCount === 0 ? "Refracts out — no TIR"
+      : `${tirCount} internal reflection${tirCount>1?"s":""} (TIR)`;
+    st.className = "chip " + (tirCount ? "tir" : "ok");
+  }
+};
+
+/* ═══════════ 5 · DIAMOND (faceted, TIR sparkle) ═══════════ */
+function diaGeom(){
+  const s = 440, cx = 600, gy = 185;
+  const U = [[-0.25,-0.18],[0.25,-0.18],[0.5,0],[0.28,0.35],[0,0.62],[-0.28,0.35],[-0.5,0]];
+  const verts = U.map(([u,v]) => ({ x: cx + u*s, y: gy + v*s }));
+  return { verts, TL:verts[0], TR:verts[1], cx, gy };
+}
+function s5Trace(wl){
+  const g = diaGeom();
+  const n = nOf(5, wl);                                  // Diamond only
+  const E = vadd(g.TL, vmul(vsub(g.TR, g.TL), S5.pos));
+  const r = Math.asin(clamp(Math.sin(S5.t1*D2R)/n, -1, 1))*R2D;
+  const dInc = rotV({x:0, y:1}, S5.t1);                  // tilts left going down
+  const dIn = rotV({x:0, y:1}, r);
+  const start = vadd(E, vmul(dInc, -230));
+  const tr = tracePoly(g.verts, n, E, dIn, 5);
+  const pts = [start, ...tr.pts];
+  if(tr.exitDir) pts.push(vadd(tr.exitPt, vmul(tr.exitDir, 190)));
+  return { g, E, start, dInc, dIn, r, n, tr, pts, tc: Math.asin(clamp(1/n,0,1))*R2D };
+}
+const SEC5 = {
+  title: "Diamond", medLock: "Diamond",
+  hint: "drag ray = θ₁ · drag entry dot along top facet · dbl-click = zoom",
+  angle: { label:"θ₁", min:5, max:60, step:0.5, get:()=>S5.t1, set:v=>{ S5.t1 = v; } },
+  srcAllowed: { mono:true, visible:false, sun:false },
+  enter(){},
+  draw(){
+    const t = s5Trace(COLORS[S.mono].wl);
+    const g = t.g, med = MEDIA[5];
+    ctx.save();
+    ctx.beginPath();
+    g.verts.forEach((v, i) => i === 0 ? ctx.moveTo(v.x, v.y) : ctx.lineTo(v.x, v.y));
+    ctx.closePath();
+    ctx.fillStyle = med.fill; ctx.fill();
+    ctx.strokeStyle = med.edge; ctx.lineWidth = 2; ctx.stroke();
+    /* cosmetic girdle line */
+    ctx.strokeStyle = "rgba(210,235,245,0.35)"; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(g.verts[6].x, g.verts[6].y); ctx.lineTo(g.verts[2].x, g.verts[2].y); ctx.stroke();
+    ctx.restore();
+    if(S.showLabels){
+      txt(`Diamond · n = ${fmt2(nWhite(5))} · θc = ${fmtA(t.tc)}°`, g.cx, g.verts[4].y + 22, col("--text-dim"), 11.5);
+    }
+    if(S.showNormals){
+      drawNormal(t.E, {x:0, y:1}, 44);
+      t.tr.events.forEach(ev => drawNormal(ev.pt, ev.nrm, 38));
+    }
+    const c = COLORS[S.mono];
+    const p1 = clamp(S.prog*2, 0, 1), p2 = clamp(S.prog*2-1, 0, 1);
+    drawPath([t.start, t.E], c.hex, RAY_W_MONO, p1, {arrow:false});
+    drawPath(t.pts.slice(1), c.hex, RAY_W_MONO, p2);
+    /* sparkle glows at TIR points */
+    if(p2 >= 1) t.tr.events.filter(e => e.type === "tir").forEach(ev => {
+      ctx.save();
+      const gr = ctx.createRadialGradient(ev.pt.x, ev.pt.y, 1, ev.pt.x, ev.pt.y, 16);
+      gr.addColorStop(0, "rgba(255,255,255,0.5)"); gr.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(ev.pt.x, ev.pt.y, 16, 0, 7); ctx.fill();
+      ctx.restore();
+    });
+    if(S.showAngles && p1 >= 1){
+      arcAt(t.E, -Math.PI/2, -Math.PI/2 - S5.t1*D2R, 26, C_WHITE_RAY, `θ₁=${fmtA(S5.t1)}°`, 52);
+      if(p2 >= 1){
+        arcAt(t.E, Math.PI/2, Math.PI/2 + t.r*D2R, 30, col("--blue"), `r=${fmtA(t.r)}°`, 58);
+        t.tr.events.forEach(ev => {
+          const tag = ev.type === "tir" ? `${fmtA(ev.th)}°` : `exit ${fmtA(ev.thOut)}°`;
+          const off = ev.nrm ? vmul(ev.nrm, 24) : {x:0,y:-24};
+          txt(tag, ev.pt.x + off.x, ev.pt.y + off.y, ev.type === "tir" ? col("--orange") : col("--green"), 10);
+        });
+      }
+    }
+    ctx.save();
+    ctx.fillStyle = col("--accent"); ctx.strokeStyle = col("--card");
+    ctx.beginPath(); ctx.arc(t.E.x, t.E.y, 5.5, 0, 7); ctx.fill(); ctx.lineWidth = 1.5; ctx.stroke();
+    ctx.restore();
+  },
+  hit(p){
+    const t = s5Trace(COLORS[S.mono].wl);
+    if(Math.hypot(p.x-t.E.x, p.y-t.E.y) < 14) return { kind:"pos" };
+    if(distToSeg(p, t.start, t.E) < 14) return { kind:"ray" };
+    return null;
+  },
+  onDrag(kind, p){
+    const g = diaGeom();
+    if(kind === "pos"){
+      const u = vsub(g.TR, g.TL), L2 = vdot(u,u);
+      S5.pos = clamp(vdot(vsub(p, g.TL), u)/L2, 0.08, 0.92);
+      return;
+    }
+    const t = s5Trace(COLORS[S.mono].wl);
+    const v = vsub(t.E, p);
+    if(v.y > 4){
+      S5.t1 = clamp(Math.round(Math.atan2(Math.abs(v.x), v.y)*R2D*2)/2, 5, 60);
+    }
+  },
+  rows(){
+    const c = COLORS[S.mono], t = s5Trace(c.wl);
+    const last = t.tr.events[t.tr.events.length-1];
+    return [{ hex:c.hex, name:c.name, wl:c.wl, f:c.f, n:fmt4(t.n),
+              th2: fmtA(t.r), dev: last && last.type === "exit" ? fmtA(last.thOut) : "trapped" }];
+  },
+  summary(){
+    const c = COLORS[S.mono], t = s5Trace(c.wl);
+    const tirCount = t.tr.events.filter(e => e.type === "tir").length;
+    let s = `The <b>${c.name}</b> ray enters the flat top facet at <span class="hl">θ₁ = ${fmtA(S5.t1)}°</span> and bends sharply to ` +
+      `<span class="hl">r = ${fmtA(t.r)}°</span> — diamond's huge refractive index (n = ${fmt4(t.n)}) gives a tiny critical angle of only ` +
+      `<span class="hl">θc = ${fmtA(t.tc)}°</span>. `;
+    if(tirCount) s += `Inside, the ray undergoes <span class="hl">${tirCount} total internal reflection${tirCount>1?"s":""}</span> off the sloping pavilion facets — ` +
+      `any ray striking a facet at more than ${fmtA(t.tc)}° is trapped and reflected. `;
+    const last = t.tr.events[t.tr.events.length-1];
+    if(last && last.type === "exit") s += `It finally escapes through a facet where the incidence angle drops to ${fmtA(last.th)}° (&lt; θc), leaving at ${fmtA(last.thOut)}°. `;
+    else s += `After ${t.tr.refl} reflections the trace stops — the light keeps bouncing. `;
+    s += `This light-trapping zigzag is exactly why diamonds sparkle.`;
+    return s;
+  },
+  info(){
+    return `Diamond has the highest refractive index of any common gem (n ≈ 2.42), so its critical angle is only ≈ 24°. ` +
+      `Nearly every ray entering the top is trapped by TIR and bounced around the pavilion facets before escaping upward — the "fire" and "brilliance" of a cut diamond. ` +
+      `Jewellers cut facet angles precisely to maximise this effect.`;
+  },
+  eq(){
+    const c = COLORS[S.mono], t = s5Trace(c.wl);
+    return {
+      main: `\\theta_c = \\sin^{-1}\\!\\left(\\tfrac{1}{n}\\right) = \\sin^{-1}\\!\\left(\\tfrac{1}{${fmt2(t.n)}}\\right) = ${fmtA(t.tc)}^\\circ`,
+      subs: [`\\sin ${fmtA(S5.t1)}^\\circ = ${fmt2(t.n)}\\,\\sin r \\Rightarrow r = ${fmtA(t.r)}^\\circ`],
+      adv: `n(\\lambda) = ${fmt4(MEDIA[5].A)} + \\tfrac{${fmt4(MEDIA[5].B)}}{\\lambda^2}\\;\\Rightarrow\\; n_{${c.name}} = ${fmt4(t.n)}`
+    };
+  },
+  chips(){
+    const t = s5Trace(COLORS[S.mono].wl);
+    const tirCount = t.tr.events.filter(e => e.type === "tir").length;
+    $("chipInfo").textContent = `Diamond · θ₁ ${fmtA(S5.t1)}° · θc ${fmtA(t.tc)}°`;
+    const st = $("chipStatus");
+    st.textContent = tirCount ? `✨ ${tirCount} internal reflection${tirCount>1?"s":""}` : "Passes straight through";
+    st.className = "chip " + (tirCount ? "crit" : "ok");
+  }
+};
+
+/* ═══════════ 6 · RAINBOW (water drop) ═══════════ */
+const DROP = { C: { x:760, y:150 }, R: 112 };
+function dropTrace(wl, bFrac, nRefl){
+  const n = nOf(2, wl);                                  // Water
+  const R = DROP.R, C = DROP.C;
+  const b = bFrac * R;
+  const y = C.y - b;
+  const dx = Math.sqrt(Math.max(0, R*R - b*b));
+  const P0 = { x: C.x - dx, y };
+  const start = { x: P0.x - 300, y };
+  const nrm0 = vnorm(vsub(P0, C));                       // outward at entry
+  let dir = refractV({x:1, y:0}, nrm0, 1, n);
+  if(!dir) return null;
+  const pts = [start, P0];
+  let p = P0;
+  for(let i = 0; i < nRefl; i++){
+    const t = 2 * vdot(vsub(C, p), dir);
+    p = vadd(p, vmul(dir, t));
+    pts.push({...p});
+    dir = reflectV(dir, vnorm(vsub(p, C)));
+  }
+  const t2 = 2 * vdot(vsub(C, p), dir);
+  const pe = vadd(p, vmul(dir, t2));
+  pts.push({...pe});
+  const nrmE = vnorm(vsub(pe, C));
+  let out = refractV(dir, vmul(nrmE, -1), n, 1);
+  if(!out) out = reflectV(dir, nrmE);
+  /* clip exit ray to canvas bounds */
+  let L = 430;
+  if(out.x < 0) L = Math.min(L, (60 - pe.x)/out.x);
+  if(out.y > 0) L = Math.min(L, (H - 26 - pe.y)/out.y);
+  if(out.y < 0) L = Math.min(L, (26 - pe.y)/out.y);
+  L = Math.max(60, L);
+  const end = vadd(pe, vmul(out, L));
+  pts.push(end);
+  const devD = Math.acos(clamp(vdot(out, {x:1,y:0}), -1, 1))*R2D;
+  return { pts, out, pe, end, n, rainbowAngle: 180 - devD, sinTheta: bFrac };
+}
+const SEC6 = {
+  title: "Rainbow", medLock: "Water",
+  hint: "entry position fixed by physics · Single/Double rainbow · dbl-click = zoom",
+  angle: null,
+  srcAllowed: { mono:true, visible:true, sun:false },
+  enter(){},
+  draw(){
+    /* droplet */
+    ctx.save();
+    ctx.beginPath(); ctx.arc(DROP.C.x, DROP.C.y, DROP.R, 0, 7);
+    ctx.fillStyle = "rgba(100,180,230,0.20)"; ctx.fill();
+    ctx.strokeStyle = "rgba(150,205,240,0.85)"; ctx.lineWidth = 2; ctx.stroke();
+    ctx.restore();
+    if(S.showLabels){
+      txt("water droplet", DROP.C.x + DROP.R + 12, DROP.C.y, col("--text-dim"), 11, "left");
+      txt(`n ≈ ${fmt2(nWhite(2))}`, DROP.C.x + DROP.R + 12, DROP.C.y + 16, col("--text-muted"), 10, "left");
+    }
+    const cols = activeCols();
+    const multi = cols.length > 1;
+    const wMain = multi ? RAY_W_MULTI : RAY_W_MONO;
+    const p1 = clamp(S.prog*2, 0, 1), p2 = clamp(S.prog*2-1, 0, 1);
+    const bundles = [{ b:0.861, refl:1, alpha:1 }];
+    if(S6.type === 2) bundles.push({ b:0.951, refl:2, alpha:0.55 });
+    bundles.forEach((bd, bi) => {
+      const traces = cols.map(i => ({ c: COLORS[i], t: dropTrace(COLORS[i].wl, bd.b, bd.refl) }))
+                         .filter(x => x.t);
+      if(!traces.length) return;
+      const mid = traces[Math.floor(traces.length/2)].t;
+      /* incident white ray */
+      drawPath([mid.pts[0], mid.pts[1]], multi ? C_WHITE_RAY : traces[0].c.hex,
+               multi ? 1.8 : RAY_W_MONO, p1, {arrow:false, alpha:bd.alpha});
+      traces.forEach(({c, t}) => {
+        drawPath(t.pts.slice(1), c.hex, wMain, p2, {alpha:bd.alpha});
+        if(S.showLabels && p2 >= 1 && multi && c.lab){
+          const lp = vadd(t.end, vmul(t.out, 10));
+          txt(c.lab, clamp(lp.x, 20, W-20), clamp(lp.y, 14, H-14), c.hex, 8);
+        }
+      });
+      if(S.showLabels && p1 >= 1){
+        txt(bi === 0 ? "primary (1 reflection)" : "secondary (2 reflections)",
+            mid.pts[0].x + 8, mid.pts[0].y + (bi === 0 ? 15 : -15), col("--text-muted"), 10, "left");
+      }
+    });
+    if(S.showNormals){
+      const mid = dropTrace(550, 0.861, 1);
+      if(mid) drawNormal(mid.pts[1], vnorm(vsub(mid.pts[1], DROP.C)), 40);
+    }
+  },
+  hit(){ return null; },
+  onDrag(){},
+  rows(){
+    return activeCols().map(i => {
+      const c = COLORS[i], t = dropTrace(c.wl, 0.861, 1);
+      return { hex:c.hex, name:c.name, wl:c.wl, f:c.f, n: t ? fmt4(t.n) : "—",
+               th2: t ? fmtA(Math.asin(clamp(0.861/ t.n,0,1))*R2D) : "—",
+               dev: t ? fmtA(t.rainbowAngle) : "—" };
+    });
+  },
+  summary(){
+    if(activeCols().length === 1){
+      const c = COLORS[activeCols()[0]], t = dropTrace(c.wl, 0.861, 1);
+      return `The <b>${c.name}</b> ray refracts as it enters the spherical droplet, crosses to the back surface, undergoes ` +
+        `<b>one internal reflection</b>, and refracts again on exit. The exit ray makes a rainbow angle of ` +
+        `<span class="hl">${t ? fmtA(t.rainbowAngle) : "—"}°</span> with the incoming sunlight — for water this is close to the famous 42°.`;
+    }
+    const tR = dropTrace(700, 0.861, 1), tV = dropTrace(400, 0.861, 1);
+    let s = `White light entering the droplet refracts, reflects <b>once</b> inside, and refracts again on exit — and each colour follows a slightly ` +
+      `different path because n varies with wavelength. <b style="color:${COLORS[0].hex}">Red</b> exits at ` +
+      `<span class="hl">${tR ? fmtA(tR.rainbowAngle) : "—"}°</span> and <b style="color:${COLORS[6].hex}">Violet</b> at ` +
+      `<span class="hl">${tV ? fmtA(tV.rainbowAngle) : "—"}°</span> — so in the sky, Red appears on the <b>outer</b> edge of the primary rainbow and Violet on the <b>inner</b> edge.`;
+    if(S6.type === 2) s += ` The <b>secondary rainbow</b> comes from rays reflecting <b>twice</b> inside the droplet — it appears higher, fainter, and with the colour order <b>reversed</b>.`;
+    return s;
+  },
+  info(){
+    return `A rainbow is dispersion by millions of falling water droplets. Each droplet sends a cone of coloured light back toward the sun-side observer at ≈ 40–42°. ` +
+      `You see red from droplets higher in the sky and violet from lower ones — the rainbow is a circle centred on the point directly opposite the sun (the antisolar point).`;
+  },
+  eq(){
+    const c = COLORS[S.src === "mono" ? S.mono : 3];
+    const t = dropTrace(c.wl, 0.861, 1);
+    return {
+      main: `n_1\\sin\\theta_1 = n_2\\sin\\theta_2\\;\\text{(entry and exit)}`,
+      subs: t ? [`\\text{rainbow angle} \\approx 180^\\circ - D = ${fmtA(t.rainbowAngle)}^\\circ`] : [],
+      adv: `D(\\lambda) = 180^\\circ + 2\\theta_i - 4\\theta_r(\\lambda)\\quad\\text{(one internal reflection)}`
+    };
+  },
+  chips(){
+    $("chipInfo").textContent = `Water droplet · ${S6.type === 1 ? "primary" : "primary + secondary"} rainbow`;
+    const st = $("chipStatus");
+    st.textContent = S6.type === 1 ? "1 internal reflection → primary bow" : "2 reflections → secondary bow (reversed)";
+    st.className = "chip ok";
+  }
+};
+
+/* ═══════════ REGISTRY · DISPATCH · WIRING ═══════════ */
+const SECS = [SEC1, SEC2, SEC3, SEC4, SEC5, SEC6];
+const sec = () => SECS[S.sec];
+
+function syncAngleUI(){
+  const a = sec().angle;
+  if(!a) return;
+  const sl = $("angSlider"), inp = $("angInput");
+  sl.min = a.min; sl.max = a.max; sl.step = a.step;
+  inp.min = a.min; inp.max = a.max; inp.step = a.step;
+  sl.value = a.get(); inp.value = a.get();
+  $("angLabel").textContent = a.label;
+}
+function paramChanged(){
+  S.prog = S.playing ? 0 : 1;
+  updateUI();
+}
+
+/* ── draw dispatch (uniform-scale letterboxed canvas) ── */
+function draw(){
+  const dpr = window.devicePixelRatio || 1;
+  ctx.setTransform(1, 0, 0, 1, 0, 0);
+  ctx.fillStyle = col("--graph-bg");
+  ctx.fillRect(0, 0, cv.width, cv.height);
+  ctx.setTransform(dpr*VS.s, 0, 0, dpr*VS.s, dpr*VS.ox, dpr*VS.oy);
+  ctx.save();
+  if(S.zoom){
+    const f = S.zoomF;
+    ctx.translate(W/2 - S.focus.x*f, H/2 - S.focus.y*f);
+    ctx.scale(f, f);
+  }
+  sec().draw();
+  ctx.restore();
+}
+
+function renderTable(){
+  const rows = sec().rows();
+  $("specTable").querySelector("tbody").innerHTML = rows.map(r =>
+    `<tr style="${r.dim ? "opacity:.55;" : ""}"><td><span class="sw" style="background:${r.hex};${r.dim ? "opacity:.5;" : ""}"></span>${r.name}</td>` +
+    `<td>${r.wl}</td><td>${r.f}</td><td>${r.n}</td><td>${r.th2}</td><td>${r.dev}</td></tr>`).join("");
+}
+function renderEqPanel(){
+  $("eqPanel").classList.toggle("hidden", !S.showEq);
+  $("btnEq").classList.toggle("on", S.showEq);
+  if(!S.showEq) return;
+  const e = sec().eq();
+  renderTex($("eqMain"), e.main);
+  const sub = $("eqSub"); sub.innerHTML = "";
+  (e.subs || []).forEach(tex => {
+    const d = document.createElement("div"); d.className = "eq-sm";
+    renderTex(d, tex, false);
+    sub.appendChild(d); fitEq(d);
+  });
+  $("advToggle").classList.toggle("on", S.showAdv);
+  $("advToggle").textContent = (S.showAdv ? "▾ Hide" : "▸ Show") + " advanced equations (beyond IGCSE)";
+  $("advBox").classList.toggle("hidden", !S.showAdv);
+  if(S.showAdv) renderTex($("eqAdv"), e.adv);
+}
+
+function updateUI(){
+  document.querySelectorAll(".sec-tab").forEach(b => b.classList.toggle("active", +b.dataset.s === S.sec));
+  $("hintEl").textContent = sec().hint;
+  /* section-specific toolbar groups */
+  $("gApex").classList.toggle("hidden", S.sec !== 0);
+  $("gCount").classList.toggle("hidden", S.sec !== 1);
+  $("gDir").classList.toggle("hidden", S.sec !== 2);
+  $("gTri").classList.toggle("hidden", S.sec !== 3);
+  $("gRain").classList.toggle("hidden", S.sec !== 5);
+  $("btnDev").classList.toggle("hidden", S.sec !== 0);
+  $("btnDev").classList.toggle("on", S.showDev);
+  $("med2Sel").classList.toggle("hidden", !(S.sec === 1 && S2.count === 2));
+  /* medium selector vs locked badge */
+  const lock = sec().medLock;
+  $("medSel").classList.toggle("hidden", !!lock);
+  $("medLocked").classList.toggle("hidden", !lock);
+  if(lock) $("medLockedName").textContent = lock;
+  $("medLabel").textContent = S.sec === 1 ? "Block 1" : "Medium";
+  if(!lock){
+    $("medSel").value = S.sec === 1 ? S2.med1 : S.sec === 2 ? S3.med : S.sec === 3 ? S4.med : 0;
+  }
+  $("med2Sel").value = S2.med2;
+  /* light source pills */
+  const sa = sec().srcAllowed;
+  document.querySelectorAll("#srcPills .pill").forEach(b => {
+    const key = b.dataset.src;
+    b.classList.toggle("active", S.src === key);
+    const ok = sa[key];
+    b.style.opacity = ok ? "" : ".38";
+    b.style.pointerEvents = ok ? "" : "none";
+    b.title = ok ? "" : "Not available for this shape";
+  });
+  document.querySelectorAll("#cpills .cpill").forEach((b, i) => {
+    const on = S.src === "mono" ? S.mono === i : (S.src === "visible" ? S.vis[i] : true);
+    b.classList.toggle("on", on);
+  });
+  $("grpCols").classList.toggle("locked", S.src === "sun");
+  /* angle group */
+  const a = sec().angle;
+  $("grpAngle").classList.toggle("locked", !a);
+  if(a) syncAngleUI();
+  /* shared buttons */
+  $("btnPlay").textContent = S.playing ? "⏸ Pause" : "▶ Play";
+  $("btnAngles").classList.toggle("on", S.showAngles);
+  $("btnLabels").classList.toggle("on", S.showLabels);
+  $("btnNormals").classList.toggle("on", S.showNormals);
+  $("chipZoom").style.display = S.zoom ? "block" : "none";
+  /* below-canvas panels */
+  renderTable();
+  $("sumText").innerHTML = sec().summary();
+  $("infoText").innerHTML = sec().info();
+  renderEqPanel();
+  sec().chips();
+  draw();
+}
+
+/* ── animation loop ── */
+let lastT = null, rafId = null;
+function tick(t){
+  if(lastT === null) lastT = t;
+  const dt = (t - lastT)/1000; lastT = t;
+  if(S.playing){
+    if(S.prog < 1){
+      S.prog = Math.min(1, S.prog + dt*S.speed/1.4);
+      draw();
+      if(S.prog >= 1){ S.playing = false; updateUI(); lastT = null; rafId = null; return; }
+    }
+    rafId = requestAnimationFrame(tick);
+  } else { lastT = null; rafId = null; }
+}
+function startLoop(){ if(rafId === null){ lastT = null; rafId = requestAnimationFrame(tick); } }
+
+/* ── pointer interaction ── */
+cv.addEventListener("pointerdown", e => {
+  const p = evtPt(e);
+  cv.setPointerCapture(e.pointerId);
+  const h = sec().hit ? sec().hit(p) : null;
+  if(h){ S.drag = h; return; }
+  if(S.zoom){
+    S.drag = { kind:"pan", sf:{...S.focus}, sp:{...p} };
+    cv.style.cursor = "grabbing";
+  }
+});
+cv.addEventListener("pointermove", e => {
+  const p = evtPt(e);
+  if(S.drag && S.drag.kind === "pan"){
+    /* p is in zoomed space; move focus opposite to pointer delta in screen space */
+    S.focus = { x: clamp(S.focus.x - (p.x - S.drag.sp.x)*0.9, 0, W),
+                y: clamp(S.focus.y - (p.y - S.drag.sp.y)*0.9, 0, H) };
+    draw(); return;
+  }
+  if(S.drag){
+    sec().onDrag(S.drag.kind, p);
+    paramChanged();
+    return;
+  }
+  const h = sec().hit ? sec().hit(p) : null;
+  cv.style.cursor = h ? "grab" : (S.zoom ? "grab" : "crosshair");
+});
+cv.addEventListener("pointerup", () => {
+  if(S.drag && S.drag.kind === "pan") cv.style.cursor = "grab";
+  S.drag = null;
+});
+cv.addEventListener("dblclick", e => {
+  const p = evtPt(e);
+  if(sec().hit && sec().hit(p)) return;
+  if(!S.zoom){ S.focus = p; S.zoom = true; } else S.zoom = false;
+  updateUI();
+});
+$("chipZoom").addEventListener("click", () => { S.zoom = false; updateUI(); });
+window.addEventListener("keydown", e => {
+  if(e.target.tagName === "INPUT") return;
+  if(e.key === "Escape" && S.zoom){ S.zoom = false; updateUI(); }
+  const a = sec().angle;
+  if(!a) return;
+  const step = e.shiftKey ? 5 : 1;
+  if(e.key === "ArrowUp"){ a.set(clamp(a.get()+step, a.min, a.max)); paramChanged(); e.preventDefault(); }
+  if(e.key === "ArrowDown"){ a.set(clamp(a.get()-step, a.min, a.max)); paramChanged(); e.preventDefault(); }
+});
+
+/* ── section tabs ── */
+document.querySelectorAll(".sec-tab").forEach(b => b.addEventListener("click", () => {
+  S.sec = +b.dataset.s;
+  S.zoom = false; S.playing = false; S.prog = 1; S.drag = null;
+  $("chipWarn").style.display = "none"; clearTimeout(warnTimer);
+  const sa = sec().srcAllowed;
+  if(!sa[S.src]) S.src = "mono";
+  if(sec().enter) sec().enter();
+  updateUI();
+}));
+
+/* ── theme ── */
+$("themeSel").addEventListener("change", e => setTheme(e.target.value));
+function setTheme(name){
+  const cls = ["theme-hausnight","theme-neon","theme-light","theme-haus","theme-clay"];
+  document.body.classList.remove(...cls);
+  if(name !== "dark") document.body.classList.add("theme-" + name);
+  S.theme = name; updateUI();
+}
+
+/* ── shared toolbar ── */
+$("btnPlay").addEventListener("click", () => {
+  S.playing = !S.playing;
+  if(S.playing){ if(S.prog >= 1) S.prog = 0; startLoop(); }
+  updateUI();
+});
+$("speedPills").addEventListener("click", e => {
+  const b = e.target.closest(".pill"); if(!b) return;
+  [...$("speedPills").children].forEach(x => x.classList.remove("active"));
+  b.classList.add("active"); S.speed = +b.dataset.s;
+});
+$("btnAngles").addEventListener("click", () => { S.showAngles = !S.showAngles; updateUI(); });
+$("btnLabels").addEventListener("click", () => { S.showLabels = !S.showLabels; updateUI(); });
+$("btnNormals").addEventListener("click", () => { S.showNormals = !S.showNormals; updateUI(); });
+$("btnDev").addEventListener("click", () => { S.showDev = !S.showDev; updateUI(); });
+$("btnEq").addEventListener("click", () => { S.showEq = !S.showEq; updateUI(); });
+$("advToggle").addEventListener("click", () => { S.showAdv = !S.showAdv; updateUI(); });
+$("angSlider").addEventListener("input", e => {
+  const a = sec().angle; if(!a) return;
+  a.set(clamp(+e.target.value, a.min, a.max)); paramChanged();
+});
+$("angInput").addEventListener("change", e => {
+  const a = sec().angle; if(!a) return;
+  const v = parseFloat(e.target.value);
+  if(isFinite(v)) a.set(clamp(v, a.min, a.max));
+  paramChanged();
+});
+
+/* ── light source + colours ── */
+$("srcPills").addEventListener("click", e => {
+  const b = e.target.closest(".pill"); if(!b) return;
+  S.src = b.dataset.src;
+  if(S.src === "visible" && !S.vis.some(v=>v)) S.vis = S.vis.map(()=>true);
+  if(S.sec === 0) s1Enforce();
+  paramChanged();
+});
+COLORS.forEach((c, i) => {
+  const b = document.createElement("button");
+  b.className = "cpill" + (i === 0 ? " on" : "");
+  b.style.background = c.hex; b.title = `${c.name} — ${c.wl} nm`;
+  b.addEventListener("click", () => {
+    if(S.src === "mono") S.mono = i;
+    else if(S.src === "visible"){
+      S.vis[i] = !S.vis[i];
+      if(!S.vis.some(v=>v)) S.vis[i] = true;
+    }
+    if(S.sec === 0) s1Enforce();
+    paramChanged();
+  });
+  $("cpills").appendChild(b);
+});
+$("btnColReset").addEventListener("click", () => {
+  S.mono = 0;
+  S.vis = COLORS.map(() => true);
+  if(S.sec === 0) s1Enforce();
+  paramChanged();
+});
+
+/* ── medium selectors ── */
+MEDIA.forEach((m, i) => {
+  $("medSel").add(new Option(`${m.name} (n≈${fmt2(nWhite(i))})`, i));
+  $("med2Sel").add(new Option(`B2: ${m.name} (n≈${fmt2(nWhite(i))})`, i));
+});
+$("medSel").addEventListener("change", e => {
+  const v = +e.target.value;
+  if(S.sec === 1) S2.med1 = v;
+  else if(S.sec === 2) S3.med = v;
+  else if(S.sec === 3) S4.med = v;
+  paramChanged();
+});
+$("med2Sel").addEventListener("change", e => { S2.med2 = +e.target.value; paramChanged(); });
+
+/* ── section-specific controls ── */
+$("apexSl").addEventListener("input", e => {
+  S1.apex = +e.target.value; $("apexV").textContent = S1.apex + "°";
+  s1Enforce(); paramChanged();
+});
+$("cntPills").addEventListener("click", e => {
+  const b = e.target.closest(".pill"); if(!b) return;
+  [...$("cntPills").children].forEach(x => x.classList.remove("active"));
+  b.classList.add("active"); S2.count = +b.dataset.n; paramChanged();
+});
+$("dirBtn").addEventListener("click", () => {
+  S3.side *= -1;
+  $("dirBtn").textContent = S3.side === 1 ? "▶ from right" : "◀ from left";
+  paramChanged();
+});
+$("triPreset").addEventListener("change", e => {
+  if(e.target.value !== "custom"){
+    S4.angA = +e.target.value;
+    $("triSl").value = S4.angA; $("triV").textContent = S4.angA + "°";
+  }
+  paramChanged();
+});
+$("triSl").addEventListener("input", e => {
+  S4.angA = +e.target.value; $("triV").textContent = S4.angA + "°";
+  $("triPreset").value = (S4.angA === 45 || S4.angA === 30) ? String(S4.angA) : "custom";
+  paramChanged();
+});
+$("rainPills").addEventListener("click", e => {
+  const b = e.target.closest(".pill"); if(!b) return;
+  [...$("rainPills").children].forEach(x => x.classList.remove("active"));
+  b.classList.add("active"); S6.type = +b.dataset.r; paramChanged();
+});
+
+/* ── GLOBAL RESET ── */
+$("btnReset").addEventListener("click", () => {
+  S = mkS(); S1 = mkS1(); S2 = mkS2(); S3 = mkS3(); S4 = mkS4(); S5 = mkS5(); S6 = mkS6();
+  /* sync every control back to defaults */
+  $("themeSel").value = "dark"; setTheme("dark");
+  $("apexSl").value = S1.apex; $("apexV").textContent = S1.apex + "°";
+  [...$("cntPills").children].forEach(x => x.classList.toggle("active", +x.dataset.n === S2.count));
+  $("med2Sel").value = S2.med2;
+  $("dirBtn").textContent = "◀ from left";
+  $("triPreset").value = "45"; $("triSl").value = S4.angA; $("triV").textContent = S4.angA + "°";
+  [...$("rainPills").children].forEach(x => x.classList.toggle("active", +x.dataset.r === S6.type));
+  [...$("speedPills").children].forEach(x => x.classList.toggle("active", x.dataset.s === "1"));
+  $("chipWarn").style.display = "none"; clearTimeout(warnTimer);
+  s1Enforce();
+  updateUI();
+});
+
+/* ── canvas sizing (uniform scale + letterbox) ── */
+function setupCanvas(){
+  const dpr = window.devicePixelRatio || 1;
+  const rect = cv.getBoundingClientRect();
+  cv.width = Math.max(64, Math.round((rect.width || W) * dpr));
+  cv.height = Math.max(64, Math.round((rect.height || H) * dpr));
+  const cw = cv.width/dpr, ch = cv.height/dpr;
+  const s = Math.min(cw/W, ch/H);
+  VS = { s, ox:(cw - W*s)/2, oy:(ch - H*s)/2 };
+  draw();
+}
+new ResizeObserver(setupCanvas).observe(cv);
+window.addEventListener("resize", () => { setupCanvas(); updateUI(); });
+
+/* ── INIT ── */
+setupCanvas();
+$("themeSel").value = "dark";
+s1Enforce();
+updateUI();
+</script>
+</body>
+</html>
