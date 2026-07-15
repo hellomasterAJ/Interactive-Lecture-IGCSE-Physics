@@ -136,6 +136,7 @@ The canvas is divided into **5 equal segments** for positioning:
 | Show: Angles | Toggle | ∠ |
 | Show: Labels | Toggle | 🏷 |
 | Show: Normals | Toggle | ⊥ |
+| Show: Deviation | Toggle | ⸻ (Prism only — undeviated dashed line) |
 | Show: Equations | Toggle (hidden by default) | 📐 |
 
 ### 2.7 Canvas (Full width, no side panel)
@@ -336,13 +337,33 @@ const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl
 
 ### 6.2 🪟 Glass Blocks
 
-**Controls (Row 2):** Block count (1·2 pills), Block 1 medium, Block 2 medium (dropdowns)
+**Controls (Row 2):**
+| Control | Type | Details |
+|---------|------|---------|
+| Block count | Pills | 1 · 2 |
+| Block 1 medium | Dropdown | All 6 media |
+| Block 2 medium | Dropdown | All 6 media (visible only when count=2) |
+| θ₁ | Slider + input | **0°–90°, step 0.5°, default 40°** |
+
+**Geometry:**
+- Light enters from **top → bottom** (right to left in canvas)
+- **1 Block:** vertical height = **1/4** of canvas, horizontal width = **2/3** of canvas
+- **2 Blocks:** total vertical height = **2/3** of canvas (each block ~1/3), horizontal width = **2/3** of canvas
+- Gap between blocks: ~15px
+
+**Educational descriptions (shown in Summary panel):**
+
+| θ₁ value | Description |
+|----------|-------------|
+| **θ₁ = 0°** | "The ray enters the block at 0° — it is perpendicular to the surface. No direction change occurs. The frequency of light does not change, but the speed decreases and the wavelength shortens inside the medium." |
+| **0° < θ₁ < 90°** | **1 block:** Uses IGCSE formula `n = sin i / sin r` (KaTeX rendered). **2 blocks:** Uses Snell's Law `n₁ sin θ₁ = n₂ sin θ₂` at each interface (KaTeX rendered). |
+| **θ₁ ≈ 90°** | "The ray is almost parallel to the surface. The angle of refraction approaches the critical angle of this medium (θc = X.X°). For a parallel-sided block, the emergent ray is parallel to the incident ray but laterally displaced." |
 
 **Physics:**
-- Light enters from **top → bottom**
 - Normal rules: always at entry, mono=every interface, 2+ colours=entry only
-- TIR possible between blocks when n₁ > n₂
+- TIR possible between blocks when n₁ > n₂ and angle exceeds θc
 - Dispersion visible with multiple colours
+- For 1 block: emergent ray is **parallel to incident ray** but with **lateral displacement**
 
 ### 6.3 🔵 Half Circle
 
