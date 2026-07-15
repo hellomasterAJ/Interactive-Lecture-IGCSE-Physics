@@ -45,17 +45,35 @@ Build a **single interactive 2D Ray Tracing simulation** (single-file HTML + Can
 
 ### 2.1 Viewport Rules (CRITICAL — FIX FROM V1)
 - **The entire simulation must fit in ONE browser window** — NO vertical scrolling
-- V1 had content going out of bounds (experiment clipped off-screen)
+- Layout height: **10% taller than `Measurement_1_vernier_caliper.html`** (more vertical space for the canvas)
 - Layout calculation:
   - Top bar: ~40px
   - Section tabs: ~44px (6 tabs)
   - Toolbar (2 rows): ~80px
-  - **Canvas: remaining viewport height, full width**
+  - **Canvas: remaining viewport height, full width** (taller than Vernier by ~10%)
   - Below-canvas panels: scrollable within their section if needed
 - All content — labels, rays, controls, chips — must be **fully visible** within the Canvas
 - If a medium shape is too large, **scale it down** — never clip it
 
-### 2.2 Layout Structure
+### 2.2 Canvas Division (5 equal parts horizontally)
+
+The canvas is divided into **5 equal segments** for positioning:
+
+```
+   1/5        2/5        3/5        4/5        5/5
+   │           │           │           │           │
+   │← ray end  │           │  Prism    │ ray start→│
+   │  (arrow)  │           │  (25%)    │  (source)  │
+   │           │           │           │           │
+```
+
+- **Light travels from RIGHT to LEFT** (enters from the right side)
+- **Ray start (source):** at ~4/5 of canvas width (right side)
+- **Ray end (arrow tip):** at ~1/5 of canvas width (left side)
+- **Prism width:** ~25% of canvas width, centred horizontally
+- This applies to all shapes unless otherwise specified — the light source is always on the right, ray travels leftward
+
+### 2.3 Layout Structure
 
 ```
 ┌──────────────────────────────────────────────────┐
@@ -88,19 +106,19 @@ Build a **single interactive 2D Ray Tracing simulation** (single-file HTML + Can
 └──────────────────────────────────────────────────┘
 ```
 
-### 2.3 Top Bar
+### 2.4 Top Bar
 - Title: "🌈 Ray Tracing — Refraction & Dispersion" + badge "v2.0.0"
 - HAUS Brand logo (top-right)
 - Theme selector: 6 themes dropdown
 
-### 2.4 Section Tabs
+### 2.5 Section Tabs
 ```
 [ 🔺 Prism ] [ 🪟 Glass Blocks ] [ 🔵 Half Circle ] [ 📐 Right Triangle ] [ 💎 Diamond ] [ 💧 Rainbow ]
 ```
 - Active tab highlighted (accent colour)
 - Switching tabs resets animation and updates toolbar controls
 
-### 2.5 Toolbar
+### 2.6 Toolbar
 
 **Row 1 — Light Source & Colour:**
 | Control | Type | Details |
@@ -120,15 +138,15 @@ Build a **single interactive 2D Ray Tracing simulation** (single-file HTML + Can
 | Show: Normals | Toggle | ⊥ |
 | Show: Equations | Toggle (hidden by default) | 📐 |
 
-### 2.6 Canvas (Full width, no side panel)
+### 2.7 Canvas (Full width, no side panel)
 - Dark background (`--graph-bg`)
 - Medium shape drawn in the centre
-- Incident ray enters → refracts/disperses → exits
+- Incident ray enters from the right → refracts/disperses → exits to the left
 - Animation: pen-drawing Type B
 - All rays, labels, and angles must be fully visible within canvas bounds
 - **Chips** overlay on canvas for status info (same as Refraction simulation)
 
-### 2.7 Below-Canvas Panels (in order)
+### 2.8 Below-Canvas Panels (in order)
 
 #### Color Spectrum Table (ALWAYS VISIBLE — never hidden)
 A table showing the current colour data. This must be shown at all times, regardless of equation toggle state.
@@ -260,12 +278,26 @@ const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl
 
 ### 6.1 🔺 Prism
 
-**Controls (Row 2):** Apex angle (30°–80°, step 5°, default 60°), Prism medium (Crown Glass only, dropdown hidden/locked)
+**Controls (Row 2):**
+| Control | Type | Details |
+|---------|------|---------|
+| Apex angle | Slider + badge | **45°–75°, step 1°, default 45°** |
+| θ₁ | Slider + input | **0°–75°, step 0.5°, default 50°** |
+| Entry position | Drag on prism face | Vertical position along left/right face |
+
+**Prism orientation:**
+- **Light enters from the RIGHT face** (not the left face — this is different from V1)
+- **Light exits from the LEFT face**
+- Prism centred horizontally, occupying ~25% of canvas width
+- Apex at top, base at bottom
 
 **Physics:**
-- Light enters left face → disperses → exits right face
+- Light enters right face → refracts inside → disperses → exits left face
 - **NO TIR** — auto-prevent (snap parameters)
-- Entry point E on left face: **draggable vertically**
+  - `s1Enforce()` function checks the highest-n colour (Violet for visible, UV for Sun)
+  - If TIR would occur, snap apex and/or θ₁ to nearest safe value
+  - Show warning chip: "⚠ TIR prevented — angle adjusted"
+- Entry point E on prism face: **draggable vertically**
 - Sun Light: continuous spectrum bands + Herschel thermometer
 
 **Herschel Thermometer (Sun mode):**
