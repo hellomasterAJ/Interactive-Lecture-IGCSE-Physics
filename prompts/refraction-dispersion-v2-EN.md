@@ -189,15 +189,36 @@ const MEDIA = [
   { name:"Crown Glass (BK7)", A:1.5046, B:0.00420, fill:"rgba(195,205,210,0.20)", edge:"rgba(200,215,225,0.85)" },
   { name:"Flint Glass (F2)",  A:1.5809, B:0.01426, fill:"rgba(205,195,225,0.22)", edge:"rgba(210,200,235,0.85)" },
   { name:"Water",             A:1.3242, B:0.00285, fill:"rgba(25,80,160,0.30)",  edge:"rgba(90,150,220,0.85)" },
+  { name:"Ice",               A:1.3050, B:0.00150, fill:"rgba(180,215,235,0.30)", edge:"rgba(200,225,245,0.85)" },
   { name:"Perspex",           A:1.4840, B:0.00285, fill:"rgba(220,215,200,0.18)", edge:"rgba(225,220,205,0.8)" },
   { name:"Diamond",           A:2.3758, B:0.01188, fill:"rgba(200,225,235,0.22)", edge:"rgba(210,235,245,0.9)" }
 ];
 const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl in nm
 ```
 
-**Fill colours:** The `fill` values in the Cauchy MEDIA array use the **same colours as the original `Wave_1_refraction_of_light.html`** (slightly adjusted for edge rendering).
+**Fill colours:** The `fill` values use the **same colours as the original `Wave_1_refraction_of_light.html`** (slightly adjusted for edge rendering).
 
 **Air:** Not included in the Cauchy MEDIA because n = 1.00 for all wavelengths. Air is handled as the default ambient medium (no fill, no edge).
+
+### Media Availability per Shape (CRITICAL)
+
+Each shape restricts which media can be selected:
+
+| Shape | Available Media | Reason |
+|-------|----------------|--------|
+| 🔺 **Prism** | **Crown Glass only** | Standard IGCSE prism material |
+| 🪟 **Glass Blocks** | All 6 media (Crown, Flint, Water, Ice, Perspex, Diamond) | For comparing n values |
+| 🔵 **Half Circle** | All 6 media | For measuring critical angle of different materials |
+| 📐 **Right Triangle** | All 6 media | IGCSE exam questions use various materials |
+| 💎 **Diamond** | **Diamond only** | Only diamond has high enough n for internal reflections |
+| 💧 **Rainbow** | **Water only** | Natural rainbows are formed by water droplets |
+
+**Implementation:**
+- When switching to a shape, the medium dropdown should only show the allowed media for that shape
+- If the current medium is not allowed in the new shape, auto-switch to the default (first allowed) medium
+- Prism: default = Crown Glass (index 0)
+- Diamond: default = Diamond (index 5)
+- Rainbow: default = Water (index 2), medium dropdown hidden (locked)
 
 ---
 
