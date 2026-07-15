@@ -198,7 +198,9 @@ This section must explain the results in **full sentences**, not just show numbe
 
 ---
 
-## 3. Ray Thickness (CRITICAL — FIX FROM V1)
+## 3. Ray Thickness & Labels (CRITICAL — FIX FROM V1)
+
+### 3.1 Ray Thickness
 
 | Property | Value |
 |----------|-------|
@@ -211,6 +213,27 @@ This section must explain the results in **full sentences**, not just show numbe
 - V1 had thick rays (3px+). When multiple colours were close together, rays overlapped and became invisible
 - In nature, the spectrum is a **continuous gradient** — each colour is thin and distinct
 - **Sun Light mode:** Use wider semi-transparent **bands** (fills) for the continuous spectrum, with thin guide rays (1.3px) overlaid
+
+### 3.2 Colour Labels on Canvas (abbreviated — keeps canvas clean)
+
+| Colour | Label | Notes |
+|--------|-------|-------|
+| 🔴 Red | **R** | |
+| 🟠 Orange | **O** | |
+| 🟡 Yellow | **Y** | |
+| 🟢 Green | **G** | |
+| 🔵 Blue | **B** | |
+| 🟣 Indigo | **I** | |
+| 🟣 Violet | **V** | |
+| ☀️ Infrared | **IR** | Sun Light only |
+| ☀️ Ultraviolet | **UV** | Sun Light only |
+| ⚪ White | **W** | Incident ray label |
+
+- Full colour names (Red, Orange, etc.) are shown in the **Color Spectrum Table** below the canvas
+- On the canvas, only the **abbreviated label** (R, O, Y, G, B, I, V, IR, UV) appears near each ray
+- Label font size: 10–11px, colour matching the ray
+- **Sun Light mode:** Only label the edges (IR, R, V, UV) — not every colour — to avoid clutter
+- **Toggle:** 🏷 Labels button in toolbar to show/hide all labels
 
 ---
 
