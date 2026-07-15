@@ -442,8 +442,14 @@ const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl
 **Light source:** **Monochromatic only** (Visible Light NOT available)
 
 **Geometry:**
-- Size: **~2/5 of Canvas**
-- Rhombus/diamond cross-section (faceted, like Screenshot 1)
+- Size: **~2/5 of Canvas**, centred
+- **Realistic diamond shape** (like Screenshot 1) — not a simple rhombus
+- Classic faceted outline:
+  - Flat **top facet** (horizontal, where light enters)
+  - Flat **bottom facet** (horizontal, pointed tip)
+  - **Left and right pointed tips** (at the widest point)
+  - **Multiple sloping facets** on each side (crown above, pavilion below)
+  - Proportional dimensions matching a real diamond's cross-section
 - Light enters from **top face only** → travels **top→bottom**
 - Reference: Screenshot 1 (diamond TIR diagram)
 
