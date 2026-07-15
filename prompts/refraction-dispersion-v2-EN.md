@@ -4,13 +4,56 @@
 
 ---
 
+## 0. Learning Goals
+
+After using these simulations, students should understand:
+- **Ray tracing** — the path of light as it travels through different media
+- **Frequency is invariant** — when light enters a medium, its **frequency does not change**; only **speed and wavelength** change depending on the medium and the frequency
+- **Dispersion** — different frequencies (colours) have slightly different refractive indices in the same medium, causing them to bend by different amounts, separating white light into its component colours
+
+---
+
 ## Overview
 
-Build **3 separate interactive 2D Ray Tracing simulations** (single-file HTML + Canvas 2D each) covering **Refraction and Dispersion of Light** through different optical media, following the IGCSE Physics 0625 curriculum.
+Build **multiple separate interactive 2D Ray Tracing simulations** (single-file HTML + Canvas 2D each, NOT combined into one file) covering **Refraction and Dispersion of Light** through **various optical medium shapes**, following the IGCSE Physics 0625 curriculum.
 
-All 3 sections share the **Refraction + Dispersion** theme:
-- **Monochromatic light** → shows pure refraction (Snell's Law, ray bending)
-- **Visible Light (multi-colour)** → shows **dispersion** (different colours bend by different amounts)
+### Medium Shapes (in priority order)
+
+| # | Shape | Light sources | Sun Light | File |
+|---|-------|--------------|-----------|------|
+| 1 | 🔺 **Prism** (triangular) | Mono · Visible · Sun | ✅ Yes | `Wave_2_dispersion.html` |
+| 2 | 🪟 **Parallel Glass Blocks** (1–2 blocks) | Mono · Visible | ❌ No | `Wave_3_glass_blocks.html` |
+| 3 | 🔵 **Half Circular Block** | Mono · Visible | ❌ No | `Wave_4_half_circular.html` |
+| 4 | 📐 **Right Triangle** | Mono · Visible | ❌ No | `Wave_5_right_triangle.html` |
+| 5 | 💎 **Diamond Shape** | Mono · Visible | ❌ No | `Wave_6_diamond.html` |
+| 6 | 💧 **Water Drop → Rainbow** | Mono · Visible (Sun optional) | TBD | `Wave_7_raindrop.html` |
+
+### Core Principle
+All simulations share the **Refraction + Dispersion** theme:
+- **Monochromatic light** → pure refraction (Snell's Law, ray bending)
+- **Visible Light (multi-colour)** → **dispersion** (different colours bend by different amounts)
+
+### Main/Global Section (shared across all simulations)
+
+All simulations share these global parameters:
+
+**a) Light Source Selection:**
+| Mode | Availability | Behaviour |
+|------|-------------|-----------|
+| 🔦 **Monochromatic** | All shapes | Single colour (ROYGBIV), 1 pill selectable |
+| 🌈 **Visible Range** | All shapes | Multiple colours (ROYGBIV), multi-select pills |
+| ☀️ **Sun Light** | **Prism only** | All visible + IR + UV, continuous spectrum bands |
+
+**b) Ray Thickness (CRITICAL — FIX FROM V1):**
+- **Ray line width: 1.3–1.5px (MAX 2px)**
+- **DO NOT use thick rays** — V1 had rays that were too thick; when multiple colour rays overlapped, they became invisible
+- In nature, the spectrum is a **continuous gradient**, not overlapping thick bands
+- Each colour ray must be **thin and distinct** so all colours are visible even when they are close together
+- Arrowhead at end of each ray (size proportional to ray width)
+- **Sun Light mode:** Use wider semi-transparent **bands** (fills) for the continuous spectrum, with thin guide rays (1px) overlaid on top
+
+**c) Standard Medium Colours & n Values (shared across ALL simulations):**
+See the MEDIA array below. Every simulation must use the exact same MEDIA array.
 
 ---
 
@@ -177,22 +220,28 @@ System must **automatically prevent TIR** at all times:
 - **White incident ray** entering the prism
 - Labels: "IR" (faint red), "Red", "Violet", "UV" (faint violet) — only at edges, not every colour
 
-### 1.6 Ray Drawing
+### Ray Drawing
 
-**Incident ray** (before prism):
+**Ray thickness (CRITICAL — FIX FROM V1):**
+- Line width: **1.3–1.5px** (MAX 2px)
+- Arrowhead: small, proportional to ray width
+- Shadow blur: 3–4px (not 6px — too thick)
+- **Never use lineWidth > 2px for individual colour rays**
+
+**Incident ray** (before medium):
 - White/gold colour (`#f5f0dc`)
 - Arrowhead only when animation completes
 
-**Inside prism:**
+**Inside medium:**
 - Coloured lines (or bands for Sun)
 - Each colour bends at different angle
 
 **Exit rays:**
 - Coloured lines with arrowhead
-- Labels: colour name (only for middle colours in Sun mode)
+- Labels: colour name
 
 **Normal lines:**
-- Dashed grey, at entry point (left face) and exit point (right face)
+- Dashed grey, at entry point and exit point
 - Toggle: ⊥ button
 
 **Angle arcs:**
@@ -649,6 +698,9 @@ Reuse the same theme system from `Wave_1_refraction_of_light.html`:
 | `Wave_2_dispersion.html` | Section 1: Dispersion (Prism) |
 | `Wave_3_glass_blocks.html` | Section 2: Parallel Glass Blocks |
 | `Wave_4_half_circular.html` | Section 3: Half Circular Block |
+| `Wave_5_right_triangle.html` | Section 4: Right Triangle |
+| `Wave_6_diamond.html` | Section 5: Diamond Shape |
+| `Wave_7_raindrop.html` | Section 6: Water Drop → Rainbow |
 
 **Specifications:**
 - **Separate single HTML files** (DO NOT combine into one file)
@@ -658,31 +710,51 @@ Reuse the same theme system from `Wave_1_refraction_of_light.html`:
 - All IGCSE Physics 0625 conventions followed
 - Real refractive index values (Cauchy equation)
 - **NO TIR in Prism section** (auto-prevent)
-- **TIR allowed in Glass Blocks and Half Circle** (part of the physics)
+- **TIR allowed in Glass Blocks, Half Circle, Right Triangle, Diamond** (part of the physics)
+
+### Viewport Rules (CRITICAL — FIX FROM V1)
+- **The entire simulation must fit in ONE browser window** — NO vertical scrolling
+- V1 had content going out of bounds (experiment was clipped off-screen)
+- Layout calculation:
+  - Top bar: ~40px
+  - Section tabs (if any): ~40px  
+  - Toolbar (2 rows): ~80px
+  - Main grid: remaining viewport height
+  - Side panel: 25–30% of width
+  - Canvas: 70–75% of width, height = remaining viewport minus toolbar
+- All content — labels, rays, controls, chips — must be **fully visible** within the Canvas
+- **Test by rendering headless** and checking that every element is within bounds
+- If a medium shape is too large for the Canvas, **scale it down** — never clip it
 
 ---
 
 ## Feature Checklist
 
+### Global (shared across all simulations)
+- [x] Learning Goals stated (ray tracing, frequency invariant, dispersion)
+- [x] 3 Light Sources: Mono (1 pill) / Visible (multi-pill) / Sun (Prism only, continuous bands)
+- [x] 7 colour swatches (circle pills, ROYGBIV)
+- [x] **Ray thickness: 1.3–1.5px** (thin, distinct, not overlapping)
+- [x] Standard MEDIA array with Cauchy n(λ) = A + B/λ²
+- [x] Shared medium colours and n values across all files
+- [x] Viewport-fit: **entire sim in ONE browser window** (no scroll)
+- [x] Pen-drawing animation (Type B)
+- [x] 6 themes (Classic Dark, HAUS Night, Neon, Classic Light, HAUS Day, Warm Clay)
+- [x] Zoom (double-click)
+- [x] Separate files per section
+
 ### Section 1: Dispersion (Prism)
 - [x] Triangular prism with adjustable apex (30°–80°, default 60°)
-- [x] 3 Light Sources: Mono (1 pill) / Visible (multi-pill) / Sun (all + IR + UV)
-- [x] 7 colour swatches (circle pills, ROYGBIV)
-- [x] Mono: single select, Visible: multi-select, Sun: all forced + continuous bands
+- [x] Sun Light: all colours + IR + UV as continuous spectrum bands
 - [x] Snell's Law + Cauchy dispersion — NO TIR allowed (auto-prevent)
 - [x] Incidence angle 0°–75°, step 0.5°, default 45°
 - [x] Ray position on prism face: draggable
 - [x] 5 prism materials (Crown/Flint/Water/Perspex/Diamond)
-- [x] Continuous spectrum bands for Sun Light
 - [x] Herschel's Thermometer: draggable, IR peak ~32°C
 - [x] Side Panel: Color Spectrum Table + Formula + Summary + Herschel info
-- [x] Pen-drawing animation (Type B)
-- [x] 6 themes
-- [x] Zoom (double-click)
 
 ### Section 2: Parallel Glass Blocks
-- [x] 1 or 2 blocks (selectable)
-- [x] Each block has independent refractive index
+- [x] 1 or 2 blocks (selectable), each with independent refractive index
 - [x] Light enters top → exits bottom
 - [x] Normal: always at entry, mono=every interface, 2+ colours=entry only
 - [x] TIR between blocks when n₁ > n₂ and angle exceeds θc
@@ -699,3 +771,25 @@ Reuse the same theme system from `Wave_1_refraction_of_light.html`:
 - [x] Visible Light: ray tracing only (dispersion)
 - [x] Sun Light NOT available
 - [x] Side Panel: Current Values + Formula + IGCSE note
+
+### Section 4: Right Triangle
+- [x] Right-angled triangular prism (45°–45°–90° or adjustable)
+- [x] Light enters one face → reflects/refracts → exits another face
+- [x] Common IGCSE exam shape for ray tracing
+- [x] Monochromatic: full Snell's Law + TIR
+- [x] Visible Light: dispersion
+- [x] Sun Light NOT available
+
+### Section 5: Diamond Shape
+- [x] Rhombus/diamond cross-section
+- [x] Light enters top face → multiple internal reflections → exits
+- [x] High dispersion (Flint Glass recommended)
+- [x] Monochromatic: ray tracing + TIR
+- [x] Visible Light: dispersion
+
+### Section 6: Water Drop → Rainbow
+- [x] Circular/spherical water drop
+- [x] Light enters → refracts → reflects inside → exits
+- [x] White light → **rainbow** effect (dispersion + reflection)
+- [x] Simple ray tracing (not full Mie scattering)
+- [x] Sun Light option TBD
