@@ -427,7 +427,7 @@ const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl
   - Side **AC is vertical** (left face) — light enters here
   - Side **CB is horizontal** (base)
   - Side **AB is the hypotenuse** (sloping)
-  - Presets: 30°–60°–90°, 45°–45°–90°, or custom slider for angle A of 15°–75°
+  - Presets: 30°–60°–90°, 45°–45°–90°, or custom slider for angle A of **20°–70°**, default **45°**
 - Light enters from **left side only** (one entry face)
 
 ### 6.5 💎 Diamond
