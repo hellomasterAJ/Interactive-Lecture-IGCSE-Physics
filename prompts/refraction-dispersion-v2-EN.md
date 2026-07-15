@@ -23,14 +23,14 @@ After using this simulation, students should understand:
 
 Build a **single interactive 2D Ray Tracing simulation** (single-file HTML + Canvas 2D) covering **6 different medium shapes**. The user selects which shape to use via section tabs at the top.
 
-| # | Tab | Shape | Sun Light |
-|---|-----|-------|-----------|
-| 1 | 🔺 **Prism** | Triangular prism, adjustable apex | ✅ Yes |
-| 2 | 🪟 **Glass Blocks** | 1–2 parallel rectangular blocks | ❌ No |
-| 3 | 🔵 **Half Circle** | D-shape block, flat face on top | ❌ No |
-| 4 | 📐 **Right Triangle** | Right-angled triangular block | ❌ No |
-| 5 | 💎 **Diamond** | Rhombus/diamond cross-section | ❌ No |
-| 6 | 💧 **Rainbow** | Spherical water drop → rainbow | ✅ Optional |
+| # | Tab | Shape | Sun Light | Medium |
+|---|-----|-------|-----------|--------|
+| 1 | 🔺 **Prism** | Triangular prism, adjustable apex | ✅ Yes | Crown Glass only |
+| 2 | 🪟 **Glass Blocks** | 1–2 parallel rectangular blocks | ❌ No | All 6 media |
+| 3 | 🔵 **Half Circle** | D-shape block, flat face on top | ❌ No | All 6 media |
+| 4 | 📐 **Right Triangle** | Right-angled triangular block | ❌ No | All 6 media |
+| 5 | 💎 **Diamond** | Rhombus/diamond cross-section | ❌ No | Diamond only |
+| 6 | 💧 **Rainbow** | Spherical water drop → rainbow | ✅ Optional | Water only |
 
 ### Core Principle
 - **Monochromatic light** → pure refraction (Snell's Law, ray bending)
@@ -39,9 +39,9 @@ Build a **single interactive 2D Ray Tracing simulation** (single-file HTML + Can
 
 ---
 
-## 2. Layout
+## 2. Layout (NEW — Full-width, no side panel)
 
-Reference: `Wave_1_refraction_of_light.html` for layout patterns.
+**Reference:** `Measurement_1_vernier_caliper.html` for layout pattern (full-width canvas, data below).
 
 ### 2.1 Viewport Rules (CRITICAL — FIX FROM V1)
 - **The entire simulation must fit in ONE browser window** — NO vertical scrolling
@@ -50,25 +50,57 @@ Reference: `Wave_1_refraction_of_light.html` for layout patterns.
   - Top bar: ~40px
   - Section tabs: ~44px (6 tabs)
   - Toolbar (2 rows): ~80px
-  - Main grid: remaining viewport height
-  - Side panel: 25–30% of width
-  - Canvas: 70–75% of width, height adapts to fill
+  - **Canvas: remaining viewport height, full width**
+  - Below-canvas panels: scrollable within their section if needed
 - All content — labels, rays, controls, chips — must be **fully visible** within the Canvas
 - If a medium shape is too large, **scale it down** — never clip it
 
-### 2.2 Top Bar
+### 2.2 Layout Structure
+
+```
+┌──────────────────────────────────────────────────┐
+│ Top Bar: Title + Theme selector + Brand          │
+├──────────────────────────────────────────────────┤
+│ Section Tabs: 🔺 🪟 🔵 📐 💎 💧                  │
+├──────────────────────────────────────────────────┤
+│ Toolbar Row 1: Light Source + Colour swatches    │
+│ Toolbar Row 2: Section-specific controls + θ₁    │
+│                  + Play + Speed + Show toggles   │
+├──────────────────────────────────────────────────┤
+│                                                  │
+│              Canvas (Full width)                 │
+│              Ray tracing area                    │
+│              Chips + hints overlay               │
+│                                                  │
+├──────────────────────────────────────────────────┤
+│ Color Spectrum Table (ALWAYS VISIBLE)            │
+│ [Colour] [λ nm] [f THz] [n] [θ₂] [Deviation °]  │
+├──────────────────────────────────────────────────┤
+│ Summary (ALWAYS VISIBLE — written in detail)     │
+│ "The angular spread between Red and Violet is    │
+│  X.X°. This means..." (full sentences)           │
+├──────────────────────────────────────────────────┤
+│ 📐 Equation (HIDDEN by default — toggle to show) │
+│   Snell's Law + basic IGCSE formulas             │
+│   Advanced equations (Cauchy) — 2nd toggle       │
+├──────────────────────────────────────────────────┤
+│ 💡 Info / Educational notes (always visible)     │
+└──────────────────────────────────────────────────┘
+```
+
+### 2.3 Top Bar
 - Title: "🌈 Ray Tracing — Refraction & Dispersion" + badge "v2.0.0"
 - HAUS Brand logo (top-right)
 - Theme selector: 6 themes dropdown
 
-### 2.3 Section Tabs
+### 2.4 Section Tabs
 ```
 [ 🔺 Prism ] [ 🪟 Glass Blocks ] [ 🔵 Half Circle ] [ 📐 Right Triangle ] [ 💎 Diamond ] [ 💧 Rainbow ]
 ```
 - Active tab highlighted (accent colour)
 - Switching tabs resets animation and updates toolbar controls
 
-### 2.4 Toolbar
+### 2.5 Toolbar
 
 **Row 1 — Light Source & Colour:**
 | Control | Type | Details |
@@ -86,50 +118,65 @@ Reference: `Wave_1_refraction_of_light.html` for layout patterns.
 | Show: Angles | Toggle | ∠ |
 | Show: Labels | Toggle | 🏷 |
 | Show: Normals | Toggle | ⊥ |
-| Show: Equations | Toggle (hidden by default) | 📐 (see Section 2.6) |
+| Show: Equations | Toggle (hidden by default) | 📐 |
 
-### 2.5 Main Grid (Canvas + Side Panel)
-
-**Canvas (Left, ~72%):**
+### 2.6 Canvas (Full width, no side panel)
 - Dark background (`--graph-bg`)
 - Medium shape drawn in the centre
 - Incident ray enters → refracts/disperses → exits
 - Animation: pen-drawing Type B
 - All rays, labels, and angles must be fully visible within canvas bounds
+- **Chips** overlay on canvas for status info (same as Refraction simulation)
 
-**Side Panel (Right, ~28%):**
-| Section | Content | Priority |
-|---------|---------|----------|
-| 📊 **Current Values** | θ₁, θ₂, n, status (Refraction/TIR/Critical) | ✅ Always shown |
-| 📐 **Equation** | Snell's Law (simple form) | ⚠️ **Hidden by default** (toggle to show) |
-| 💡 **Info** | Educational note about the current shape | ✅ Always shown |
+### 2.7 Below-Canvas Panels (in order)
 
-**⚠️ About equations (CRITICAL):**
-- **Basic Snell's Law (n = sin i / sin r)** is IGCSE level → can be shown when user toggles "📐 Equations" ON
-- **Cauchy dispersion equation (n(λ) = A + B/λ²)** is BEYOND IGCSE → must be hidden by default
-- Users can unhide advanced equations via a toggle button
-- Default state: **equations OFF** — the simulation is about Ray Tracing, not math
+#### Color Spectrum Table (ALWAYS VISIBLE — never hidden)
+A table showing the current colour data. This must be shown at all times, regardless of equation toggle state.
 
-### 2.6 Equation Toggle System
+| Colour | λ (nm) | f (THz) | n | θ₂ (°) | Deviation (°) |
+|--------|:------:|:-------:|:-:|:------:|:-------------:|
+| 🔴 Red | 700 | 428 | 1.5132 | 22.1 | 7.1 |
+| 🟠 Orange | 610 | 492 | 1.5158 | 21.8 | 6.8 |
+| ... | ... | ... | ... | ... | ... |
+| 🟣 Violet | 400 | 750 | 1.5309 | 19.5 | 4.5 |
 
-```javascript
-/* Equation visibility state */
-const S = {
-  // ... other state
-  showEquations: false   // DEFAULT: false (hidden)
-};
+- Only shows colours that are currently active (selected pills + Sun Light includes IR/UV)
+- IR and UV rows shown only when Sun Light mode is active
+- Rows have a small colour swatch before the colour name
 
-// Toolbar button: "📐 Equations" toggle
-// When OFF: No formula box visible in side panel
-// When ON: Show IGCSE-level equations (Snell's Law, n = sin i / sin r)
-//          Advanced equations (Cauchy) need a SECOND toggle or are always hidden
+#### Summary (ALWAYS VISIBLE — written in DETAIL)
+This section must explain the results in **full sentences**, not just show numbers. Examples:
 
-// In side panel:
-// - When showEquations = false: Hide the entire equation section
-// - When showEquations = true: Show basic Snell's Law formula
-//   - Add small text: "Advanced equations (beyond IGCSE) hidden. Click to show →"
-//   - Clicking reveals Cauchy dispersion equation
-```
+**For Prism (Monochromatic - 1 colour):**
+> "The light ray enters the prism at an angle of incidence θ₁ = 45.0°. Inside the Crown Glass prism (n = 1.52), the ray bends toward the normal at an angle of r₁ = 27.7°. The ray then strikes the right face of the prism and exits at an angle of θₑ = 52.3° relative to the normal. The total deviation from the original path is δ = 37.3°."
+
+**For Prism (Visible Light - all 7 colours):**
+> "White light entering the prism is dispersed into its component colours. The angular spread between Red (λ = 700 nm, deviation = 37.1°) and Violet (λ = 400 nm, deviation = 34.5°) is Δθ = 2.6°. This is because the refractive index of Crown Glass varies slightly with wavelength — from n = 1.5132 for Red to n = 1.5309 for Violet. Higher frequency light (Violet) slows down more and bends more, while lower frequency light (Red) slows down less and bends less."
+
+**For Glass Blocks (1 block, Monochromatic):**
+> "The light ray enters the glass block at θ₁ = 40.0° and refracts to θ₂ = 25.0° inside the block (n = 1.52). The ray travels straight through the block and exits at the bottom, emerging parallel to the incident ray but with a lateral displacement of 8.2 mm. This lateral shift is a key characteristic of refraction through a parallel-sided medium — the ray direction is restored, but the position is shifted."
+
+**For Half Circle (Monochromatic, at critical angle):**
+> "The light enters the curved face of the block along the radius, so it is not refracted at the entry surface. At the flat face, the ray hits at θ₁ = 41.1° which equals the critical angle for Crown Glass (θc = 41.1°). The refracted ray skims along the boundary at θ₂ = 90.0°. This is the critical angle — the angle beyond which Total Internal Reflection (TIR) would occur."
+
+**For Rainbow (Visible Light):**
+> "White light enters the spherical water droplet and refracts at the surface. Inside the droplet, the light travels to the back surface where it undergoes one internal reflection. When the light exits the droplet, the different colours have separated, forming a rainbow. The primary rainbow is formed by one internal reflection, with Red appearing on the outer edge and Violet on the inner edge."
+
+#### Equation Section (HIDDEN by default — toggle to show)
+- When the "📐 Equations" toggle is OFF, this entire section is hidden
+- When ON, shows basic IGCSE-level equations:
+  - Snell's Law: n₁ sin θ₁ = n₂ sin θ₂
+  - n = sin i / sin r (IGCSE form)
+  - θc = sin⁻¹(n₂/n₁) (critical angle formula)
+- **Advanced equations (Cauchy dispersion: n(λ) = A + B/λ²) are beyond IGCSE** — hidden by default with a separate smaller toggle "Show advanced equations"
+- Default state: **equations OFF**
+
+#### Info / Educational Notes (always visible)
+- Shape-specific educational text
+- For Prism: Herschel's experiment info (Sun mode)
+- For Half Circle: explanation of why light enters along radius without refraction
+- For Glass Blocks: explanation of lateral displacement
+- For Rainbow: how rainbows form
 
 ---
 
@@ -161,13 +208,15 @@ const COLORS = [
   { name:"Indigo", wl:425, f:705, hex:"#5856D6" },
   { name:"Violet", wl:400, f:750, hex:"#AF52DE" }
 ];
+const IR = { name:"IR", wl:850, hex:"#FF3B30" };
+const UV = { name:"UV", wl:360, hex:"#AF52DE" };
 ```
 
 ## 5. Media Array (shared across ALL shapes)
 
-**IMPORTANT:** These values are taken directly from the reference file `Wave_1_refraction_of_light.html` (fill colours for media) and extended with Cauchy coefficients for dispersion support.
+**IMPORTANT:** These values are taken from the reference file `Wave_1_refraction_of_light.html` (fill colours) and extended with Cauchy coefficients for dispersion.
 
-### Simple n values (at 550 nm, for reference — same as `Wave_1_refraction_of_light.html`)
+### Simple n values (at 550 nm — same as `Wave_1_refraction_of_light.html`)
 
 ```javascript
 const MEDIA_SIMPLE = [
@@ -182,8 +231,6 @@ const MEDIA_SIMPLE = [
 
 ### Cauchy coefficients (for dispersion — n(λ) = A + B/λ², λ in μm)
 
-The Cauchy coefficients are calculated to match the simple n values at λ = 550 nm (yellow) and accurate dispersion curves:
-
 ```javascript
 const MEDIA = [
   { name:"Crown Glass (BK7)", A:1.5046, B:0.00420, fill:"rgba(195,205,210,0.20)", edge:"rgba(200,215,225,0.85)" },
@@ -196,29 +243,16 @@ const MEDIA = [
 const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl in nm
 ```
 
-**Fill colours:** The `fill` values use the **same colours as the original `Wave_1_refraction_of_light.html`** (slightly adjusted for edge rendering).
+### Media Availability per Shape
 
-**Air:** Not included in the Cauchy MEDIA because n = 1.00 for all wavelengths. Air is handled as the default ambient medium (no fill, no edge).
-
-### Media Availability per Shape (CRITICAL)
-
-Each shape restricts which media can be selected:
-
-| Shape | Available Media | Reason |
-|-------|----------------|--------|
-| 🔺 **Prism** | **Crown Glass only** | Standard IGCSE prism material |
-| 🪟 **Glass Blocks** | All 6 media (Crown, Flint, Water, Ice, Perspex, Diamond) | For comparing n values |
-| 🔵 **Half Circle** | All 6 media | For measuring critical angle of different materials |
-| 📐 **Right Triangle** | All 6 media | IGCSE exam questions use various materials |
-| 💎 **Diamond** | **Diamond only** | Only diamond has high enough n for internal reflections |
-| 💧 **Rainbow** | **Water only** | Natural rainbows are formed by water droplets. **Exception:** Use sky blue fill (`rgba(100,180,230,0.20)`) instead of the standard Water deep blue — to make ray paths visible inside the droplet. |
-
-**Implementation:**
-- When switching to a shape, the medium dropdown should only show the allowed media for that shape
-- If the current medium is not allowed in the new shape, auto-switch to the default (first allowed) medium
-- Prism: default = Crown Glass (index 0)
-- Diamond: default = Diamond (index 5)
-- Rainbow: default = Water (index 2), medium dropdown hidden (locked)
+| Shape | Available Media |
+|-------|----------------|
+| 🔺 **Prism** | **Crown Glass only** |
+| 🪟 **Glass Blocks** | All 6 media |
+| 🔵 **Half Circle** | All 6 media |
+| 📐 **Right Triangle** | All 6 media |
+| 💎 **Diamond** | **Diamond only** |
+| 💧 **Rainbow** | **Water only** (use **sky blue** fill `rgba(100,180,230,0.20)` instead of standard deep blue — for ray visibility inside droplet) |
 
 ---
 
@@ -226,11 +260,7 @@ Each shape restricts which media can be selected:
 
 ### 6.1 🔺 Prism
 
-**Controls (appear in Row 2 when Prism active):**
-| Control | Details |
-|---------|---------|
-| Prism medium | Dropdown: Crown/Flint/Water/Perspex/Diamond |
-| Apex angle | Slider 30°–80°, step 5°, default 60° |
+**Controls (Row 2):** Apex angle (30°–80°, step 5°, default 60°), Prism medium (Crown Glass only, dropdown hidden/locked)
 
 **Physics:**
 - Light enters left face → disperses → exits right face
@@ -245,12 +275,7 @@ Each shape restricts which media can be selected:
 
 ### 6.2 🪟 Glass Blocks
 
-**Controls:**
-| Control | Details |
-|---------|---------|
-| Block count | Pills: 1 · 2 |
-| Block 1 medium | Dropdown |
-| Block 2 medium | Dropdown (visible only when count=2) |
+**Controls (Row 2):** Block count (1·2 pills), Block 1 medium, Block 2 medium (dropdowns)
 
 **Physics:**
 - Light enters from **top → bottom**
@@ -260,11 +285,7 @@ Each shape restricts which media can be selected:
 
 ### 6.3 🔵 Half Circle
 
-**Controls:**
-| Control | Details |
-|---------|---------|
-| Block medium | Dropdown |
-| Direction | Toggle: ◀ from left / ▶ from right |
+**Controls (Row 2):** Block medium dropdown, Direction toggle (◀ from left / ▶ from right)
 
 **Physics:**
 - D-shape face up, light enters from bottom curved face
@@ -275,39 +296,26 @@ Each shape restricts which media can be selected:
 
 ### 6.4 📐 Right Triangle
 
-**Controls:**
-| Control | Details |
-|---------|---------|
-| Block medium | Dropdown |
-| Triangle type | Dropdown: 45-45-90 · 30-60-90 · adjustable angle |
-| Entry face | Dropdown: Left face · Right face · Base |
+**Controls (Row 2):** Block medium dropdown, Entry face dropdown (Left/Right/Base)
 
 **Physics:**
-- Common IGCSE exam shape — questions often use this for ray tracing
+- Common IGCSE exam shape
 - Light enters one face → may reflect off another face → exits
 - TIR possible at internal faces
 - Dispersion with visible light
 
 ### 6.5 💎 Diamond
 
-**Controls:**
-| Control | Details |
-|---------|---------|
-| Medium | Dropdown |
-| Diamond angle | Slider (apex angle of diamond) |
+**Controls (Row 2):** Medium (Diamond only, locked)
 
 **Physics:**
 - Rhombus/diamond cross-section
 - Light enters top face → multiple internal reflections → exits
 - High dispersion due to long path inside medium
-- Flint Glass recommended for visible spectrum separation
 
-### 6.6 💧 Rainbow (Water Drop → Rainbow)
+### 6.6 💧 Rainbow (Water Drop)
 
-**Controls:**
-| Control | Details |
-|---------|---------|
-| Medium | Fixed: Water |
+**Controls (Row 2):** Medium (Water only, locked)
 
 **Physics:**
 - Circular/spherical water drop
@@ -387,7 +395,6 @@ function txt(t, x, y, color, size = 11, align = "center", weight = 600) {
 ## 10. Animation
 
 ```javascript
-/* Same pen-drawing Type B as Wave_1_refraction_of_light.html */
 function tick(t) {
   if(lastT === null) lastT = t;
   const dt = (t - lastT)/1000; lastT = t;
@@ -410,79 +417,70 @@ Reuse the same theme system from `Wave_1_refraction_of_light.html`:
 - ⌂ HAUS Day
 - 🏺 Warm Clay
 
-## 12. File Requirements
+## 12. Equation Toggle System
+
+```javascript
+const S = {
+  // ... other state
+  showEquations: false,   // DEFAULT: false (hidden)
+  showAdvanced: false     // DEFAULT: false (Cauchy hidden)
+};
+
+// Toolbar button: "📐 Equations" toggle
+// When OFF: No equation section visible below canvas
+// When ON: Show IGCSE-level equations (Snell's Law, n = sin i / sin r)
+//          Advanced equations (Cauchy) need a SECOND toggle below
+
+// Below-canvas sections:
+// - Color Spectrum Table: ALWAYS visible (toggle has no effect)
+// - Summary: ALWAYS visible (toggle has no effect)
+// - 📐 Equation: ONLY visible when showEquations = true
+//   - Within equation section: "Show advanced equations" small toggle
+//   - When advanced ON: show Cauchy dispersion formula
+// - 💡 Info: ALWAYS visible
+```
+
+## 13. File Requirements
 
 - **Single HTML file** (standalone, all 6 shapes in ONE file with section tabs)
 - Filename: `Wave_2_ray_tracing.html`
 - External dependencies: Google Fonts + KaTeX CDN only
-- Reference layout: `Wave_1_refraction_of_light.html`
+- **Layout reference:** `Measurement_1_vernier_caliper.html` (full-width canvas, data below)
+- **Physics reference:** `Wave_1_refraction_of_light.html` (ray tracing, Snell's Law, MEDIA values)
 - Language: English
 - All IGCSE Physics 0625 conventions followed
 - Real refractive index values (Cauchy equation)
-- **Equations hidden by default** — toggle to show basic IGCSE equations
-- **Advanced equations (Cauchy) hidden** — separate toggle to unhide
-
----
-
-## 13. Key Differences from V1 (what went wrong)
-
-| Issue | V1 | V2 Fix |
-|-------|----|--------|
-| **Ray thickness** | 3px+ — overlapping invisible | **1.3–1.5px** — thin and distinct |
-| **Content out of bounds** | Experiment clipped off-screen | **Viewport-fit** — all in one window |
-| **Equations too prominent** | Always visible | **Hidden by default** — toggle to show |
-| **Advanced equations distracting** | Shown to all students | **Hidden** — separate toggle for beyond-IGCSE |
-| **Multiple files** | 6 separate files | **Single file** with section tabs |
-| **Focus** | Mixed (calculations + ray tracing) | **Pure Ray Tracing** — path of light first |
+- **Color Spectrum Table: ALWAYS visible**
+- **Summary: ALWAYS visible** (written in detail, full sentences)
+- **Equations: HIDDEN by default** — toggle to show basic IGCSE equations
+- **Advanced equations (Cauchy): HIDDEN** — separate toggle within equation section
 
 ## Feature Checklist
 
-### Global
-- [x] **Single file** with 6 section tabs (Prism, Glass Blocks, Half Circle, Right Triangle, Diamond, Rainbow)
-- [x] Learning Goals stated (ray tracing, frequency invariant, dispersion)
-- [x] **Ray thickness: 1.3–1.5px** (thin, distinct, not overlapping)
-- [x] **Viewport-fit: entire sim in ONE browser window** (no scroll, no clipping)
-- [x] **Equations hidden by default** — basic (toggle ON) / advanced (second toggle)
-- [x] Primary focus: **Ray Tracing** — path of light, not calculations
-- [x] 3 Light Sources: Mono (1 pill) / Visible (multi-pill) / Sun (Prism only)
-- [x] 7 colour swatches (circle pills, ROYGBIV)
-- [x] Standard MEDIA array with Cauchy n(λ)
-- [x] Pen-drawing animation (Type B)
+### Layout
+- [x] Full-width canvas (no side panel) — like Vernier Caliper
+- [x] Color Spectrum Table: ALWAYS visible below canvas
+- [x] Summary: ALWAYS visible below canvas (written in detail, not abbreviated)
+- [x] Equations: HIDDEN by default, toggle to show
+- [x] Advanced equations (Cauchy): HIDDEN, separate toggle
+- [x] Viewport-fit: entire sim in ONE browser window
 - [x] 6 themes
+
+### Global
+- [x] Single file with 6 section tabs (Prism, Glass Blocks, Half Circle, Right Triangle, Diamond, Rainbow)
+- [x] Learning Goals stated
+- [x] Ray thickness: 1.3–1.5px (thin, distinct)
+- [x] Primary focus: Ray Tracing, not calculations
+- [x] 3 Light Sources: Mono / Visible / Sun (Prism only)
+- [x] 7 colour swatches (circle pills, ROYGBIV)
+- [x] Standard MEDIA array from `Wave_1_refraction_of_light.html`
+- [x] Pen-drawing animation (Type B)
 - [x] Zoom (double-click)
 
-### Section: Prism
-- [x] Triangular prism, adjustable apex 30°–80°, default 60°
-- [x] NO TIR (auto-prevent)
-- [x] Sun Light: continuous spectrum bands + IR + UV
-- [x] Entry point draggable on left face
-- [x] Herschel Thermometer (Sun mode)
-
-### Section: Glass Blocks
-- [x] 1–2 blocks, each with independent refractive index
-- [x] Light enters top → exits bottom
-- [x] Normal: always at entry, mono=every interface, 2+ colours=entry only
-- [x] TIR between blocks when n₁ > n₂
-- [x] Dispersion with Visible Light
-
-### Section: Half Circle
-- [x] D-shape, light enters from bottom curved face
-- [x] Radius entry = no refraction at curved face
-- [x] Mono: critical angle + TIR
-- [x] Visible: ray tracing only (no critical angle display)
-
-### Section: Right Triangle
-- [x] Right-angled triangle (adjustable or preset angles)
-- [x] Light enters → reflects/refracts → exits
-- [x] Common IGCSE exam shape
-- [x] TIR + Dispersion
-
-### Section: Diamond
-- [x] Rhombus/diamond cross-section
-- [x] Multiple internal reflections
-- [x] High dispersion path
-
-### Section: Rainbow
-- [x] Spherical water drop
-- [x] 1 internal reflection → primary rainbow
-- [x] Simple ray tracing model
+### Per-Shape
+- [x] Prism: adjustable apex, NO TIR, Sun Light, Herschel thermometer
+- [x] Glass Blocks: 1–2 blocks, TIR, Dispersion
+- [x] Half Circle: critical angle + TIR (mono), ray tracing (visible)
+- [x] Right Triangle: IGCSE exam shape, TIR, Dispersion
+- [x] Diamond: internal reflections, high dispersion
+- [x] Rainbow: water drop, 1 internal reflection, rainbow effect
