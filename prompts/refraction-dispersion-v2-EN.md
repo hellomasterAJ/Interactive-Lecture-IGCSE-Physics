@@ -204,15 +204,18 @@ This section must explain the results in **full sentences**, not just show numbe
 
 | Property | Value |
 |----------|-------|
-| **Line width** | **1.3–1.5px** (MAX 2px) |
-| Arrowhead size | Proportional to ray width |
-| Shadow blur | 3–4px (NOT 6px — too thick) |
-| **Rule** | **Never use lineWidth > 2px for individual colour rays** |
+| **Line width (Monochromatic)** | **2px** |
+| **Line width (Visible Light)** | **1px** |
+| **Line width (Sun Light guide rays)** | **1px** |
+| Arrowhead size | Proportional to ray width (smaller for 1px rays) |
+| Shadow blur | 3–4px |
+| **Rule** | **Mono = 2px (thicker, single ray). Visible/Sun = 1px (thinner, multiple rays side by side)** |
 
 **Why?**
-- V1 had thick rays (3px+). When multiple colours were close together, rays overlapped and became invisible
-- In nature, the spectrum is a **continuous gradient** — each colour is thin and distinct
-- **Sun Light mode:** Use wider semi-transparent **bands** (fills) for the continuous spectrum, with thin guide rays (1.3px) overlaid
+- V1 had thick rays (3px+) that overlapped and became invisible when multiple colours were close together
+- **Mono mode (2px):** Only 1 ray → thicker is fine, easier to see
+- **Visible mode (1px):** Multiple colour rays side by side → must be thin so each colour is distinct and visible
+- **Sun Light mode:** Use wider semi-transparent **bands** (fills) for the continuous spectrum, with thin guide rays (1px) overlaid
 
 ### 3.2 Colour Labels on Canvas (abbreviated — keeps canvas clean)
 
@@ -418,7 +421,7 @@ function raySeg(o, d, a, b) {
 ```javascript
 function drawPath(pts, color, width, prog, opts = {}) {
   // Progressive polyline (prog = 0..1)
-  // width: 1.3–1.5px for individual rays
+  // width: 2px for mono, 1px for visible/sun
   // Arrowhead at end if opts.arrow !== false
   // Alpha = opts.alpha || 1
   // Shadow blur: 3–4px
