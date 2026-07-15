@@ -420,7 +420,14 @@ const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl
 - Common IGCSE exam shape — questions often test ray tracing through right triangles
 - TIR possible at internal faces when angle exceeds θc
 - **Entry position:** **Draggable** along the left face (up/down)
-- **Triangle angles:** Can be adjusted (presets: 45-45-90, 30-60-90, or custom)
+- **Triangle configuration:**
+  - Right angle at **C** (bottom-left)
+  - **Angle A** (top vertex) is **adjustable** — slider or dropdown
+  - Angle B = 90° − Angle A (calculated automatically)
+  - Side **AC is vertical** (left face) — light enters here
+  - Side **CB is horizontal** (base)
+  - Side **AB is the hypotenuse** (sloping)
+  - Presets: 30°–60°–90°, 45°–45°–90°, or custom slider for angle A of 15°–75°
 - Light enters from **left side only** (one entry face)
 
 ### 6.5 💎 Diamond
