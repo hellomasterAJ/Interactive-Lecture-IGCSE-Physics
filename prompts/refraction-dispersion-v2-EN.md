@@ -219,23 +219,20 @@ This section must explain the results in **full sentences**, not just show numbe
 
 ### 3.2 Colour Labels on Canvas (abbreviated — keeps canvas clean)
 
-| Colour | Label | Notes |
-|--------|-------|-------|
-| 🔴 Red | **R** | |
-| 🟠 Orange | **O** | |
-| 🟡 Yellow | **Y** | |
-| 🟢 Green | **G** | |
-| 🔵 Blue | **B** | |
-| 🟣 Indigo | **I** | |
-| 🟣 Violet | **V** | |
-| ☀️ Infrared | **IR** | Sun Light only |
-| ☀️ Ultraviolet | **UV** | Sun Light only |
-| ⚪ White | **W** | Incident ray label |
+On the canvas, only **5 key spectral positions** are labelled to avoid clutter. The full set of colours is shown in the Color Spectrum Table below the canvas.
 
-- Full colour names (Red, Orange, etc.) are shown in the **Color Spectrum Table** below the canvas
-- On the canvas, only the **abbreviated label** (R, O, Y, G, B, I, V, IR, UV) appears near each ray
+| Colour | Label | Visible in mode |
+|--------|:-----:|:---------------:|
+| 🔴 Infrared | **IR** | Sun Light only |
+| 🔴 Red | **R** | Mono · Visible · Sun |
+| 🟢 Green | **G** | Mono · Visible · Sun |
+| 🔵 Blue | **B** | Mono · Visible · Sun |
+| 🟣 Violet | **V** | Mono · Visible · Sun |
+| 🟣 Ultraviolet | **UV** | Sun Light only |
+| ⚪ White | **W** | Incident ray (not a colour label) |
+
+- Only labels: **IR, R, G, B, V, UV** — not all 7 colours (avoids clutter)
 - Label font size: 10–11px, colour matching the ray
-- **Sun Light mode:** Only label the edges (IR, R, V, UV) — not every colour — to avoid clutter
 - **Toggle:** 🏷 Labels button in toolbar to show/hide all labels
 
 ---
@@ -324,7 +321,13 @@ const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl
   - If TIR would occur, snap apex and/or θ₁ to nearest safe value
   - Show warning chip: "⚠ TIR prevented — angle adjusted"
 - Entry point E on prism face: **draggable vertically**
-- Sun Light: continuous spectrum bands + Herschel thermometer
+**Prism-specific feature — Undeviated dashed line (Deviation angle):**
+- A **dashed white line** extends the incident ray's direction in a straight line through the prism (as if no refraction occurred)
+- At the exit side, the **deviation angle δ** is shown as an arc between the undeviated line and the actual exit ray
+- **Toggle button:** `⸻ Deviation` in toolbar — shows/hides the dashed line and deviation angle arc
+- The deviation angle `δ = θ₁ + θₑ − apex` is calculated and displayed
+- This helps students visualise how much the prism bends the light
+- Only available in Prism section (not relevant for other shapes)
 
 **Herschel Thermometer (Sun mode):**
 - Draggable thermometer on canvas
