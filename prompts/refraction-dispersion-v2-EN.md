@@ -288,14 +288,14 @@ const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl
 
 ### Media Availability per Shape
 
-| Shape | Available Media |
-|-------|----------------|
-| 🔺 **Prism** | **Crown Glass only** |
-| 🪟 **Glass Blocks** | All 6 media |
-| 🔵 **Half Circle** | All 6 media |
-| 📐 **Right Triangle** | All 6 media |
-| 💎 **Diamond** | **Diamond only** |
-| 💧 **Rainbow** | **Water only** (use **sky blue** fill `rgba(100,180,230,0.20)` instead of standard deep blue — for ray visibility inside droplet) |
+| Shape | Available Media | Light Source |
+|-------|----------------|--------------|
+| 🔺 **Prism** | **Crown Glass only** | Mono · Visible · Sun |
+| 🪟 **Glass Blocks** | All 6 media | Mono · Visible |
+| 🔵 **Half Circle** | All 6 media | Mono · Visible |
+| 📐 **Right Triangle** | All 6 media | **Mono only** |
+| 💎 **Diamond** | **Diamond only** | **Mono only** |
+| 💧 **Rainbow** | **Water only** (sky blue fill) | Mono · Visible |
 
 ---
 
@@ -368,44 +368,113 @@ const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl
 
 ### 6.3 🔵 Half Circle
 
-**Controls (Row 2):** Block medium dropdown, Direction toggle (◀ from left / ▶ from right)
+**Controls (Row 2):**
+| Control | Type | Details |
+|---------|------|---------|
+| Block medium | Dropdown | All 6 media |
+| Direction | Toggle | ◀ from left / ▶ from right |
+| θ₁ | Slider + input | 0°–89°, step 0.5°, default 30° |
 
-**Physics:**
-- D-shape face up, light enters from bottom curved face
-- Light along radius → **no refraction at curved face**
-- Flat face: Snell's Law + critical angle + TIR
-- Mono: shows critical angle / TIR clearly
-- Visible: ray tracing only
+**Geometry:**
+- Size: **~2/5 of Canvas** (diameter = 2/5 canvas width)
+- D-shape face up, flat face on top, curved face on bottom
+- Light enters from **bottom curved face** → travels along radius → **no refraction at entry**
+- All refraction happens at the **flat face** (top)
+
+**Physics (CRITICAL — must be physically accurate):**
+- Light enters along the **radius of the curved face** → normal to surface → no bending
+- Ray travels straight to the **flat face**
+- Snell's Law applies at the flat face: `n₁ sin θ₁ = n₂ sin θ₂`
+- **Direction rule:**
+  - If incident ray enters from **bottom-left** of curved face → refracted ray exits to **top-right** of flat face
+  - If incident ray enters from **bottom-right** of curved face → refracted ray exits to **top-left** of flat face
+- Monochromatic: shows critical angle + TIR clearly
+- Visible Light: ray tracing only (dispersion, no critical angle display)
+
+**Entry position:** **Draggable** along the curved face (user can slide the entry point left/right)
 
 ### 6.4 📐 Right Triangle
 
-**Controls (Row 2):** Block medium dropdown, Entry face dropdown (Left/Right/Base)
+**Controls (Row 2):**
+| Control | Type | Details |
+|---------|------|---------|
+| Block medium | Dropdown | All 6 media |
+| Triangle angles | Dropdown | 45-45-90 · 30-60-90 · adjustable |
+| θ₁ | Slider + input | 0°–89°, step 0.5°, default 45° |
+| Entry position | Drag on entry face | Slide up/down along left face |
 
-**Physics:**
-- Common IGCSE exam shape
-- Light enters one face → may reflect off another face → exits
-- TIR possible at internal faces
-- Dispersion with visible light
+**Light source:** **Monochromatic only** (Visible Light NOT available)
+
+**Geometry:**
+- Size: **~2/5 of Canvas**
+- Right-angled triangle (one side is perpendicular)
+- Light enters from **left face only** → travels **left→right**
+- Reference: Screenshot 2 (45-45-90 triangle with ray tracing)
+
+**Physics (CRITICAL — must be physically accurate):**
+- Light enters the vertical left face → refracts
+- Inside the triangle, the ray travels toward the hypotenuse
+- At the hypotenuse: may refract out OR undergo TIR depending on angle
+  - If TIR occurs → ray reflects toward the base → exits through the base
+  - If no TIR → ray exits through the hypotenuse
+- Common IGCSE exam shape — questions often test ray tracing through right triangles
+- TIR possible at internal faces when angle exceeds θc
+- **Entry position:** **Draggable** along the left face (up/down)
+- **Triangle angles:** Can be adjusted (presets: 45-45-90, 30-60-90, or custom)
+- Light enters from **left side only** (one entry face)
 
 ### 6.5 💎 Diamond
 
-**Controls (Row 2):** Medium (Diamond only, locked)
+**Controls (Row 2):**
+| Control | Type | Details |
+|---------|------|---------|
+| Medium | — | **Diamond only** (locked) |
+| θ₁ | Slider + input | 0°–89°, step 0.5°, default 30° |
+| Entry position | Drag on top face | Slide left/right along top facet |
 
-**Physics:**
-- Rhombus/diamond cross-section
-- Light enters top face → multiple internal reflections → exits
-- High dispersion due to long path inside medium
+**Light source:** **Monochromatic only** (Visible Light NOT available)
+
+**Geometry:**
+- Size: **~2/5 of Canvas**
+- Rhombus/diamond cross-section (faceted, like Screenshot 1)
+- Light enters from **top face only** → travels **top→bottom**
+- Reference: Screenshot 1 (diamond TIR diagram)
+
+**Physics (CRITICAL — must be physically accurate):**
+- Light enters the top facet → refracts into the diamond
+- Inside the diamond, the ray hits the lower-left facet → **Total Internal Reflection** (n_diamond ≈ 2.42, θc ≈ 24.4°)
+- Reflected ray travels toward the right side → may hit another facet → TIR again
+- Multiple internal reflections possible (zigzag path) — this is what gives diamonds their "sparkle"
+- Ray eventually exits through a facet where the angle of incidence is less than θc
+- **Entry position:** **Draggable** along the top face (left/right)
+- Must be physically accurate — direction of TIR must follow physics (angle of incidence = angle of reflection)
 
 ### 6.6 💧 Rainbow (Water Drop)
 
-**Controls (Row 2):** Medium (Water only, locked)
+**Controls (Row 2):**
+| Control | Type | Details |
+|---------|------|---------|
+| Medium | — | **Water only** (locked) |
+| Rainbow type | Pills | Single Rainbow · Double Rainbow (if possible) |
 
-**Physics:**
+**Light source:** **Monochromatic or Visible Light only** (Sun Light NOT available)
+
+**Geometry:**
+- Size: **~2/5 of Canvas**
+- **Position:** Offset **upward** (more space below the droplet for the rainbow to appear)
 - Circular/spherical water drop
-- Light enters → refracts → **reflects once inside** → exits
-- White light → **rainbow** effect (primary rainbow: 1 internal reflection)
-- Simple ray tracing model (not full Mie scattering)
-- Visible Light mode: shows colour separation clearly
+- Reference: Screenshot 3 (raindrop rainbow diagram)
+
+**Physics (CRITICAL — must be physically accurate):**
+- Light enters the top of the droplet → refracts at the air-water interface
+- Inside the droplet, light travels to the back surface → **one internal reflection** (primary rainbow)
+- **Cannot select entry position** — the incident ray position is fixed by physics (optimal position for rainbow formation)
+- The incident ray enters at the top of the droplet and exits at the bottom-left
+- **Single Rainbow:** 1 internal reflection → colours appear in order: Violet (top), Indigo, Blue, Green, Yellow, Orange, Red (bottom)
+- **Double Rainbow (if possible):** 2 internal reflections → colours appear in reverse order
+- Visible Light mode: shows 7 colour rays separating
+- Monochromatic mode: shows a single ray path through the droplet
+- Use sky blue fill (`rgba(100,180,230,0.20)`) for the droplet — lighter than standard Water for ray visibility
 
 ---
 
