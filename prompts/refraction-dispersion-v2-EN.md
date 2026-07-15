@@ -165,6 +165,25 @@ const COLORS = [
 
 ## 5. Media Array (shared across ALL shapes)
 
+**IMPORTANT:** These values are taken directly from the reference file `Wave_1_refraction_of_light.html` (fill colours for media) and extended with Cauchy coefficients for dispersion support.
+
+### Simple n values (at 550 nm, for reference — same as `Wave_1_refraction_of_light.html`)
+
+```javascript
+const MEDIA_SIMPLE = [
+  { name:"Air",         n:1.00, fill:null },
+  { name:"Water",       n:1.33, fill:"rgba(25,80,160,0.38)" },
+  { name:"Ice",         n:1.31, fill:"rgba(180,215,235,0.3)" },
+  { name:"Perspex",     n:1.49, fill:"rgba(220,215,200,0.22)" },
+  { name:"Crown Glass", n:1.52, fill:"rgba(195,205,210,0.22)" },
+  { name:"Diamond",     n:2.42, fill:"rgba(200,210,220,0.18)" }
+];
+```
+
+### Cauchy coefficients (for dispersion — n(λ) = A + B/λ², λ in μm)
+
+The Cauchy coefficients are calculated to match the simple n values at λ = 550 nm (yellow) and accurate dispersion curves:
+
 ```javascript
 const MEDIA = [
   { name:"Crown Glass (BK7)", A:1.5046, B:0.00420, fill:"rgba(195,205,210,0.20)", edge:"rgba(200,215,225,0.85)" },
@@ -175,6 +194,10 @@ const MEDIA = [
 ];
 const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl in nm
 ```
+
+**Fill colours:** The `fill` values in the Cauchy MEDIA array use the **same colours as the original `Wave_1_refraction_of_light.html`** (slightly adjusted for edge rendering).
+
+**Air:** Not included in the Cauchy MEDIA because n = 1.00 for all wavelengths. Air is handled as the default ambient medium (no fill, no edge).
 
 ---
 
