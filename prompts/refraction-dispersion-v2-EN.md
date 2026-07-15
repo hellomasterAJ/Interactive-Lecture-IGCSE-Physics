@@ -480,13 +480,14 @@ const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl
 - Reference: Screenshot 3 (raindrop rainbow diagram)
 
 **Physics (CRITICAL — must be physically accurate):**
-- Light enters the top of the droplet → refracts at the air-water interface
+- Light enters from the **top-left** of the droplet → refracts at the air-water interface
 - Inside the droplet, light travels to the back surface → **one internal reflection** (primary rainbow)
 - **Cannot select entry position** — the incident ray position is fixed by physics (optimal position for rainbow formation)
-- The incident ray enters at the top of the droplet and exits at the bottom-left
+- The incident ray enters at the top-left of the droplet and exits at the bottom-left
 - **Single Rainbow:** 1 internal reflection → colours appear in order: Violet (top), Indigo, Blue, Green, Yellow, Orange, Red (bottom)
-- **Double Rainbow (if possible):** 2 internal reflections → colours appear in reverse order
-- Visible Light mode: shows 7 colour rays separating
+- **Double Rainbow (if possible):** 2 internal reflections → secondary rainbow appears **above** the primary rainbow, colours in **reverse order** (Red top → Violet bottom), slightly fainter
+- **⚠️ Must not overflow canvas:** The rainbow must fit entirely within the canvas. Position the droplet high enough and limit ray lengths so the lowest colour (Red in primary rainbow) stays within the canvas bounds
+- Visible Light mode: shows 7 colour rays separating, labels at **~8px font size** (smaller than standard 10-11px)
 - Monochromatic mode: shows a single ray path through the droplet
 - Use sky blue fill (`rgba(100,180,230,0.20)`) for the droplet — lighter than standard Water for ray visibility
 
