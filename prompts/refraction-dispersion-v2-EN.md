@@ -206,7 +206,7 @@ This section must explain the results in **full sentences**, not just show numbe
 
 | Property | Value |
 |----------|-------|
-| **Line width (Monochromatic)** | **2px** |
+| **Line width (Monochromatic)** | **1.6px** |
 | **Line width (Visible Light)** | **1px** |
 | **Line width (Sun Light guide rays)** | **1px** |
 | Arrowhead size | Proportional to ray width (smaller for 1px rays) |
@@ -215,7 +215,7 @@ This section must explain the results in **full sentences**, not just show numbe
 
 **Why?**
 - V1 had thick rays (3px+) that overlapped and became invisible when multiple colours were close together
-- **Mono mode (2px):** Only 1 ray → thicker is fine, easier to see
+- **Mono mode (1.6px):** Only 1 ray → thicker is fine, easy to see
 - **Visible mode (1px):** Multiple colour rays side by side → must be thin so each colour is distinct and visible
 - **Sun Light mode:** Use wider semi-transparent **bands** (fills) for the continuous spectrum, with thin guide rays (1px) overlaid
 
