@@ -211,7 +211,7 @@ Each shape restricts which media can be selected:
 | 🔵 **Half Circle** | All 6 media | For measuring critical angle of different materials |
 | 📐 **Right Triangle** | All 6 media | IGCSE exam questions use various materials |
 | 💎 **Diamond** | **Diamond only** | Only diamond has high enough n for internal reflections |
-| 💧 **Rainbow** | **Water only** | Natural rainbows are formed by water droplets |
+| 💧 **Rainbow** | **Water only** | Natural rainbows are formed by water droplets. **Exception:** Use sky blue fill (`rgba(100,180,230,0.20)`) instead of the standard Water deep blue — to make ray paths visible inside the droplet. |
 
 **Implementation:**
 - When switching to a shape, the medium dropdown should only show the allowed media for that shape
