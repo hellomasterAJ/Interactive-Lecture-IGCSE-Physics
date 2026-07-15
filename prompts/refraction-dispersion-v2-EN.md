@@ -187,7 +187,7 @@ The Cauchy coefficients are calculated to match the simple n values at λ = 550 
 ```javascript
 const MEDIA = [
   { name:"Crown Glass (BK7)", A:1.5046, B:0.00420, fill:"rgba(195,205,210,0.20)", edge:"rgba(200,215,225,0.85)" },
-  { name:"Flint Glass (F2)",  A:1.5809, B:0.01426, fill:"rgba(205,195,225,0.22)", edge:"rgba(210,200,235,0.85)" },
+  { name:"Flint Glass (F2)",  A:1.5809, B:0.01426, fill:"rgba(215,190,165,0.24)", edge:"rgba(225,200,175,0.85)" },
   { name:"Water",             A:1.3242, B:0.00285, fill:"rgba(25,80,160,0.30)",  edge:"rgba(90,150,220,0.85)" },
   { name:"Ice",               A:1.3050, B:0.00150, fill:"rgba(180,215,235,0.30)", edge:"rgba(200,225,245,0.85)" },
   { name:"Perspex",           A:1.4840, B:0.00285, fill:"rgba(220,215,200,0.18)", edge:"rgba(225,220,205,0.8)" },
