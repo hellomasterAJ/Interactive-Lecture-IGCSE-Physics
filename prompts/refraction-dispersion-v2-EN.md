@@ -436,7 +436,7 @@ const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl
 | Control | Type | Details |
 |---------|------|---------|
 | Medium | — | **Diamond only** (locked) |
-| θ₁ | Slider + input | 0°–89°, step 0.5°, default 30° |
+| θ₁ | Slider + input | 5°–60°, step 0.5°, default 30° |
 | Entry position | Drag on top face | Slide left/right along top facet |
 
 **Light source:** **Monochromatic only** (Visible Light NOT available)
@@ -458,6 +458,7 @@ const nOf = (mi, wl) => MEDIA[mi].A + MEDIA[mi].B / Math.pow(wl/1000, 2);  // wl
 - Inside the diamond, the ray hits the lower-left facet → **Total Internal Reflection** (n_diamond ≈ 2.42, θc ≈ 24.4°)
 - Reflected ray travels toward the right side → may hit another facet → TIR again
 - Multiple internal reflections possible (zigzag path) — this is what gives diamonds their "sparkle"
+- **Max 5 reflections** — after that, stop tracing (prevents infinite loops)
 - Ray eventually exits through a facet where the angle of incidence is less than θc
 - **Entry position:** **Draggable** along the top face (left/right)
 - Must be physically accurate — direction of TIR must follow physics (angle of incidence = angle of reflection)
