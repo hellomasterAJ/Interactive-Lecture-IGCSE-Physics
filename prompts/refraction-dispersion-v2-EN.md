@@ -138,6 +138,7 @@ The canvas is divided into **5 equal segments** for positioning:
 | Show: Normals | Toggle | ⊥ |
 | Show: Deviation | Toggle | ⸻ (Prism only — undeviated dashed line) |
 | Show: Equations | Toggle (hidden by default) | 📐 |
+| ↺ **Global Reset** | Button | **Reset ALL parameters to defaults** (shape, source, angle, medium, zoom — everything) |
 
 ### 2.7 Canvas (Full width, no side panel)
 - Dark background (`--graph-bg`)
@@ -473,6 +474,7 @@ function txt(t, x, y, color, size = 11, align = "center", weight = 600) {
 | **Double-click** | Zoom in (2.5×) |
 | **Esc / double-click** | Zoom out |
 | **Arrow keys** | Adjust θ₁ (±1° or ±5° with Shift) |
+| **↺ Global Reset** | Reset ALL to defaults: Section 0 (Prism), θ₁=50°, Apex=45°, Mono+Red, Dark theme, zoom off, animation stopped |
 
 ## 10. Animation
 
