@@ -202,7 +202,7 @@ table.dt td .sw{display:inline-block;width:9px;height:9px;border-radius:2px;marg
 </div>
 
 <div class="toolbar">
-  <!-- Row 1: light source + colours -->
+  <!-- Row 1: LIGHT → SHOW → Reset All -->
   <div class="trow">
     <div class="tgroup" id="grpSrc"><span class="tlabel">Light</span>
       <div class="pills" id="srcPills">
@@ -216,35 +216,36 @@ table.dt td .sw{display:inline-block;width:9px;height:9px;border-radius:2px;marg
       <button class="tbtn" id="btnColReset" title="Reset colour selection">↺</button>
     </div>
     <div class="tsep"></div>
-    <div class="tgroup" id="grpMedium"><span class="tlabel" id="medLabel">Medium</span>
-      <select class="tsel" id="medSel" style="min-width:172px;"></select>
-      <span class="badge hidden" id="medLocked"><b id="medLockedName">—</b></span>
+    <div class="tgroup"><span class="tlabel">Show</span>
+      <button class="tbtn on" id="btnAngles">∠</button>
+      <button class="tbtn on" id="btnLabels">🏷</button>
+      <button class="tbtn on" id="btnNormals">⊥</button>
+      <button class="tbtn hidden" id="btnDev">⸻ δ</button>
+      <button class="tbtn" id="btnEq">📐 Equations</button>
     </div>
+    <div class="tsep"></div>
+    <button class="tbtn" id="btnReset" title="Reset this shape to its defaults">↺ Reset</button>
   </div>
 
-  <!-- Row 2: section-specific + shared -->
+  <!-- Row 2: Adjustable Angle → Play → Medium -->
   <div class="trow">
     <div class="tgroup hidden" id="gApex"><span class="tlabel">Apex</span>
-      <input type="range" id="apexSl" min="45" max="75" step="1" value="45" style="width:100px;">
-      <span class="badge"><b id="apexV">45°</b></span>
+      <input type="range" id="apexSl" min="45" max="75" step="1" value="60" style="width:100px;">
+      <span class="badge"><b id="apexV">60°</b></span>
     </div>
     <div class="tgroup hidden" id="gCount"><span class="tlabel">Blocks</span>
       <div class="pills" id="cntPills">
         <button class="pill active" data-n="1">1</button>
         <button class="pill" data-n="2">2</button>
       </div>
-      <select class="tsel hidden" id="med2Sel" style="min-width:150px;" title="Block 2 medium"></select>
+      <select class="tsel" id="med1Sel" title="Block 1 medium"></select>
+      <select class="tsel hidden" id="med2Sel" title="Block 2 medium"></select>
     </div>
     <div class="tgroup hidden" id="gDir">
       <button class="tbtn" id="dirBtn">◀ from left</button>
     </div>
     <div class="tgroup hidden" id="gTri"><span class="tlabel">Angle A</span>
-      <select class="tsel" id="triPreset">
-        <option value="45">45-45-90</option>
-        <option value="30">30-60-90</option>
-        <option value="custom">Custom</option>
-      </select>
-      <input type="range" id="triSl" min="20" max="70" step="1" value="45" style="width:90px;">
+      <input type="range" id="triSl" min="20" max="70" step="1" value="45" style="width:100px;">
       <span class="badge"><b id="triV">45°</b></span>
     </div>
     <div class="tgroup hidden" id="gRain"><span class="tlabel">Rainbow</span>
@@ -267,15 +268,10 @@ table.dt td .sw{display:inline-block;width:9px;height:9px;border-radius:2px;marg
       </div>
     </div>
     <div class="tsep"></div>
-    <div class="tgroup"><span class="tlabel">Show</span>
-      <button class="tbtn on" id="btnAngles">∠</button>
-      <button class="tbtn on" id="btnLabels">🏷</button>
-      <button class="tbtn on" id="btnNormals">⊥</button>
-      <button class="tbtn hidden" id="btnDev">⸻ δ</button>
-      <button class="tbtn" id="btnEq">📐 Equations</button>
+    <div class="tgroup" id="grpMedium"><span class="tlabel" id="medLabel">Medium</span>
+      <select class="tsel" id="medSel" style="min-width:172px;"></select>
+      <span class="badge hidden" id="medLocked"><b id="medLockedName">—</b></span>
     </div>
-    <div class="tsep"></div>
-    <button class="tbtn" id="btnReset" title="Reset everything to defaults">↺ Reset All</button>
   </div>
 </div>
 
@@ -356,7 +352,9 @@ const COLORS = [
   { name:"Indigo", wl:425, f:705, hex:"#5856D6", lab:null },
   { name:"Violet", wl:400, f:750, hex:"#AF52DE", lab:"V" }
 ];
-const IR = { name:"IR", wl:850, hex:"#FF3B30" }, UV = { name:"UV", wl:360, hex:"#AF52DE" };
+/* reference wavelengths: IR = 1000 nm, UV = 300 nm (single λ each, so their
+   dispersion positions are physically exact: IR bends least, UV bends most) */
+const IR = { name:"IR", wl:1000, hex:"#FF3B30" }, UV = { name:"UV", wl:300, hex:"#AF52DE" };
 const C_GREY = "#8b949e", C_WHITE_RAY = "#f5f0dc";
 const RAY_W_MONO = 1.6, RAY_W_MULTI = 1;
 
@@ -593,7 +591,7 @@ function s1Trace(wl){
   const E = vadd(g.T, vmul(vsub(g.BL, g.T), S1.pos)); // entry on LEFT face
   const ni = vmul(g.nL, -1);
   const dInc = rotV(ni, -S1.t1);                      // source left, travels rightward
-  const start = vadd(E, vmul(dInc, -430));
+  const start = vadd(E, vmul(dInc, -clipLen(E, vmul(dInc, -1), 430)));
   const r1 = Math.asin(clamp(Math.sin(S1.t1*D2R)/n, -1, 1))*R2D;
   const dIn = rotV(ni, -r1);
   const hitR = raySeg(E, dIn, g.T, g.BR);
@@ -607,8 +605,9 @@ function s1Trace(wl){
   const te = Math.asin(sinE)*R2D;
   const dOut = rotV(g.nR, te);                        // exits rightward, bending toward base
   const dev = S1.t1 + te - S1.apex;
-  const end = vadd(X, vmul(dOut, 430));
-  return { pts:[start,E,X,end], exitDir:dOut, dev, te, tir:false, E, X, start, dInc, dIn, r1, r2, n };
+  const exitLen = clipLen(X, dOut, 430);
+  const end = vadd(X, vmul(dOut, exitLen));
+  return { pts:[start,E,X,end], exitDir:dOut, dev, te, tir:false, E, X, start, dInc, dIn, r1, r2, n, exitLen };
 }
 function s1MaxWl(){ return S.src === "sun" ? UV.wl : Math.min(...activeCols().map(i => COLORS[i].wl)); }
 function s1Enforce(){
@@ -628,22 +627,36 @@ function s1Enforce(){
   return changed;
 }
 function thermoTemp(){
-  const tv = s1Trace(COLORS[6].wl), tr = s1Trace(COLORS[0].wl), ti = s1Trace(IR.wl);
-  if(tr.tir || tv.tir || !tr.exitDir || !tv.exitDir) return 22;
-  const Xc = vmul(vadd(tr.X, tv.X), 0.5);
-  const aOf = d => Math.atan2(d.y, d.x);
-  const aR = aOf(tr.exitDir), aV = aOf(tv.exitDir), aI = ti.exitDir ? aOf(ti.exitDir) : aR - (aV - aR)*0.55;
-  const p = vsub(S1.thermo, Xc);
-  if(vlen(p) < 30) return 24;
-  const a = Math.atan2(p.y, p.x);
-  const u = (a - aV) / (aR - aV || 1e-9);
-  const uIR = (aI - aV) / (aR - aV || 1e-9);
-  let temp = 22 + 6 * clamp(u, 0, 1);
-  const sig = Math.max(0.18, Math.abs(uIR - 1) * 0.7);
-  temp += 5.2 * Math.exp(-Math.pow((u - (1 + (uIR-1)*0.55))/sig, 2));
-  if(u > uIR + sig*1.6) temp = 22 + (temp-22)*Math.exp(-(u-uIR-sig*1.6)*3);
-  if(u < -0.35) temp = 22;
-  return clamp(temp, 21, 32.5);
+  /* Herschel model: the bulb heats according to which spectral band it actually sits on.
+     Heating power rises from violet → red, and peaks in the INVISIBLE infrared band
+     just beyond red (IR carries the most thermal energy). Away from the spectrum → ambient. */
+  const bulb = { x: S1.thermo.x, y: S1.thermo.y + 7 };          // bulb centre
+  const parts = [
+    { wl: IR.wl, dT: 10.0 },                                     // infrared — hottest
+    { wl: 700, dT: 5.6 }, { wl: 610, dT: 5.0 }, { wl: 550, dT: 4.5 },
+    { wl: 500, dT: 4.0 }, { wl: 460, dT: 3.6 }, { wl: 425, dT: 3.3 },
+    { wl: 400, dT: 3.0 },
+    { wl: UV.wl, dT: 1.2 }                                       // UV — ionising, little heat
+  ];
+  const info = [];
+  for(const p of parts){
+    const t = s1Trace(p.wl);
+    if(t.tir || !t.exitDir) continue;
+    const end = vadd(t.X, vmul(t.exitDir, t.exitLen || 430));
+    info.push({ dT: p.dT, d: distToSeg(bulb, t.X, end) });
+  }
+  if(!info.length) return 22;
+  /* adaptive width: bands are only ~(fan spread)/(n−1) apart, so weight by the NEAREST band */
+  const gap = Math.max(2, Math.abs(info[info.length-1].d - info[0].d) / (info.length - 1));
+  const w = Math.max(2.2, gap * 0.75);
+  let sumW = 0, sumT = 0, maxG = 0;
+  for(const q of info){
+    const g = Math.exp(-(q.d*q.d)/(2*w*w));
+    sumW += g; sumT += g * q.dT; maxG = Math.max(maxG, g);
+  }
+  if(sumW < 1e-6) return 22;                                     // far from the spectrum → ambient
+  const coverage = Math.min(1, maxG * 1.1);
+  return clamp(22 + (sumT/sumW) * coverage, 21, 33);
 }
 const SEC1 = {
   title: "Prism", medLock: "Crown Glass (BK7)",
@@ -674,7 +687,7 @@ const SEC1 = {
     /* deviation: undeviated dashed line + δ arc */
     if(S.showDev && mid && !mid.t.tir && mid.t.exitDir){
       const t = mid.t;
-      drawPath([t.E, vadd(t.E, vmul(t.dInc, 560))], C_WHITE_RAY, 1, 1,
+      drawPath([t.E, vadd(t.E, vmul(t.dInc, clipLen(t.E, t.dInc, 560)))], C_WHITE_RAY, 1, 1,
                {dash:[7,6], alpha:.55, arrow:false, glow:false});
       if(p2 >= 1){
         const I = lineLine(t.E, t.dInc, t.X, t.exitDir);
@@ -694,7 +707,7 @@ const SEC1 = {
           ctx.save(); ctx.globalAlpha = (all[i].band || all[i+1].band) ? 0.16 : 0.34;
           ctx.fillStyle = all[i].c.hex;
           ctx.beginPath(); ctx.moveTo(A.E.x, A.E.y); ctx.lineTo(A.X.x, A.X.y); ctx.lineTo(B.X.x, B.X.y); ctx.closePath(); ctx.fill();
-          const fa = vadd(A.X, vmul(A.exitDir, 430*p2)), fb = vadd(B.X, vmul(B.exitDir, 430*p2));
+          const fa = vadd(A.X, vmul(A.exitDir, (A.exitLen || 430)*p2)), fb = vadd(B.X, vmul(B.exitDir, (B.exitLen || 430)*p2));
           ctx.beginPath(); ctx.moveTo(A.X.x, A.X.y); ctx.lineTo(fa.x, fa.y); ctx.lineTo(fb.x, fb.y); ctx.lineTo(B.X.x, B.X.y); ctx.closePath(); ctx.fill();
           ctx.restore();
         }
@@ -705,17 +718,26 @@ const SEC1 = {
         if(t.tir || !t.exitDir) return;
         const cHex = i === 0 ? IR.hex : i === 8 ? UV.hex : COLORS[i-1].hex;
         const alpha = (i === 0 || i === 8) ? 0.35 : 0.9;
-        drawPath([t.E, t.X, vadd(t.X, vmul(t.exitDir, 430))], cHex, RAY_W_MULTI, p2, {alpha, arrow:i!==0&&i!==8});
+        drawPath([t.E, t.X, vadd(t.X, vmul(t.exitDir, t.exitLen || 430))], cHex, RAY_W_MULTI, p2, {alpha, arrow:i!==0&&i!==8});
       });
       if(S.showLabels && p2 >= 1){
-        const lab = (t, name, cHex, off) => { if(t && t.exitDir){ const p = vadd(t.X, vmul(t.exitDir, 442 + off));
-          txt(name, p.x, p.y, cHex, 10.5, "left"); } };
-        lab(tIR, "IR", "rgba(255,120,110,0.8)", 26);
-        lab(traces[0].t, "R", COLORS[0].hex, 0);
-        lab(traces[3].t, "G", COLORS[3].hex, 0);
-        lab(traces[4].t, "B", COLORS[4].hex, 0);
-        lab(traces[6].t, "V", COLORS[6].hex, 0);
-        lab(tUV, "UV", "rgba(200,130,240,0.8)", 26);
+        /* vertical mini-legend next to the fan tip, top→bottom in physical order (IR least deviated) */
+        const seq = [
+          [tIR, "IR", "rgba(255,120,110,0.9)"],
+          [traces[0].t, "R", COLORS[0].hex],
+          [traces[3].t, "G", COLORS[3].hex],
+          [traces[4].t, "B", COLORS[4].hex],
+          [traces[6].t, "V", COLORS[6].hex],
+          [tUV, "UV", "rgba(200,130,240,0.9)"]
+        ].filter(s => s[0] && s[0].exitDir && !s[0].tir);
+        if(seq.length){
+          const tips = seq.map(s => vadd(s[0].X, vmul(s[0].exitDir, s[0].exitLen || 430)));
+          const M = tips.reduce((a, b) => ({x:a.x+b.x, y:a.y+b.y}), {x:0, y:0});
+          M.x /= tips.length; M.y /= tips.length;
+          const lx = clamp(M.x + 30, 26, W - 34);
+          let ly = clamp(M.y - (seq.length-1)*7, 18, H - seq.length*14 - 6);
+          seq.forEach(([t, name, cHex]) => { txt(name, lx, ly, cHex, 10.5, "left"); ly += 14; });
+        }
       }
       this.drawThermo();
     } else {
@@ -724,11 +746,11 @@ const SEC1 = {
       traces.forEach(({c, t}) => {
         if(traces.length === 1) drawPath([t.start, t.E], c.hex, RAY_W_MONO, p1, {arrow:false});
         if(!t.tir && t.exitDir){
-          drawPath([t.E, t.X, vadd(t.X, vmul(t.exitDir, 430))], c.hex,
+          drawPath([t.E, t.X, vadd(t.X, vmul(t.exitDir, t.exitLen || 430))], c.hex,
                    traces.length === 1 ? RAY_W_MONO : RAY_W_MULTI, p2);
           if(S.showLabels && p2 >= 1 && c.lab){
-            const p = vadd(t.X, vmul(t.exitDir, 444));
-            txt(c.lab, p.x, p.y, c.hex, 10.5, "left");
+            const p = vadd(t.X, vmul(t.exitDir, (t.exitLen || 430) + 14));
+            txt(c.lab, clamp(p.x, 24, W-30), clamp(p.y, 16, H-16), c.hex, 10.5, "left");
           }
         }
       });
@@ -797,7 +819,8 @@ const SEC1 = {
     const sun = S.src === "sun";
     if(sun){
       const t = s1Trace(IR.wl);
-      out.push({ hex:IR.hex, dim:true, name:"IR", wl:"780–2500", f:"<384", n:fmt4(nOf(0,IR.wl)),
+      out.push({ hex:IR.hex, dim:true, name:"IR range", wl:"780–2500", f:"<384", n:"—", th2:"—", dev:"—" });
+      out.push({ hex:IR.hex, dim:true, name:"IR (ref)", wl:"1000", f:"300", n:fmt4(nOf(0,IR.wl)),
                  th2:t.tir?"—":fmtA(t.te), dev:t.dev===null?"—":fmtA(t.dev) });
     }
     activeCols().forEach(i => {
@@ -807,7 +830,8 @@ const SEC1 = {
     });
     if(sun){
       const t = s1Trace(UV.wl);
-      out.push({ hex:UV.hex, dim:true, name:"UV", wl:"100–400", f:">750", n:fmt4(nOf(0,UV.wl)),
+      out.push({ hex:UV.hex, dim:true, name:"UV range", wl:"100–400", f:">750", n:"—", th2:"—", dev:"—" });
+      out.push({ hex:UV.hex, dim:true, name:"UV (ref)", wl:"300", f:"999", n:fmt4(nOf(0,UV.wl)),
                  th2:t.tir?"—":fmtA(t.te), dev:t.dev===null?"—":fmtA(t.dev) });
     }
     return out;
@@ -871,7 +895,7 @@ const SEC1 = {
 /* ═══════════ 2 · GLASS BLOCKS (1–2, contiguous, all media) ═══════════ */
 function blocksGeom(){
   const x0 = 200, x1 = 1000;                             // width = 2/3 canvas
-  if(S2.count === 1) return { x0, x1, bands:[[195,325]] };            // H/4 tall
+  if(S2.count === 1) return { x0, x1, bands:[[175,345]] };            // same 170px thickness as each block below
   return { x0, x1, bands:[[90,260],[260,430]] };                       // 2 blocks, touching
 }
 /* limit a ray leg so it stays inside the canvas (18px margin) */
@@ -881,12 +905,15 @@ function clipLen(pt, dir, maxL){
   if(dir.x < -1e-6) L = Math.min(L, (18 - pt.x)/dir.x);
   if(dir.y > 1e-6)  L = Math.min(L, (H - 18 - pt.y)/dir.y);
   if(dir.y < -1e-6) L = Math.min(L, (18 - pt.y)/dir.y);
-  return Math.max(30, L);
+  return Math.max(12, L);
 }
 function s2Layers(wl){
+  /* interfaces derived from the SAME geometry that is drawn — never hardcode twice */
   const g = blocksGeom();
-  if(S2.count === 1) return { g, ifaces:[195,325], layers:[1, nOf(S2.med1, wl), 1] };
-  return { g, ifaces:[90,260,430], layers:[1, nOf(S2.med1, wl), nOf(S2.med2, wl), 1] };
+  if(S2.count === 1)
+    return { g, ifaces:[g.bands[0][0], g.bands[0][1]], layers:[1, nOf(S2.med1, wl), 1] };
+  return { g, ifaces:[g.bands[0][0], g.bands[0][1], g.bands[1][1]],
+           layers:[1, nOf(S2.med1, wl), nOf(S2.med2, wl), 1] };
 }
 function s2Trace(wl){
   const { g, ifaces, layers } = s2Layers(wl);
@@ -1105,14 +1132,14 @@ const SEC2 = {
 };
 
 /* ═══════════ 3 · HALF CIRCLE ═══════════ */
-const HC = { C: { x:600, y:140 }, R: 240 };
+const HC = { C: { x:600, y:140 + H*0.15 }, R: 240 };
 function s3Trace(wl){
   const n = nOf(S3.med, wl);
   const phi = S3.t1, side = S3.side;
   const a = side * phi * D2R;
   const Pe = { x: HC.C.x + HC.R*Math.sin(a), y: HC.C.y + HC.R*Math.cos(a) };
   const dIn = vnorm(vsub(HC.C, Pe));
-  const start = vadd(Pe, vmul(dIn, -150));
+  const start = vadd(Pe, vmul(dIn, -clipLen(Pe, vmul(dIn, -1), 150)));
   const tc = Math.asin(clamp(1/n, 0, 1))*R2D;
   const sinT2 = n * Math.sin(phi*D2R);
   const crit = Math.abs(phi - tc) < 0.35;
@@ -1121,13 +1148,13 @@ function s3Trace(wl){
     const t2 = Math.asin(sinT2)*R2D;
     const dOut = { x: -side*Math.sin(t2*D2R), y: -Math.cos(t2*D2R) };
     return { Pe, start, dIn, tc, t2, n, status:"ok",
-             pts:[start, Pe, HC.C, vadd(HC.C, vmul(dOut, 128))],
+             pts:[start, Pe, HC.C, vadd(HC.C, vmul(dOut, clipLen(HC.C, dOut, 310)))],
              weakRefl: phi > tc - 9 ? s3ReflPath(phi, side) : null };
   }
   if(crit){
     const dOut = { x: -side, y: 0 };
     return { Pe, start, dIn, tc, t2:90, n, status:"crit",
-             pts:[start, Pe, HC.C, vadd(HC.C, vmul(dOut, 320))],
+             pts:[start, Pe, HC.C, vadd(HC.C, vmul(dOut, clipLen(HC.C, dOut, 420)))],
              weakRefl: s3ReflPath(phi, side) };
   }
   return { Pe, start, dIn, tc, t2:null, n, status:"tir",
@@ -1136,12 +1163,12 @@ function s3Trace(wl){
 function s3ReflPath(phi, side, full = false){
   const dR = { x: -side*Math.sin(phi*D2R), y: Math.cos(phi*D2R) };
   const Px = vadd(HC.C, vmul(dR, HC.R));
-  const out = vadd(Px, vmul(dR, 150));
+  const out = vadd(Px, vmul(dR, clipLen(Px, dR, 150)));
   if(full){
     const a = side * phi * D2R;
     const Pe = { x: HC.C.x + HC.R*Math.sin(a), y: HC.C.y + HC.R*Math.cos(a) };
     const dIn = vnorm(vsub(HC.C, Pe));
-    return [vadd(Pe, vmul(dIn, -150)), Pe, HC.C, Px, out];
+    return [vadd(Pe, vmul(dIn, -clipLen(Pe, vmul(dIn, -1), 150))), Pe, HC.C, Px, out];
   }
   return [HC.C, Px, out];
 }
@@ -1283,9 +1310,10 @@ function triGeom(){
   const tanA = Math.tan(S4.angA*D2R);
   const hAC = Math.min(280, 620/Math.max(0.05, tanA));
   const base = hAC * tanA;
-  const C = { x:400, y:430 };
-  const A = { x:400, y:430 - hAC };
-  const B = { x:400 + base, y:430 };
+  const baseY = 430 + H*0.15 - H*0.30;                 // raised 30% of canvas height upward
+  const C = { x:400, y:baseY };
+  const A = { x:400, y:baseY - hAC };
+  const B = { x:400 + base, y:baseY };
   return { A, B, C, verts:[A, B, C], hAC, base };
 }
 function s4Trace(wl){
@@ -1295,10 +1323,10 @@ function s4Trace(wl){
   const r = Math.asin(clamp(Math.sin(S4.t1*D2R)/n, -1, 1))*R2D;
   const dIn = { x: Math.cos(r*D2R), y: Math.sin(r*D2R) };
   const dInc = { x: Math.cos(S4.t1*D2R), y: Math.sin(S4.t1*D2R) };
-  const start = vadd(E, vmul(dInc, -300));
+  const start = vadd(E, vmul(dInc, -clipLen(E, vmul(dInc, -1), 300)));
   const tr = tracePoly(g.verts, n, E, dIn, 4);
   const pts = [start, ...tr.pts];
-  if(tr.exitDir) pts.push(vadd(tr.exitPt, vmul(tr.exitDir, 220)));
+  if(tr.exitDir) pts.push(vadd(tr.exitPt, vmul(tr.exitDir, clipLen(tr.exitPt, tr.exitDir, 220))));
   return { g, E, start, dInc, dIn, r, n, tr, pts,
            tc: Math.asin(clamp(1/n,0,1))*R2D };
 }
@@ -1326,7 +1354,7 @@ const SEC4 = {
       txt(`A = ${S4.angA}°`, g.A.x + 16, g.A.y + 16, col("--text-dim"), 11, "left");
       txt(`B = ${90 - S4.angA}°`, g.B.x - 14, g.B.y - 14, col("--text-dim"), 11, "right");
       txt("C = 90°", g.C.x + 24, g.C.y - 26, col("--text-muted"), 10.5, "left");
-      txt(`${med.name} · n = ${fmt2(nWhite(S4.med))}`, (g.C.x + g.B.x)/2, g.C.y + 20, col("--text-dim"), 11.5);
+      txt(`${med.name} · n = ${fmt2(nWhite(S4.med))}`, g.A.x + 120, g.A.y + 8, col("--text-dim"), 11.5, "left");
     }
     if(S.showNormals){
       drawNormal(t.E, {x:1, y:0}, 46);
@@ -1475,7 +1503,8 @@ const SEC5 = {
       ctx.restore();
     });
     if(S.showAngles && p1 >= 1){
-      arcAt(t.E, -Math.PI/2, -Math.PI/2 - S5.t1*D2R, 26, C_WHITE_RAY, `θ₁=${fmtA(S5.t1)}°`, 52);
+      /* incident arc between the normal and the incident ray (source is up-right) */
+      arcAt(t.E, -Math.PI/2, -Math.PI/2 + S5.t1*D2R, 26, C_WHITE_RAY, `θ₁=${fmtA(S5.t1)}°`, 52);
       if(p2 >= 1){
         arcAt(t.E, Math.PI/2, Math.PI/2 + t.r*D2R, 30, col("--blue"), `r=${fmtA(t.r)}°`, 58);
         t.tr.events.forEach(ev => {
@@ -1553,7 +1582,7 @@ const SEC5 = {
 };
 
 /* ═══════════ 6 · RAINBOW (water drop) ═══════════ */
-const DROP = { C: { x:760, y:150 }, R: 112 };
+const DROP = { C: { x:760, y:170 }, R: 134 };          // +20% radius
 function dropTrace(wl, bFrac, nRefl){
   const n = nOf(2, wl);                                  // Water
   const R = DROP.R, C = DROP.C;
@@ -1579,12 +1608,13 @@ function dropTrace(wl, bFrac, nRefl){
   const nrmE = vnorm(vsub(pe, C));
   let out = refractV(dir, vmul(nrmE, -1), n, 1);
   if(!out) out = reflectV(dir, nrmE);
-  /* clip exit ray to canvas bounds */
-  let L = 430;
-  if(out.x < 0) L = Math.min(L, (60 - pe.x)/out.x);
-  if(out.y > 0) L = Math.min(L, (H - 26 - pe.y)/out.y);
-  if(out.y < 0) L = Math.min(L, (26 - pe.y)/out.y);
-  L = Math.max(60, L);
+  /* clip exit ray to canvas bounds (leave room for arrowheads + labels) */
+  let L = 420;
+  if(out.x < 0) L = Math.min(L, (44 - pe.x)/out.x);
+  if(out.x > 0) L = Math.min(L, (W - 44 - pe.x)/out.x);
+  if(out.y > 0) L = Math.min(L, (H - 38 - pe.y)/out.y);
+  if(out.y < 0) L = Math.min(L, (30 - pe.y)/out.y);
+  L = Math.max(40, L);
   const end = vadd(pe, vmul(out, L));
   pts.push(end);
   const devD = Math.acos(clamp(vdot(out, {x:1,y:0}), -1, 1))*R2D;
@@ -1611,8 +1641,11 @@ const SEC6 = {
     const multi = cols.length > 1;
     const wMain = multi ? RAY_W_MULTI : RAY_W_MONO;
     const p1 = clamp(S.prog*2, 0, 1), p2 = clamp(S.prog*2-1, 0, 1);
+    /* primary: enters the UPPER half (b > 0), 1 reflection, exits downward at ≈42°.
+       secondary: enters the LOWER half (b < 0), 2 reflections, exits downward at ≈51°
+       — steeper than the primary, colour order reversed (see physics.stackexchange 764635) */
     const bundles = [{ b:0.861, refl:1, alpha:1 }];
-    if(S6.type === 2) bundles.push({ b:0.951, refl:2, alpha:0.55 });
+    if(S6.type === 2) bundles.push({ b:-0.951, refl:2, alpha:0.55 });
     bundles.forEach((bd, bi) => {
       const traces = cols.map(i => ({ c: COLORS[i], t: dropTrace(COLORS[i].wl, bd.b, bd.refl) }))
                          .filter(x => x.t);
@@ -1755,15 +1788,16 @@ function updateUI(){
   $("btnDev").classList.toggle("hidden", S.sec !== 0);
   $("btnDev").classList.toggle("on", S.showDev);
   $("med2Sel").classList.toggle("hidden", !(S.sec === 1 && S2.count === 2));
-  /* medium selector vs locked badge */
+  /* medium selector vs locked badge (Glass Blocks uses its own B1/B2 selects) */
   const lock = sec().medLock;
+  $("grpMedium").classList.toggle("hidden", S.sec === 1);
   $("medSel").classList.toggle("hidden", !!lock);
   $("medLocked").classList.toggle("hidden", !lock);
   if(lock) $("medLockedName").textContent = lock;
-  $("medLabel").textContent = S.sec === 1 ? "Block 1" : "Medium";
-  if(!lock){
-    $("medSel").value = S.sec === 1 ? S2.med1 : S.sec === 2 ? S3.med : S.sec === 3 ? S4.med : 0;
+  if(!lock && S.sec !== 1){
+    $("medSel").value = S.sec === 2 ? S3.med : S.sec === 3 ? S4.med : 0;
   }
+  $("med1Sel").value = S2.med1;
   $("med2Sel").value = S2.med2;
   /* light source pills */
   const sa = sec().srcAllowed;
@@ -1795,6 +1829,10 @@ function updateUI(){
   $("sumText").innerHTML = sec().summary();
   $("infoText").innerHTML = sec().info();
   renderEqPanel();
+  if(S.sec !== 0){
+    $("herschelBox").classList.add("hidden");
+    $("irMsg").className = "feed"; $("irMsg").innerHTML = "";
+  }
   sec().chips();
   draw();
 }
@@ -1942,17 +1980,19 @@ $("btnColReset").addEventListener("click", () => {
 });
 
 /* ── medium selectors ── */
+const shortMed = i => MEDIA[i].name.replace(" (BK7)", "").replace(" (F2)", "");
 MEDIA.forEach((m, i) => {
   $("medSel").add(new Option(`${m.name} (n≈${fmt2(nWhite(i))})`, i));
-  $("med2Sel").add(new Option(`B2: ${m.name} (n≈${fmt2(nWhite(i))})`, i));
+  $("med1Sel").add(new Option(`B1: ${shortMed(i)} (n≈${fmt2(nWhite(i))})`, i));
+  $("med2Sel").add(new Option(`B2: ${shortMed(i)} (n≈${fmt2(nWhite(i))})`, i));
 });
 $("medSel").addEventListener("change", e => {
   const v = +e.target.value;
-  if(S.sec === 1) S2.med1 = v;
-  else if(S.sec === 2) S3.med = v;
+  if(S.sec === 2) S3.med = v;
   else if(S.sec === 3) S4.med = v;
   paramChanged();
 });
+$("med1Sel").addEventListener("change", e => { S2.med1 = +e.target.value; paramChanged(); });
 $("med2Sel").addEventListener("change", e => { S2.med2 = +e.target.value; paramChanged(); });
 
 /* ── section-specific controls ── */
@@ -1970,16 +2010,8 @@ $("dirBtn").addEventListener("click", () => {
   $("dirBtn").textContent = S3.side === 1 ? "▶ from right" : "◀ from left";
   paramChanged();
 });
-$("triPreset").addEventListener("change", e => {
-  if(e.target.value !== "custom"){
-    S4.angA = +e.target.value;
-    $("triSl").value = S4.angA; $("triV").textContent = S4.angA + "°";
-  }
-  paramChanged();
-});
 $("triSl").addEventListener("input", e => {
   S4.angA = +e.target.value; $("triV").textContent = S4.angA + "°";
-  $("triPreset").value = (S4.angA === 45 || S4.angA === 30) ? String(S4.angA) : "custom";
   paramChanged();
 });
 $("rainPills").addEventListener("click", e => {
@@ -1988,20 +2020,31 @@ $("rainPills").addEventListener("click", e => {
   b.classList.add("active"); S6.type = +b.dataset.r; paramChanged();
 });
 
-/* ── GLOBAL RESET ── */
+/* ── RESET (current shape only — never changes section) ── */
 $("btnReset").addEventListener("click", () => {
-  S = mkS(); S1 = mkS1(); S2 = mkS2(); S3 = mkS3(); S4 = mkS4(); S5 = mkS5(); S6 = mkS6();
-  /* sync every control back to defaults */
-  $("themeSel").value = "dark"; setTheme("dark");
-  $("apexSl").value = S1.apex; $("apexV").textContent = S1.apex + "°";
-  [...$("cntPills").children].forEach(x => x.classList.toggle("active", +x.dataset.n === S2.count));
-  $("med2Sel").value = S2.med2;
-  $("dirBtn").textContent = "◀ from left";
-  $("triPreset").value = "45"; $("triSl").value = S4.angA; $("triV").textContent = S4.angA + "°";
-  [...$("rainPills").children].forEach(x => x.classList.toggle("active", +x.dataset.r === S6.type));
-  [...$("speedPills").children].forEach(x => x.classList.toggle("active", x.dataset.s === "1"));
+  if(S.sec === 0){
+    S1 = mkS1();
+    $("apexSl").value = S1.apex; $("apexV").textContent = S1.apex + "°";
+  } else if(S.sec === 1){
+    S2 = mkS2();
+    [...$("cntPills").children].forEach(x => x.classList.toggle("active", +x.dataset.n === S2.count));
+  } else if(S.sec === 2){
+    S3 = mkS3();
+    $("dirBtn").textContent = "◀ from left";
+  } else if(S.sec === 3){
+    S4 = mkS4();
+    $("triSl").value = S4.angA; $("triV").textContent = S4.angA + "°";
+  } else if(S.sec === 4){
+    S5 = mkS5();
+  } else {
+    S6 = mkS6();
+    [...$("rainPills").children].forEach(x => x.classList.toggle("active", +x.dataset.r === S6.type));
+  }
+  /* light + view defaults for this shape (section and theme are kept) */
+  S.src = "mono"; S.mono = 0; S.vis = COLORS.map(() => true);
+  S.zoom = false; S.playing = false; S.prog = 1; S.drag = null;
   $("chipWarn").style.display = "none"; clearTimeout(warnTimer);
-  s1Enforce();
+  if(S.sec === 0) s1Enforce();
   updateUI();
 });
 
