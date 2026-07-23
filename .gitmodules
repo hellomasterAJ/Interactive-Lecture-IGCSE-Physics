@@ -1,0 +1,3 @@
+[submodule "Junkyard"]
+	path = Junkyard
+	url = git@github.com:hellomasterAJ/Interactive-Lecture-Private.git
