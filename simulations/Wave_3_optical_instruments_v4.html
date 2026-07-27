@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Optical Instruments — Mirrors · Lenses · Eye | HAUS Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<style>
+:root{
+  --bg:#0f172a; --card:#1e293b; --border:#334155;
+  --text:#e2e8f0; --text-dim:#94a3b8; --text-muted:#64748b;
+  --accent:#e3b341; --accent-glow:rgba(227,179,65,0.12);
+  --grid:#1e293b; --graph-bg:#0a0f1a;
+  --green:#34d399; --rose:#fb7185; --violet:#a78bfa;
+  --amber:#fbbf24; --blue:#38bdf8; --orange:#fb923c;
+  --ray:#f5f0dc; --rayv:#9fb4d8;
+}
+.theme-hausnight{
+  --bg:#1a1c20; --card:#26282d; --border:#3a3c42;
+  --text:#FFFFFF; --text-dim:#e0e2e8; --text-muted:#a8aab2;
+  --accent:#F4C01E; --accent-glow:rgba(244,192,30,0.10);
+  --grid:#2a2c32; --graph-bg:#121418;
+  --green:#A6B36A; --rose:#D68B57; --violet:#CBAA6A;
+  --amber:#F4C01E; --blue:#5FB0C4; --orange:#D68B57;
+  --ray:#F7E7A8; --rayv:#8FC5D4;
+}
+.theme-neon{
+  --bg:#0d0f1a; --card:#1a1c2e; --border:#2a2d4a;
+  --text:#e0e0f0; --text-dim:#8888b8; --text-muted:#5a5a8a;
+  --accent:#00ffc8; --accent-glow:rgba(0,255,200,0.1);
+  --grid:#1a1c2e; --graph-bg:#080a14;
+  --green:#00ff88; --rose:#ff4499; --violet:#8844ff;
+  --amber:#ffcc00; --blue:#4488ff; --orange:#ff6633;
+  --ray:#eaffd0; --rayv:#66aaff;
+}
+.theme-light{
+  --bg:#ffffff; --card:#f3f4f6; --border:#d1d5db;
+  --text:#111827; --text-dim:#4b5563; --text-muted:#9ca3af;
+  --accent:#2563eb; --accent-glow:rgba(37,99,235,0.1);
+  --grid:#e5e7eb; --graph-bg:#f9fafb;
+  --green:#059669; --rose:#dc2626; --violet:#7c3aed;
+  --amber:#d97706; --blue:#2563eb; --orange:#ea580c;
+  --ray:#b45309; --rayv:#6366f1;
+}
+.theme-haus{
+  --bg:#F4EEE0; --card:#FFFFFF; --border:#E4DAC4;
+  --text:#1A1712; --text-dim:#5B5344; --text-muted:#948A74;
+  --accent:#A9820F; --accent-glow:rgba(169,130,15,0.12);
+  --grid:#EBE3D0; --graph-bg:#FCFAF2;
+  --green:#4E7A3F; --rose:#B5502E; --violet:#8A6D3B;
+  --amber:#A9820F; --blue:#4A7AB8; --orange:#A87A4A;
+  --ray:#8A5A0F; --rayv:#4A7AB8;
+}
+.theme-clay{
+  --bg:#d4c8be; --card:#e5d9d0; --border:#c2b5aa;
+  --text:#2d2622; --text-dim:#6a5a4d; --text-muted:#928078;
+  --accent:#a55a3a; --accent-glow:rgba(165,90,58,0.1);
+  --grid:#ccbfb5; --graph-bg:#eee6de;
+  --green:#5a7a4a; --rose:#a03a3a; --violet:#6a4d7a;
+  --amber:#b07a2a; --blue:#3a5a7a; --orange:#b05a2a;
+  --ray:#7a4a1a; --rayv:#3a5a7a;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  height:100vh; overflow:hidden; display:flex; flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- top bar ---------- */
+.top-bar{
+  flex:0 0 auto; display:flex; align-items:center; gap:12px;
+  padding:8px 14px; border-bottom:1px solid var(--border); background:var(--card);
+}
+.top-bar h1{font-size:15px;font-weight:700;letter-spacing:.2px;display:flex;align-items:center;gap:8px}
+.top-bar h1 span.sub{font-size:11px;font-weight:500;color:var(--text-dim)}
+.badge-top{
+  font-family:'JetBrains Mono',monospace; font-size:10px; font-weight:700;
+  background:var(--accent); color:#0b1020; border:1px solid var(--accent);
+  border-radius:6px; padding:2px 7px;
+}
+.spacer{flex:1 1 auto}
+.theme-select{
+  background:var(--card); color:var(--text); border:1px solid var(--border);
+  border-radius:8px; padding:4px 8px; font-size:11px; font-family:'Inter',sans-serif; cursor:pointer;
+}
+.brand{
+  background:#F4C01E; border-radius:10px; padding:4px 8px;
+  box-shadow:0 2px 6px rgba(0,0,0,.25); display:flex; align-items:center;
+}
+@media(max-width:640px){ .brand{display:none;} }
+.theme-haus .top-bar h1, .theme-haus .top-bar h1 span{color:#1A1712;}
+.theme-haus .badge-top{background:#F4C01E;color:#1A1712;border-color:#1A1712;}
+.theme-hausnight .top-bar h1, .theme-hausnight .top-bar h1 span{color:#FFFFFF;}
+
+/* ---------- section tabs ---------- */
+.tabs{
+  flex:0 0 auto; display:flex; justify-content:center; gap:6px;
+  padding:7px 10px 3px; background:var(--card); border-bottom:1px solid var(--border);
+}
+.tab{
+  background:transparent; border:1px solid transparent; color:var(--text-dim);
+  font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
+  padding:5px 18px; border-radius:9px; cursor:pointer; transition:.15s;
+}
+.tab:hover{color:var(--text);background:var(--bg)}
+.tab.active{background:var(--accent);color:#0b1020;border-color:var(--accent)}
+
+.subtabs{
+  flex:0 0 auto; display:flex; justify-content:center; gap:8px;
+  padding:5px 0 7px; background:var(--card); border-bottom:1px solid var(--border);
+}
+.subtabs .pill{
+  padding:4px 14px;
+  font-size:clamp(0.65rem,1.2vw,0.85rem);
+  font-family:'Inter',sans-serif; font-weight:600;
+  white-space:nowrap; border-radius:14px;
+  background:var(--bg); border:1px solid var(--border);
+  color:var(--text-dim); cursor:pointer; transition:background .2s,color .2s;
+}
+.subtabs .pill:hover{color:var(--text)}
+.subtabs .pill.active{background:var(--accent);color:#0b1020;border-color:var(--accent)}
+
+/* ---------- toolbar ---------- */
+.toolbar{flex:0 0 auto;background:var(--card);border-bottom:1px solid var(--border);padding:4px 10px}
+.trow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:30px;padding:1px 0}
+.tgroup{display:flex;align-items:center;gap:5px}
+.tgroup.locked>*{opacity:.4;pointer-events:none}
+.tlabel{font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text-muted);margin-right:2px}
+.tsep{width:1px;align-self:stretch;background:var(--border);margin:2px 3px}
+.tbtn{
+  background:var(--bg); color:var(--text-dim); border:1px solid var(--border);
+  border-radius:7px; padding:4px 9px; font-size:11px; font-weight:600;
+  font-family:'Inter',sans-serif; cursor:pointer; transition:.14s; white-space:nowrap;
+}
+.tbtn:hover{color:var(--text);border-color:var(--text-muted)}
+.tbtn.on{background:var(--accent);color:#0b1020;border-color:var(--accent)}
+.tbtn.primary{background:var(--blue);color:#04121c;border-color:var(--blue)}
+.tbtn.primary:hover{filter:brightness(1.1)}
+.pills{display:flex;gap:3px}
+.pill{
+  background:var(--bg); color:var(--text-dim); border:1px solid var(--border);
+  border-radius:7px; padding:4px 9px; font-size:11px; font-weight:600;
+  font-family:'Inter',sans-serif; cursor:pointer; transition:.14s; white-space:nowrap;
+}
+.pill:hover{color:var(--text)}
+.pill.active{background:var(--amber);color:#1a1200;border-color:var(--amber)}
+#grpRayToggles .pill.active{background:var(--blue);color:#04121c;border-color:var(--blue)}
+#speedPills .pill.active{background:var(--accent);color:#0b1020;border-color:var(--accent)}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;height:4px;border-radius:3px;
+  background:var(--border);outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--accent);cursor:pointer;box-shadow:0 0 0 3px var(--accent-glow);
+}
+input[type=range]::-moz-range-thumb{
+  width:14px;height:14px;border:none;border-radius:50%;background:var(--accent);cursor:pointer;
+}
+.slval{
+  font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;
+  color:var(--accent);min-width:112px;display:inline-block;
+}
+
+/* ---------- canvas ---------- */
+.cvwrap{
+  flex:1 1 auto; min-height:230px; position:relative;
+  background:var(--graph-bg); overflow:hidden;
+}
+#cv{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#cv.dragging{cursor:grabbing}
+.ovl{position:absolute;pointer-events:none;display:flex;gap:6px;flex-wrap:wrap}
+.ovl.tl{top:8px;left:10px}
+.ovl.bl{bottom:8px;left:10px}
+.ovl.br{bottom:8px;right:10px}
+.chip{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:600;
+  background:color-mix(in srgb,var(--card) 88%,transparent);
+  border:1px solid var(--border);border-radius:7px;padding:3px 8px;color:var(--text-dim);
+}
+.chip.k{color:var(--accent);border-color:var(--accent)}
+.chip.g{color:var(--green);border-color:var(--green)}
+.chip.v{color:var(--violet);border-color:var(--violet)}
+.chip.o{color:var(--orange);border-color:var(--orange)}
+.chip.zoom{pointer-events:auto;cursor:pointer}
+
+/* ---------- below panel ---------- */
+.below{
+  flex:0 1 auto; overflow-y:auto; max-height:34vh;
+  border-top:1px solid var(--border); background:var(--bg); padding:7px 12px 10px;
+}
+.ptitle{font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);margin:0 0 5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin-bottom:6px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:4px 9px}
+.card .k{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted)}
+.card .v{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;color:var(--text);margin-top:1px}
+.card .v.acc{color:var(--accent)}
+.card .v.grn{color:var(--green)}
+.card .v.vio{color:var(--violet)}
+.eqbox{
+  background:var(--card);border:1px solid var(--border);border-radius:8px;
+  padding:6px 11px;margin-bottom:6px;overflow-x:auto;
+}
+.eqbox .eqrow{display:flex;gap:22px;flex-wrap:wrap;align-items:center;color:var(--text);font-size:13px}
+.note{
+  background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);
+  border-radius:8px;padding:7px 11px;font-size:11.5px;line-height:1.5;color:var(--text-dim);
+}
+.note b{color:var(--text)}
+.note .hl{color:var(--accent);font-weight:600}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>🔍 Optical Instruments <span class="sub">Mirrors · Lenses · Eye</span></h1>
+  <span class="badge-top">v4.0.0</span>
+  <span class="spacer"></span>
+  <select class="theme-select" id="themeSel">
+    <option value="dark">🌙 Classic Dark</option>
+    <option value="hausnight">⌂ HAUS Night</option>
+    <option value="neon">🌃 Cyberpunk Neon</option>
+    <option value="light">☀️ Classic Light</option>
+    <option value="haus">⌂ HAUS Day</option>
+    <option value="clay">🏺 Warm Clay</option>
+  </select>
+  <div class="brand" aria-label="HAUS Academy">
+    <img src="data:image/png;base64,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" alt="HAUS Academy" style="height:20px;width:auto;display:block;">
+  </div>
+</div>
+
+<div class="tabs" id="tabs">
+  <button class="tab active" data-sec="mirror">🪞 Mirrors</button>
+  <button class="tab" data-sec="lens">🔎 Lenses</button>
+  <button class="tab" data-sec="eye">👁️ Eye</button>
+</div>
+
+<div class="subtabs" id="subtabs"></div>
+
+<div class="toolbar">
+  <!-- ROW 1: SHOW | SOURCE | VISION -->
+  <div class="trow">
+    <div class="tgroup">
+      <span class="tlabel">Show</span>
+      <button class="tbtn on" id="btnLabels">🏷 Labels</button>
+      <button class="tbtn on" id="btnNormals">⊥ Normals</button>
+      <button class="tbtn on" id="btnAngles">∠ Angles</button>
+      <button class="tbtn" id="btnEq">📐 Calc</button>
+      <button class="tbtn on" id="btnGrid">🌐 Grid</button>
+    </div>
+    <div class="tsep"></div>
+    <div class="tgroup" id="grpSource">
+      <span class="tlabel">Source</span>
+      <button class="pill active" data-src="object">⊕ Object</button>
+      <button class="pill" data-src="sunlight">Sun Light</button>
+    </div>
+    <div class="tsep" id="sepVision"></div>
+    <div class="tgroup" id="grpCorrect">
+      <span class="tlabel">Vision</span>
+      <button class="tbtn" id="btnCorrect">👓 Correction</button>
+    </div>
+  </div>
+  <!-- ROW 2: OBJECT POSITION | RAYS | PLAY | RESET -->
+  <div class="trow">
+    <div class="tgroup">
+      <span class="tlabel" id="slLabel">Object position</span>
+      <input type="range" id="objSlider" min="40" max="380" step="2" value="280" style="width:120px">
+      <span class="slval" id="slVal">—</span>
+    </div>
+    <div class="tsep"></div>
+    <div class="tgroup" id="grpRayToggles"></div>
+    <div class="tsep"></div>
+    <div class="tgroup">
+      <button class="tbtn primary" id="btnPlay">▶ Play</button>
+      <div class="pills" id="speedPills">
+        <button class="pill" data-s="0.5">0.5×</button>
+        <button class="pill active" data-s="1">1×</button>
+        <button class="pill" data-s="2">2×</button>
+      </div>
+      <button class="tbtn" id="btnReset" title="Reset this diagram to its defaults (keeps tab & theme)">↺ Reset</button>
+    </div>
+  </div>
+</div>
+
+<div class="cvwrap" id="cvwrap">
+  <canvas id="cv"></canvas>
+  <div class="ovl bl" id="ovlBL"></div>
+  <div class="ovl br" id="ovlBR"><span class="chip" id="hintChip">drag object · dbl-click zoom · ← → fine step</span></div>
+</div>
+
+<div class="below">
+  <div class="ptitle">📊 Image characteristics</div>
+  <div class="cards" id="charCards"></div>
+  <div class="cards" id="valCards"></div>
+  <div class="eqbox hidden" id="eqBox"><div class="eqrow" id="eqRow"></div></div>
+  <div class="note" id="noteBox"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script>
+/* ============================================================
+   Optical Instruments v4.0.0 — HAUS Academy
+   Single-file HTML + Canvas 2D · IGCSE Physics 0625
+   ============================================================ */
+"use strict";
+
+/* ---------- logical canvas space (uniformly letterboxed into the element) ---------- */
+const W = 900, H = 460;
+const PX_PER_CM = 40;
+const AX      = 240;              // principal axis — multiple of 40 => sits on a grid line
+const POLE_X  = Math.round(W / 2);// 450 — every optical element sits at canvas centre
+const F_PX    = 120;              // focal length 120 px = 3.0 cm (on the grid)
+
+const SUBS = {
+  mirror: ["plane", "concave", "convex"],
+  lens:   ["convex", "concave"],
+  eye:    ["normal", "myopia", "hyperopia"]
+};
+const SUB_LABELS = {
+  plane:"Plane", concave:"Concave", convex:"Convex",
+  normal:"Normal", myopia:"Short-sight", hyperopia:"Long-sight"
+};
+const RAY_COUNT = {
+  "mirror/plane":2, "mirror/concave":2, "mirror/convex":2,
+  "lens/convex":3,  "lens/concave":3,
+  "eye/normal":3,   "eye/myopia":3,   "eye/hyperopia":3
+};
+const DEF = {
+  "mirror/plane":140, "mirror/concave":280, "mirror/convex":200,
+  "lens/convex":280,  "lens/concave":200,
+  "eye/normal":260,   "eye/myopia":260,     "eye/hyperopia":260
+};
+
+/* ---------- state ---------- */
+function mkS(){
+  return {
+    section:"mirror", type:"plane",
+    source:"object",              // "object" | "sunlight"
+    obj:DEF["mirror/plane"],      // object distance in px, LEFT of POLE_X
+    sun:0,                        // sun height (px) in sunlight mode
+    ho:80,                        // object height px (2.0 cm)
+    correct:false,                // spectacle correction lens (eye only)
+    labels:true, normals:true, angles:true, calc:false, grid:true,
+    rayOn:[true,true,true,true],
+    zoom:false, zf:2.5, focus:{x:POLE_X,y:AX}, pan:{x:0,y:0},
+    playing:false, prog:1, speed:1,
+    theme:"dark", drag:null
+  };
+}
+let S = mkS();
+
+/* ---------- tiny helpers ---------- */
+const $ = id => document.getElementById(id);
+const clamp = (v,a,b) => v<a?a:(v>b?b:v);
+const fmt  = v => (Math.round(v*10)/10).toFixed(1);
+const fmt2 = v => (Math.round(v*100)/100).toFixed(2);
+const pxToCm = px => fmt(px / PX_PER_CM);
+const dist = (a,b) => Math.hypot(b.x-a.x, b.y-a.y);
+const sub  = (a,b) => ({x:a.x-b.x, y:a.y-b.y});
+const add  = (a,b) => ({x:a.x+b.x, y:a.y+b.y});
+const mul  = (a,k) => ({x:a.x*k,   y:a.y*k});
+const norm = a => { const l=Math.hypot(a.x,a.y)||1; return {x:a.x/l, y:a.y/l}; };
+const ext  = (p,d,L) => ({x:p.x+d.x*L, y:p.y+d.y*L});
+
+/* line through p1,p2 evaluated at a given x (returns null if vertical) */
+function atX(p1,p2,x){
+  const dx = p2.x-p1.x;
+  if(Math.abs(dx) < 1e-9) return null;
+  const t = (x-p1.x)/dx;
+  return {x, y: p1.y + (p2.y-p1.y)*t};
+}
+/* intersection of the infinite lines p1p2 and p3p4 */
+function lineInt(p1,p2,p3,p4){
+  const a1=p2.y-p1.y, b1=p1.x-p2.x, c1=a1*p1.x+b1*p1.y;
+  const a2=p4.y-p3.y, b2=p3.x-p4.x, c2=a2*p3.x+b2*p3.y;
+  const det=a1*b2-a2*b1;
+  if(Math.abs(det)<1e-9) return null;
+  return {x:(b2*c1-b1*c2)/det, y:(a1*c2-a2*c1)/det};
+}
+/* segment-segment intersection (returns point or null) */
+function segInt(p1,p2,p3,p4){
+  const d1={x:p2.x-p1.x,y:p2.y-p1.y}, d2={x:p4.x-p3.x,y:p4.y-p3.y};
+  const den = d1.x*d2.y - d1.y*d2.x;
+  if(Math.abs(den)<1e-12) return null;
+  const t = ((p3.x-p1.x)*d2.y - (p3.y-p1.y)*d2.x)/den;
+  const u = ((p3.x-p1.x)*d1.y - (p3.y-p1.y)*d1.x)/den;
+  if(t<-1e-6 || u<-1e-6 || u>1+1e-6) return null;
+  return {x:p1.x+d1.x*t, y:p1.y+d1.y*t, t, u};
+}
+
+/* ---------- CANVAS CLIPPING (every ray must stay inside) ---------- */
+/* Returns p2 pulled back to the canvas box, or null if the segment never enters it. */
+function clipToCanvas(p1, p2, margin){
+  margin = (margin==null) ? 20 : margin;
+  const xmin=margin, xmax=W-margin, ymin=margin, ymax=H-margin;
+  let dx=p2.x-p1.x, dy=p2.y-p1.y;
+  let t0=0, t1=1;
+  const P=[-dx,dx,-dy,dy], Q=[p1.x-xmin, xmax-p1.x, p1.y-ymin, ymax-p1.y];
+  for(let i=0;i<4;i++){
+    if(Math.abs(P[i])<1e-9){ if(Q[i]<0) return null; continue; }
+    const r=Q[i]/P[i];
+    if(P[i]<0){ if(r>t1) return null; if(r>t0) t0=r; }
+    else      { if(r<t0) return null; if(r<t1) t1=r; }
+  }
+  if(t1<=0) return null;
+  return {x:p1.x+dx*t1, y:p1.y+dy*t1};
+}
+/* Cast a ray from p in direction d, up to maxL, clipped to the canvas box. */
+function castClipped(p, d, maxL, margin){
+  const far = ext(p, norm(d), maxL==null?1600:maxL);
+  const c = clipToCanvas(p, far, margin);
+  return c || far;
+}
+const inBox = (p,m) => p.x> (m||20) && p.x < W-(m||20) && p.y > (m||20) && p.y < H-(m||20);
+
+/* ============================================================
+   canvas plumbing — uniform letterbox scale so nothing distorts
+   ============================================================ */
+const cv = $("cv");
+const ctx = cv.getContext("2d");
+let VS = {s:1, ox:0, oy:0};
+
+function resize(){
+  const wrap = $("cvwrap");
+  const r = wrap.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  cv.width  = Math.max(1, Math.round(r.width  * dpr));
+  cv.height = Math.max(1, Math.round(r.height * dpr));
+  cv.style.width = r.width + "px";
+  cv.style.height = r.height + "px";
+  const s = Math.min(r.width / W, r.height / H);
+  VS = { s, ox:(r.width - W*s)/2, oy:(r.height - H*s)/2, dpr };
+  draw();
+}
+/* screen(event) -> logical canvas coords */
+function evtPt(e){
+  const r = cv.getBoundingClientRect();
+  let x = (e.clientX - r.left - VS.ox)/VS.s;
+  let y = (e.clientY - r.top  - VS.oy)/VS.s;
+  if(S.zoom){
+    const f=S.zf, fx=S.focus.x+S.pan.x, fy=S.focus.y+S.pan.y;
+    x = (x - (W/2 - fx*f))/f;
+    y = (y - (H/2 - fy*f))/f;
+  }
+  return {x,y};
+}
+
+const _colCache = {};
+let _colTheme = "";
+function col(name){
+  if(_colTheme !== S.theme){ _colTheme = S.theme; for(const k in _colCache) delete _colCache[k]; }
+  if(_colCache[name]) return _colCache[name];
+  const v = getComputedStyle(document.body).getPropertyValue(name).trim() || "#888";
+  _colCache[name] = v;
+  return v;
+}
+function alpha(c, a){
+  /* accepts #rrggbb */
+  if(c[0] !== "#") return c;
+  const n = parseInt(c.slice(1),16);
+  const r = c.length===7 ? (n>>16)&255 : ((n>>8)&15)*17;
+  const g = c.length===7 ? (n>>8)&255  : ((n>>4)&15)*17;
+  const b = c.length===7 ? n&255       : (n&15)*17;
+  return "rgba("+r+","+g+","+b+","+a+")";
+}
+
+/* ============================================================
+   low-level drawing
+   ============================================================ */
+function line(a,b,color,w,dash){
+  ctx.save();
+  ctx.strokeStyle=color; ctx.lineWidth=w||1.6; ctx.lineCap="round";
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  ctx.restore();
+}
+function arrowHeadAt(p, ang, color, size){
+  const s = size||9;
+  ctx.save(); ctx.fillStyle=color;
+  ctx.translate(p.x,p.y); ctx.rotate(ang);
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-s,-s*0.42); ctx.lineTo(-s,s*0.42);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function pathLen(pts){ let L=0; for(let i=1;i<pts.length;i++) L+=dist(pts[i-1],pts[i]); return L; }
+
+/* progressive polyline with a direction arrowhead at each segment's midpoint */
+function poly(pts, color, w, dash, prog, opts){
+  if(!pts || pts.length<2) return;
+  opts = opts||{};
+  const total = pathLen(pts);
+  if(total < 0.5) return;
+  let budget = (prog==null?1:clamp(prog,0,1))*total;
+  const drawnMid = [];
+  ctx.save();
+  ctx.strokeStyle=color; ctx.lineWidth=w||1.9; ctx.lineCap="round"; ctx.lineJoin="round";
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(pts[0].x,pts[0].y);
+  for(let i=1;i<pts.length;i++){
+    const seg = dist(pts[i-1],pts[i]);
+    if(seg<1e-6) continue;
+    if(budget<=0) break;
+    if(seg<=budget){
+      ctx.lineTo(pts[i].x,pts[i].y);
+      drawnMid.push([pts[i-1],pts[i],seg]);
+      budget-=seg;
+    } else {
+      const t=budget/seg;
+      ctx.lineTo(pts[i-1].x+(pts[i].x-pts[i-1].x)*t, pts[i-1].y+(pts[i].y-pts[i-1].y)*t);
+      if(t>0.55) drawnMid.push([pts[i-1],pts[i],seg]);
+      budget=0;
+    }
+  }
+  ctx.stroke(); ctx.restore();
+  if(opts.arrows === false) return;
+  for(const [a,b,seg] of drawnMid){
+    if(seg < 34) continue;
+    const mid={x:(a.x+b.x)/2, y:(a.y+b.y)/2};
+    arrowHeadAt(mid, Math.atan2(b.y-a.y,b.x-a.x), color, opts.asz||8);
+  }
+}
+function dot(p,color,r){
+  ctx.save(); ctx.fillStyle=color; ctx.beginPath();
+  ctx.arc(p.x,p.y,r||3.4,0,Math.PI*2); ctx.fill(); ctx.restore();
+}
+function label(txt,x,y,color,o){
+  o=o||{};
+  ctx.save();
+  ctx.font = (o.bold===false?"":"700 ") + (o.size||11) + "px " + (o.mono===false ? "'Inter',sans-serif" : "'JetBrains Mono',monospace");
+  ctx.textAlign = o.align||"center";
+  ctx.textBaseline = o.baseline||"middle";
+  if(o.bg){
+    const m = ctx.measureText(txt);
+    const pw = m.width+7, ph=(o.size||11)+6;
+    let bx = x - (o.align==="right"?pw-4:(o.align==="left"?4:pw/2));
+    let by = y - (o.baseline==="bottom"?ph-3:(o.baseline==="top"?3:ph/2));
+    ctx.fillStyle = alpha(col("--graph-bg"),0.78);
+    ctx.beginPath(); ctx.roundRect(bx,by,pw,ph,4); ctx.fill();
+  }
+  if(o.alphaV!=null) ctx.globalAlpha=o.alphaV;
+  ctx.fillStyle=color;
+  ctx.fillText(txt,x,y);
+  ctx.restore();
+}
+/* vertical object / image arrow standing on the principal axis */
+function drawArrow(x, baseY, tipY, color, dashed, w){
+  line({x,y:baseY},{x,y:tipY},color, w||3, dashed?[6,5]:null);
+  arrowHeadAt({x,y:tipY}, tipY<baseY ? -Math.PI/2 : Math.PI/2, color, 10);
+}
+/* short tick + label on the principal axis */
+function axisTick(x, txt, color, below){
+  if(x < 8 || x > W-8) return;
+  line({x,y:AX-7},{x,y:AX+7}, color, 1.6);
+  if(S.labels) label(txt, x, below ? AX+19 : AX-19, color, {size:11});
+}
+/* arc between two absolute angles, taking the SHORTER sweep */
+function angleArc(c, a1, a2, r, color, txt){
+  let d = a2-a1;
+  while(d> Math.PI) d-=2*Math.PI;
+  while(d<-Math.PI) d+=2*Math.PI;
+  if(Math.abs(d) < 0.035) return;
+  ctx.save();
+  ctx.strokeStyle=color; ctx.lineWidth=1.4; ctx.setLineDash([3,2]);
+  ctx.beginPath(); ctx.arc(c.x,c.y,r, a1, a1+d, d<0); ctx.stroke(); ctx.restore();
+  if(txt && S.labels){
+    const m=a1+d/2;
+    label(txt, c.x+(r+12)*Math.cos(m), c.y+(r+12)*Math.sin(m), color, {size:10});
+  }
+}
+function drawNormalLine(p, dirx, len, color){
+  const L = len||46;
+  line({x:p.x-L*dirx.x, y:p.y-L*dirx.y}, {x:p.x+L*dirx.x, y:p.y+L*dirx.y}, color, 1.2, [4,4]);
+}
+
+/* observer eye icon (plane mirror) */
+function drawEyeIcon(p, color, hy){
+  const b = hy || 13, a = b*1.45;
+  ctx.save();
+  ctx.strokeStyle=color; ctx.lineWidth=1.9;
+  ctx.beginPath();
+  ctx.moveTo(p.x-a,p.y);
+  ctx.quadraticCurveTo(p.x,p.y-b, p.x+a,p.y);
+  ctx.quadraticCurveTo(p.x,p.y+b, p.x-a,p.y);
+  ctx.stroke();
+  ctx.fillStyle=color;
+  ctx.beginPath(); ctx.arc(p.x,p.y,Math.max(3.4,b*0.34),0,Math.PI*2); ctx.fill();
+  ctx.restore();
+}
+
+/* ============================================================
+   background: grid + cm labels + principal axis
+   ============================================================ */
+function drawBg(){
+  ctx.fillStyle = col("--graph-bg");
+  ctx.fillRect(-2000,-2000, W+4000, H+4000);
+  if(S.grid){
+    ctx.save();
+    ctx.strokeStyle = col("--grid"); ctx.lineWidth=1; ctx.globalAlpha=0.55;
+    ctx.beginPath();
+    for(let x=0;x<=W;x+=PX_PER_CM){ ctx.moveTo(x+0.5,0); ctx.lineTo(x+0.5,H); }
+    for(let y=0;y<=H;y+=PX_PER_CM){ ctx.moveTo(0,y+0.5); ctx.lineTo(W,y+0.5); }
+    ctx.stroke(); ctx.restore();
+    drawCmLabels();
+    label("1 cm = 40 px", W-12, 16, col("--text-muted"),
+          {size:9, align:"right", baseline:"middle", alphaV:0.75});
+  }
+}
+function drawCmLabels(){
+  ctx.save();
+  ctx.font="9px 'JetBrains Mono',monospace";
+  ctx.fillStyle=col("--text-muted");
+  ctx.globalAlpha=0.55; ctx.textAlign="center"; ctx.textBaseline="bottom";
+  const y = H-8;
+  for(let x=PX_PER_CM; x<W-60; x+=PX_PER_CM){
+    const cm = x/PX_PER_CM;
+    if(cm%2===0) ctx.fillText(String(cm), x, y);
+  }
+  ctx.restore();
+}
+function drawAxis(x0,x1){
+  line({x:x0==null?10:x0, y:AX}, {x:x1==null?W-10:x1, y:AX}, col("--text-muted"), 1.4, [2,4]);
+}
+/* ============================================================
+   SECTION 1 — MIRRORS
+   ------------------------------------------------------------
+   ONE geometry source (mirrorGeom) feeds the drawing, the hatching,
+   the ray/curve intersection AND the surface normals, so the picture
+   and the physics can never drift apart.
+   ============================================================ */
+
+const APER = 150;                       // half aperture height (px)
+const SAG_B = 5625 / F_PX;              // ≈46.9 px — makes the parabola's TRUE focal length = F_PX
+
+/* dir = +1 concave (hollow faces LEFT) · dir = -1 convex (bulge faces LEFT) · dir = 0 plane */
+function mirrorGeom(dir){
+  const B = dir === 0 ? 0 : SAG_B;
+  const topY = AX - APER, botY = AX + APER;
+  /* param s ∈ [-1,1] :  x = POLE_X - dir*B*s²   ,  y = AX + APER*s   (true parabola, focus at f) */
+  const pt = s => ({ x: POLE_X - dir*B*s*s, y: AX + APER*s });
+  /* outward (reflective-side) unit normal — reflective face is the LEFT face for all three */
+  const nrm = s => {
+    const n = { x: -APER, y: -dir*2*B*s };
+    const l = Math.hypot(n.x,n.y)||1;
+    return { x:n.x/l, y:n.y/l };
+  };
+  return { dir, B, topY, botY, pt, nrm, rimX: POLE_X - dir*B };
+}
+
+function drawMirrorSurface(g){
+  const N = 90;
+  const pts = [];
+  for(let i=0;i<=N;i++) pts.push(g.pt(-1 + 2*i/N));
+  ctx.save();
+  ctx.strokeStyle = col("--blue"); ctx.lineWidth = 3.2; ctx.lineCap="round";
+  ctx.beginPath(); ctx.moveTo(pts[0].x, pts[0].y);
+  for(let i=1;i<pts.length;i++) ctx.lineTo(pts[i].x, pts[i].y);
+  ctx.stroke(); ctx.restore();
+  drawMirrorHatching(g);
+  /* pole marker */
+  dot({x:POLE_X, y:AX}, col("--blue"), 3);
+}
+
+/* hatching sits on the NON-reflective back = the RIGHT face for plane, concave and convex alike */
+function drawMirrorHatching(g){
+  ctx.save();
+  ctx.strokeStyle = col("--text-muted"); ctx.lineWidth = 1; ctx.globalAlpha = 0.7;
+  for(let y = g.topY+4; y <= g.botY-4; y += 13){
+    const s = (y - AX)/APER;
+    const sx = g.pt(s).x;                     // point on the very curve that was drawn
+    const x0 = sx + 3, y0 = y;                // 3 px clear of the surface
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + 11, y0 + 7); ctx.stroke();
+  }
+  ctx.restore();
+}
+
+/* Ray → mirror-curve intersection. Returns {p, s} or null when the ray misses the aperture. */
+function rayMirrorIntersect(start, dir, g){
+  const d = norm(dir);
+  const far = ext(start, d, 2400);
+  const N = 260;
+  let best = null;
+  let prev = g.pt(-1);
+  for(let i=1;i<=N;i++){
+    const s = -1 + 2*i/N;
+    const cur = g.pt(s);
+    const hit = segInt(start, far, prev, cur);
+    if(hit && hit.t > 1e-4){
+      if(!best || hit.t < best.t) best = { p:{x:hit.x,y:hit.y}, s: (-1+2*(i-1)/N) + (2/N)*hit.u, t:hit.t };
+    }
+    prev = cur;
+  }
+  return best;
+}
+
+/* ---------------- 1a. PLANE MIRROR ---------------- */
+function mirrorPlane(){
+  const g = mirrorGeom(0);
+  const RAY = col("--ray"), VIR = col("--rayv");
+  const objX = POLE_X - S.obj, ho = S.ho;
+  const tip = { x:objX, y:AX-ho };
+
+  drawAxis(10, POLE_X + 260);
+  drawMirrorSurface(g);
+  if(S.labels){
+    label("Plane mirror", POLE_X + 30, g.topY - 12, col("--blue"), {size:11, align:"left"});
+    label("P", POLE_X, AX+19, col("--blue"), {size:11});
+  }
+
+  /* two rays leaving the object tip, striking the mirror 22 px above / below the axis */
+  const hits = [ {x:POLE_X, y:AX-22}, {x:POLE_X, y:AX+22} ];
+  const virtualTip = { x: 2*POLE_X - objX, y: AX-ho };      // mirror image of the tip
+  const eyeX = clamp(objX - 96, 74, POLE_X-120);
+  const ends = [];
+
+  for(let i=0;i<2;i++){
+    const M = hits[i];
+    const din = norm(sub(M, tip));                          // incident direction
+    const dout = { x:-din.x, y:din.y };                     // reflected (vertical mirror ⇒ flip x)
+    let end = ext(M, dout, Math.abs((eyeX - M.x)/dout.x));
+    end = clipToCanvas(M, end, 24) || end;
+    ends.push(end);
+    if(!S.rayOn[i+1]) continue;
+
+    poly([tip, M],   RAY, 1.9, null, S.prog);
+    poly([M,  end],  RAY, 1.9, null, S.prog);
+    arrowHeadAt(end, Math.atan2(dout.y,dout.x), RAY, 9);
+
+    /* dashed virtual extension — stops just past the virtual image */
+    const bd = {x:-dout.x, y:-dout.y};
+    const projI = (virtualTip.x-M.x)*bd.x + (virtualTip.y-M.y)*bd.y;
+    let back = ext(M, bd, Math.max(30, projI+16));
+    back = clipToCanvas(M, back, 22) || back;
+    poly([M, back], VIR, 1.3, [5,5], S.prog, {arrows:false});
+
+    if(S.normals) drawNormalLine(M, {x:1,y:0}, 46, col("--text-muted"));
+    if(S.angles){
+      const aI = Math.atan2(-din.y, -din.x);                 // reversed incident
+      const aR = Math.atan2(dout.y, dout.x);                 // reflected
+      angleArc(M, Math.PI, aI, 30, col("--amber"),  "θi");
+      angleArc(M, Math.PI, aR, 40, col("--green"),  "θr");
+    }
+    dot(M, RAY, 3);
+  }
+
+  /* observer eye — sits between the two diverging reflected rays, behind their ends */
+  {
+    const gap = Math.abs(ends[0].y - ends[1].y);
+    const eyeY = (ends[0].y + ends[1].y)/2;
+    drawEyeIcon({x:eyeX-6, y:eyeY}, col("--green"), clamp(gap/2+4, 13, 34));
+    if(S.labels) label("Eye", eyeX-6, eyeY - clamp(gap/2+4,13,34) - 12, col("--green"), {size:10, bg:true});
+  }
+
+  /* object + virtual image */
+  drawArrow(objX, AX, tip.y, col("--rose"), false, 3);
+  drawArrow(virtualTip.x, AX, virtualTip.y, col("--violet"), true, 2.6);
+  if(S.labels){
+    label("Object", objX, AX+30, col("--rose"), {size:10, bg:true});
+    label("Virtual image", virtualTip.x, AX+30, col("--violet"), {size:10, bg:true});
+  }
+
+  const u = S.obj;
+  return {
+    status:"Plane mirror · image as far behind as the object is in front",
+    chips:[ {t:"Plane mirror", cls:"k"}, {t:"Virtual image", cls:"v"} ],
+    chars:[
+      {k:"Nature", v:"Virtual", cls:"vio"},
+      {k:"Orientation", v:"Upright"},
+      {k:"Size", v:"Same size as object"},
+      {k:"Special", v:"Laterally inverted"}
+    ],
+    vals:[
+      {k:"Object distance", v: pxToCm(u)+" cm", cls:"acc"},
+      {k:"Image distance",  v: pxToCm(u)+" cm (behind)", cls:"vio"},
+      {k:"Object height",   v: pxToCm(ho)+" cm"},
+      {k:"Magnification",   v:"1.00"}
+    ],
+    eq:["\\theta_i=\\theta_r","\\text{image distance}=\\text{object distance}","|m|=1"],
+    note:"A <b>plane mirror</b> forms a <span class='hl'>virtual, upright</span> image the same size as the object, "+
+         "at an equal distance behind the mirror. The image is <b>laterally inverted</b> (left ↔ right). "+
+         "Each reflected ray obeys the law of reflection, <b>θi = θr</b>, measured from the normal. "+
+         "The eye receives the two diverging reflected rays and traces them straight back, so the brain places the image behind the mirror."
+  };
+}
+
+/* ---------------- 1b/1c. CURVED MIRRORS ----------------
+   The image position comes from the mirror formula, and every reflected ray is
+   then drawn through that exact point. Because the reflection happens on the
+   real curved surface (not on the pole plane), aiming each reflected ray at the
+   image keeps the picture and the arithmetic in perfect agreement — the
+   direction differs from the textbook "through F" rule by well under a degree.  */
+function mirrorCurved(dir){
+  const g = mirrorGeom(dir);
+  const RAY = col("--ray"), VIR = col("--rayv");
+  const f = F_PX, u = S.obj, ho = S.ho;
+  const objX = POLE_X - u;
+  const tip = { x:objX, y:AX-ho };
+  const Fp = { x: POLE_X - dir*f,   y:AX };
+  const Cp = { x: POLE_X - dir*2*f, y:AX };
+  const concave = dir > 0;
+  const atF = concave && Math.abs(u - f) < 14;
+
+  /* ---- mirror formula (concave f>0 · convex f<0) ---- */
+  const fSig = concave ? f : -f;
+  const v = atF ? Infinity : u*fSig/(u - fSig);      // +ve real (in front) · −ve virtual (behind)
+  const m = -v/u;                                     // −ve inverted · +ve upright
+  const virt = !atF && v < 0;
+  const img  = atF ? null : { x: POLE_X - v, y: AX - ho*m };
+  const offscreen = img ? !inBox(img, 26) : false;
+
+  drawAxis(10, W-10);
+  if(!concave) line({x:POLE_X, y:AX}, {x:Math.min(W-14, Cp.x+14), y:AX}, col("--text-muted"), 1.2, [3,5]);
+  drawMirrorSurface(g);
+  axisTick(Fp.x, "F", col("--accent"), false);
+  axisTick(Cp.x, "C", col("--accent"), false);
+  if(S.labels){
+    label(concave?"Concave mirror":"Convex mirror", POLE_X + (concave?26:60), g.topY-12,
+          col("--blue"), {size:11, align:"left"});
+    label("P", POLE_X+12, AX+19, col("--blue"), {size:11});
+  }
+
+  /* ---- the two construction rays ---- */
+  const rays = [];
+  /* R1 — parallel to the principal axis, reflects through F */
+  {
+    const h = rayMirrorIntersect(tip, {x:1,y:0}, g);
+    if(h) rays.push({ hit:h, aimF:Fp, tag:"R1" });
+  }
+  /* R2 — through F (real image) or to the pole P (virtual image / convex) */
+  {
+    const cand = [];
+    if(concave && !virt && !atF){
+      let d = sub(Fp, tip); if(d.x < 0) d = mul(d,-1);
+      cand.push({ d, tag:"R2" });
+    }
+    cand.push({ d: sub({x:POLE_X,y:AX}, tip), tag:"R2" });   // pole ray — always strikes the mirror
+    for(const c of cand){
+      const h = rayMirrorIntersect(tip, c.d, g);
+      if(h){ rays.push({ hit:h, tag:c.tag }); break; }
+    }
+  }
+
+  /* ---- draw ---- */
+  rays.forEach((r, i) => {
+    if(!S.rayOn[i+1]) return;
+    const H = r.hit.p;
+    /* outgoing direction: towards the image (real) or away from it (virtual) */
+    let out;
+    if(atF || !img){
+      if(r.aimF) out = norm(sub(Fp, H));                       // parallel ray still goes through F
+      else { const din = norm(sub(H,tip)); out = {x:-din.x, y:din.y}; }   // pole ray
+    }
+    else if(virt) out = norm(sub(H, img));
+    else          out = norm(sub(img, H));
+
+    poly([tip, H], RAY, 1.9, null, S.prog);
+    let L = concave ? 660 : 430;
+    if(img && !virt && !offscreen){
+      const proj = (img.x-H.x)*out.x + (img.y-H.y)*out.y;
+      if(proj > 12) L = proj + 14;
+    }
+    const end = castClipped(H, out, L, 20);
+    poly([H, end], RAY, 1.9, null, S.prog);
+    arrowHeadAt(end, Math.atan2(out.y,out.x), RAY, 9);
+    dot(H, RAY, 3);
+
+    if(virt && img && !offscreen){
+      const bd = mul(out,-1);
+      const projI = (img.x-H.x)*bd.x + (img.y-H.y)*bd.y;
+      if(projI > 6){
+        let be = ext(H, bd, projI+14);
+        be = clipToCanvas(H, be, 20) || be;
+        poly([H, be], VIR, 1.3, [5,5], S.prog, {arrows:false});
+      }
+    }
+    if(S.normals) drawNormalLine(H, g.nrm(r.hit.s), 44, col("--text-muted"));
+    if(S.angles){
+      const aN  = Math.atan2(g.nrm(r.hit.s).y, g.nrm(r.hit.s).x);
+      const din = norm(sub(H, tip));
+      angleArc(H, aN, Math.atan2(-din.y,-din.x), 30, col("--amber"), "θi");
+      angleArc(H, aN, Math.atan2(out.y, out.x),  40, col("--green"), "θr");
+    }
+    if(S.labels) label(r.tag, H.x-18, H.y-14, RAY, {size:9});
+  });
+
+  /* ---- object + image ---- */
+  drawArrow(objX, AX, tip.y, col("--rose"), false, 3);
+  if(S.labels) label("Object", objX, AX+36, col("--rose"), {size:10, bg:true});
+
+  let nature="—", orient="—", size="—";
+  if(atF){
+    nature="No image"; orient="—"; size="Image at infinity";
+  } else if(img){
+    nature = virt ? "Virtual" : "Real";
+    orient = m > 0 ? "Upright" : "Inverted";
+    size   = Math.abs(m) > 1.06 ? "Magnified" : (Math.abs(m) < 0.94 ? "Diminished" : "Same size");
+    if(!offscreen){
+      drawArrow(img.x, AX, img.y, virt?col("--violet"):col("--green"), virt, virt?2.6:3);
+      dot(img, virt?col("--violet"):col("--green"), 3.6);
+      if(S.labels) label(virt?"Virtual image":"Real image", img.x, img.y + (img.y>AX?18:-18),
+                         virt?col("--violet"):col("--green"), {size:10, bg:true});
+    }
+  }
+
+  let cse;
+  if(concave){
+    if(atF)               cse = "Object at F";
+    else if(u > 2*f+14)   cse = "Object beyond C";
+    else if(u > 2*f-14)   cse = "Object at C";
+    else if(u > f)        cse = "Object between C and F";
+    else                  cse = "Object between F and the mirror";
+  } else cse = "Object in front of a convex mirror";
+
+  const chips = [ {t:(concave?"Concave":"Convex")+" mirror · f = "+(concave?"":"−")+pxToCm(f)+" cm", cls:"k"},
+                  {t:cse, cls:"o"},
+                  {t: atF ? "No image" : (virt?"Virtual image":"Real image"), cls: virt?"v":"g"} ];
+  if(offscreen) chips.push({t:"image forms off-screen", cls:"o"});
+
+  const note = concave
+    ? "A <b>concave (converging) mirror</b> curves in around the incoming light. A ray <b>parallel to the principal axis reflects through F</b>, "+
+      "a ray <b>through F reflects parallel</b> to the axis, and a ray hitting the <b>pole P</b> reflects at an equal angle on the other side of the axis. "+
+      "When the object is <span class='hl'>beyond F</span> the reflected rays really cross, giving a <b>real, inverted</b> image you could catch on a screen. "+
+      "When the object is <span class='hl'>between F and the mirror</span> the reflected rays diverge — only their <b>dashed backward extensions</b> meet, "+
+      "so the image is <b>virtual, upright and magnified</b> (the shaving / make-up mirror)."
+    : "A <b>convex (diverging) mirror</b> bulges towards the light. A ray parallel to the axis reflects <b>as though it came from F behind the mirror</b>; "+
+      "a ray striking the pole reflects at an equal angle on the other side of the axis. The reflected rays always diverge, so the image is "+
+      "<span class='hl'>always virtual, upright and diminished</span> and always lies between P and F behind the mirror. "+
+      "The wide field of view is why they are used as <b>car door mirrors and security mirrors</b>.";
+
+  return {
+    status: cse,
+    chips,
+    chars:[
+      {k:"Nature", v:nature, cls: virt?"vio":"grn"},
+      {k:"Orientation", v:orient},
+      {k:"Size", v:size},
+      {k:"Case", v:cse}
+    ],
+    vals:[
+      {k:"Object distance", v: pxToCm(u)+" cm", cls:"acc"},
+      {k:"Image distance",  v: atF ? "∞" : pxToCm(Math.abs(v))+" cm"+(virt?" (behind)":""), cls: virt?"vio":"grn"},
+      {k:"Focal length",    v: (concave?"":"−")+pxToCm(f)+" cm"},
+      {k:"Magnification",   v: atF ? "—" : fmt2(Math.abs(m)) }
+    ],
+    eq:["\\frac{1}{f}=\\frac{1}{u}+\\frac{1}{v}", "|m|=\\frac{v}{u}=\\frac{h_i}{h_o}",
+        concave?"f>0\\ \\text{(converging)}":"f<0\\ \\text{(diverging)}"],
+    note
+  };
+}
+/* ============================================================
+   SECTION 2 — LENSES
+   ============================================================ */
+
+const LENS_HY = 80;             // half aperture of the main lens (tall enough for every ray)
+const SUN_L0  = 390;            // px from the left edge of the ray bundle to the lens
+
+function drawLensShape(poleX, converging){
+  const hy = LENS_HY, topY = AX-hy, botY = AX+hy;
+  ctx.save();
+  ctx.beginPath();
+  if(converging){
+    /* biconvex = the overlap of two circles; each face is a true circular arc */
+    const R = 130;
+    const off = Math.sqrt(R*R - hy*hy);          // ≈102.5
+    const a = Math.atan2(hy, off);               // ≈0.663
+    ctx.arc(poleX+off, AX, R, -(Math.PI-a),  (Math.PI-a), true);   // left face, bulging LEFT
+    ctx.arc(poleX-off, AX, R,  a, -a, true);                        // right face, bulging RIGHT
+    ctx.closePath();
+    ctx.fillStyle = "rgba(90,160,220,0.16)";
+  } else {
+    /* biconcave = thick rims, thin waist; each face is a circular arc curving inwards */
+    const rimW = 28, sag = 20;
+    const R  = (sag*sag + hy*hy)/(2*sag);        // 170
+    const cOff = R - sag;                        // 150
+    const aL = Math.atan2(hy, cOff);             // ≈0.4899
+    ctx.moveTo(poleX-rimW, topY);
+    ctx.arc(poleX-rimW-cOff, AX, R, -aL, aL, false);                 // left face, curving inwards
+    ctx.lineTo(poleX+rimW, botY);
+    ctx.arc(poleX+rimW+cOff, AX, R, Math.PI-aL, Math.PI+aL, false);  // right face, curving inwards
+    ctx.closePath();
+    ctx.fillStyle = "rgba(90,160,250,0.13)";
+  }
+  ctx.fill();
+  ctx.strokeStyle = col("--blue"); ctx.lineWidth = 2.4; ctx.stroke();
+  /* thin guide line marking the refracting plane */
+  ctx.strokeStyle = col("--blue"); ctx.lineWidth = 0.9; ctx.globalAlpha = 0.35;
+  ctx.beginPath(); ctx.moveTo(poleX, topY); ctx.lineTo(poleX, botY); ctx.stroke();
+  ctx.restore();
+  /* converging / diverging arrow glyphs at the rims */
+  const gl = col("--blue");
+  ctx.save(); ctx.globalAlpha=.8;
+  if(converging){
+    arrowHeadAt({x:poleX, y:topY-3},  Math.PI/2, gl, 7);
+    arrowHeadAt({x:poleX, y:botY+3}, -Math.PI/2, gl, 7);
+  } else {
+    arrowHeadAt({x:poleX, y:topY-10}, -Math.PI/2, gl, 7);
+    arrowHeadAt({x:poleX, y:botY+10},  Math.PI/2, gl, 7);
+  }
+  ctx.restore();
+}
+
+/* ---- Sun Light: three parallel rays, physically consistent focal-plane convergence ---- */
+function drawSunRays(converging){
+  const f = F_PX, o = S.sun;
+  const d = norm({x:SUN_L0, y:o});                    // sun above the axis ⇒ rays travel downwards
+  const RAY = col("--ray"), VIR = col("--rayv");
+  /* every parallel bundle meets on the FOCAL PLANE, at the height where the
+     undeviated centre-of-lens ray crosses it — the axis point only when o = 0 */
+  const fy = AX + (converging ? 1 : -1) * f * o / SUN_L0;
+  const Fpt = { x: POLE_X + (converging ? f : -f), y: fy };
+
+  axisTick(POLE_X + f, converging ? "F′" : "F′", col("--accent"), false);
+  axisTick(POLE_X - f, "F", col("--accent"), true);
+  dot(Fpt, converging ? col("--green") : col("--violet"), 4.2);
+  if(S.labels) label(converging ? "focus" : "virtual focus", Fpt.x, fy - 20,
+                     converging?col("--green"):col("--violet"), {size:10, bg:true});
+
+  const offs = [-30, 0, 30];
+  for(let i=0;i<3;i++){
+    if(!S.rayOn[i]) continue;
+    const off = offs[i];
+    const hit = { x: POLE_X, y: AX + off };           // entry height on the lens
+    const start = { x: POLE_X-SUN_L0, y: hit.y - d.y/d.x*SUN_L0 };
+    const c = i===1 ? RAY : alpha(RAY, .62);
+    const sIn = clipToCanvas(hit, start, 14) || start; // trim the incoming leg to the canvas
+    poly([sIn, hit], c, i===1?1.9:1.6, null, S.prog);
+
+    let outDir;
+    if(converging) outDir = norm(sub(Fpt, hit));
+    else           outDir = norm(sub(hit, Fpt));
+    let L = 460;
+    if(converging){ L = dist(hit, Fpt) + 26; }
+    const end = castClipped(hit, outDir, L, 20);
+    poly([hit, end], c, i===1?1.9:1.6, null, S.prog);
+    arrowHeadAt(end, Math.atan2(outDir.y,outDir.x), c, 8);
+    dot(hit, c, 2.6);
+
+    if(!converging){
+      const back = clipToCanvas(hit, ext(hit, mul(outDir,-1), dist(hit,Fpt)+14), 20);
+      if(back) poly([hit, back], VIR, 1.3, [5,5], S.prog, {arrows:false});
+    }
+  }
+  if(S.normals) drawNormalLine({x:POLE_X, y:AX}, {x:1,y:0}, 54, col("--text-muted"));
+
+  const oc = fmt(Math.abs(o)/PX_PER_CM);
+  return {
+    status: converging ? "Sun rays brought to a focus on the focal plane"
+                       : "Sun rays spread out — they only appear to come from F",
+    chips:[ {t:(converging?"Convex":"Concave")+" lens · f = "+(converging?"":"−")+pxToCm(f)+" cm", cls:"k"},
+            {t:"Sun height "+(o>=0?"+":"−")+oc+" cm", cls:"o"},
+            {t:converging?"Real focus":"Virtual focus", cls:converging?"g":"v"} ],
+    chars:[
+      {k:"Source", v:"Sun (parallel rays)"},
+      {k:"Image", v: converging?"Point focus on the focal plane":"No real focus", cls: converging?"grn":"vio"},
+      {k:"Focus position", v: pxToCm(f)+" cm "+(converging?"behind":"in front of")+" the lens"},
+      {k:"Sun height", v:(o>=0?"+":"−")+oc+" cm"}
+    ],
+    vals:[
+      {k:"Object distance", v:"∞ (parallel rays)", cls:"acc"},
+      {k:"Image distance",  v: (converging? "": "−")+pxToCm(f)+" cm", cls: converging?"grn":"vio"},
+      {k:"Focal length",    v: (converging?"":"−")+pxToCm(f)+" cm"},
+      {k:"Magnification",   v:"0 (point image)"}
+    ],
+    eq:["u=\\infty \\Rightarrow \\frac{1}{v}=\\frac{1}{f}", "v=f",
+        converging?"\\text{rays converge at }F'":"\\text{rays appear to diverge from }F"],
+    note: converging
+      ? "Rays from the Sun arrive <b>parallel</b> because it is so far away. A <b>convex lens</b> brings a parallel bundle to a point on the "+
+        "<span class='hl'>focal plane</span>, one focal length behind the lens — that is the definition of the focal length. Raising the Sun tilts "+
+        "the whole bundle, so the focus slides <b>down</b> the focal plane (and vice versa): the image of a high object is formed low, which is why "+
+        "a lens gives an <b>inverted</b> image. Concentrating all that energy into one point is what starts a fire — and why you must never look at the Sun through a lens."
+      : "A <b>concave lens</b> spreads a parallel bundle out. The refracted rays never meet, but their <b>dashed backward extensions</b> all pass through the "+
+        "<span class='hl'>virtual focus F</span> one focal length in front of the lens. Because the focus is virtual, the focal length of a diverging lens is taken as <b>negative</b>."
+  };
+}
+
+/* ---- object-mode lens ray diagram ---- */
+function lensRender(converging){
+  if(S.source === "sunlight"){
+    drawAxis(10, W-10);
+    drawLensShape(POLE_X, converging);
+    if(S.labels) label(converging?"Convex lens":"Concave lens", POLE_X+34, AX-LENS_HY-14,
+                       col("--blue"), {size:11, align:"left"});
+    return drawSunRays(converging);
+  }
+
+  const RAY = col("--ray"), VIR = col("--rayv");
+  const f = F_PX, u = S.obj, ho = S.ho;
+  const objX = POLE_X - u;
+  const tip = { x:objX, y:AX-ho };
+  const O   = { x:POLE_X, y:AX };
+  const Fl  = { x:POLE_X - f, y:AX };      // focal point on the object side
+  const Fr  = { x:POLE_X + f, y:AX };      // focal point on the far side
+  const atF = converging && Math.abs(u-f) < 10;
+
+  drawAxis(10, W-10);
+  drawLensShape(POLE_X, converging);
+  axisTick(Fl.x, "F",  col("--accent"), true);
+  axisTick(Fr.x, "F′", col("--accent"), true);
+  axisTick(POLE_X-2*f, "2F",  col("--accent"), false);
+  axisTick(POLE_X+2*f, "2F′", col("--accent"), false);
+  if(S.labels){
+    label("O", POLE_X, AX-LENS_HY-30, col("--blue"), {size:11});
+    label(converging?"Convex lens (converging)":"Concave lens (diverging)",
+          POLE_X+34, AX-LENS_HY-14, col("--blue"), {size:11, align:"left"});
+  }
+
+  /* --- the three standard construction rays, all refracting at the lens plane --- */
+  const H1 = { x:POLE_X, y:tip.y };                       // parallel ray
+  const H2 = O;                                           // ray through the optical centre
+  const p3 = atX(tip, converging ? Fl : Fr, POLE_X);      // ray aimed at / from the focal point
+  /* if this construction ray would miss the finite aperture, drop it rather than faking it */
+  const H3 = (p3 && Math.abs(p3.y-AX) <= LENS_HY) ? {x:POLE_X, y:p3.y} : null;
+
+  const d1 = converging ? norm(sub(Fr, H1)) : norm(sub(H1, Fl));
+  const d2 = norm(sub(O, tip));
+  const d3 = {x:1, y:0};
+
+  /* image tip = where the outgoing rays (or their backward extensions) cross */
+  let img = null;
+  if(!atF){
+    img = lineInt(H1, ext(H1,d1,600), H2, ext(H2,d2,600));
+  }
+  const virt = img ? (img.x < POLE_X) : false;
+  const offscreen = img ? !inBox(img, 26) : false;
+
+  const legs = [
+    { on:S.rayOn[1], hit:H1, din:{x:1,y:0}, dout:d1, from:tip, tag:"R1" },
+    { on:S.rayOn[2], hit:H2, din:d2,        dout:d2, from:tip, tag:"R2" },
+    { on:S.rayOn[3], hit:H3, din:H3?norm(sub(H3,tip)):null, dout:d3, from:tip, tag:"R3" }
+  ];
+  legs.forEach(L => {
+    if(!L.on || !L.hit) return;
+    poly([L.from, L.hit], RAY, 1.9, null, S.prog);
+    let len = converging ? 680 : 430;
+    if(img && !virt && !offscreen){
+      const proj = (img.x-L.hit.x)*L.dout.x + (img.y-L.hit.y)*L.dout.y;
+      if(proj > 12) len = proj + 14;
+    }
+    const end = castClipped(L.hit, L.dout, len, 20);
+    poly([L.hit, end], RAY, 1.9, null, S.prog);
+    arrowHeadAt(end, Math.atan2(L.dout.y, L.dout.x), RAY, 9);
+    dot(L.hit, RAY, 3);
+    if(virt && img && !offscreen){
+      const bd = mul(L.dout,-1);
+      const projI = (img.x-L.hit.x)*bd.x + (img.y-L.hit.y)*bd.y;
+      if(projI > 6){
+        let be = ext(L.hit, bd, projI+14);
+        be = clipToCanvas(L.hit, be, 20) || be;
+        poly([L.hit, be], VIR, 1.3, [5,5], S.prog, {arrows:false});
+      }
+    }
+    if(S.labels) label(L.tag, L.hit.x-16, L.hit.y-12, RAY, {size:9});
+  });
+  if(S.normals) drawNormalLine(O, {x:1,y:0}, 54, col("--text-muted"));
+
+  /* object + image */
+  drawArrow(objX, AX, tip.y, col("--rose"), false, 3);
+  if(S.labels) label("Object", objX, AX+36, col("--rose"), {size:10, bg:true});
+
+  let nature="—", orient="—", size="—", v=0, m=0, cse="";
+  if(atF){
+    nature="No image"; orient="—"; size="Image at infinity"; cse="Object at F";
+  } else if(img){
+    const hi = AX - img.y;
+    v = Math.abs(img.x - POLE_X);
+    m = Math.abs(hi/ho);
+    nature = virt ? "Virtual" : "Real";
+    orient = hi > 0 ? "Upright" : "Inverted";
+    size   = m > 1.06 ? "Magnified" : (m < 0.94 ? "Diminished" : "Same size");
+    if(!offscreen){
+      drawArrow(img.x, AX, img.y, virt?col("--violet"):col("--green"), virt, virt?2.6:3);
+      dot(img, virt?col("--violet"):col("--green"), 3.6);
+      if(S.labels) label(virt?"Virtual image":"Real image", img.x, img.y + (img.y>AX?18:-18),
+                         virt?col("--violet"):col("--green"), {size:10, bg:true});
+    }
+  }
+  if(converging){
+    if(atF)                cse = "Object at F";
+    else if(u > 2*f+12)    cse = "Object beyond 2F";
+    else if(u > 2*f-12)    cse = "Object at 2F";
+    else if(u > f+10)      cse = "Object between F and 2F";
+    else                   cse = "Object between F and the lens (magnifying glass)";
+  } else {
+    cse = "Object in front of a concave lens";
+  }
+
+  const chips = [ {t:(converging?"Convex":"Concave")+" lens · f = "+(converging?"":"−")+pxToCm(f)+" cm", cls:"k"},
+                  {t:cse, cls:"o"},
+                  {t:atF?"No image":(virt?"Virtual image":"Real image"), cls:virt?"v":"g"} ];
+  if(offscreen) chips.push({t:"image forms off-screen", cls:"o"});
+
+  return {
+    status: cse,
+    chips,
+    chars:[
+      {k:"Nature", v:nature, cls:virt?"vio":"grn"},
+      {k:"Orientation", v:orient},
+      {k:"Size", v:size},
+      {k:"Case", v:cse}
+    ],
+    vals:[
+      {k:"Object distance", v: pxToCm(u)+" cm", cls:"acc"},
+      {k:"Image distance",  v: atF ? "∞" : pxToCm(v)+" cm"+(virt?" (same side)":""), cls:virt?"vio":"grn"},
+      {k:"Focal length",    v: (converging?"":"−")+pxToCm(f)+" cm"},
+      {k:"Magnification",   v: atF ? "—" : fmt2(m)}
+    ],
+    eq:["\\frac{1}{f}=\\frac{1}{u}+\\frac{1}{v}", "|m|=\\frac{v}{u}=\\frac{h_i}{h_o}",
+        converging?"f>0":"f<0"],
+    note: converging
+      ? "A <b>convex (converging) lens</b> uses three standard rays: one <b>parallel to the axis refracts through F′</b>, one <b>through the optical centre O "+
+        "goes straight on</b>, and one <b>through F emerges parallel</b> to the axis. Where they cross is the image. Beyond F the image is "+
+        "<span class='hl'>real and inverted</span> and can be caught on a screen (camera, eye, projector). Inside F the emerging rays diverge, "+
+        "so only their dashed extensions meet — a <b>virtual, upright, magnified</b> image: the magnifying glass."
+      : "A <b>concave (diverging) lens</b> spreads every bundle out. The parallel ray refracts <b>as though it came from F on the object side</b>, "+
+        "the ray through O passes straight on, and the ray heading for F′ emerges parallel. The three refracted rays never meet, so the image is found "+
+        "from their <b>dashed backward extensions</b> and is <span class='hl'>always virtual, upright and diminished</span>, always between F and the lens."
+  };
+}
+/* ============================================================
+   SECTION 3 — THE EYE & VISION CORRECTION
+   ------------------------------------------------------------
+   THE EYEBALL SHAPE IS FIXED. Normal / short-sight / long-sight
+   differ ONLY in the power of the cornea + lens.
+   ============================================================ */
+
+const EYE = { cx:620, cy:AX, rx:118, ry:118 };  // NEVER changes between the three types
+const LX  = 524;                                 // cornea + lens plane
+const SX  = 468;                                 // spectacle (correction) lens plane
+const EYE_D = 208;                               // axial depth: lens → retina
+const EYE_HY = 58;                               // half aperture of the eye's lens
+const POWER = { normal:1.00, myopia:0.82, hyperopia:1.20 };   // relative focal length of cornea+lens
+
+/* far intersection of a ray with the eyeball (= the retina surface) */
+function retinaHit(p, d){
+  const ex=(p.x-EYE.cx)/EYE.rx, ey=(p.y-EYE.cy)/EYE.ry;
+  const dx=d.x/EYE.rx, dy=d.y/EYE.ry;
+  const a=dx*dx+dy*dy, b=2*(ex*dx+ey*dy), c=ex*ex+ey*ey-1;
+  const disc=b*b-4*a*c;
+  if(disc<0) return null;
+  const t=(-b+Math.sqrt(disc))/(2*a);
+  if(t<=0) return null;
+  return { x:p.x+d.x*t, y:p.y+d.y*t, t };
+}
+
+/* thin-lens image of a point source (v>0 real / right, v<0 virtual / left) */
+function thinLensImage(lensX, f, src){
+  const u = lensX - src.x;
+  if(Math.abs(u-f) < 1e-6) return null;
+  const v = u*f/(u-f);
+  const m = -v/u;
+  return { p:{ x: lensX + v, y: AX - (AX - src.y)*m }, u, v, m };
+}
+
+function drawEyeball(type){
+  const c = col("--text-dim");
+  /* vitreous body */
+  ctx.save();
+  ctx.beginPath(); ctx.ellipse(EYE.cx, EYE.cy, EYE.rx, EYE.ry, 0, 0, Math.PI*2);
+  ctx.fillStyle = alpha(col("--blue"), 0.06); ctx.fill();
+  ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.stroke();
+  ctx.restore();
+
+  /* cornea — a bulge on the front of the eyeball (same for all three types) */
+  ctx.save();
+  ctx.strokeStyle = col("--blue"); ctx.lineWidth = 2.6;
+  ctx.beginPath();
+  ctx.ellipse(EYE.cx-30, EYE.cy, EYE.rx+16, EYE.ry*0.62, 0, Math.PI*0.72, Math.PI*1.28);
+  ctx.stroke(); ctx.restore();
+
+  /* iris + pupil opening just behind the cornea */
+  const irisX = LX - 16;
+  ctx.save(); ctx.strokeStyle = col("--text-muted"); ctx.lineWidth = 3.2;
+  ctx.beginPath(); ctx.moveTo(irisX, EYE.cy-72); ctx.lineTo(irisX, EYE.cy-26); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(irisX, EYE.cy+26); ctx.lineTo(irisX, EYE.cy+72); ctx.stroke();
+  ctx.restore();
+
+  /* cornea + lens: SHAPE OF THE EYEBALL IS FIXED — only this curvature changes */
+  const bulge = type==="myopia" ? 26 : (type==="hyperopia" ? 11 : 18);
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(LX, EYE.cy-EYE_HY);
+  ctx.quadraticCurveTo(LX-bulge, EYE.cy, LX, EYE.cy+EYE_HY);
+  ctx.quadraticCurveTo(LX+bulge, EYE.cy, LX, EYE.cy-EYE_HY);
+  ctx.closePath();
+  ctx.fillStyle = alpha(col("--blue"), 0.22); ctx.fill();
+  ctx.strokeStyle = col("--blue"); ctx.lineWidth = 2.2; ctx.stroke();
+  ctx.restore();
+
+  /* retina — the light-sensitive back surface */
+  ctx.save();
+  ctx.strokeStyle = col("--rose"); ctx.lineWidth = 3.4; ctx.lineCap="round";
+  ctx.beginPath(); ctx.ellipse(EYE.cx, EYE.cy, EYE.rx, EYE.ry, 0, -1.28, 1.28); ctx.stroke();
+  ctx.restore();
+
+  /* optic nerve */
+  ctx.save();
+  ctx.strokeStyle = col("--text-muted"); ctx.lineWidth = 7; ctx.lineCap="round";
+  ctx.beginPath(); ctx.moveTo(EYE.cx+EYE.rx-22, EYE.cy+82); ctx.lineTo(EYE.cx+EYE.rx+22, EYE.cy+104); ctx.stroke();
+  ctx.restore();
+
+  if(S.labels){
+    label("cornea + lens", LX-6, EYE.cy-EYE_HY-16, col("--blue"), {size:10, align:"center"});
+    label("retina", EYE.cx+EYE.rx+6, EYE.cy-58, col("--rose"), {size:10, align:"left"});
+    label("optic nerve", EYE.cx+EYE.rx+26, EYE.cy+112, col("--text-muted"), {size:9.5, align:"left"});
+  }
+}
+
+function drawLensShapeSmall(x, y, converging){
+  const hy = 70, topY = y-hy, botY = y+hy;
+  const rimW = converging ? 8 : 15;
+  ctx.save();
+  ctx.beginPath();
+  if(converging){
+    const bulge = 22;
+    ctx.moveTo(x-rimW, topY);
+    ctx.quadraticCurveTo(x-bulge, y, x-rimW, botY);
+    ctx.lineTo(x+rimW, botY);
+    ctx.quadraticCurveTo(x+bulge, y, x+rimW, topY);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(167,139,250,0.18)";
+  } else {
+    const indent = 17;
+    ctx.moveTo(x-rimW, topY);
+    ctx.quadraticCurveTo(x-rimW+indent, y, x-rimW, botY);
+    ctx.lineTo(x+rimW, botY);
+    ctx.quadraticCurveTo(x+rimW-indent, y, x+rimW, topY);
+    ctx.closePath();
+    ctx.fillStyle = "rgba(167,139,250,0.14)";
+  }
+  ctx.fill();
+  ctx.strokeStyle = col("--violet"); ctx.lineWidth = 2.2; ctx.stroke();
+  ctx.restore();
+}
+
+function renderEye(){
+  const type = S.type;                       // normal | myopia | hyperopia
+  const RAY = col("--ray"), VIR = col("--rayv");
+  const objX = POLE_X - S.obj;
+  const ho   = Math.min(S.ho, 62);
+  const tip  = { x:objX, y:AX-ho };
+  const Oe   = { x:LX, y:AX };
+  const corrected = S.correct && type !== "normal";
+
+  drawAxis(10, W-10);
+  drawEyeball(type);
+  drawArrow(objX, AX, tip.y, col("--rose"), false, 3);
+  if(S.labels) label("Object", objX, AX+30, col("--rose"), {size:10, bg:true});
+
+  /* --- how strong the eye is, and where that puts the focus --- */
+  const U   = LX - objX;
+  const fN  = U*EYE_D/(U+EYE_D);             // focal length that would focus exactly on the retina
+  const fE  = fN * POWER[type];              // the actual (defective) cornea+lens
+  const Vd  = U*fE/(U-fE);
+  const ratio = Vd/EYE_D;                    // <1 focus in front · =1 on retina · >1 behind
+
+  /* --- optional spectacle lens: choose its power so the focus lands on the retina --- */
+  let Is = null, fS = 0, source = tip;
+  if(corrected){
+    const Ureq = fE*EYE_D/(EYE_D-fE);        // object distance the defective eye needs
+    const xReq = LX - Ureq;                  // ⇒ the spectacle must put its image here
+    const us = SX - objX, vs = xReq - SX;
+    if(Math.abs(us+vs) > 1){
+      fS = us*vs/(us+vs);
+      Is = thinLensImage(SX, fS, tip);
+      if(Is) source = Is.p;
+    }
+    drawLensShapeSmall(SX, AX, type === "hyperopia");
+    if(S.labels){
+      label(type==="myopia" ? "concave (diverging)" : "convex (converging)",
+            SX, AX-84, col("--violet"), {size:10});
+      label("spectacle lens", SX, AX-96, col("--violet"), {size:9.5});
+    }
+  }
+
+  /* --- chief ray → where the retina actually is for this object point --- */
+  const dChief = norm(sub(Oe, source));
+  const Rhit   = retinaHit(Oe, dChief) || {x:LX+EYE_D, y:AX};
+  const Lr     = dist(Oe, Rhit);
+  const k      = corrected ? 1 : ratio;
+  const Fpt    = ext(Oe, dChief, Lr*k);
+
+  /* --- the three rays --- */
+  const offs = [-40, 0, 40];
+  const hitsOnRetina = [];
+  for(let i=0;i<3;i++){
+    const HE = { x:LX, y:AX + offs[i] };
+    /* incoming path: object → (spectacle) → eye lens */
+    let inPts;
+    if(corrected && Is){
+      const HS = atX(source, HE, SX) || {x:SX, y:AX+offs[i]};
+      inPts = [tip, {x:SX, y:HS.y}, HE];
+    } else {
+      inPts = [tip, HE];
+    }
+    const dOut = norm(sub(Fpt, HE));
+    const R = retinaHit(HE, dOut);
+    hitsOnRetina.push(R);
+    if(!S.rayOn[i+1]) continue;
+
+    poly(inPts, RAY, 1.9, null, S.prog);
+    const endPt = R || castClipped(HE, dOut, 300, 20);
+    poly([HE, endPt], RAY, 1.9, null, S.prog);
+    dot(HE, RAY, 2.8);
+    if(corrected && Is) dot({x:SX, y:inPts[1].y}, col("--violet"), 2.8);
+  }
+
+  /* --- focus marker + blur patch --- */
+  const valid = hitsOnRetina.filter(Boolean);
+  let spread = 0, meanY = AX;
+  if(valid.length){
+    const ys = valid.map(p=>p.y);
+    spread = Math.max.apply(null, ys) - Math.min.apply(null, ys);
+    meanY  = ys.reduce((a,b)=>a+b,0)/ys.length;
+  }
+  const sharp = Math.abs(k-1) < 0.02 || spread < 9;
+
+  if(sharp){
+    dot(Fpt, col("--green"), 5);
+    if(S.labels) label("sharp focus ✓", Fpt.x-12, Fpt.y-22, col("--green"), {size:10, align:"right", bg:true});
+  } else {
+    /* the defective focus point */
+    if(inBox(Fpt, 14)){
+      dot(Fpt, col("--orange"), 4.6);
+      if(S.labels) label(ratio<1 ? "focus in front" : "focus behind", Fpt.x, Fpt.y-22, col("--orange"), {size:10, bg:true});
+    }
+    if(ratio > 1){
+      /* rays reach the retina before they have converged — show where they would have met */
+      const de = norm(sub(Fpt, Oe));
+      const far = clipToCanvas(Rhit, ext(Rhit, de, Math.max(20, dist(Rhit,Fpt))), 14);
+      if(far) poly([Rhit, far], VIR, 1.3, [5,5], 1, {arrows:false});
+    }
+    /* blurred patch on the retina */
+    const bx = valid.length ? valid.reduce((a,p)=>a+p.x,0)/valid.length : Rhit.x;
+    ctx.save();
+    ctx.fillStyle = alpha(col("--orange"), 0.35);
+    ctx.beginPath(); ctx.ellipse(bx, meanY, 7, Math.max(9, spread/2+4), 0, 0, Math.PI*2); ctx.fill();
+    ctx.restore();
+    if(S.labels){
+      /* keep "blurred" clear of the "focus behind" marker on the right */
+      if(ratio > 1) label("blurred", bx-18, meanY+18, col("--orange"), {size:10, align:"right", bg:true});
+      else          label("blurred", bx+18, meanY,    col("--orange"), {size:10, align:"left",  bg:true});
+    }
+  }
+
+  /* intermediate image formed by the spectacles */
+  if(corrected && Is && inBox(Is.p, 24)){
+    drawArrow(Is.p.x, AX, Is.p.y, col("--violet"), true, 2.2);
+    if(S.labels) label("image seen by the eye", Is.p.x, AX+20, col("--violet"), {size:9.5});
+  }
+
+  const NAME = { normal:"Normal eye", myopia:"Short-sight (myopia)", hyperopia:"Long-sight (hyperopia)" };
+  const chips = [ {t:NAME[type], cls:"k"} ];
+  if(type!=="normal") chips.push({t: corrected ? "corrected 👓" : "uncorrected", cls: corrected?"g":"o"});
+  chips.push(sharp ? {t:"sharp focus on retina", cls:"g"} : {t: ratio<1?"focus in front of retina":"focus behind retina", cls:"o"});
+
+  const notes = {
+    normal:"A <b>normal eye</b> focuses light <span class='hl'>exactly on the retina</span>. The cornea does most of the bending and the "+
+           "<b>lens fine-tunes it</b> — the ciliary muscles change the lens shape so that near and far objects are both sharp. That is <b>accommodation</b>.",
+    myopia: corrected
+      ? "With a <b>concave (diverging) spectacle lens</b> in front, the incoming rays are spread out slightly first, so they reach the eye as if they came "+
+        "from a <span class='hl'>nearer, virtual image</span>. The eye's own (too strong) lens now brings them to a focus <b>exactly on the retina</b> — clear vision restored. "+
+        "The eyeball itself is <b>unchanged</b>; only the light entering it has been altered."
+      : "<b>Short-sight (myopia)</b>: the cornea and lens are <span class='hl'>too strong</span> (or the eyeball is too long), so rays cross <b>in front of the retina</b> "+
+        "and have spread out again by the time they reach it — the image is blurred. Distant objects look fuzzy; near objects are still clear. "+
+        "Corrected with a <b>concave (diverging) lens</b>.",
+    hyperopia: corrected
+      ? "With a <b>convex (converging) spectacle lens</b> in front, the rays are converged a little before they enter the eye. The eye's own (too weak) lens can now "+
+        "finish the job <b>on the retina</b> — clear vision restored. Again, the eyeball itself has not changed shape."
+      : "<b>Long-sight (hyperopia)</b>: the cornea and lens are <span class='hl'>too weak</span> (or the eyeball is too short), so the rays would meet <b>behind the retina</b>. "+
+        "They strike the retina before converging, so the image is blurred. Near objects look fuzzy; distant objects are easier. "+
+        "Corrected with a <b>convex (converging) lens</b>."
+  };
+
+  return {
+    status: NAME[type] + (type!=="normal" ? (corrected?" · corrected":" · uncorrected") : ""),
+    chips,
+    chars:[
+      {k:"Focus position", v: sharp ? "On the retina" : (ratio<1?"In front of the retina":"Behind the retina"),
+       cls: sharp?"grn":"vio"},
+      {k:"Image on retina", v: sharp ? "Sharp" : "Blurred"},
+      {k:"Eye lens power", v: type==="normal"?"Correct":(type==="myopia"?"Too strong":"Too weak")},
+      {k:"Correction needed", v: type==="normal"?"None":(type==="myopia"?"Concave (diverging)":"Convex (converging)")}
+    ],
+    vals:[
+      {k:"Object distance", v: pxToCm(U)+" cm", cls:"acc"},
+      {k:"Eye focal length", v: pxToCm(fE)+" cm"},
+      {k:"Lens → retina",    v: pxToCm(EYE_D)+" cm"},
+      {k:"Spectacle lens",   v: corrected ? (fS<0?"−":"+")+pxToCm(Math.abs(fS))+" cm" : "—",
+       cls: corrected?"vio":""}
+    ],
+    eq: corrected
+      ? ["\\frac{1}{f_{\\text{eye}}}=\\frac{1}{u'}+\\frac{1}{v}", "v=\\text{lens→retina}",
+         "P=\\frac{1}{f}\\ (\\text{dioptres})"]
+      : ["\\frac{1}{f_{\\text{eye}}}=\\frac{1}{u}+\\frac{1}{v}", "P=\\frac{1}{f}",
+         type==="myopia" ? "v<\\text{retina}" : (type==="hyperopia" ? "v>\\text{retina}" : "v=\\text{retina}")],
+    note: notes[type]
+  };
+}
+/* ============================================================
+   DISPATCH · DRAW · UI
+   ============================================================ */
+let LAST = null;
+
+function render(){
+  if(S.section === "mirror"){
+    if(S.type === "plane")   return mirrorPlane();
+    if(S.type === "concave") return mirrorCurved(+1);
+    return mirrorCurved(-1);
+  }
+  if(S.section === "lens") return lensRender(S.type === "convex");
+  return renderEye();
+}
+
+function draw(){
+  const dpr = VS.dpr || (window.devicePixelRatio||1);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,cv.width/dpr, cv.height/dpr);
+  ctx.save();
+  ctx.translate(VS.ox, VS.oy);
+  ctx.scale(VS.s, VS.s);
+  ctx.beginPath(); ctx.rect(0,0,W,H); ctx.clip();
+  if(S.zoom){
+    const f=S.zf, fx=S.focus.x+S.pan.x, fy=S.focus.y+S.pan.y;
+    ctx.translate(W/2 - fx*f, H/2 - fy*f);
+    ctx.scale(f,f);
+  }
+  drawBg();
+  try { LAST = render(); }
+  catch(err){ console.error(err); LAST = null; }
+  ctx.restore();
+}
+
+/* ---------------- DOM ---------------- */
+function chipHTML(c){ return '<span class="chip '+(c.cls||"")+'">'+c.t+'</span>'; }
+
+/* readable plain-text maths when the KaTeX CDN is unavailable (e.g. offline in class) */
+function texFallback(t){
+  t = t.replace(/\\text\{([^{}]*)\}/g, "$1")
+       .replace(/_\{([^{}]*)\}/g, "_$1");
+  for(let i=0;i<4;i++) t = t.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, "$1/$2");
+  return t.replace(/\\Rightarrow/g, " ⇒ ").replace(/\\infty/g, "∞").replace(/\\theta/g, "θ")
+          .replace(/\\ /g, " ").replace(/[{}\\]/g, "").replace(/\s+/g, " ").trim();
+}
+
+function updateUI(){
+  updateSourceLock();
+  updateVisionLock();
+  syncSlider();
+  draw();
+  const R = LAST;
+  if(!R) return;
+
+  /* canvas overlays */
+  const chips = R.chips.slice();
+  if(S.zoom) chips.push({t:"🔍 "+S.zf+"× — drag = pan · dbl-click / Esc = exit", cls:"zoom"});
+  $("ovlBL").innerHTML = chips.map(chipHTML).join("");
+  const zc = $("ovlBL").querySelector(".chip.zoom");
+  if(zc) zc.onclick = () => { S.zoom=false; S.pan={x:0,y:0}; updateUI(); };
+  $("hintChip").textContent = (S.source==="sunlight")
+      ? "drag the ray bundle · dbl-click zoom · ← → fine step"
+      : "drag the object (or its tip) · dbl-click zoom · ← → fine step";
+
+  /* characteristics */
+  $("charCards").innerHTML = R.chars.map(c =>
+    '<div class="card"><div class="k">'+c.k+'</div><div class="v '+(c.cls||"")+'">'+c.v+'</div></div>').join("");
+
+  /* numbers + equations only when 📐 Calc is ON */
+  if(S.calc){
+    $("valCards").classList.remove("hidden");
+    $("valCards").innerHTML = R.vals.map(c =>
+      '<div class="card"><div class="k">'+c.k+'</div><div class="v '+(c.cls||"")+'">'+c.v+'</div></div>').join("");
+    $("eqBox").classList.remove("hidden");
+    const row = $("eqRow");
+    row.innerHTML = "";
+    R.eq.forEach(tex => {
+      const span = document.createElement("span");
+      let ok = false;
+      if(window.katex){
+        try { katex.render(tex, span, {throwOnError:false, displayMode:false}); ok = true; }
+        catch(e){ ok = false; }
+      }
+      if(!ok){ span.style.fontFamily = "'JetBrains Mono',monospace"; span.textContent = texFallback(tex); }
+      row.appendChild(span);
+    });
+  } else {
+    $("valCards").classList.add("hidden");
+    $("eqBox").classList.add("hidden");
+  }
+  $("noteBox").innerHTML = R.note;
+}
+
+/* ---------------- tabs & sub-tabs ---------------- */
+function buildSubTabs(){
+  const wrap = $("subtabs");
+  wrap.innerHTML = "";
+  SUBS[S.section].forEach(t => {
+    const b = document.createElement("button");
+    b.className = "pill" + (t===S.type ? " active" : "");
+    b.textContent = SUB_LABELS[t];
+    b.onclick = () => {
+      S.type = t;
+      S.obj = DEF[S.section+"/"+S.type];
+      S.correct = false;
+      S.rayOn = [true,true,true,true];
+      buildSubTabs(); buildRayToggles(); paramChanged(); updateUI();
+    };
+    wrap.appendChild(b);
+  });
+}
+function setSection(sec){
+  S.section = sec;
+  S.type = SUBS[sec][0];
+  S.obj = DEF[sec+"/"+S.type];
+  S.correct = false;
+  S.source = "object";
+  S.sun = 0;
+  S.rayOn = [true,true,true,true];
+  S.zoom = false; S.pan={x:0,y:0};
+  document.querySelectorAll("#tabs .tab").forEach(t => t.classList.toggle("active", t.dataset.sec===sec));
+  document.querySelectorAll("#grpSource .pill").forEach(p => p.classList.toggle("active", p.dataset.src==="object"));
+  buildSubTabs(); buildRayToggles(); paramChanged(); updateUI();
+}
+
+/* ---------------- toolbar state ---------------- */
+function updateSourceLock(){
+  const grp = $("grpSource");
+  const isEye  = S.section === "eye";
+  const isLens = S.section === "lens";
+  grp.classList.toggle("hidden", isEye);
+  if(isEye && S.source !== "object") S.source = "object";
+  grp.querySelectorAll(".pill[data-src]").forEach(p => {
+    const en = (p.dataset.src === "object") ? true : isLens;
+    p.disabled = !en;
+    p.style.opacity = en ? "1" : "0.3";
+    p.style.pointerEvents = en ? "auto" : "none";
+  });
+  if(!isLens && S.source !== "object"){
+    S.source = "object";
+    document.querySelectorAll("#grpSource .pill").forEach(p => p.classList.toggle("active", p.dataset.src==="object"));
+    buildRayToggles();
+  }
+}
+function updateVisionLock(){
+  const isEye = S.section === "eye";
+  $("grpCorrect").classList.toggle("hidden", !isEye);
+  $("sepVision").classList.toggle("hidden", !isEye);
+  const canCorrect = isEye && S.type !== "normal";
+  $("grpCorrect").classList.toggle("locked", !canCorrect);
+  if(!canCorrect) S.correct = false;
+  $("btnCorrect").classList.toggle("on", S.correct);
+}
+function buildRayToggles(){
+  const wrap = $("grpRayToggles");
+  wrap.innerHTML = "";
+  const mk = (txt, idx) => {
+    const b = document.createElement("button");
+    b.className = "pill" + (S.rayOn[idx] ? " active" : "");
+    b.textContent = (S.rayOn[idx] ? "✓ " : "") + txt;
+    b.onclick = () => {
+      S.rayOn[idx] = !S.rayOn[idx];
+      b.classList.toggle("active", S.rayOn[idx]);
+      b.textContent = (S.rayOn[idx] ? "✓ " : "") + txt;
+      draw();
+    };
+    wrap.appendChild(b);
+  };
+  if(S.source === "object"){
+    const n = RAY_COUNT[S.section+"/"+S.type] || 3;
+    for(let i=1;i<=n;i++) mk("R"+i, i);
+  } else {
+    ["O1","M","O2"].forEach((t,i) => mk(t, i));
+  }
+}
+function syncSlider(){
+  const sl = $("objSlider"), lab = $("slLabel"), out = $("slVal");
+  if(S.source === "sunlight"){
+    lab.textContent = "☀ Sun height";
+    sl.min = -150; sl.max = 150; sl.step = 2;
+    sl.value = S.sun;
+    out.textContent = "Sun height = " + (S.sun>=0?"+":"−") + fmt(Math.abs(S.sun)/PX_PER_CM) + " cm";
+  } else {
+    lab.textContent = S.section==="eye" ? "Object distance" : "Object position";
+    sl.min = S.section==="eye" ? 120 : 40;
+    sl.max = S.section==="eye" ? 340 : 380;
+    sl.step = 2;
+    sl.value = S.obj;
+    out.textContent = "Object distance = " + pxToCm(S.obj) + " cm";
+  }
+}
+function paramChanged(){ S.prog = S.playing ? 0 : 1; }
+
+/* ---------------- interaction ---------------- */
+function setObj(v){
+  const lo = S.section==="eye" ? 120 : 40;
+  const hi = S.section==="eye" ? 340 : 380;
+  S.obj = clamp(Math.round(v/2)*2, lo, hi);
+  paramChanged(); updateUI();
+}
+function setSun(v){ S.sun = clamp(Math.round(v/2)*2, -150, 150); paramChanged(); updateUI(); }
+
+cv.addEventListener("pointerdown", e => {
+  const p = evtPt(e);
+  cv.setPointerCapture(e.pointerId);
+  cv.classList.add("dragging");
+  if(S.source === "sunlight"){ S.drag = {mode:"sun", y0:p.y, v0:S.sun}; return; }
+  const objX = POLE_X - S.obj;
+  const ho   = (S.section==="eye") ? Math.min(S.ho,62) : S.ho;
+  const nearTip  = Math.abs(p.x-objX) < 30 && Math.abs(p.y-(AX-ho)) < 26;
+  const nearBody = Math.abs(p.x-objX) < 34 && p.y > AX-ho-14 && p.y < AX+16;
+  if(nearTip)       S.drag = {mode:"tip"};
+  else if(nearBody) S.drag = {mode:"obj", dx:p.x-objX};
+  else if(S.zoom)   S.drag = {mode:"pan", x0:p.x, y0:p.y, px:S.pan.x, py:S.pan.y};
+  else              S.drag = {mode:"obj", dx:0};
+  if(S.drag.mode === "obj" && !nearBody) setObj(POLE_X - p.x);
+});
+cv.addEventListener("pointermove", e => {
+  if(!S.drag) return;
+  const p = evtPt(e);
+  if(S.drag.mode === "sun")      setSun(S.drag.v0 + (p.y - S.drag.y0) * -1);
+  else if(S.drag.mode === "tip"){ S.ho = clamp(Math.round(AX - p.y), 28, 128); paramChanged(); updateUI(); }
+  else if(S.drag.mode === "obj")  setObj(POLE_X - (p.x - S.drag.dx));
+  else if(S.drag.mode === "pan"){
+    S.pan.x = S.drag.px - (p.x - S.drag.x0);
+    S.pan.y = S.drag.py - (p.y - S.drag.y0);
+    draw();
+  }
+});
+function endDrag(){ S.drag = null; cv.classList.remove("dragging"); }
+cv.addEventListener("pointerup", endDrag);
+cv.addEventListener("pointercancel", endDrag);
+
+cv.addEventListener("dblclick", e => {
+  const p = evtPt(e);
+  if(!S.zoom){ S.zoom = true; S.focus = {x:clamp(p.x,120,W-120), y:clamp(p.y,90,H-90)}; S.pan={x:0,y:0}; }
+  else { S.zoom = false; S.pan={x:0,y:0}; }
+  updateUI();
+});
+
+window.addEventListener("keydown", e => {
+  const tag = (e.target.tagName||"").toLowerCase();
+  if(tag === "input" && e.target.type !== "range") return;
+  if(tag === "select") return;
+  if(e.key === "Escape" && S.zoom){ S.zoom=false; S.pan={x:0,y:0}; updateUI(); return; }
+  const step = e.shiftKey ? 10 : 2;
+  if(e.key === "ArrowRight" || e.key === "ArrowLeft"){
+    const s = (e.key === "ArrowRight") ? 1 : -1;
+    if(S.source === "sunlight") setSun(S.sun + s*step);
+    else setObj(S.obj - s*step);
+    e.preventDefault();
+  }
+});
+
+/* ---------------- toolbar wiring ---------------- */
+document.querySelectorAll("#tabs .tab").forEach(t => t.onclick = () => setSection(t.dataset.sec));
+
+[["btnLabels","labels"],["btnNormals","normals"],["btnAngles","angles"],
+ ["btnEq","calc"],["btnGrid","grid"]].forEach(([id,key]) => {
+  $(id).onclick = () => { S[key] = !S[key]; $(id).classList.toggle("on", S[key]); updateUI(); };
+});
+
+document.querySelectorAll("#grpSource .pill").forEach(p => {
+  p.onclick = () => {
+    if(p.disabled) return;
+    S.source = p.dataset.src;
+    document.querySelectorAll("#grpSource .pill").forEach(q => q.classList.toggle("active", q===p));
+    S.rayOn = [true,true,true,true];
+    buildRayToggles(); paramChanged(); updateUI();
+  };
+});
+
+$("btnCorrect").onclick = () => { S.correct = !S.correct; paramChanged(); updateUI(); };
+
+$("objSlider").addEventListener("input", e => {
+  const v = +e.target.value;
+  if(S.source === "sunlight") setSun(v); else setObj(v);
+});
+
+$("btnPlay").onclick = () => {
+  S.playing = !S.playing;
+  if(S.playing){ S.prog = 0; $("btnPlay").textContent = "⏸ Pause"; }
+  else { S.prog = 1; $("btnPlay").textContent = "▶ Play"; }
+  updateUI();
+};
+document.querySelectorAll("#speedPills .pill").forEach(p => {
+  p.onclick = () => {
+    S.speed = +p.dataset.s;
+    document.querySelectorAll("#speedPills .pill").forEach(q => q.classList.toggle("active", q===p));
+  };
+});
+
+/* Reset — restores THIS diagram's defaults only; never changes tab, sub-tab or theme */
+$("btnReset").onclick = () => {
+  S.obj  = DEF[S.section+"/"+S.type];
+  S.ho   = 80;
+  S.sun  = 0;
+  S.source = "object";
+  S.correct = false;
+  S.labels = true; S.normals = true; S.angles = true; S.calc = false; S.grid = true;
+  S.rayOn = [true,true,true,true];
+  S.zoom = false; S.pan = {x:0,y:0}; S.focus = {x:POLE_X,y:AX};
+  S.playing = false; S.prog = 1; S.speed = 1; S.drag = null;
+  $("btnPlay").textContent = "▶ Play";
+  $("btnLabels").classList.add("on"); $("btnNormals").classList.add("on");
+  $("btnAngles").classList.add("on"); $("btnGrid").classList.add("on");
+  $("btnEq").classList.remove("on");
+  document.querySelectorAll("#grpSource .pill").forEach(p => p.classList.toggle("active", p.dataset.src==="object"));
+  document.querySelectorAll("#speedPills .pill").forEach(p => p.classList.toggle("active", p.dataset.s==="1"));
+  buildRayToggles();
+  updateUI();
+};
+
+/* ---------------- theme ---------------- */
+function setTheme(name){
+  const cls = ["theme-hausnight","theme-neon","theme-light","theme-haus","theme-clay"];
+  document.body.classList.remove.apply(document.body.classList, cls);
+  if(name !== "dark") document.body.classList.add("theme-"+name);
+  S.theme = name;
+  $("themeSel").value = name;
+  updateUI();
+}
+$("themeSel").onchange = e => setTheme(e.target.value);
+
+/* ---------------- animation ---------------- */
+let lastT = 0;
+function loop(t){
+  if(S.playing){
+    const dt = Math.min(0.05, (t-lastT)/1000 || 0);
+    S.prog += dt * 0.55 * S.speed;
+    if(S.prog >= 1){ S.prog = 1; S.playing = false; $("btnPlay").textContent = "▶ Play"; }
+    draw();
+  }
+  lastT = t;
+  requestAnimationFrame(loop);
+}
+
+/* ---------------- boot ---------------- */
+window.addEventListener("resize", () => { resize(); updateUI(); });
+if(window.ResizeObserver){
+  new ResizeObserver(() => { resize(); }).observe($("cvwrap"));
+}
+buildSubTabs();
+buildRayToggles();
+resize();
+updateUI();
+requestAnimationFrame(loop);
+
+</script>
+</body>
+</html>
