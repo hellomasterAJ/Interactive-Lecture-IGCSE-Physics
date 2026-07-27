@@ -16,7 +16,7 @@
   --grid:#1e293b; --graph-bg:#0a0f1a;
   --green:#34d399; --rose:#fb7185; --violet:#a78bfa;
   --amber:#fbbf24; --blue:#38bdf8; --orange:#fb923c;
-  --ray:#f5f0dc; --rayv:#9fb4d8;
+  --ray:#f5f0dc; --rayv:#9fb4d8; --bear:#C08552;
 }
 .theme-hausnight{
   --bg:#1a1c20; --card:#26282d; --border:#3a3c42;
@@ -25,7 +25,7 @@
   --grid:#2a2c32; --graph-bg:#121418;
   --green:#A6B36A; --rose:#D68B57; --violet:#CBAA6A;
   --amber:#F4C01E; --blue:#5FB0C4; --orange:#D68B57;
-  --ray:#F7E7A8; --rayv:#8FC5D4;
+  --ray:#F7E7A8; --rayv:#8FC5D4; --bear:#C79A5B;
 }
 .theme-neon{
   --bg:#0d0f1a; --card:#1a1c2e; --border:#2a2d4a;
@@ -34,7 +34,7 @@
   --grid:#1a1c2e; --graph-bg:#080a14;
   --green:#00ff88; --rose:#ff4499; --violet:#8844ff;
   --amber:#ffcc00; --blue:#4488ff; --orange:#ff6633;
-  --ray:#eaffd0; --rayv:#66aaff;
+  --ray:#eaffd0; --rayv:#66aaff; --bear:#D08A50;
 }
 .theme-light{
   --bg:#ffffff; --card:#f3f4f6; --border:#d1d5db;
@@ -43,7 +43,7 @@
   --grid:#e5e7eb; --graph-bg:#f9fafb;
   --green:#059669; --rose:#dc2626; --violet:#7c3aed;
   --amber:#d97706; --blue:#2563eb; --orange:#ea580c;
-  --ray:#b45309; --rayv:#6366f1;
+  --ray:#b45309; --rayv:#6366f1; --bear:#7c4318;
 }
 .theme-haus{
   --bg:#F4EEE0; --card:#FFFFFF; --border:#E4DAC4;
@@ -52,7 +52,7 @@
   --grid:#EBE3D0; --graph-bg:#FCFAF2;
   --green:#4E7A3F; --rose:#B5502E; --violet:#8A6D3B;
   --amber:#A9820F; --blue:#4A7AB8; --orange:#A87A4A;
-  --ray:#8A5A0F; --rayv:#4A7AB8;
+  --ray:#8A5A0F; --rayv:#4A7AB8; --bear:#7A4A1E;
 }
 .theme-clay{
   --bg:#d4c8be; --card:#e5d9d0; --border:#c2b5aa;
@@ -61,7 +61,7 @@
   --grid:#ccbfb5; --graph-bg:#eee6de;
   --green:#5a7a4a; --rose:#a03a3a; --violet:#6a4d7a;
   --amber:#b07a2a; --blue:#3a5a7a; --orange:#b05a2a;
-  --ray:#7a4a1a; --rayv:#3a5a7a;
+  --ray:#7a4a1a; --rayv:#3a5a7a; --bear:#6b3d15;
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
@@ -99,36 +99,34 @@ body{
 .theme-haus .badge-top{background:#F4C01E;color:#1A1712;border-color:#1A1712;}
 .theme-hausnight .top-bar h1, .theme-hausnight .top-bar h1 span{color:#FFFFFF;}
 
-/* ---------- section tabs ---------- */
-.tabs{
-  flex:0 0 auto; display:flex; justify-content:center; gap:6px;
-  padding:7px 10px 3px; background:var(--card); border-bottom:1px solid var(--border);
+/* ---------- mode bar: three equal columns filling the full width ---------- */
+.modebar{flex:0 0 auto; padding:8px 12px 0}
+.tabs3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+.tabs3 .tab{
+  width:100%; border-radius:12px; border:1px solid var(--border);
+  background:var(--card); color:var(--text-dim);
+  font-family:'Inter',sans-serif; font-size:14px; font-weight:700;
+  padding:9px 0; cursor:pointer; transition:.15s;
 }
-.tab{
-  background:transparent; border:1px solid transparent; color:var(--text-dim);
-  font-family:'Inter',sans-serif; font-size:13px; font-weight:600;
-  padding:5px 18px; border-radius:9px; cursor:pointer; transition:.15s;
-}
-.tab:hover{color:var(--text);background:var(--bg)}
-.tab.active{background:var(--accent);color:#0b1020;border-color:var(--accent)}
+.tabs3 .tab:hover{color:var(--text); border-color:var(--text-muted)}
+.tabs3 .tab.active{background:var(--accent-glow); border-color:var(--accent); color:var(--accent)}
 
-.subtabs{
-  flex:0 0 auto; display:flex; justify-content:center; gap:8px;
-  padding:5px 0 7px; background:var(--card); border-bottom:1px solid var(--border);
+.subs3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:7px; min-height:31px}
+#subMirror{grid-column:1} #subLens{grid-column:2} #subEye{grid-column:3}
+.subcell{display:flex; gap:7px; justify-content:center; align-items:center}
+.subcell .pill{
+  padding:5px 16px; font-size:12.5px; font-weight:600; border-radius:13px;
+  background:var(--card); border:1px solid var(--border); color:var(--text-dim);
+  font-family:'Inter',sans-serif; white-space:nowrap; cursor:pointer; transition:.18s;
 }
-.subtabs .pill{
-  padding:4px 14px;
-  font-size:clamp(0.65rem,1.2vw,0.85rem);
-  font-family:'Inter',sans-serif; font-weight:600;
-  white-space:nowrap; border-radius:14px;
-  background:var(--bg); border:1px solid var(--border);
-  color:var(--text-dim); cursor:pointer; transition:background .2s,color .2s;
-}
-.subtabs .pill:hover{color:var(--text)}
-.subtabs .pill.active{background:var(--accent);color:#0b1020;border-color:var(--accent)}
+.subcell .pill:hover{color:var(--text)}
+.subcell .pill.active{background:var(--blue); color:#04121c; border-color:var(--blue)}
 
 /* ---------- toolbar ---------- */
-.toolbar{flex:0 0 auto;background:var(--card);border-bottom:1px solid var(--border);padding:4px 10px}
+.toolbar{
+  flex:0 0 auto; margin:9px 12px 0; padding:5px 12px;
+  background:var(--card); border:1px solid var(--border); border-radius:14px;
+}
 .trow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:30px;padding:1px 0}
 .tgroup{display:flex;align-items:center;gap:5px}
 .tgroup.locked>*{opacity:.4;pointer-events:none}
@@ -170,9 +168,16 @@ input[type=range]::-moz-range-thumb{
 }
 
 /* ---------- canvas ---------- */
+/* FIXED height — switching Mirrors/Lenses/Eye or toggling 📐 Calc must never
+   move or resize the canvas. Everything that changes size lives in .below,
+   which takes the remaining space and scrolls inside itself.                  */
 .cvwrap{
-  flex:1 1 auto; min-height:230px; position:relative;
-  background:var(--graph-bg); overflow:hidden;
+  /* as tall as the window allows while still leaving 200 px for the panel below;
+     depends only on the window, never on which diagram or toggle is active      */
+  flex:0 0 auto;
+  height:clamp(220px, min(56vh, calc(100vh - 430px)), 780px);
+  margin:9px 12px 0; border:1px solid var(--border); border-radius:14px;
+  position:relative; background:var(--graph-bg); overflow:hidden;
 }
 #cv{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
 #cv.dragging{cursor:grabbing}
@@ -193,9 +198,11 @@ input[type=range]::-moz-range-thumb{
 
 /* ---------- below panel ---------- */
 .below{
-  flex:0 1 auto; overflow-y:auto; max-height:34vh;
-  border-top:1px solid var(--border); background:var(--bg); padding:7px 12px 10px;
+  flex:1 1 auto; min-height:0; overflow-y:auto;
+  background:var(--bg); padding:9px 12px 10px;
 }
+.below::-webkit-scrollbar{width:9px}
+.below::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px}
 .ptitle{font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);margin:0 0 5px}
 .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin-bottom:6px}
 .card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:4px 9px}
@@ -237,13 +244,18 @@ input[type=range]::-moz-range-thumb{
   </div>
 </div>
 
-<div class="tabs" id="tabs">
-  <button class="tab active" data-sec="mirror">🪞 Mirrors</button>
-  <button class="tab" data-sec="lens">🔎 Lenses</button>
-  <button class="tab" data-sec="eye">👁️ Eye</button>
+<div class="modebar">
+  <div class="tabs3" id="tabs">
+    <button class="tab active" data-sec="mirror">🪞 Mirrors</button>
+    <button class="tab" data-sec="lens">🔎 Lenses</button>
+    <button class="tab" data-sec="eye">👁️ Eye</button>
+  </div>
+  <div class="subs3">
+    <div class="subcell" id="subMirror"></div>
+    <div class="subcell" id="subLens"></div>
+    <div class="subcell" id="subEye"></div>
+  </div>
 </div>
-
-<div class="subtabs" id="subtabs"></div>
 
 <div class="toolbar">
   <!-- ROW 1: SHOW | SOURCE | VISION -->
@@ -259,8 +271,13 @@ input[type=range]::-moz-range-thumb{
     <div class="tsep"></div>
     <div class="tgroup" id="grpSource">
       <span class="tlabel">Source</span>
-      <button class="pill active" data-src="object">⊕ Object</button>
-      <button class="pill" data-src="sunlight">Sun Light</button>
+      <button class="pill active" data-src="object">🕯️ Object</button>
+      <button class="pill" data-src="sunlight">☀️ Sun Light</button>
+    </div>
+    <div class="tsep" id="sepObserver"></div>
+    <div class="tgroup" id="grpObserver">
+      <span class="tlabel">Observer</span>
+      <button class="tbtn on" id="btnBear" title="Show or hide the observer watching the image">🐻 Observer</button>
     </div>
     <div class="tsep" id="sepVision"></div>
     <div class="tgroup" id="grpCorrect">
@@ -312,12 +329,19 @@ input[type=range]::-moz-range-thumb{
    ============================================================ */
 "use strict";
 
-/* ---------- logical canvas space (uniformly letterboxed into the element) ---------- */
-const W = 900, H = 460;
+/* ---------- logical canvas space (uniformly letterboxed into the element) ----------
+   The grid ORIGIN (0,0) is the centre of the lens / mirror.
+   Horizontally  : 11 squares left  + 11 squares right  = 22 × 40 = 880 px
+   Vertically    :  5 squares above +  5 squares below  = 10 × 40 = 400 px
+   Aspect 11 : 5 — deliberately wide, so the fixed-height canvas uses more of the
+   window width and the diagram never has to be squeezed vertically.               */
 const PX_PER_CM = 40;
-const AX      = 240;              // principal axis — multiple of 40 => sits on a grid line
-const POLE_X  = Math.round(W / 2);// 450 — every optical element sits at canvas centre
-const F_PX    = 120;              // focal length 120 px = 3.0 cm (on the grid)
+const NX = 11, NY = 5;                 // grid squares each side of the origin
+const W = 2*NX*PX_PER_CM;              // 880
+const H = 2*NY*PX_PER_CM;              // 400
+const AX      = NY*PX_PER_CM;          // 200 — principal axis, y = 0
+const POLE_X  = NX*PX_PER_CM;          // 440 — optical centre, x = 0
+const F_PX    = 120;                   // focal length 120 px = 3.0 cm = 3 squares
 
 const SUBS = {
   mirror: ["plane", "concave", "convex"],
@@ -333,11 +357,16 @@ const RAY_COUNT = {
   "lens/convex":3,  "lens/concave":3,
   "eye/normal":3,   "eye/myopia":3,   "eye/hyperopia":3
 };
-const DEF = {
-  "mirror/plane":140, "mirror/concave":280, "mirror/convex":200,
+const DEF = {                          // object distances — whole grid squares
+  "mirror/plane":160, "mirror/concave":280, "mirror/convex":200,
   "lens/convex":280,  "lens/concave":200,
-  "eye/normal":260,   "eye/myopia":260,     "eye/hyperopia":260
+  "eye/normal":240,   "eye/myopia":240,     "eye/hyperopia":240
 };
+const OBJ_RANGE = { def:[40, 400], eye:[140, 300] };
+const SUN_RANGE = 120;                 // ± sun height (px) — keeps the bundle inside the canvas
+const DEF_HO = { def:80, eye:40 };     // default object height: 2 cm for mirrors/lenses, 1 cm for the eye
+const defHo = sec => DEF_HO[sec === "eye" ? "eye" : "def"];
+const PAST_IMG = 80;                   // carry every ray 2 cm past the image point
 
 /* ---------- state ---------- */
 function mkS(){
@@ -346,12 +375,13 @@ function mkS(){
     source:"object",              // "object" | "sunlight"
     obj:DEF["mirror/plane"],      // object distance in px, LEFT of POLE_X
     sun:0,                        // sun height (px) in sunlight mode
-    ho:80,                        // object height px (2.0 cm)
+    ho:DEF_HO.def,                // object height px
     correct:false,                // spectacle correction lens (eye only)
+    bear:true, bearPos:null,      // show / drag position of the observer (mirrors & lenses)
     labels:true, normals:true, angles:true, calc:false, grid:true,
     rayOn:[true,true,true,true],
     zoom:false, zf:2.5, focus:{x:POLE_X,y:AX}, pan:{x:0,y:0},
-    playing:false, prog:1, speed:1,
+    playing:false, prog:Infinity, speed:1,   // prog = distance the light front has travelled (px)
     theme:"dark", drag:null
   };
 }
@@ -490,14 +520,23 @@ function arrowHeadAt(p, ang, color, size){
   ctx.closePath(); ctx.fill(); ctx.restore();
 }
 function pathLen(pts){ let L=0; for(let i=1;i<pts.length;i++) L+=dist(pts[i-1],pts[i]); return L; }
+/* light front left over after it has already travelled `used` px */
+const remain = used => (S.prog === Infinity ? Infinity : Math.max(0, S.prog - used));
+/* has the front finished this whole path? (used to hold back the tip arrowhead) */
+const arrived = pts => S.prog >= pathLen(pts) - 0.5;
 
-/* progressive polyline with a direction arrowhead at each segment's midpoint */
-function poly(pts, color, w, dash, prog, opts){
+/* Progressive polyline with a direction arrowhead at each segment's midpoint.
+   `budgetPx` is how far the LIGHT FRONT has travelled, in pixels — not a fraction —
+   so every ray advances at the same speed and a later leg of a chain only starts
+   once the light has actually reached the surface that produced it.
+   Pass null / Infinity for a fully drawn ray.                                     */
+function poly(pts, color, w, dash, budgetPx, opts){
   if(!pts || pts.length<2) return;
   opts = opts||{};
   const total = pathLen(pts);
   if(total < 0.5) return;
-  let budget = (prog==null?1:clamp(prog,0,1))*total;
+  let budget = (budgetPx==null) ? total : Math.max(0, budgetPx);
+  if(budget <= 0) return;
   const drawnMid = [];
   ctx.save();
   ctx.strokeStyle=color; ctx.lineWidth=w||1.9; ctx.lineCap="round"; ctx.lineJoin="round";
@@ -579,6 +618,99 @@ function drawNormalLine(p, dirx, len, color){
   line({x:p.x-L*dirx.x, y:p.y-L*dirx.y}, {x:p.x+L*dirx.x, y:p.y+L*dirx.y}, color, 1.2, [4,4]);
 }
 
+/* ---------------- the observer: a little bear, drawn procedurally ----------------
+   `s` is the head radius. Bounding box in head-radius units:
+     x −1.025 … +1.025   (width 2.05)      y −1.00 … +1.665   (height 2.665)
+   so the box centre sits BEAR_OFF below the head centre.                        */
+const BEAR_W = 2.05, BEAR_H = 2.665, BEAR_OFF = 0.3325;
+/* The observer: ONE fixed size everywhere (bear + "Observer" label ≈ 80 px = 2 cm tall),
+   parked on the outgoing-light side by default and draggable anywhere on the canvas.  */
+const BEAR_S = 24.4;
+let BEAR_BOX = null;                    // hit box of the observer as last drawn
+function drawObserverAt(defX, defY, lookAt){
+  if(!S.bear) return;
+  const s = BEAR_S, hw = BEAR_W*s/2, hh = BEAR_H*s/2;
+  const p  = S.bearPos || { x:defX, y:defY };
+  const cx = clamp(p.x, hw+8, W-hw-8);
+  const cy = clamp(p.y, hh+22, H-hh-8);
+  drawBear(cx, cy - BEAR_OFF*s, s, col("--bear"), lookAt);
+  if(S.labels) label("Observer", cx, cy - hh - 10, col("--bear"), {size:9.5, bg:true});
+  BEAR_BOX = { x:cx, y:cy, hw:hw, hh:hh+8 };
+}
+function drawBear(cx, cy, s, color, lookAt){
+  const X = u => cx + u*s, Y = v => cy + v*s;
+  const lw = Math.max(1.05, s*0.075);
+  const bg = alpha(col("--graph-bg"), 0.94);
+  ctx.save();
+  ctx.lineJoin = "round"; ctx.lineCap = "round";
+
+  /* body + arms (behind the head) */
+  ctx.beginPath();
+  ctx.moveTo(X(-0.86), Y(0.52));
+  ctx.quadraticCurveTo(X(-1.12), Y(1.05), X(-1.00), Y(1.55));
+  ctx.quadraticCurveTo(X( 0.00), Y(1.78), X( 1.00), Y(1.55));
+  ctx.quadraticCurveTo(X( 1.12), Y(1.05), X( 0.86), Y(0.52));
+  ctx.closePath();
+  ctx.fillStyle = bg; ctx.fill();
+  ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(X(-0.46), Y(1.02)); ctx.quadraticCurveTo(X(-0.44), Y(1.30), X(-0.45), Y(1.60));
+  ctx.moveTo(X( 0.46), Y(1.02)); ctx.quadraticCurveTo(X( 0.44), Y(1.30), X( 0.45), Y(1.60));
+  ctx.lineWidth = lw*0.8; ctx.stroke();
+
+  /* ears */
+  for(const sx of [-1, 1]){
+    ctx.beginPath(); ctx.arc(X(sx*0.83), Y(-0.70), 0.28*s, 0, Math.PI*2);
+    ctx.fillStyle = bg; ctx.fill();
+    ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.stroke();
+    ctx.beginPath(); ctx.arc(X(sx*0.80), Y(-0.66), 0.17*s, 0, Math.PI*2);
+    ctx.fillStyle = color; ctx.fill();
+  }
+  /* head */
+  ctx.beginPath(); ctx.arc(cx, cy, s, 0, Math.PI*2);
+  ctx.fillStyle = bg; ctx.fill();
+  ctx.strokeStyle = color; ctx.lineWidth = lw*1.15; ctx.stroke();
+
+  /* eyes — plain white discs, each with a black pupil turned towards `lookAt` */
+  for(const sx of [-1, 1]){
+    const ex = X(sx*0.44), ey = Y(0.02), er = 0.125*s, pr = 0.055*s;
+    ctx.beginPath(); ctx.arc(ex, ey, er, 0, Math.PI*2);
+    ctx.fillStyle = "#ffffff"; ctx.fill();
+    let dx = 0, dy = 0;
+    if(lookAt){
+      const vx = lookAt.x-ex, vy = lookAt.y-ey, l = Math.hypot(vx,vy)||1;
+      dx = vx/l; dy = vy/l;
+    }
+    const off = (er - pr)*0.78;
+    ctx.beginPath(); ctx.arc(ex + dx*off, ey + dy*off, pr, 0, Math.PI*2);
+    ctx.fillStyle = "#101010"; ctx.fill();
+  }
+  /* nose — rounded triangle, point downwards */
+  ctx.beginPath();
+  ctx.moveTo(X(-0.20), Y(0.14));
+  ctx.quadraticCurveTo(X(-0.21), Y(0.30), X( 0.00), Y(0.37));
+  ctx.quadraticCurveTo(X( 0.21), Y(0.30), X( 0.20), Y(0.14));
+  ctx.quadraticCurveTo(X( 0.00), Y(0.07), X(-0.20), Y(0.14));
+  ctx.closePath();
+  ctx.fillStyle = color; ctx.fill();
+  /* mouth — the classic ω hanging straight off the nose */
+  ctx.beginPath();
+  ctx.moveTo(X(0), Y(0.37));
+  ctx.quadraticCurveTo(X(-0.05), Y(0.56), X(-0.20), Y(0.47));
+  ctx.moveTo(X(0), Y(0.37));
+  ctx.quadraticCurveTo(X( 0.05), Y(0.56), X( 0.20), Y(0.47));
+  ctx.strokeStyle = color; ctx.lineWidth = lw; ctx.stroke();
+  /* cheek strokes */
+  ctx.beginPath();
+  for(let i=0;i<3;i++){
+    const o = i*0.075;
+    ctx.moveTo(X(-0.82+o), Y(0.12)); ctx.lineTo(X(-0.72+o), Y(0.30));
+    ctx.moveTo(X( 0.82-o), Y(0.12)); ctx.lineTo(X( 0.72-o), Y(0.30));
+  }
+  ctx.lineWidth = lw*0.75; ctx.stroke();
+  ctx.restore();
+}
+
 /* observer eye icon (plane mirror) */
 function drawEyeIcon(p, color, hy){
   const b = hy || 13, a = b*1.45;
@@ -608,19 +740,30 @@ function drawBg(){
     for(let y=0;y<=H;y+=PX_PER_CM){ ctx.moveTo(0,y+0.5); ctx.lineTo(W,y+0.5); }
     ctx.stroke(); ctx.restore();
     drawCmLabels();
-    label("1 cm = 40 px", W-12, 16, col("--text-muted"),
-          {size:9, align:"right", baseline:"middle", alphaV:0.75});
+    label("1 square = 1 cm · origin at the optical centre", W-12, 16, col("--text-muted"),
+          {size:9, align:"right", baseline:"middle", alphaV:0.72});
   }
 }
+/* cm scale measured FROM THE OPTICAL CENTRE (x = 0 at the lens / mirror) */
 function drawCmLabels(){
   ctx.save();
   ctx.font="9px 'JetBrains Mono',monospace";
-  ctx.fillStyle=col("--text-muted");
-  ctx.globalAlpha=0.55; ctx.textAlign="center"; ctx.textBaseline="bottom";
-  const y = H-8;
-  for(let x=PX_PER_CM; x<W-60; x+=PX_PER_CM){
-    const cm = x/PX_PER_CM;
-    if(cm%2===0) ctx.fillText(String(cm), x, y);
+  ctx.textAlign="center"; ctx.textBaseline="bottom";
+  const y = H-46;                       /* clear of the status chips along the bottom edge */
+  for(let k=-NX+1; k<=NX-1; k++){
+    if(k % 2 !== 0) continue;
+    ctx.globalAlpha = (k===0) ? 0.95 : 0.55;
+    ctx.fillStyle = (k===0) ? col("--accent") : col("--text-muted");
+    ctx.fillText(String(k), POLE_X + k*PX_PER_CM, y);
+  }
+  ctx.globalAlpha = 0.55; ctx.fillStyle = col("--text-muted"); ctx.textAlign = "left";
+  ctx.fillText("cm", POLE_X + (NX-0.6)*PX_PER_CM, y);
+  /* y scale down the left edge */
+  ctx.textAlign="left"; ctx.textBaseline="middle";
+  for(let k=-NY+1; k<=NY-1; k++){
+    if(k % 2 !== 0 || k === 0) continue;
+    ctx.globalAlpha = 0.5; ctx.fillStyle = col("--text-muted");
+    ctx.fillText(String(-k), 5, AX + k*PX_PER_CM);
   }
   ctx.restore();
 }
@@ -635,7 +778,7 @@ function drawAxis(x0,x1){
    and the physics can never drift apart.
    ============================================================ */
 
-const APER = 150;                       // half aperture height (px)
+const APER = 160;                       // half aperture height = 4 grid squares
 const SAG_B = 5625 / F_PX;              // ≈46.9 px — makes the parabola's TRUE focal length = F_PX
 
 /* dir = +1 concave (hollow faces LEFT) · dir = -1 convex (bulge faces LEFT) · dir = 0 plane */
@@ -706,17 +849,20 @@ function mirrorPlane(){
   const objX = POLE_X - S.obj, ho = S.ho;
   const tip = { x:objX, y:AX-ho };
 
-  drawAxis(10, POLE_X + 260);
+  drawAxis(10, W-10);
   drawMirrorSurface(g);
   if(S.labels){
-    label("Plane mirror", POLE_X + 30, g.topY - 12, col("--blue"), {size:11, align:"left"});
-    label("P", POLE_X, AX+19, col("--blue"), {size:11});
+    label("Plane mirror", POLE_X - 30, g.topY - 12, col("--blue"), {size:11, align:"right"});
+    label("P", POLE_X+12, AX+19, col("--blue"), {size:11});
   }
 
   /* two rays leaving the object tip, striking the mirror 22 px above / below the axis */
   const hits = [ {x:POLE_X, y:AX-22}, {x:POLE_X, y:AX+22} ];
   const virtualTip = { x: 2*POLE_X - objX, y: AX-ho };      // mirror image of the tip
-  const eyeX = clamp(objX - 96, 74, POLE_X-120);
+  /* Both reflected rays radiate from the virtual image, so their mid-line drops at
+     ho/u per px. Pick how far in front of the mirror to stop them so that mid-line
+     lands a comfortable 95 px below the axis whatever the object size / distance. */
+  const eyeX = POLE_X - clamp(95*S.obj/ho, 30, 330);
   const ends = [];
 
   for(let i=0;i<2;i++){
@@ -728,16 +874,17 @@ function mirrorPlane(){
     ends.push(end);
     if(!S.rayOn[i+1]) continue;
 
-    poly([tip, M],   RAY, 1.9, null, S.prog);
-    poly([M,  end],  RAY, 1.9, null, S.prog);
-    arrowHeadAt(end, Math.atan2(dout.y,dout.x), RAY, 9);
+    /* ONE chain: the light must reach the mirror before the reflected leg starts */
+    const path = [tip, M, end];
+    poly(path, RAY, 1.9, null, S.prog);
+    if(arrived(path)) arrowHeadAt(end, Math.atan2(dout.y,dout.x), RAY, 9);
 
-    /* dashed virtual extension — stops just past the virtual image */
+    /* dashed virtual extension — only after the light has reached the mirror */
     const bd = {x:-dout.x, y:-dout.y};
     const projI = (virtualTip.x-M.x)*bd.x + (virtualTip.y-M.y)*bd.y;
-    let back = ext(M, bd, Math.max(30, projI+16));
+    let back = ext(M, bd, Math.max(30, projI+PAST_IMG));
     back = clipToCanvas(M, back, 22) || back;
-    poly([M, back], VIR, 1.3, [5,5], S.prog, {arrows:false});
+    poly([M, back], VIR, 1.3, [5,5], remain(dist(tip,M)), {arrows:false});
 
     if(S.normals) drawNormalLine(M, {x:1,y:0}, 46, col("--text-muted"));
     if(S.angles){
@@ -749,21 +896,20 @@ function mirrorPlane(){
     dot(M, RAY, 3);
   }
 
-  /* observer eye — sits between the two diverging reflected rays, behind their ends */
-  {
-    const gap = Math.abs(ends[0].y - ends[1].y);
-    const eyeY = (ends[0].y + ends[1].y)/2;
-    drawEyeIcon({x:eyeX-6, y:eyeY}, col("--green"), clamp(gap/2+4, 13, 34));
-    if(S.labels) label("Eye", eyeX-6, eyeY - clamp(gap/2+4,13,34) - 12, col("--green"), {size:10, bg:true});
-  }
+  /* the observer stands in front of the mirror, on the opposite side of the axis
+     from the (upright, virtual) image — same rule and same size as every other diagram */
+  drawObserverAt(100, virtualTip.y > AX ? AX-118 : AX+118, virtualTip);
 
   /* object + virtual image */
   drawArrow(objX, AX, tip.y, col("--rose"), false, 3);
-  drawArrow(virtualTip.x, AX, virtualTip.y, col("--violet"), true, 2.6);
-  if(S.labels){
-    label("Object", objX, AX+30, col("--rose"), {size:10, bg:true});
-    label("Virtual image", virtualTip.x, AX+30, col("--violet"), {size:10, bg:true});
+  /* the virtual image only appears once the light has actually reached the mirror
+     and its backward extension has run out to the image point */
+  const vArrive = dist(tip, hits[0]) + dist(hits[0], virtualTip);
+  if(S.prog >= vArrive){
+    drawArrow(virtualTip.x, AX, virtualTip.y, col("--violet"), true, 2.6);
+    if(S.labels) label("Virtual image", virtualTip.x, AX+30, col("--violet"), {size:10, bg:true});
   }
+  if(S.labels) label("Object", objX, tip.y-15, col("--rose"), {size:10, bg:true});
 
   const u = S.obj;
   return {
@@ -785,7 +931,7 @@ function mirrorPlane(){
     note:"A <b>plane mirror</b> forms a <span class='hl'>virtual, upright</span> image the same size as the object, "+
          "at an equal distance behind the mirror. The image is <b>laterally inverted</b> (left ↔ right). "+
          "Each reflected ray obeys the law of reflection, <b>θi = θr</b>, measured from the normal. "+
-         "The eye receives the two diverging reflected rays and traces them straight back, so the brain places the image behind the mirror."
+         "The observer's eye receives the two diverging reflected rays and traces them straight back, so the brain places the image behind the mirror."
   };
 }
 
@@ -815,12 +961,11 @@ function mirrorCurved(dir){
   const offscreen = img ? !inBox(img, 26) : false;
 
   drawAxis(10, W-10);
-  if(!concave) line({x:POLE_X, y:AX}, {x:Math.min(W-14, Cp.x+14), y:AX}, col("--text-muted"), 1.2, [3,5]);
   drawMirrorSurface(g);
   axisTick(Fp.x, "F", col("--accent"), false);
   axisTick(Cp.x, "C", col("--accent"), false);
   if(S.labels){
-    label(concave?"Concave mirror":"Convex mirror", POLE_X + (concave?26:60), g.topY-12,
+    label(concave?"Concave mirror":"Convex mirror", POLE_X + (concave?28:62), g.topY-12,
           col("--blue"), {size:11, align:"left"});
     label("P", POLE_X+12, AX+19, col("--blue"), {size:11});
   }
@@ -847,6 +992,7 @@ function mirrorCurved(dir){
   }
 
   /* ---- draw ---- */
+  let imgArrive = Infinity;              // how far the light must travel before the image exists
   rays.forEach((r, i) => {
     if(!S.rayOn[i+1]) return;
     const H = r.hit.p;
@@ -859,24 +1005,26 @@ function mirrorCurved(dir){
     else if(virt) out = norm(sub(H, img));
     else          out = norm(sub(img, H));
 
-    poly([tip, H], RAY, 1.9, null, S.prog);
     let L = concave ? 660 : 430;
     if(img && !virt && !offscreen){
       const proj = (img.x-H.x)*out.x + (img.y-H.y)*out.y;
-      if(proj > 12) L = proj + 14;
+      if(proj > 12) L = proj + PAST_IMG;      /* carry the ray 2 cm past the crossing point */
     }
     const end = castClipped(H, out, L, 20);
-    poly([H, end], RAY, 1.9, null, S.prog);
-    arrowHeadAt(end, Math.atan2(out.y,out.x), RAY, 9);
-    dot(H, RAY, 3);
+    /* ONE chain: the light must reach the mirror before the reflected leg starts */
+    const path = [tip, H, end];
+    poly(path, RAY, 1.9, null, S.prog);
+    if(arrived(path)) arrowHeadAt(end, Math.atan2(out.y,out.x), RAY, 9);
+    if(S.prog >= dist(tip,H)) dot(H, RAY, 3);
+    if(img && !offscreen) imgArrive = Math.min(imgArrive, dist(tip,H) + dist(H,img));
 
     if(virt && img && !offscreen){
       const bd = mul(out,-1);
       const projI = (img.x-H.x)*bd.x + (img.y-H.y)*bd.y;
       if(projI > 6){
-        let be = ext(H, bd, projI+14);
+        let be = ext(H, bd, projI+PAST_IMG);
         be = clipToCanvas(H, be, 20) || be;
-        poly([H, be], VIR, 1.3, [5,5], S.prog, {arrows:false});
+        poly([H, be], VIR, 1.3, [5,5], remain(dist(tip,H)), {arrows:false});
       }
     }
     if(S.normals) drawNormalLine(H, g.nrm(r.hit.s), 44, col("--text-muted"));
@@ -900,12 +1048,19 @@ function mirrorCurved(dir){
     nature = virt ? "Virtual" : "Real";
     orient = m > 0 ? "Upright" : "Inverted";
     size   = Math.abs(m) > 1.06 ? "Magnified" : (Math.abs(m) < 0.94 ? "Diminished" : "Same size");
-    if(!offscreen){
+    if(!offscreen && S.prog >= imgArrive){
       drawArrow(img.x, AX, img.y, virt?col("--violet"):col("--green"), virt, virt?2.6:3);
       dot(img, virt?col("--violet"):col("--green"), 3.6);
       if(S.labels) label(virt?"Virtual image":"Real image", img.x, img.y + (img.y>AX?18:-18),
                          virt?col("--violet"):col("--green"), {size:10, bg:true});
     }
+  }
+
+  /* the observer stands in front of the mirror (outgoing-light side), parked on the
+     opposite side of the axis from the image so it keeps clear of the reflected rays */
+  {
+    const tgt = (img && !offscreen) ? img : {x:POLE_X, y:AX};
+    drawObserverAt(100, tgt.y > AX ? AX-118 : AX+118, tgt);
   }
 
   let cse;
@@ -957,8 +1112,10 @@ function mirrorCurved(dir){
    SECTION 2 — LENSES
    ============================================================ */
 
-const LENS_HY = 80;             // half aperture of the main lens (tall enough for every ray)
-const SUN_L0  = 390;            // px from the left edge of the ray bundle to the lens
+/* the lens body is 8 grid squares tall — 4 above and 4 below the axis — so it is
+   comfortably taller than the highest ray that passes through it */
+const LENS_HY = 160;            // half aperture of the main lens = 4 grid squares
+const SUN_L0  = 400;            // px from the start of the ray bundle to the lens
 
 function drawLensShape(poleX, converging){
   const hy = LENS_HY, topY = AX-hy, botY = AX+hy;
@@ -966,19 +1123,20 @@ function drawLensShape(poleX, converging){
   ctx.beginPath();
   if(converging){
     /* biconvex = the overlap of two circles; each face is a true circular arc */
-    const R = 130;
-    const off = Math.sqrt(R*R - hy*hy);          // ≈102.5
-    const a = Math.atan2(hy, off);               // ≈0.663
+    const rimW = 34;                             // half-thickness at the centre
+    const R = (rimW*rimW + hy*hy)/(2*rimW);      // ≈393.5
+    const off = R - rimW;                        // ≈359.5
+    const a = Math.atan2(hy, off);
     ctx.arc(poleX+off, AX, R, -(Math.PI-a),  (Math.PI-a), true);   // left face, bulging LEFT
     ctx.arc(poleX-off, AX, R,  a, -a, true);                        // right face, bulging RIGHT
     ctx.closePath();
     ctx.fillStyle = "rgba(90,160,220,0.16)";
   } else {
     /* biconcave = thick rims, thin waist; each face is a circular arc curving inwards */
-    const rimW = 28, sag = 20;
-    const R  = (sag*sag + hy*hy)/(2*sag);        // 170
-    const cOff = R - sag;                        // 150
-    const aL = Math.atan2(hy, cOff);             // ≈0.4899
+    const rimW = 44, sag = 32;
+    const R  = (sag*sag + hy*hy)/(2*sag);        // 416
+    const cOff = R - sag;                        // 384
+    const aL = Math.atan2(hy, cOff);
     ctx.moveTo(poleX-rimW, topY);
     ctx.arc(poleX-rimW-cOff, AX, R, -aL, aL, false);                 // left face, curving inwards
     ctx.lineTo(poleX+rimW, botY);
@@ -1029,24 +1187,26 @@ function drawSunRays(converging){
     const start = { x: POLE_X-SUN_L0, y: hit.y - d.y/d.x*SUN_L0 };
     const c = i===1 ? RAY : alpha(RAY, .62);
     const sIn = clipToCanvas(hit, start, 14) || start; // trim the incoming leg to the canvas
-    poly([sIn, hit], c, i===1?1.9:1.6, null, S.prog);
 
     let outDir;
     if(converging) outDir = norm(sub(Fpt, hit));
     else           outDir = norm(sub(hit, Fpt));
     let L = 460;
-    if(converging){ L = dist(hit, Fpt) + 26; }
+    if(converging){ L = dist(hit, Fpt) + 120; }   /* carry each ray 3 cm past the focus */
     const end = castClipped(hit, outDir, L, 20);
-    poly([hit, end], c, i===1?1.9:1.6, null, S.prog);
-    arrowHeadAt(end, Math.atan2(outDir.y,outDir.x), c, 8);
+    /* ONE chain: the light must reach the lens before the refracted leg starts */
+    const path = [sIn, hit, end];
+    poly(path, c, i===1?1.9:1.6, null, S.prog);
+    if(arrived(path)) arrowHeadAt(end, Math.atan2(outDir.y,outDir.x), c, 8);
     dot(hit, c, 2.6);
 
     if(!converging){
       const back = clipToCanvas(hit, ext(hit, mul(outDir,-1), dist(hit,Fpt)+14), 20);
-      if(back) poly([hit, back], VIR, 1.3, [5,5], S.prog, {arrows:false});
+      if(back) poly([hit, back], VIR, 1.3, [5,5], remain(dist(sIn,hit)), {arrows:false});
     }
   }
   if(S.normals) drawNormalLine({x:POLE_X, y:AX}, {x:1,y:0}, 54, col("--text-muted"));
+  drawObserverAt(W-100, Fpt.y > AX ? AX-118 : AX+118, Fpt);
 
   const oc = fmt(Math.abs(o)/PX_PER_CM);
   return {
@@ -1084,8 +1244,8 @@ function lensRender(converging){
   if(S.source === "sunlight"){
     drawAxis(10, W-10);
     drawLensShape(POLE_X, converging);
-    if(S.labels) label(converging?"Convex lens":"Concave lens", POLE_X+34, AX-LENS_HY-14,
-                       col("--blue"), {size:11, align:"left"});
+    if(S.labels) label(converging?"Convex lens":"Concave lens", POLE_X-26, AX-LENS_HY-19,
+                       col("--blue"), {size:11, align:"right"});
     return drawSunRays(converging);
   }
 
@@ -1105,9 +1265,9 @@ function lensRender(converging){
   axisTick(POLE_X-2*f, "2F",  col("--accent"), false);
   axisTick(POLE_X+2*f, "2F′", col("--accent"), false);
   if(S.labels){
-    label("O", POLE_X, AX-LENS_HY-30, col("--blue"), {size:11});
+    label("O", POLE_X, AX-LENS_HY-19, col("--blue"), {size:11});
     label(converging?"Convex lens (converging)":"Concave lens (diverging)",
-          POLE_X+34, AX-LENS_HY-14, col("--blue"), {size:11, align:"left"});
+          POLE_X-26, AX-LENS_HY-19, col("--blue"), {size:11, align:"right"});
   }
 
   /* --- the three standard construction rays, all refracting at the lens plane --- */
@@ -1134,25 +1294,30 @@ function lensRender(converging){
     { on:S.rayOn[2], hit:H2, din:d2,        dout:d2, from:tip, tag:"R2" },
     { on:S.rayOn[3], hit:H3, din:H3?norm(sub(H3,tip)):null, dout:d3, from:tip, tag:"R3" }
   ];
+  let imgArrive = Infinity;              // how far the light must travel before the image exists
   legs.forEach(L => {
     if(!L.on || !L.hit) return;
-    poly([L.from, L.hit], RAY, 1.9, null, S.prog);
     let len = converging ? 680 : 430;
     if(img && !virt && !offscreen){
       const proj = (img.x-L.hit.x)*L.dout.x + (img.y-L.hit.y)*L.dout.y;
-      if(proj > 12) len = proj + 14;
+      /* a convex lens carries its rays 3 cm past the crossing point so students can
+         see them really cross and keep going; everything else uses 2 cm */
+      if(proj > 12) len = proj + (converging ? 120 : PAST_IMG);
     }
     const end = castClipped(L.hit, L.dout, len, 20);
-    poly([L.hit, end], RAY, 1.9, null, S.prog);
-    arrowHeadAt(end, Math.atan2(L.dout.y, L.dout.x), RAY, 9);
-    dot(L.hit, RAY, 3);
+    /* ONE chain: the light must reach the lens before the refracted leg starts */
+    const path = [L.from, L.hit, end];
+    poly(path, RAY, 1.9, null, S.prog);
+    if(arrived(path)) arrowHeadAt(end, Math.atan2(L.dout.y, L.dout.x), RAY, 9);
+    if(S.prog >= dist(L.from, L.hit)) dot(L.hit, RAY, 3);
+    if(img && !offscreen) imgArrive = Math.min(imgArrive, dist(L.from,L.hit) + dist(L.hit,img));
     if(virt && img && !offscreen){
       const bd = mul(L.dout,-1);
       const projI = (img.x-L.hit.x)*bd.x + (img.y-L.hit.y)*bd.y;
       if(projI > 6){
-        let be = ext(L.hit, bd, projI+14);
+        let be = ext(L.hit, bd, projI+PAST_IMG);
         be = clipToCanvas(L.hit, be, 20) || be;
-        poly([L.hit, be], VIR, 1.3, [5,5], S.prog, {arrows:false});
+        poly([L.hit, be], VIR, 1.3, [5,5], remain(dist(L.from,L.hit)), {arrows:false});
       }
     }
     if(S.labels) label(L.tag, L.hit.x-16, L.hit.y-12, RAY, {size:9});
@@ -1173,13 +1338,20 @@ function lensRender(converging){
     nature = virt ? "Virtual" : "Real";
     orient = hi > 0 ? "Upright" : "Inverted";
     size   = m > 1.06 ? "Magnified" : (m < 0.94 ? "Diminished" : "Same size");
-    if(!offscreen){
+    if(!offscreen && S.prog >= imgArrive){
       drawArrow(img.x, AX, img.y, virt?col("--violet"):col("--green"), virt, virt?2.6:3);
       dot(img, virt?col("--violet"):col("--green"), 3.6);
       if(S.labels) label(virt?"Virtual image":"Real image", img.x, img.y + (img.y>AX?18:-18),
                          virt?col("--violet"):col("--green"), {size:10, bg:true});
     }
   }
+  /* the observer looks back through the lens from the far side, parked on the opposite
+     side of the axis from the image so it keeps clear of the refracted rays */
+  {
+    const tgt = (img && !offscreen) ? img : {x:POLE_X, y:AX};
+    drawObserverAt(W-100, tgt.y > AX ? AX-118 : AX+118, tgt);
+  }
+
   if(converging){
     if(atF)                cse = "Object at F";
     else if(u > 2*f+12)    cse = "Object beyond 2F";
@@ -1229,12 +1401,24 @@ function lensRender(converging){
    differ ONLY in the power of the cornea + lens.
    ============================================================ */
 
-const EYE = { cx:620, cy:AX, rx:118, ry:118 };  // NEVER changes between the three types
-const LX  = 524;                                 // cornea + lens plane
-const SX  = 468;                                 // spectacle (correction) lens plane
+/* the eye's own lens sits on the grid origin, exactly like the lens / mirror sections */
+const LX  = POLE_X;                              // cornea + lens plane  (x = 0)
+const EYE = { cx:LX+96, cy:AX, rx:118, ry:118 }; // NEVER changes between the three types
+const SX  = LX - 84;                             // spectacle (correction) lens plane
 const EYE_D = 208;                               // axial depth: lens → retina
 const EYE_HY = 58;                               // half aperture of the eye's lens
 const POWER = { normal:1.00, myopia:0.82, hyperopia:1.20 };   // relative focal length of cornea+lens
+
+/* where the cornea ellipse crosses the eyeball circle — solved once, so the arc
+   always starts and stops exactly on the eyeball outline                        */
+const CORNEA = (() => {
+  const ox = 13, rx = EYE.rx + 6, ry = EYE.ry * 0.62, R = EYE.rx;
+  const A = rx*rx - ry*ry, B = -2*ox*rx, C = ox*ox + ry*ry - R*R;
+  const disc = B*B - 4*A*C;
+  let c = disc >= 0 ? (-B - Math.sqrt(disc))/(2*A) : -0.77;
+  const th = Math.acos(clamp(c, -1, 1));
+  return { ox, rx, ry, a0: th, a1: 2*Math.PI - th };
+})();
 
 /* far intersection of a ray with the eyeball (= the retina surface) */
 function retinaHit(p, d){
@@ -1266,11 +1450,12 @@ function drawEyeball(type){
   ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.stroke();
   ctx.restore();
 
-  /* cornea — a bulge on the front of the eyeball (same for all three types) */
+  /* cornea — a shallow bulge on the front of the eyeball, ending exactly where it
+     meets the eyeball outline so its tips never poke back inside the eye */
   ctx.save();
   ctx.strokeStyle = col("--blue"); ctx.lineWidth = 2.6;
   ctx.beginPath();
-  ctx.ellipse(EYE.cx-30, EYE.cy, EYE.rx+16, EYE.ry*0.62, 0, Math.PI*0.72, Math.PI*1.28);
+  ctx.ellipse(EYE.cx-CORNEA.ox, EYE.cy, CORNEA.rx, CORNEA.ry, 0, CORNEA.a0, CORNEA.a1);
   ctx.stroke(); ctx.restore();
 
   /* iris + pupil opening just behind the cornea */
@@ -1312,12 +1497,12 @@ function drawEyeball(type){
 }
 
 function drawLensShapeSmall(x, y, converging){
-  const hy = 70, topY = y-hy, botY = y+hy;
-  const rimW = converging ? 8 : 15;
+  const hy = 100, topY = y-hy, botY = y+hy;
+  const rimW = converging ? 9 : 17;
   ctx.save();
   ctx.beginPath();
   if(converging){
-    const bulge = 22;
+    const bulge = 26;
     ctx.moveTo(x-rimW, topY);
     ctx.quadraticCurveTo(x-bulge, y, x-rimW, botY);
     ctx.lineTo(x+rimW, botY);
@@ -1325,7 +1510,7 @@ function drawLensShapeSmall(x, y, converging){
     ctx.closePath();
     ctx.fillStyle = "rgba(167,139,250,0.18)";
   } else {
-    const indent = 17;
+    const indent = 20;
     ctx.moveTo(x-rimW, topY);
     ctx.quadraticCurveTo(x-rimW+indent, y, x-rimW, botY);
     ctx.lineTo(x+rimW, botY);
@@ -1342,7 +1527,7 @@ function renderEye(){
   const type = S.type;                       // normal | myopia | hyperopia
   const RAY = col("--ray"), VIR = col("--rayv");
   const objX = POLE_X - S.obj;
-  const ho   = Math.min(S.ho, 62);
+  const ho   = Math.min(S.ho, 80);
   const tip  = { x:objX, y:AX-ho };
   const Oe   = { x:LX, y:AX };
   const corrected = S.correct && type !== "normal";
@@ -1373,8 +1558,8 @@ function renderEye(){
     drawLensShapeSmall(SX, AX, type === "hyperopia");
     if(S.labels){
       label(type==="myopia" ? "concave (diverging)" : "convex (converging)",
-            SX, AX-84, col("--violet"), {size:10});
-      label("spectacle lens", SX, AX-96, col("--violet"), {size:9.5});
+            SX, AX-114, col("--violet"), {size:10, bg:true});
+      label("spectacle lens", SX, AX-127, col("--violet"), {size:9.5, bg:true});
     }
   }
 
@@ -1403,9 +1588,9 @@ function renderEye(){
     hitsOnRetina.push(R);
     if(!S.rayOn[i+1]) continue;
 
-    poly(inPts, RAY, 1.9, null, S.prog);
+    /* ONE chain: object → (spectacle) → eye lens → retina, drawn strictly in order */
     const endPt = R || castClipped(HE, dOut, 300, 20);
-    poly([HE, endPt], RAY, 1.9, null, S.prog);
+    poly(inPts.concat([endPt]), RAY, 1.9, null, S.prog);
     dot(HE, RAY, 2.8);
     if(corrected && Is) dot({x:SX, y:inPts[1].y}, col("--violet"), 2.8);
   }
@@ -1525,6 +1710,7 @@ function draw(){
   ctx.translate(VS.ox, VS.oy);
   ctx.scale(VS.s, VS.s);
   ctx.beginPath(); ctx.rect(0,0,W,H); ctx.clip();
+  BEAR_BOX = null;                       // recreated by drawObserverAt if the observer is shown
   if(S.zoom){
     const f=S.zf, fx=S.focus.x+S.pan.x, fy=S.focus.y+S.pan.y;
     ctx.translate(W/2 - fx*f, H/2 - fy*f);
@@ -1562,9 +1748,10 @@ function updateUI(){
   $("ovlBL").innerHTML = chips.map(chipHTML).join("");
   const zc = $("ovlBL").querySelector(".chip.zoom");
   if(zc) zc.onclick = () => { S.zoom=false; S.pan={x:0,y:0}; updateUI(); };
-  $("hintChip").textContent = (S.source==="sunlight")
-      ? "drag the ray bundle · dbl-click zoom · ← → fine step"
-      : "drag the object (or its tip) · dbl-click zoom · ← → fine step";
+  const bearHint = (S.bear && S.section !== "eye") ? " · drag 🐻" : "";
+  $("hintChip").textContent = ((S.source==="sunlight")
+      ? "drag the ray bundle" : "drag the object (or its tip)")
+      + bearHint + " · dbl-click zoom · ← → fine step";
 
   /* characteristics */
   $("charCards").innerHTML = R.chars.map(c =>
@@ -1596,9 +1783,15 @@ function updateUI(){
 }
 
 /* ---------------- tabs & sub-tabs ---------------- */
+/* one cell per section, sitting directly under its own tab — only the active one shows */
+const SUB_CELL = { mirror:"subMirror", lens:"subLens", eye:"subEye" };
 function buildSubTabs(){
-  const wrap = $("subtabs");
-  wrap.innerHTML = "";
+  for(const sec in SUB_CELL){
+    const c = $(SUB_CELL[sec]);
+    c.innerHTML = "";
+    c.classList.toggle("hidden", sec !== S.section);
+  }
+  const wrap = $(SUB_CELL[S.section]);
   SUBS[S.section].forEach(t => {
     const b = document.createElement("button");
     b.className = "pill" + (t===S.type ? " active" : "");
@@ -1606,6 +1799,8 @@ function buildSubTabs(){
     b.onclick = () => {
       S.type = t;
       S.obj = DEF[S.section+"/"+S.type];
+      S.ho = defHo(S.section);
+      S.bearPos = null;
       S.correct = false;
       S.rayOn = [true,true,true,true];
       buildSubTabs(); buildRayToggles(); paramChanged(); updateUI();
@@ -1617,6 +1812,8 @@ function setSection(sec){
   S.section = sec;
   S.type = SUBS[sec][0];
   S.obj = DEF[sec+"/"+S.type];
+  S.ho = defHo(sec);
+  S.bearPos = null;
   S.correct = false;
   S.source = "object";
   S.sun = 0;
@@ -1648,6 +1845,10 @@ function updateSourceLock(){
 }
 function updateVisionLock(){
   const isEye = S.section === "eye";
+  /* the Observer toggle belongs to Mirrors and Lenses only */
+  $("grpObserver").classList.toggle("hidden", isEye);
+  $("sepObserver").classList.toggle("hidden", isEye);
+  $("btnBear").classList.toggle("on", S.bear);
   $("grpCorrect").classList.toggle("hidden", !isEye);
   $("sepVision").classList.toggle("hidden", !isEye);
   const canCorrect = isEye && S.type !== "normal";
@@ -1681,36 +1882,41 @@ function syncSlider(){
   const sl = $("objSlider"), lab = $("slLabel"), out = $("slVal");
   if(S.source === "sunlight"){
     lab.textContent = "☀ Sun height";
-    sl.min = -150; sl.max = 150; sl.step = 2;
+    sl.min = -SUN_RANGE; sl.max = SUN_RANGE; sl.step = 2;
     sl.value = S.sun;
     out.textContent = "Sun height = " + (S.sun>=0?"+":"−") + fmt(Math.abs(S.sun)/PX_PER_CM) + " cm";
   } else {
+    const R = OBJ_RANGE[S.section==="eye" ? "eye" : "def"];
     lab.textContent = S.section==="eye" ? "Object distance" : "Object position";
-    sl.min = S.section==="eye" ? 120 : 40;
-    sl.max = S.section==="eye" ? 340 : 380;
-    sl.step = 2;
+    sl.min = R[0]; sl.max = R[1]; sl.step = 2;
     sl.value = S.obj;
     out.textContent = "Object distance = " + pxToCm(S.obj) + " cm";
   }
 }
-function paramChanged(){ S.prog = S.playing ? 0 : 1; }
+const RAY_SPEED = 620;        // px of light path drawn per second at 1×
+const RAY_MAXPATH = 2200;     // once the front is this far, every ray is complete
+function paramChanged(){ S.prog = S.playing ? 0 : Infinity; }
 
 /* ---------------- interaction ---------------- */
 function setObj(v){
-  const lo = S.section==="eye" ? 120 : 40;
-  const hi = S.section==="eye" ? 340 : 380;
-  S.obj = clamp(Math.round(v/2)*2, lo, hi);
+  const R = OBJ_RANGE[S.section==="eye" ? "eye" : "def"];
+  S.obj = clamp(Math.round(v/2)*2, R[0], R[1]);
   paramChanged(); updateUI();
 }
-function setSun(v){ S.sun = clamp(Math.round(v/2)*2, -150, 150); paramChanged(); updateUI(); }
+function setSun(v){ S.sun = clamp(Math.round(v/2)*2, -SUN_RANGE, SUN_RANGE); paramChanged(); updateUI(); }
 
 cv.addEventListener("pointerdown", e => {
   const p = evtPt(e);
   cv.setPointerCapture(e.pointerId);
   cv.classList.add("dragging");
+  /* the observer can be picked up and moved anywhere — it wins the hit test */
+  if(BEAR_BOX && Math.abs(p.x-BEAR_BOX.x) < BEAR_BOX.hw+6 && Math.abs(p.y-BEAR_BOX.y) < BEAR_BOX.hh+6){
+    S.drag = {mode:"bear", dx:p.x-BEAR_BOX.x, dy:p.y-BEAR_BOX.y};
+    return;
+  }
   if(S.source === "sunlight"){ S.drag = {mode:"sun", y0:p.y, v0:S.sun}; return; }
   const objX = POLE_X - S.obj;
-  const ho   = (S.section==="eye") ? Math.min(S.ho,62) : S.ho;
+  const ho   = (S.section==="eye") ? Math.min(S.ho,80) : S.ho;
   const nearTip  = Math.abs(p.x-objX) < 30 && Math.abs(p.y-(AX-ho)) < 26;
   const nearBody = Math.abs(p.x-objX) < 34 && p.y > AX-ho-14 && p.y < AX+16;
   if(nearTip)       S.drag = {mode:"tip"};
@@ -1722,7 +1928,8 @@ cv.addEventListener("pointerdown", e => {
 cv.addEventListener("pointermove", e => {
   if(!S.drag) return;
   const p = evtPt(e);
-  if(S.drag.mode === "sun")      setSun(S.drag.v0 + (p.y - S.drag.y0) * -1);
+  if(S.drag.mode === "bear"){ S.bearPos = { x:p.x - S.drag.dx, y:p.y - S.drag.dy }; draw(); }
+  else if(S.drag.mode === "sun") setSun(S.drag.v0 + (p.y - S.drag.y0) * -1);
   else if(S.drag.mode === "tip"){ S.ho = clamp(Math.round(AX - p.y), 28, 128); paramChanged(); updateUI(); }
   else if(S.drag.mode === "obj")  setObj(POLE_X - (p.x - S.drag.dx));
   else if(S.drag.mode === "pan"){
@@ -1775,6 +1982,7 @@ document.querySelectorAll("#grpSource .pill").forEach(p => {
 });
 
 $("btnCorrect").onclick = () => { S.correct = !S.correct; paramChanged(); updateUI(); };
+$("btnBear").onclick    = () => { S.bear = !S.bear; updateUI(); };
 
 $("objSlider").addEventListener("input", e => {
   const v = +e.target.value;
@@ -1784,7 +1992,7 @@ $("objSlider").addEventListener("input", e => {
 $("btnPlay").onclick = () => {
   S.playing = !S.playing;
   if(S.playing){ S.prog = 0; $("btnPlay").textContent = "⏸ Pause"; }
-  else { S.prog = 1; $("btnPlay").textContent = "▶ Play"; }
+  else { S.prog = Infinity; $("btnPlay").textContent = "▶ Play"; }
   updateUI();
 };
 document.querySelectorAll("#speedPills .pill").forEach(p => {
@@ -1797,14 +2005,15 @@ document.querySelectorAll("#speedPills .pill").forEach(p => {
 /* Reset — restores THIS diagram's defaults only; never changes tab, sub-tab or theme */
 $("btnReset").onclick = () => {
   S.obj  = DEF[S.section+"/"+S.type];
-  S.ho   = 80;
+  S.ho   = defHo(S.section);
   S.sun  = 0;
   S.source = "object";
   S.correct = false;
+  S.bear = true; S.bearPos = null;
   S.labels = true; S.normals = true; S.angles = true; S.calc = false; S.grid = true;
   S.rayOn = [true,true,true,true];
   S.zoom = false; S.pan = {x:0,y:0}; S.focus = {x:POLE_X,y:AX};
-  S.playing = false; S.prog = 1; S.speed = 1; S.drag = null;
+  S.playing = false; S.prog = Infinity; S.speed = 1; S.drag = null;
   $("btnPlay").textContent = "▶ Play";
   $("btnLabels").classList.add("on"); $("btnNormals").classList.add("on");
   $("btnAngles").classList.add("on"); $("btnGrid").classList.add("on");
@@ -1831,8 +2040,10 @@ let lastT = 0;
 function loop(t){
   if(S.playing){
     const dt = Math.min(0.05, (t-lastT)/1000 || 0);
-    S.prog += dt * 0.55 * S.speed;
-    if(S.prog >= 1){ S.prog = 1; S.playing = false; $("btnPlay").textContent = "▶ Play"; }
+    /* the light front advances at a constant speed, so a reflected / refracted leg
+       only begins once the front has actually reached that surface */
+    S.prog += dt * RAY_SPEED * S.speed;
+    if(S.prog >= RAY_MAXPATH){ S.prog = Infinity; S.playing = false; $("btnPlay").textContent = "▶ Play"; }
     draw();
   }
   lastT = t;
