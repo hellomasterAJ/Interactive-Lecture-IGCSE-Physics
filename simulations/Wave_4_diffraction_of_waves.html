@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Diffraction of Waves — Ripple Tank &amp; Sound | HAUS Academy</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<style>
+:root{
+  --bg:#0f172a; --card:#1e293b; --border:#334155;
+  --text:#e2e8f0; --text-dim:#94a3b8; --text-muted:#64748b;
+  --accent:#e3b341; --accent-glow:rgba(227,179,65,0.12);
+  --grid:#1e293b; --graph-bg:#0a0f1a;
+  --green:#34d399; --rose:#fb7185; --violet:#a78bfa;
+  --amber:#fbbf24; --blue:#38bdf8; --orange:#fb923c;
+  --wave:#38bdf8; --barrier:#64748b; --water:#0d1b2e;
+}
+.theme-hausnight{
+  --bg:#1a1c20; --card:#26282d; --border:#3a3c42;
+  --text:#FFFFFF; --text-dim:#e0e2e8; --text-muted:#a8aab2;
+  --accent:#F4C01E; --accent-glow:rgba(244,192,30,0.10);
+  --grid:#2a2c32; --graph-bg:#121418;
+  --green:#A6B36A; --rose:#D68B57; --violet:#CBAA6A;
+  --amber:#F4C01E; --blue:#5FB0C4; --orange:#D68B57;
+  --wave:#5FB0C4; --barrier:#6a6c74; --water:#151a20;
+}
+.theme-neon{
+  --bg:#0d0f1a; --card:#1a1c2e; --border:#2a2d4a;
+  --text:#e0e0f0; --text-dim:#8888b8; --text-muted:#5a5a8a;
+  --accent:#00ffc8; --accent-glow:rgba(0,255,200,0.1);
+  --grid:#1a1c2e; --graph-bg:#080a14;
+  --green:#00ff88; --rose:#ff4499; --violet:#8844ff;
+  --amber:#ffcc00; --blue:#4488ff; --orange:#ff6633;
+  --wave:#00e5ff; --barrier:#4a4d6a; --water:#0b1020;
+}
+.theme-light{
+  --bg:#ffffff; --card:#f3f4f6; --border:#d1d5db;
+  --text:#111827; --text-dim:#4b5563; --text-muted:#9ca3af;
+  --accent:#2563eb; --accent-glow:rgba(37,99,235,0.1);
+  --grid:#e5e7eb; --graph-bg:#f9fafb;
+  --green:#059669; --rose:#dc2626; --violet:#7c3aed;
+  --amber:#d97706; --blue:#2563eb; --orange:#ea580c;
+  --wave:#1d4ed8; --barrier:#6b7280; --water:#eef4fb;
+}
+.theme-haus{
+  --bg:#F4EEE0; --card:#FFFFFF; --border:#E4DAC4;
+  --text:#1A1712; --text-dim:#5B5344; --text-muted:#948A74;
+  --accent:#A9820F; --accent-glow:rgba(169,130,15,0.12);
+  --grid:#EBE3D0; --graph-bg:#FCFAF2;
+  --green:#4E7A3F; --rose:#B5502E; --violet:#8A6D3B;
+  --amber:#A9820F; --blue:#4A7AB8; --orange:#A87A4A;
+  --wave:#3F6FA8; --barrier:#8A8070; --water:#F2F6FB;
+}
+.theme-clay{
+  --bg:#d4c8be; --card:#e5d9d0; --border:#c2b5aa;
+  --text:#2d2622; --text-dim:#6a5a4d; --text-muted:#928078;
+  --accent:#a55a3a; --accent-glow:rgba(165,90,58,0.1);
+  --grid:#ccbfb5; --graph-bg:#eee6de;
+  --green:#5a7a4a; --rose:#a03a3a; --violet:#6a4d7a;
+  --amber:#b07a2a; --blue:#3a5a7a; --orange:#b05a2a;
+  --wave:#2f5570; --barrier:#7a6a5d; --water:#e6ecef;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  background:var(--bg); color:var(--text);
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  height:100vh; overflow:hidden; display:flex; flex-direction:column;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---------- top bar ---------- */
+.top-bar{
+  flex:0 0 auto; display:flex; align-items:center; gap:12px;
+  padding:0 14px; box-shadow:inset 0 -1px 0 var(--border); background:var(--card);
+}
+.top-bar h1{font-size:18px;font-weight:700;letter-spacing:.2px;display:flex;align-items:center;gap:8px}
+.top-bar h1 span.sub{font-size:11px;font-weight:500;color:var(--text-dim)}
+.badge-top{
+  font-family:'JetBrains Mono',monospace; font-size:9px;
+  padding:2px 8px; border-radius:12px;
+  background:var(--accent-glow); color:var(--accent); border:1px solid var(--accent);
+}
+.spacer{flex:1 1 auto}
+.top-right{display:flex;align-items:center;gap:10px}
+/* HEADER ZONE standard: no Practice / Quiz in this simulation, so the
+   Simulate / Practice / Quiz panel is omitted entirely (never a lone tab). */
+.theme-select{
+  background:var(--card); color:var(--text); border:1px solid var(--border);
+  border-radius:8px; padding:4px 10px; cursor:pointer; outline:none;
+  font-family:'JetBrains Mono',monospace; font-size:11px; min-width:110px;
+}
+.brand{
+  background:#F4C01E; border-radius:10px; padding:7px 8px;
+  box-shadow:0 2px 6px rgba(0,0,0,.25); display:flex; align-items:center;
+}
+@media(max-width:640px){ .brand{display:none;} }
+.theme-haus .top-bar h1, .theme-haus .top-bar h1 span{color:#1A1712;}
+.theme-haus .badge-top{background:#F4C01E;color:#1A1712;border-color:#1A1712;}
+.theme-hausnight .top-bar h1, .theme-hausnight .top-bar h1 span{color:#FFFFFF;}
+
+/* ---------- mode bar: equal columns filling the width ---------- */
+.modebar{flex:0 0 auto; padding:8px 12px 0}
+.tabs2{display:grid; grid-template-columns:repeat(2,1fr); gap:10px}
+.tabs2 .tab{
+  width:100%; border-radius:12px; border:1px solid var(--border);
+  background:var(--card); color:var(--text-dim);
+  font-family:'Inter',sans-serif; font-size:14px; font-weight:700;
+  padding:9px 0; cursor:pointer; transition:.15s;
+}
+.tabs2 .tab:hover{color:var(--text); border-color:var(--text-muted)}
+.tabs2 .tab.active{background:var(--accent-glow); border-color:var(--accent); color:var(--accent)}
+
+/* ---------- toolbar ---------- */
+.toolbar{
+  flex:0 0 auto; margin:9px 12px 0; padding:5px 12px;
+  background:var(--card); border:1px solid var(--border); border-radius:14px;
+}
+.trow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;min-height:30px;padding:1px 0}
+.tgroup{display:flex;align-items:center;gap:5px}
+.tlabel{font-size:9.5px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--text-muted);margin-right:2px}
+.tsep{width:1px;align-self:stretch;background:var(--border);margin:2px 3px}
+.tbtn{
+  background:var(--bg); color:var(--text-dim); border:1px solid var(--border);
+  border-radius:7px; padding:4px 9px; font-size:11px; font-weight:600;
+  font-family:'Inter',sans-serif; cursor:pointer; transition:.14s; white-space:nowrap;
+}
+.tbtn:hover{color:var(--text);border-color:var(--text-muted)}
+.tbtn.on{background:var(--accent);color:#0b1020;border-color:var(--accent)}
+.tbtn.primary{background:var(--blue);color:#04121c;border-color:var(--blue)}
+.tbtn.primary:hover{filter:brightness(1.1)}
+.pills{display:flex;gap:3px}
+.pill{
+  background:var(--bg); color:var(--text-dim); border:1px solid var(--border);
+  border-radius:7px; padding:4px 9px; font-size:11px; font-weight:600;
+  font-family:'Inter',sans-serif; cursor:pointer; transition:.14s; white-space:nowrap;
+}
+.pill:hover{color:var(--text)}
+.pill.active{background:var(--amber);color:#1a1200;border-color:var(--amber)}
+#speedPills .pill.active{background:var(--accent);color:#0b1020;border-color:var(--accent)}
+input[type=range]{
+  -webkit-appearance:none;appearance:none;height:4px;border-radius:3px;
+  background:var(--border);outline:none;cursor:pointer;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;border-radius:50%;
+  background:var(--accent);cursor:pointer;box-shadow:0 0 0 3px var(--accent-glow);
+}
+input[type=range]::-moz-range-thumb{
+  width:14px;height:14px;border:none;border-radius:50%;background:var(--accent);cursor:pointer;
+}
+.slval{
+  font-family:'JetBrains Mono',monospace;font-size:11.5px;font-weight:700;
+  color:var(--accent);min-width:64px;display:inline-block;
+}
+
+/* ---------- canvas ---------- */
+.cvwrap{
+  /* height depends ONLY on the window — switching section or toggling a panel
+     must never move or resize the drawing area                                */
+  flex:0 0 auto;
+  height:clamp(220px, min(56vh, calc(100vh - 390px)), 780px);
+  margin:9px 12px 0; border:1px solid var(--border); border-radius:14px;
+  position:relative; background:var(--graph-bg); overflow:hidden;
+}
+#cv{display:block;width:100%;height:100%;touch-action:none;cursor:grab}
+#cv.dragging{cursor:grabbing}
+.ovl{position:absolute;pointer-events:none;display:flex;gap:6px;flex-wrap:wrap}
+.ovl.bl{bottom:8px;left:10px}
+.ovl.br{bottom:8px;right:10px}
+.chip{
+  font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:600;
+  background:color-mix(in srgb,var(--card) 88%,transparent);
+  border:1px solid var(--border);border-radius:7px;padding:3px 8px;color:var(--text-dim);
+}
+.chip.k{color:var(--accent);border-color:var(--accent)}
+.chip.g{color:var(--green);border-color:var(--green)}
+.chip.b{color:var(--blue);border-color:var(--blue)}
+.chip.o{color:var(--orange);border-color:var(--orange)}
+.chip.zoom{pointer-events:auto;cursor:pointer}
+
+/* ---------- below panel ---------- */
+.below{
+  flex:1 1 auto; min-height:0; overflow-y:auto;
+  background:var(--bg); padding:9px 12px 10px;
+}
+.below::-webkit-scrollbar{width:9px}
+.below::-webkit-scrollbar-thumb{background:var(--border);border-radius:5px}
+.ptitle{font-size:10.5px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--text-muted);margin:0 0 5px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:6px;margin-bottom:6px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:4px 9px}
+.card .k{font-size:9px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--text-muted)}
+.card .v{font-family:'JetBrains Mono',monospace;font-size:12.5px;font-weight:700;color:var(--text);margin-top:1px}
+.card .v.acc{color:var(--accent)}
+.card .v.grn{color:var(--green)}
+.card .v.blu{color:var(--blue)}
+.card .v.ros{color:var(--rose)}
+.eqbox{
+  background:var(--card);border:1px solid var(--border);border-radius:8px;
+  padding:6px 11px;margin-bottom:6px;overflow-x:auto;
+}
+.eqbox .eqrow{display:flex;gap:22px;flex-wrap:wrap;align-items:center;color:var(--text);font-size:13px}
+.note{
+  background:var(--card);border:1px solid var(--border);border-left:3px solid var(--accent);
+  border-radius:8px;padding:7px 11px;font-size:11.5px;line-height:1.5;color:var(--text-dim);
+}
+.note b{color:var(--text)}
+.note .hl{color:var(--accent);font-weight:600}
+.hidden{display:none !important}
+</style>
+</head>
+<body>
+
+<div class="top-bar">
+  <h1>🌊 Diffraction of Waves <span class="sub">Ripple tank · Sound</span></h1>
+  <span class="badge-top">v1.2.1</span>
+  <span class="spacer"></span>
+  <div class="top-right">
+    <select class="theme-select" id="themeSel">
+      <option value="dark">🌙 Classic Dark</option>
+      <option value="hausnight">⌂ HAUS Night</option>
+      <option value="neon">🌃 Cyberpunk Neon</option>
+      <option value="light">☀️ Classic Light</option>
+      <option value="haus">⌂ HAUS Day</option>
+      <option value="clay">🏺 Warm Clay</option>
+    </select>
+    <div class="brand" aria-label="HAUS Academy">
+      <img src="data:image/png;base64,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" alt="HAUS Academy" style="height:31px;width:auto;display:block;">
+    </div>
+  </div>
+</div>
+
+<div class="modebar">
+  <div class="tabs2" id="tabs">
+    <button class="tab active" data-sec="water">🌊 Water Waves</button>
+    <button class="tab" data-sec="sound">🔊 Sound Waves</button>
+  </div>
+</div>
+
+<div class="toolbar">
+  <!-- ROW 1: SHOW | COMPARE -->
+  <div class="trow">
+    <div class="tgroup">
+      <span class="tlabel">Show</span>
+      <button class="tbtn on" id="btnLabels">🏷 Labels</button>
+      <button class="tbtn" id="btnCalc">📐 Calc</button>
+      <button class="tbtn on" id="btnGrid">🌐 Grid</button>
+    </div>
+    <div class="tsep" id="sepCompare"></div>
+    <div class="tgroup" id="grpCompare">
+      <span class="tlabel">Compare</span>
+      <button class="tbtn" id="btnCompare" title="Show two ripple tanks side by side with different gap widths">⇄ Compare</button>
+      <button class="tbtn hidden" id="btnCmpBy" title="Choose what differs between the two tanks">⇄ by Gap</button>
+    </div>
+    <div class="tsep"></div>
+    <div class="tgroup" id="grpSourceInfo">
+      <span class="tlabel" id="scaleLab">Scale</span>
+      <span class="slval" id="scaleVal" style="min-width:118px">1 square = 1 cm</span>
+    </div>
+  </div>
+  <!-- ROW 2: section controls | play | reset -->
+  <div class="trow">
+    <div class="tgroup" id="grpGap">
+      <span class="tlabel" id="gapLab">Gap</span>
+      <input type="range" id="gapSl" min="20" max="360" step="2" value="160" style="width:96px">
+      <span class="slval" id="gapVal">—</span>
+    </div>
+    <div class="tgroup hidden" id="grpGap2">
+      <span class="tlabel" id="gap2Lab">Gap B</span>
+      <input type="range" id="gap2Sl" min="20" max="360" step="2" value="60" style="width:96px">
+      <span class="slval" id="gap2Val">—</span>
+    </div>
+    <div class="tgroup" id="grpLambda">
+      <span class="tlabel">λ</span>
+      <input type="range" id="lamSl" min="10" max="200" step="2" value="60" style="width:96px">
+      <span class="slval" id="lamVal">—</span>
+    </div>
+    <div class="tgroup" id="grpAmp">
+      <span class="tlabel">Amplitude</span>
+      <input type="range" id="ampSl" min="5" max="40" step="1" value="20" style="width:78px">
+      <span class="slval" id="ampVal" style="min-width:52px">—</span>
+    </div>
+    <div class="tgroup hidden" id="grpFreq">
+      <span class="tlabel">Frequency</span>
+      <input type="range" id="freqSl" min="50" max="2000" step="10" value="150" style="width:110px">
+      <span class="slval" id="freqVal" style="min-width:74px">—</span>
+    </div>
+    <div class="tgroup hidden" id="grpInstr">
+      <span class="tlabel">Instrument</span>
+      <div class="pills" id="instrPills">
+        <button class="pill active" data-i="drum">🥁 Drum</button>
+        <button class="pill" data-i="guitar">🎸 Guitar</button>
+        <button class="pill" data-i="flute">🎵 Flute</button>
+        <button class="pill" data-i="custom">Custom</button>
+      </div>
+    </div>
+    <div class="tsep"></div>
+    <div class="tgroup">
+      <button class="tbtn primary" id="btnPlay">⏸ Pause</button>
+      <div class="pills" id="speedPills">
+        <button class="pill active" data-s="0.5">0.5×</button>
+        <button class="pill" data-s="1">1×</button>
+        <button class="pill" data-s="2">2×</button>
+      </div>
+      <button class="tbtn" id="btnReset" title="Reset this section to its defaults (keeps mode &amp; theme)">↺ Reset</button>
+    </div>
+  </div>
+</div>
+
+<div class="cvwrap" id="cvwrap">
+  <canvas id="cv"></canvas>
+  <div class="ovl bl" id="ovlBL"></div>
+  <div class="ovl br" id="ovlBR"><span class="chip" id="hintChip"></span></div>
+</div>
+
+<div class="below">
+  <div class="ptitle">📊 Diffraction characteristics</div>
+  <div class="cards" id="charCards"></div>
+  <div class="cards hidden" id="valCards"></div>
+  <div class="eqbox hidden" id="eqBox"><div class="eqrow" id="eqRow"></div></div>
+  <div class="note" id="noteBox"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script>
+/* ============================================================
+   Diffraction of Waves v1.0.0 — HAUS Academy
+   Single-file HTML + Canvas 2D · IGCSE Physics 0625
+   ------------------------------------------------------------
+   Water waves travel BOTTOM → TOP, so the Compare view can split
+   the canvas left / right into two independent ripple tanks.
+   ============================================================ */
+"use strict";
+
+/* ---------- fixed logical canvas, uniformly letterboxed ---------- */
+const PX_PER_CM = 40;
+const NX = 11, NY = 5;                 // grid squares each side of the origin
+const W = 2*NX*PX_PER_CM;              // 880
+const H = 2*NY*PX_PER_CM;              // 400
+const CX = NX*PX_PER_CM;               // 440 — x = 0
+const CY = NY*PX_PER_CM;               // 200 — y = 0
+
+const BARRIER_Y = CY + PX_PER_CM;      // 240 — the barrier sits one square below centre
+const BARRIER_T = 12;
+
+/* water defaults */
+const DEF_GAP = 160, DEF_GAP2 = 60, DEF_LAMBDA = 60, DEF_AMP = 20;
+
+/* sound: 1 grid square = 1 metre here */
+const PX_PER_M = 40, SOUND_SPEED = 340;
+const DEF_FREQ = 150, FREQ_DRUM = 150, FREQ_GUITAR = 350, FREQ_FLUTE = 800;
+const SRC   = { x:120, y:210 };                 // loudspeaker
+const BLD   = { x0:520, y0:0, x1:660, y1:250 }; // building, top-down
+const CORNER= { x:BLD.x0, y:BLD.y1 };           // the diffracting edge
+const DEF_LISTENER = { x:752, y:126 };
+
+/* ---------- state ---------- */
+function mkS(){
+  return {
+    section:"water", theme:"dark",
+    /* water */
+    gap:DEF_GAP, gap2:DEF_GAP2, lambda:DEF_LAMBDA, lam2:DEF_LAMBDA*2, amp:DEF_AMP,
+    compare:false, cmpBy:"gap",        // compare tanks by "gap" width or by "lam" wavelength
+    /* sound */
+    freq:DEF_FREQ, instrument:"drum", listener:null,
+    /* show toggles */
+    labels:true, calc:false, grid:true,
+    /* animation */
+    playing:true, phase:0, speed:0.5,
+    /* view */
+    zoom:false, zf:2.5, focus:{x:CX,y:CY}, pan:{x:0,y:0},
+    drag:null
+  };
+}
+let S = mkS();
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const clamp = (v,a,b) => v<a?a:(v>b?b:v);
+const fmt  = v => (Math.round(v*10)/10).toFixed(1);
+const fmt2 = v => (Math.round(v*100)/100).toFixed(2);
+const pxToCm = px => fmt(px/PX_PER_CM);
+const pxToM  = px => fmt2(px/PX_PER_M);
+const dist = (a,b) => Math.hypot(b.x-a.x, b.y-a.y);
+const D2R = Math.PI/180, R2D = 180/Math.PI;
+
+/* ---------- canvas plumbing ---------- */
+const cv = $("cv");
+const ctx = cv.getContext("2d");
+let VS = {s:1, ox:0, oy:0, dpr:1};
+
+function resize(){
+  const r = $("cvwrap").getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  cv.width  = Math.max(1, Math.round(r.width  * dpr));
+  cv.height = Math.max(1, Math.round(r.height * dpr));
+  cv.style.width  = r.width  + "px";
+  cv.style.height = r.height + "px";
+  const s = Math.min(r.width / W, r.height / H);
+  VS = { s, ox:(r.width - W*s)/2, oy:(r.height - H*s)/2, dpr };
+  draw();
+}
+function evtPt(e){
+  const r = cv.getBoundingClientRect();
+  let x = (e.clientX - r.left - VS.ox)/VS.s;
+  let y = (e.clientY - r.top  - VS.oy)/VS.s;
+  if(S.zoom){
+    const f=S.zf, fx=S.focus.x+S.pan.x, fy=S.focus.y+S.pan.y;
+    x = (x - (W/2 - fx*f))/f;
+    y = (y - (H/2 - fy*f))/f;
+  }
+  return {x,y};
+}
+
+const _colCache = {}; let _colTheme = "";
+function col(name){
+  if(_colTheme !== S.theme){ _colTheme = S.theme; for(const k in _colCache) delete _colCache[k]; }
+  if(_colCache[name]) return _colCache[name];
+  const v = getComputedStyle(document.body).getPropertyValue(name).trim() || "#888";
+  _colCache[name] = v; return v;
+}
+function alpha(c, a){
+  if(c[0] !== "#") return c;
+  const n = parseInt(c.slice(1),16);
+  const r = c.length===7 ? (n>>16)&255 : ((n>>8)&15)*17;
+  const g = c.length===7 ? (n>>8)&255  : ((n>>4)&15)*17;
+  const b = c.length===7 ? n&255       : (n&15)*17;
+  return "rgba("+r+","+g+","+b+","+a+")";
+}
+
+/* ---------- drawing primitives ---------- */
+function line(a,b,color,w,dash){
+  ctx.save();
+  ctx.strokeStyle=color; ctx.lineWidth=w||1.5; ctx.lineCap="round";
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y); ctx.stroke();
+  ctx.restore();
+}
+function arrowHeadAt(p, ang, color, size){
+  const s = size||9;
+  ctx.save(); ctx.fillStyle=color;
+  ctx.translate(p.x,p.y); ctx.rotate(ang);
+  ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(-s,-s*0.42); ctx.lineTo(-s,s*0.42);
+  ctx.closePath(); ctx.fill(); ctx.restore();
+}
+function dot(p,color,r){
+  ctx.save(); ctx.fillStyle=color; ctx.beginPath();
+  ctx.arc(p.x,p.y,r||3.2,0,Math.PI*2); ctx.fill(); ctx.restore();
+}
+function label(txt,x,y,color,o){
+  o=o||{};
+  ctx.save();
+  ctx.font = (o.bold===false?"":"700 ") + (o.size||11) + "px " +
+             (o.mono===false ? "'Inter',sans-serif" : "'JetBrains Mono',monospace");
+  ctx.textAlign = o.align||"center";
+  ctx.textBaseline = o.baseline||"middle";
+  if(o.bg){
+    const m = ctx.measureText(txt);
+    const pw = m.width+8, ph=(o.size||11)+7;
+    const bx = x - (o.align==="right"?pw-4:(o.align==="left"?4:pw/2));
+    const by = y - (o.baseline==="bottom"?ph-3:(o.baseline==="top"?3:ph/2));
+    ctx.fillStyle = alpha(col("--graph-bg"),0.82);
+    ctx.beginPath(); ctx.roundRect(bx,by,pw,ph,4); ctx.fill();
+  }
+  if(o.alphaV!=null) ctx.globalAlpha=o.alphaV;
+  ctx.fillStyle=color; ctx.fillText(txt,x,y);
+  ctx.restore();
+}
+/* double-headed measurement arrow with a label in the middle */
+function measure(a, b, txt, color, o){
+  o = o||{};
+  const ang = Math.atan2(b.y-a.y, b.x-a.x);
+  line(a, b, color, 1.3, null);
+  arrowHeadAt(a, ang+Math.PI, color, 7);
+  arrowHeadAt(b, ang, color, 7);
+  /* small end ticks */
+  const n = {x:-Math.sin(ang)*5, y:Math.cos(ang)*5};
+  line({x:a.x-n.x,y:a.y-n.y},{x:a.x+n.x,y:a.y+n.y}, color, 1.1);
+  line({x:b.x-n.x,y:b.y-n.y},{x:b.x+n.x,y:b.y+n.y}, color, 1.1);
+  if(txt) label(txt, (a.x+b.x)/2 + (o.dx||0), (a.y+b.y)/2 + (o.dy||0), color, {size:o.size||10, bg:true});
+}
+/* arc between two absolute angles, shorter sweep */
+function angleArc(c, a1, a2, r, color, txt){
+  let d = a2-a1;
+  while(d> Math.PI) d-=2*Math.PI;
+  while(d<-Math.PI) d+=2*Math.PI;
+  if(Math.abs(d) < 0.03) return;
+  ctx.save();
+  ctx.strokeStyle=color; ctx.lineWidth=1.4; ctx.setLineDash([3,3]);
+  ctx.beginPath(); ctx.arc(c.x,c.y,r,a1,a1+d,d<0); ctx.stroke(); ctx.restore();
+  if(txt && S.labels){
+    const m=a1+d/2;
+    label(txt, c.x+(r+14)*Math.cos(m), c.y+(r+14)*Math.sin(m), color, {size:10, bg:true});
+  }
+}
+
+/* ============================================================
+   background: grid + cm labels
+   ============================================================ */
+function drawBg(){
+  ctx.fillStyle = col("--graph-bg");
+  ctx.fillRect(-2000,-2000, W+4000, H+4000);
+  if(S.grid){
+    ctx.save();
+    ctx.strokeStyle = col("--grid"); ctx.lineWidth=1; ctx.globalAlpha=0.55;
+    ctx.beginPath();
+    for(let x=0;x<=W;x+=PX_PER_CM){ ctx.moveTo(x+0.5,0); ctx.lineTo(x+0.5,H); }
+    for(let y=0;y<=H;y+=PX_PER_CM){ ctx.moveTo(0,y+0.5); ctx.lineTo(W,y+0.5); }
+    ctx.stroke(); ctx.restore();
+    drawScaleLabels();
+  }
+}
+function drawScaleLabels(){
+  const unit = S.section === "sound" ? "m" : "cm";
+  ctx.save();
+  ctx.font="9px 'JetBrains Mono',monospace";
+  ctx.textAlign="center"; ctx.textBaseline="bottom";
+  const y = H-46;
+  for(let k=-NX+1;k<=NX-1;k++){
+    if(k%2!==0) continue;
+    ctx.globalAlpha = (k===0)?0.95:0.5;
+    ctx.fillStyle = (k===0)?col("--accent"):col("--text-muted");
+    ctx.fillText(String(k), CX + k*PX_PER_CM, y);
+  }
+  ctx.globalAlpha=0.5; ctx.fillStyle=col("--text-muted"); ctx.textAlign="left";
+  ctx.fillText(unit, CX + (NX-0.6)*PX_PER_CM, y);
+  ctx.textAlign="left"; ctx.textBaseline="middle";
+  for(let k=-NY+1;k<=NY-1;k++){
+    if(k%2!==0 || k===0) continue;
+    ctx.globalAlpha=0.45; ctx.fillStyle=col("--text-muted");
+    ctx.fillText(String(-k), 5, CY + k*PX_PER_CM);
+  }
+  ctx.restore();
+  label("1 square = 1 "+unit, W-12, 15, col("--text-muted"),
+        {size:9, align:"right", baseline:"middle", alphaV:0.72});
+}
+/* ============================================================
+   SECTION 1 — WATER WAVES (ripple tank)
+   ------------------------------------------------------------
+   Plane waves travel BOTTOM → TOP through a gap in a barrier.
+   Beyond the gap each wavefront is the Huygens offset curve of the
+   aperture: a straight crest the width of the gap, capped by arcs of
+   radius p centred on the two gap edges, opened out to the spread
+   half-angle θ given by  sin θ = λ / w   (θ = 90° once λ ≥ w).
+   ONE geometry helper (tanks()) feeds the drawing, the labels and the
+   hit-testing, so they can never drift apart.
+   ============================================================ */
+
+const TANK_TOP = 6;                       // keep the crests just inside the frame
+
+function tanks(){
+  if(!S.compare) return [ { cx:CX, halfW:428, gap:S.gap, lam:S.lambda, head:"" } ];
+  const hw = 210, byGap = S.cmpBy === "gap";
+  return [
+    { cx:CX-215, halfW:hw, gap:S.gap, lam:S.lambda,
+      head: byGap ? "Gap A = "+pxToCm(S.gap)+" cm" : "λ A = "+pxToCm(S.lambda)+" cm" },
+    { cx:CX+215, halfW:hw, gap: byGap ? S.gap2 : S.gap, lam: byGap ? S.lambda : S.lam2,
+      head: byGap ? "Gap B = "+pxToCm(S.gap2)+" cm" : "λ B = "+pxToCm(S.lam2)+" cm" }
+  ];
+}
+/* spread half-angle of the diffracted beam */
+const spreadAngle = (lam, gapW) => Math.asin(clamp(lam/gapW, 0, 1));
+/* EFFECTIVE half-width of the source line in the gap.
+   A gap many wavelengths wide behaves like a line of sources, so the crest keeps a
+   straight portion the full width of the gap. As the gap narrows towards λ the gap
+   behaves more and more like a SINGLE point source, so that straight portion must
+   shrink to nothing — at w = λ the crest is a true semicircle centred on the gap. */
+const effHalfGap = (lam, gapW) => (gapW/2) * Math.max(0, 1 - clamp(lam/gapW, 0, 1));
+
+function drawTank(t){
+  const WAVE = col("--wave");
+  const L = t.cx - t.halfW, R = t.cx + t.halfW;
+  const gh = t.gap/2, lam = t.lam;
+  const ghE = effHalfGap(lam, t.gap);        // straight part of the crest
+  const th = spreadAngle(lam, t.gap);
+  const lw = 1.05 + S.amp*0.055;
+  const bBot = BARRIER_Y + BARRIER_T;
+
+  /* water */
+  ctx.save();
+  ctx.fillStyle = col("--water");
+  ctx.fillRect(L, TANK_TOP, R-L, H-TANK_TOP-2);
+  ctx.strokeStyle = alpha(col("--border"),0.9); ctx.lineWidth=1;
+  ctx.strokeRect(L+0.5, TANK_TOP+0.5, R-L-1, H-TANK_TOP-3);
+  ctx.restore();
+
+  /* ---- wavefronts ---- */
+  const pMin = -(H - bBot) - lam, pMax = Math.hypot(t.halfW, BARRIER_Y) + lam;
+  const j0 = Math.floor(S.phase - pMax/lam) - 1;
+  const j1 = Math.ceil (S.phase - pMin/lam) + 1;
+
+  for(let j=j0; j<=j1; j++){
+    const p = (S.phase - j) * lam;
+    if(p < pMin || p > pMax) continue;
+
+    if(p <= 0){
+      /* ---- plane crest still approaching the barrier ---- */
+      const y = bBot - p;                       // p ≤ 0 ⇒ below the barrier
+      if(y > H-4 || y < bBot-1) continue;
+      ctx.save();
+      ctx.beginPath(); ctx.rect(L+1, bBot, R-L-2, H-bBot-2); ctx.clip();
+      line({x:L,y}, {x:R,y}, alpha(WAVE,0.9), lw);
+      ctx.restore();
+    } else {
+      /* ---- diffracted crest: offset curve of the aperture ---- */
+      ctx.save();
+      ctx.beginPath(); ctx.rect(L+1, TANK_TOP+1, R-L-2, BARRIER_Y-TANK_TOP-1); ctx.clip();
+      const yTop = BARRIER_Y - p;
+      /* straight portion — shrinks to nothing as the gap narrows towards λ */
+      if(ghE > 0.5 && yTop < BARRIER_Y && yTop > TANK_TOP-lam){
+        line({x:t.cx-ghE, y:yTop}, {x:t.cx+ghE, y:yTop}, alpha(WAVE,0.9), lw);
+      }
+      /* two edge arcs, fading as they open out */
+      if(th > 0.02){
+        const NSEG = 14;
+        for(const sgn of [1,-1]){
+          const c = { x:t.cx + sgn*ghE, y:BARRIER_Y };
+          for(let k=0;k<NSEG;k++){
+            const f0 = k/NSEG, f1 = (k+1)/NSEG;
+            const a0 = -Math.PI/2 + sgn*th*f0, a1 = -Math.PI/2 + sgn*th*f1;
+            const al = 0.9 * (1 - 0.62*((f0+f1)/2));      // intensity falls with angle
+            ctx.save();
+            ctx.strokeStyle = alpha(WAVE, al); ctx.lineWidth = lw; ctx.lineCap="round";
+            ctx.beginPath(); ctx.arc(c.x, c.y, p, a0, a1, sgn<0); ctx.stroke();
+            ctx.restore();
+          }
+        }
+      }
+      ctx.restore();
+    }
+  }
+
+  /* ---- barrier ---- */
+  ctx.save();
+  ctx.fillStyle = col("--barrier");
+  ctx.fillRect(L, BARRIER_Y, (t.cx-gh)-L, BARRIER_T);
+  ctx.fillRect(t.cx+gh, BARRIER_Y, R-(t.cx+gh), BARRIER_T);
+  ctx.fillStyle = alpha("#ffffff", 0.16);
+  ctx.fillRect(L, BARRIER_Y, (t.cx-gh)-L, 3);
+  ctx.fillRect(t.cx+gh, BARRIER_Y, R-(t.cx+gh), 3);
+  ctx.restore();
+  /* gap edge grips */
+  dot({x:t.cx-gh, y:BARRIER_Y+BARRIER_T/2}, col("--accent"), 3.4);
+  dot({x:t.cx+gh, y:BARRIER_Y+BARRIER_T/2}, col("--accent"), 3.4);
+
+  /* ---- direction of travel ---- */
+  ctx.save(); ctx.globalAlpha=0.75;
+  for(const x of [L+26, R-26]){
+    line({x, y:H-14}, {x, y:H-44}, col("--text-muted"), 1.6);
+    arrowHeadAt({x, y:H-46}, -Math.PI/2, col("--text-muted"), 7);
+  }
+  ctx.restore();
+
+  /* ---- labels ---- */
+  if(S.labels){
+    /* wavelength: between two adjacent approaching crests */
+    /* the crests below the barrier sit at bBot + (n + 1 − frac(phase))·λ */
+    const dNear = (1 - (S.phase % 1)) * lam;
+    const y1 = bBot + dNear, y2 = y1 + lam;
+    if(y2 < H-8 && lam > 22){
+      measure({x:L+62, y:y1}, {x:L+62, y:y2}, "λ = "+pxToCm(lam)+" cm", col("--accent"), {dx:0});
+    }
+    /* gap width */
+    measure({x:t.cx-gh, y:bBot+26}, {x:t.cx+gh, y:bBot+26},
+            "w = "+pxToCm(t.gap)+" cm", col("--green"), {dy:-13});
+    /* spread angle */
+    if(th > 0.06){
+      line({x:t.cx, y:BARRIER_Y}, {x:t.cx, y:BARRIER_Y-104}, col("--text-muted"), 1.1, [4,4]);
+      const rr = 86;
+      line({x:t.cx, y:BARRIER_Y},
+           {x:t.cx + rr*Math.cos(-Math.PI/2+th), y:BARRIER_Y + rr*Math.sin(-Math.PI/2+th)},
+           col("--orange"), 1.2, [5,4]);
+      angleArc({x:t.cx,y:BARRIER_Y}, -Math.PI/2, -Math.PI/2+th, 58, col("--orange"),
+               "θ = "+Math.round(th*R2D)+"°");
+    }
+    if(t.head) label(t.head, t.cx, TANK_TOP+16, col("--blue"), {size:11, bg:true});
+  }
+}
+
+function renderWater(){
+  const list = tanks();
+  list.forEach(drawTank);
+  if(S.compare){
+    line({x:CX, y:TANK_TOP}, {x:CX, y:H-2}, col("--border"), 2);
+  }
+
+  /* ---- panel data (uses the first / wider-context tank) ---- */
+  const th  = spreadAngle(S.lambda, S.gap);
+  const ratio = S.lambda / S.gap;
+  const strong = ratio >= 0.7;
+  const level = ratio >= 1 ? "Maximum (semi-circular)"
+              : ratio >= 0.5 ? "Strong"
+              : ratio >= 0.2 ? "Moderate" : "Slight";
+  const fWave = 1.0;                              // ripple-tank frequency is arbitrary; show λ only
+  const chips = [
+    {t:"Ripple tank · gap diffraction", cls:"b"},
+    {t:"w = "+pxToCm(S.gap)+" cm · λ = "+pxToCm(S.lambda)+" cm", cls:"k"},
+    {t:"spread θ = "+Math.round(th*R2D)+"°", cls:"o"}
+  ];
+  if(S.compare) chips.push({t: S.cmpBy==="gap" ? "comparing gap A vs gap B"
+                                                : "comparing λ A vs λ B", cls:"g"});
+
+  const tB  = list[list.length-1];
+  const th2 = spreadAngle(tB.lam, tB.gap);
+  return {
+    chips,
+    chars:[
+      {k:"Diffraction type", v:"Gap (aperture) diffraction", cls:"blu"},
+      {k:"Condition", v:"w ≈ λ for maximum spreading"},
+      {k:"How much spreading", v:level, cls: strong?"grn":""},
+      {k:"IGCSE rule", v:"Narrower gap ⇒ more spreading"}
+    ],
+    vals: S.compare ? [
+      {k:"Gap A (w)", v: pxToCm(S.gap)+" cm", cls:"acc"},
+      {k:"λ A", v: pxToCm(S.lambda)+" cm", cls:"blu"},
+      {k:"λ/w  (A)", v: fmt2(S.lambda/S.gap)},
+      {k:"Spread θ (A)", v: Math.round(th*R2D)+"°", cls:"grn"},
+      {k:"Gap B (w)", v: pxToCm(tB.gap)+" cm", cls:"acc"},
+      {k:"λ B", v: pxToCm(tB.lam)+" cm", cls:"blu"},
+      {k:"λ/w  (B)", v: fmt2(tB.lam/tB.gap)},
+      {k:"Spread θ (B)", v: Math.round(th2*R2D)+"°", cls:"grn"}
+    ] : [
+      {k:"Gap width (w)", v: pxToCm(S.gap)+" cm", cls:"acc"},
+      {k:"Wavelength (λ)", v: pxToCm(S.lambda)+" cm", cls:"blu"},
+      {k:"λ / w", v: fmt2(ratio)},
+      {k:"Spread angle (θ)", v: Math.round(th*R2D)+"°", cls:"grn"},
+      {k:"Amplitude", v: pxToCm(S.amp)+" cm"},
+      {k:"Wave speed", v:"v = f λ  (unchanged by the gap)"}
+    ],
+    eq:["\\sin\\theta \\approx \\frac{\\lambda}{w}", "v = f\\lambda",
+        "\\theta = "+Math.round(th*R2D)+"^\\circ \\text{ for } \\frac{\\lambda}{w}="+fmt2(Math.min(1,ratio))],
+    note:"Straight (<b>plane</b>) water waves travel up the tank and meet a barrier with a gap in it. "+
+         "Every point in the gap acts as a new source, so beyond the barrier the wavefronts <b>curve outwards</b> — this is "+
+         "<span class='hl'>diffraction</span>. The crest is still straight across the width of the gap and only bends at the two edges, "+
+         "which is why a <b>wide gap</b> barely spreads. As the gap is narrowed towards the wavelength the straight part shrinks until the "+
+         "wavefronts are almost <b>semi-circular</b>: <span class='hl'>diffraction is greatest when the gap width is about one wavelength</span> "+
+         "(w ≈ λ). Making the wavelength longer has the same effect as narrowing the gap — both increase λ/w. "+
+         "Note that the <b>wavelength, frequency and speed never change</b> — only the shape of the wavefronts does."
+  };
+}
+
+/* which tank (if any) is this point in, and is it on a gap edge? */
+function gapEdgeHit(p){
+  if(S.section !== "water") return null;
+  if(p.y < BARRIER_Y-16 || p.y > BARRIER_Y+BARRIER_T+16) return null;
+  const list = tanks();
+  for(let i=0;i<list.length;i++){
+    const t = list[i], gh = t.gap/2;
+    if(Math.abs(Math.abs(p.x - t.cx) - gh) < 15) return { idx:i, cx:t.cx };
+  }
+  return null;
+}
+/* ============================================================
+   SECTION 2 — SOUND WAVES round a building (top-down)
+   ------------------------------------------------------------
+   Circular wavefronts leave the loudspeaker. The building blocks the
+   sector of directions that strike its left face; behind that face is
+   the geometric SOUND SHADOW. The corner acts as a Huygens source, so
+   fronts continue into the shadow as arcs centred on the corner, of
+   radius (r − |source→corner|), out to a penetration angle
+        sin θp = λ / (obstacle width)
+   — long wavelength (low note) bends far round the corner, short
+   wavelength (high note) barely bends at all.
+   ============================================================ */
+
+const BLD_W = BLD.x1 - BLD.x0;                    // 140 px = 3.5 m
+const SC_LEN = Math.hypot(CORNER.x-SRC.x, CORNER.y-SRC.y);
+const A_CORNER = Math.atan2(CORNER.y-SRC.y, CORNER.x-SRC.x);          // shadow boundary
+const A_TOPLEFT = Math.atan2(BLD.y0-SRC.y, BLD.x0-SRC.x);             // top of the blocked sector
+
+const lambdaM  = () => SOUND_SPEED / S.freq;                          // metres
+const lambdaPx = () => lambdaM() * PX_PER_M;
+const penetAngle = () => Math.asin(clamp(lambdaPx()/BLD_W, 0, 1));    // θp, radians
+const listenerPt = () => S.listener || DEF_LISTENER;
+
+/* how far into the shadow a point lies, measured at the corner (rad, <0 = lit) */
+function shadowDepth(p){
+  const a = Math.atan2(p.y-CORNER.y, p.x-CORNER.x);
+  return A_CORNER - a;
+}
+const inBuilding = p => p.x>BLD.x0-4 && p.x<BLD.x1+4 && p.y>BLD.y0-4 && p.y<BLD.y1+4;
+
+function drawSpeaker(p, c){
+  ctx.save();
+  ctx.translate(p.x, p.y);
+  ctx.fillStyle = c; ctx.strokeStyle = c; ctx.lineWidth = 2; ctx.lineJoin="round";
+  ctx.beginPath();                                   // box + cone
+  ctx.roundRect(-20, -12, 14, 24, 3); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-6,-11); ctx.lineTo(8,-21); ctx.lineTo(8,21); ctx.lineTo(-6,11);
+  ctx.closePath(); ctx.fill();
+  ctx.globalAlpha = 0.75;                            // sound puffs
+  for(let k=1;k<=3;k++){
+    ctx.beginPath(); ctx.arc(9, 0, 6+k*6, -0.75, 0.75); ctx.stroke();
+  }
+  ctx.restore();
+}
+/* the listener — a boy's face drawn from a head radius `s`.
+   He smiles when the sound reaches him and his mouth goes flat when it does not. */
+const BOY_S = 19;
+function drawListener(p, c, smiling){
+  const s = BOY_S, X = u => p.x + u*s, Y = v => p.y + v*s;
+  const lw = Math.max(1.4, s*0.078);
+  const bg = alpha(col("--graph-bg"), 0.95);
+  ctx.save();
+  ctx.lineJoin="round"; ctx.lineCap="round";
+  ctx.strokeStyle = c; ctx.lineWidth = lw;
+
+  /* ears */
+  for(const sx of [-1,1]){
+    ctx.beginPath();
+    ctx.arc(X(sx*0.94), Y(0.06), 0.20*s, sx>0 ? -1.35 : Math.PI-1.35, sx>0 ? 1.35 : Math.PI+1.35);
+    ctx.fillStyle = bg; ctx.fill(); ctx.stroke();
+  }
+  /* head */
+  ctx.beginPath(); ctx.arc(p.x, p.y, s, 0, Math.PI*2);
+  ctx.fillStyle = bg; ctx.fill(); ctx.stroke();
+  /* hair: over the crown, then a spiky fringe back across the forehead */
+  ctx.beginPath();
+  ctx.arc(p.x, p.y, s*1.01, 199*D2R, 351*D2R);
+  [[0.62,-0.42],[0.68,-0.66],[0.30,-0.40],[0.36,-0.70],[-0.02,-0.42],
+   [0.04,-0.72],[-0.36,-0.44],[-0.30,-0.70],[-0.68,-0.44]]
+    .forEach(q => ctx.lineTo(X(q[0]), Y(q[1])));
+  ctx.closePath();
+  ctx.fillStyle = bg; ctx.fill(); ctx.stroke();
+  /* the little tuft on top */
+  ctx.beginPath();
+  ctx.moveTo(X(0.36), Y(-0.94));
+  ctx.quadraticCurveTo(X(0.64), Y(-1.32), X(0.66), Y(-0.90));
+  ctx.stroke();
+  /* eyes */
+  ctx.fillStyle = c;
+  for(const sx of [-1,1]){
+    ctx.beginPath(); ctx.arc(X(sx*0.34), Y(0.04), 0.115*s, 0, Math.PI*2); ctx.fill();
+  }
+  /* mouth — smile when he can hear, flat when he cannot */
+  ctx.beginPath();
+  if(smiling){ ctx.moveTo(X(-0.27), Y(0.36)); ctx.quadraticCurveTo(X(0), Y(0.70), X(0.27), Y(0.36)); }
+  else       { ctx.moveTo(X(-0.23), Y(0.48)); ctx.lineTo(X(0.23), Y(0.48)); }
+  ctx.strokeStyle = c; ctx.lineWidth = lw; ctx.stroke();
+  ctx.restore();
+}
+
+function renderSound(){
+  const WAVE = col("--wave");
+  const lam = lambdaPx(), thP = penetAngle();
+  const L = listenerPt();
+  const depth = shadowDepth(L);
+  const inShadow = depth > 0 && L.x > BLD.x0;
+  const heard = !inShadow || depth <= thP;
+
+  /* ---- sound shadow region ---- */
+  const bEdgeY = CORNER.y + (W - CORNER.x)*Math.tan(A_CORNER);
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(CORNER.x, CORNER.y); ctx.lineTo(W, bEdgeY); ctx.lineTo(W, 0);
+  ctx.lineTo(BLD.x1, 0); ctx.lineTo(BLD.x1, BLD.y1); ctx.closePath();
+  ctx.fillStyle = alpha(col("--text-muted"), 0.10); ctx.fill();
+  ctx.restore();
+  line(CORNER, {x:W, y:bEdgeY}, alpha(col("--text-muted"),0.85), 1.3, [6,5]);
+
+  /* ---- wavefronts ---- */
+  /* short wavelengths pack many fronts in, so draw them finer and fainter or the
+     canvas turns into moiré hatching                                            */
+  const lw = clamp(0.8 + lam*0.011, 0.95, 1.75);
+  const aMain = clamp(0.34 + lam*0.006, 0.34, 0.85);
+  const maxR = Math.min(900, 44*lam + 80);
+  const j0 = Math.floor(S.phase - maxR/lam) - 1, j1 = Math.ceil(S.phase) + 1;
+  for(let j=j0; j<=j1; j++){
+    const r = (S.phase - j) * lam;
+    if(r <= 1 || r > maxR) continue;
+
+    /* direct (lit) part: the whole circle except the blocked sector */
+    ctx.save();
+    ctx.strokeStyle = alpha(WAVE, aMain); ctx.lineWidth = lw;
+    ctx.beginPath();
+    ctx.arc(SRC.x, SRC.y, r, A_CORNER, A_TOPLEFT + 2*Math.PI);
+    ctx.stroke();
+    ctx.restore();
+
+    /* diffracted part: arcs about the corner, fading with angle */
+    const rho = r - SC_LEN;
+    if(rho > 1 && thP > 0.02){
+      ctx.save();
+      ctx.beginPath();                                   // clip out the building
+      ctx.rect(0,0,W,H);
+      ctx.rect(BLD.x0, BLD.y0, BLD_W, BLD.y1-BLD.y0);
+      ctx.clip("evenodd");
+      const NSEG = 14;
+      for(let k=0;k<NSEG;k++){
+        const f0=k/NSEG, f1=(k+1)/NSEG;
+        const a0 = A_CORNER - thP*f0, a1 = A_CORNER - thP*f1;
+        const al = aMain * (1 - 0.72*((f0+f1)/2));
+        ctx.strokeStyle = alpha(WAVE, al); ctx.lineWidth = lw; ctx.lineCap="round";
+        ctx.beginPath(); ctx.arc(CORNER.x, CORNER.y, rho, a0, a1, true); ctx.stroke();
+      }
+      ctx.restore();
+    }
+  }
+
+  /* ---- building ---- */
+  ctx.save();
+  ctx.fillStyle = col("--barrier");
+  ctx.fillRect(BLD.x0, BLD.y0, BLD_W, BLD.y1-BLD.y0);
+  ctx.fillStyle = alpha("#000000", 0.20);
+  for(let y=BLD.y0+22; y<BLD.y1-10; y+=34){          // windows
+    ctx.fillRect(BLD.x0+18, y, 34, 18);
+    ctx.fillRect(BLD.x0+88, y, 34, 18);
+  }
+  ctx.strokeStyle = alpha("#ffffff",0.18); ctx.lineWidth=2;
+  ctx.strokeRect(BLD.x0+1, BLD.y0, BLD_W-2, BLD.y1-BLD.y0-1);
+  ctx.restore();
+  dot(CORNER, col("--accent"), 4);
+
+  drawSpeaker(SRC, col("--rose"));
+  drawListener(L, heard ? col("--green") : col("--orange"), heard);
+
+  /* ---- labels ---- */
+  if(S.labels){
+    label("loudspeaker", SRC.x+4, SRC.y+40, col("--rose"), {size:10, bg:true});
+    label("building", (BLD.x0+BLD.x1)/2, BLD.y0+20, col("--text"), {size:10.5, bg:true});
+    label("sound shadow", BLD.x1+96, 52, col("--text-muted"), {size:10.5, bg:true});
+    /* Wavelength must be measured ALONG A RADIUS — the fronts are circles about the
+       source, so along any other line the crests are further apart than λ. Run the
+       measurement out at 30° below the horizontal (open water, well clear of the
+       building) where crest n sits exactly at r = n·λ from the loudspeaker.        */
+    const LA = 30*D2R, LD = {x:Math.cos(LA), y:Math.sin(LA)}, LMAX = 340;
+    const off = (S.phase*lam) % lam;
+    let r1 = off + Math.floor((LMAX - lam - off)/lam)*lam;   // last crest that still fits
+    if(lam > 34 && r1 >= 46){
+      measure({x:SRC.x+LD.x*r1,       y:SRC.y+LD.y*r1},
+              {x:SRC.x+LD.x*(r1+lam), y:SRC.y+LD.y*(r1+lam)},
+              "λ = "+fmt2(lambdaM())+" m", col("--accent"), {dy:-16});
+    }
+    /* penetration angle at the corner (label parked clear of the building) */
+    if(thP > 0.05){
+      const rr = 116;
+      line(CORNER, {x:CORNER.x+rr*Math.cos(A_CORNER-thP), y:CORNER.y+rr*Math.sin(A_CORNER-thP)},
+           col("--orange"), 1.2, [5,4]);
+      angleArc(CORNER, A_CORNER, A_CORNER-thP, 72, col("--orange"), null);
+      label("θ = "+Math.round(thP*R2D)+"°", CORNER.x+26, CORNER.y+30, col("--orange"),
+            {size:10.5, align:"left", bg:true});
+    }
+    label(heard ? "✓ Heard" : "✗ Not heard", L.x, L.y-40,
+          heard?col("--green"):col("--orange"), {size:11, bg:true});
+    label("drag me", L.x, L.y+32, col("--text-muted"), {size:9, bg:true});
+  }
+
+  const NAME = { drum:"Drum (low note)", guitar:"Guitar (middle note)",
+                 flute:"Flute (high note)", custom:"Custom note" };
+  return {
+    chips:[
+      {t:NAME[S.instrument], cls:"b"},
+      {t:"f = "+Math.round(S.freq)+" Hz · λ = "+fmt2(lambdaM())+" m", cls:"k"},
+      {t:"bends "+Math.round(thP*R2D)+"° round the corner", cls:"o"},
+      {t: heard ? "✓ listener hears it" : "✗ listener in the sound shadow", cls: heard?"g":"o"}
+    ],
+    chars:[
+      {k:"Diffraction type", v:"Obstacle (edge) diffraction", cls:"blu"},
+      {k:"Condition", v:"λ comparable with the obstacle"},
+      {k:"At the listener", v: heard ? "Heard" : "Not heard", cls: heard?"grn":"ros"},
+      {k:"IGCSE rule", v:"Lower frequency ⇒ more spreading"}
+    ],
+    vals:[
+      {k:"Frequency (f)", v: Math.round(S.freq)+" Hz", cls:"acc"},
+      {k:"Wavelength (λ)", v: fmt2(lambdaM())+" m", cls:"blu"},
+      {k:"Speed of sound (v)", v: SOUND_SPEED+" m/s"},
+      {k:"Building width", v: fmt(BLD_W/PX_PER_M)+" m"},
+      {k:"λ / width", v: fmt2(lambdaPx()/BLD_W)},
+      {k:"Bending angle (θ)", v: Math.round(thP*R2D)+"°", cls:"grn"},
+      {k:"Listener is", v: (inShadow ? Math.round(depth*R2D)+"° inside the shadow" : "in direct sound")},
+      {k:"Result", v: heard ? "✓ Heard" : "✗ Not heard", cls: heard?"grn":"ros"}
+    ],
+    eq:["\\lambda = \\frac{v}{f}", "v = f\\lambda",
+        "\\lambda = \\frac{"+SOUND_SPEED+"}{"+Math.round(S.freq)+"} = "+fmt2(lambdaM())+"\\ \\text{m}"],
+    note:"Sound from the loudspeaker spreads out as circular wavefronts. The building blocks the sound that would travel straight on, "+
+         "leaving a <b>sound shadow</b> behind it — but the corner behaves like a new source, so some sound <b>bends round the corner</b> into "+
+         "that shadow. How far it bends depends on the <span class='hl'>wavelength compared with the size of the obstacle</span>. "+
+         "A <b>drum</b> (low frequency, λ ≈ "+fmt2(SOUND_SPEED/FREQ_DRUM)+" m) has a wavelength close to the width of the building, so it diffracts strongly and "+
+         "you hear the bass round the corner. A <b>flute</b> (high frequency, λ ≈ "+fmt2(SOUND_SPEED/FREQ_FLUTE)+" m) has a wavelength much smaller than the "+
+         "building, so it hardly bends at all and is lost in the shadow. That is why, standing behind a building at a concert, "+
+         "<b>you hear the bass but not the treble</b>. Drag the listener to explore where each note can be heard."
+  };
+}
+/* ============================================================
+   DISPATCH · DRAW · UI
+   ============================================================ */
+let LAST = null;
+
+function render(){ return S.section === "water" ? renderWater() : renderSound(); }
+
+function draw(){
+  const dpr = VS.dpr || (window.devicePixelRatio||1);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.clearRect(0,0,cv.width/dpr, cv.height/dpr);
+  ctx.save();
+  ctx.translate(VS.ox, VS.oy);
+  ctx.scale(VS.s, VS.s);
+  ctx.beginPath(); ctx.rect(0,0,W,H); ctx.clip();
+  if(S.zoom){
+    const f=S.zf, fx=S.focus.x+S.pan.x, fy=S.focus.y+S.pan.y;
+    ctx.translate(W/2 - fx*f, H/2 - fy*f);
+    ctx.scale(f,f);
+  }
+  drawBg();
+  try { LAST = render(); }
+  catch(err){ console.error(err); LAST = null; }
+  ctx.restore();
+}
+
+/* ---------------- DOM ---------------- */
+function chipHTML(c){ return '<span class="chip '+(c.cls||"")+'">'+c.t+'</span>'; }
+function texFallback(t){
+  t = t.replace(/\\text\{([^{}]*)\}/g, "$1").replace(/_\{([^{}]*)\}/g, "_$1");
+  for(let i=0;i<4;i++) t = t.replace(/\\frac\{([^{}]*)\}\{([^{}]*)\}/g, "$1/$2");
+  return t.replace(/\\lambda/g,"λ").replace(/\\theta/g,"θ").replace(/\\sin/g,"sin")
+          .replace(/\\approx/g,"≈").replace(/\^\\circ/g,"°").replace(/\\ /g," ")
+          .replace(/[{}\\]/g,"").replace(/\s+/g," ").trim();
+}
+
+function updateUI(){
+  updateGroups();
+  syncControls();
+  draw();
+  const R = LAST;
+  if(!R) return;
+
+  const chips = R.chips.slice();
+  if(S.zoom) chips.push({t:"🔍 "+S.zf+"× — drag = pan · dbl-click / Esc = exit", cls:"zoom"});
+  $("ovlBL").innerHTML = chips.map(chipHTML).join("");
+  const zc = $("ovlBL").querySelector(".chip.zoom");
+  if(zc) zc.onclick = () => { S.zoom=false; S.pan={x:0,y:0}; updateUI(); };
+  $("hintChip").textContent = (S.section==="water")
+      ? "drag a gap edge · dbl-click zoom · ← → gap width"
+      : "drag the listener · dbl-click zoom · ← → frequency";
+
+  $("charCards").innerHTML = R.chars.map(c =>
+    '<div class="card"><div class="k">'+c.k+'</div><div class="v '+(c.cls||"")+'">'+c.v+'</div></div>').join("");
+
+  if(S.calc){
+    $("valCards").classList.remove("hidden");
+    $("valCards").innerHTML = R.vals.map(c =>
+      '<div class="card"><div class="k">'+c.k+'</div><div class="v '+(c.cls||"")+'">'+c.v+'</div></div>').join("");
+    $("eqBox").classList.remove("hidden");
+    const row = $("eqRow"); row.innerHTML = "";
+    R.eq.forEach(tex => {
+      const span = document.createElement("span");
+      let ok = false;
+      if(window.katex){ try { katex.render(tex, span, {throwOnError:false}); ok = true; } catch(e){ ok = false; } }
+      if(!ok){ span.style.fontFamily = "'JetBrains Mono',monospace"; span.textContent = texFallback(tex); }
+      row.appendChild(span);
+    });
+  } else {
+    $("valCards").classList.add("hidden");
+    $("eqBox").classList.add("hidden");
+  }
+  $("noteBox").innerHTML = R.note;
+}
+
+/* ---------------- toolbar visibility & sync ---------------- */
+function updateGroups(){
+  const isWater = S.section === "water";
+  $("grpGap").classList.toggle("hidden", !isWater);
+  $("grpGap2").classList.toggle("hidden", !(isWater && S.compare));
+  $("grpLambda").classList.toggle("hidden", !isWater);
+  $("grpAmp").classList.toggle("hidden", !isWater);
+  $("grpFreq").classList.toggle("hidden", isWater);
+  $("grpInstr").classList.toggle("hidden", isWater);
+  $("grpCompare").classList.toggle("hidden", !isWater);
+  $("sepCompare").classList.toggle("hidden", !isWater);
+  $("btnCmpBy").classList.toggle("hidden", !(isWater && S.compare));
+  const byGap = S.cmpBy === "gap";
+  $("gapLab").textContent  = S.compare ? (byGap ? "Gap A" : "Gap") : "Gap width";
+  $("gap2Lab").textContent = byGap ? "Gap B" : "λ B";
+  $("btnCmpBy").textContent = byGap ? "⇄ by Gap" : "⇄ by λ";
+  $("btnCompare").classList.toggle("on", S.compare);
+  $("btnCmpBy").classList.toggle("on", true);
+  $("scaleVal").textContent = isWater ? "1 square = 1 cm" : "1 square = 1 m · v = 340 m/s";
+}
+function syncControls(){
+  const byGap = S.cmpBy === "gap";
+  const sl2 = $("gap2Sl");
+  sl2.min = byGap ? 20 : 10;  sl2.max = byGap ? 360 : 200;
+  sl2.value = byGap ? S.gap2 : S.lam2;
+  $("gap2Val").textContent = pxToCm(byGap ? S.gap2 : S.lam2)+" cm";
+  $("gapSl").value  = S.gap;   $("gapVal").textContent  = pxToCm(S.gap)+" cm";
+  $("lamSl").value  = S.lambda;$("lamVal").textContent  = pxToCm(S.lambda)+" cm";
+  $("ampSl").value  = S.amp;   $("ampVal").textContent  = pxToCm(S.amp)+" cm";
+  $("freqSl").value = S.freq;  $("freqVal").textContent = Math.round(S.freq)+" Hz";
+  document.querySelectorAll("#instrPills .pill").forEach(p =>
+    p.classList.toggle("active", p.dataset.i === S.instrument));
+}
+
+/* ---------------- sections ---------------- */
+function setSection(sec){
+  S.section = sec;
+  S.zoom = false; S.pan = {x:0,y:0};
+  S.listener = null;
+  document.querySelectorAll("#tabs .tab").forEach(t => t.classList.toggle("active", t.dataset.sec===sec));
+  updateUI();
+}
+document.querySelectorAll("#tabs .tab").forEach(t => t.onclick = () => setSection(t.dataset.sec));
+
+/* ---------------- setters ---------------- */
+const setGap  = v => { S.gap  = clamp(Math.round(v/2)*2, 20, 360); updateUI(); };
+const setGap2 = v => { S.gap2 = clamp(Math.round(v/2)*2, 20, 360); updateUI(); };
+const setLam2 = v => { S.lam2 = clamp(Math.round(v/2)*2, 10, 200); updateUI(); };
+const setLam  = v => { S.lambda = clamp(Math.round(v/2)*2, 10, 200); updateUI(); };
+const setAmp  = v => { S.amp = clamp(Math.round(v), 5, 40); updateUI(); };
+function setFreq(v, keepPreset){
+  S.freq = clamp(Math.round(v/10)*10, 50, 2000);
+  if(!keepPreset){
+    S.instrument = (S.freq===FREQ_DRUM)   ? "drum"
+                 : (S.freq===FREQ_GUITAR) ? "guitar"
+                 : (S.freq===FREQ_FLUTE)  ? "flute" : "custom";
+  }
+  updateUI();
+}
+
+/* ---------------- interaction ---------------- */
+cv.addEventListener("pointerdown", e => {
+  const p = evtPt(e);
+  cv.setPointerCapture(e.pointerId);
+  cv.classList.add("dragging");
+  if(S.section === "water"){
+    const g = gapEdgeHit(p);
+    if(g){ S.drag = {mode:"gap", idx:g.idx, cx:g.cx}; return; }
+  } else {
+    const L = listenerPt();
+    if(Math.abs(p.x-L.x) < 26 && Math.abs(p.y-L.y) < 30){
+      S.drag = {mode:"listener", dx:p.x-L.x, dy:p.y-L.y}; return;
+    }
+  }
+  if(S.zoom) S.drag = {mode:"pan", x0:p.x, y0:p.y, px:S.pan.x, py:S.pan.y};
+});
+cv.addEventListener("pointermove", e => {
+  if(!S.drag) return;
+  const p = evtPt(e);
+  if(S.drag.mode === "gap"){
+    const w = Math.abs(p.x - S.drag.cx) * 2;
+    /* tank B only owns its own gap when the comparison is BY gap */
+    if(S.drag.idx === 1 && S.cmpBy === "gap") setGap2(w); else setGap(w);
+  } else if(S.drag.mode === "listener"){
+    let x = clamp(p.x - S.drag.dx, 24, W-24), y = clamp(p.y - S.drag.dy, 24, H-24);
+    if(inBuilding({x,y})) x = Math.max(x, BLD.x1 + 26);      // never inside the building
+    S.listener = {x, y};
+    updateUI();
+  } else if(S.drag.mode === "pan"){
+    S.pan.x = S.drag.px - (p.x - S.drag.x0);
+    S.pan.y = S.drag.py - (p.y - S.drag.y0);
+    draw();
+  }
+});
+function endDrag(){ S.drag = null; cv.classList.remove("dragging"); }
+cv.addEventListener("pointerup", endDrag);
+cv.addEventListener("pointercancel", endDrag);
+
+cv.addEventListener("dblclick", e => {
+  const p = evtPt(e);
+  if(!S.zoom){ S.zoom = true; S.focus = {x:clamp(p.x,120,W-120), y:clamp(p.y,90,H-90)}; S.pan={x:0,y:0}; }
+  else { S.zoom = false; S.pan={x:0,y:0}; }
+  updateUI();
+});
+
+window.addEventListener("keydown", e => {
+  const tag = (e.target.tagName||"").toLowerCase();
+  if(tag === "select" || (tag === "input" && e.target.type !== "range")) return;
+  if(e.key === "Escape" && S.zoom){ S.zoom=false; S.pan={x:0,y:0}; updateUI(); return; }
+  if(e.key !== "ArrowLeft" && e.key !== "ArrowRight") return;
+  const s = (e.key === "ArrowRight") ? 1 : -1;
+  const step = e.shiftKey ? 5 : 1;
+  if(S.section === "water") setGap(S.gap + s*step*2);
+  else setFreq(S.freq + s*step*10);
+  e.preventDefault();
+});
+
+/* ---------------- toolbar wiring ---------------- */
+[["btnLabels","labels"],["btnCalc","calc"],["btnGrid","grid"]].forEach(([id,key]) => {
+  $(id).onclick = () => { S[key] = !S[key]; $(id).classList.toggle("on", S[key]); updateUI(); };
+});
+$("btnCompare").onclick = () => { S.compare = !S.compare; updateUI(); };
+$("btnCmpBy").onclick   = () => { S.cmpBy = (S.cmpBy === "gap") ? "lam" : "gap"; updateUI(); };
+
+$("gapSl").addEventListener("input",  e => setGap(+e.target.value));
+$("gap2Sl").addEventListener("input", e => (S.cmpBy==="gap" ? setGap2 : setLam2)(+e.target.value));
+$("lamSl").addEventListener("input",  e => setLam(+e.target.value));
+$("ampSl").addEventListener("input",  e => setAmp(+e.target.value));
+$("freqSl").addEventListener("input", e => setFreq(+e.target.value));
+document.querySelectorAll("#instrPills .pill").forEach(p => {
+  p.onclick = () => {
+    S.instrument = p.dataset.i;
+    if(S.instrument === "drum")   S.freq = FREQ_DRUM;
+    if(S.instrument === "guitar") S.freq = FREQ_GUITAR;
+    if(S.instrument === "flute")  S.freq = FREQ_FLUTE;
+    updateUI();
+  };
+});
+
+$("btnPlay").onclick = () => {
+  S.playing = !S.playing;
+  $("btnPlay").textContent = S.playing ? "⏸ Pause" : "▶ Play";
+  draw();
+};
+document.querySelectorAll("#speedPills .pill").forEach(p => {
+  p.onclick = () => {
+    S.speed = +p.dataset.s;
+    document.querySelectorAll("#speedPills .pill").forEach(q => q.classList.toggle("active", q===p));
+  };
+});
+
+/* Reset — this section's defaults only; never changes mode or theme */
+$("btnReset").onclick = () => {
+  if(S.section === "water"){
+    S.gap = DEF_GAP; S.gap2 = DEF_GAP2; S.lambda = DEF_LAMBDA; S.lam2 = DEF_LAMBDA*2;
+    S.amp = DEF_AMP; S.compare = false; S.cmpBy = "gap";
+  } else {
+    S.freq = DEF_FREQ; S.instrument = "drum"; S.listener = null;
+  }
+  S.labels = true; S.calc = false; S.grid = true;
+  S.playing = true; S.speed = 0.5; S.phase = 0;
+  S.zoom = false; S.pan = {x:0,y:0}; S.drag = null;
+  $("btnLabels").classList.add("on"); $("btnGrid").classList.add("on");
+  $("btnCalc").classList.remove("on");
+  $("btnPlay").textContent = "⏸ Pause";
+  document.querySelectorAll("#speedPills .pill").forEach(p => p.classList.toggle("active", p.dataset.s==="0.5"));
+  updateUI();
+};
+
+/* ---------------- theme ---------------- */
+function setTheme(name){
+  const cls = ["theme-hausnight","theme-neon","theme-light","theme-haus","theme-clay"];
+  document.body.classList.remove.apply(document.body.classList, cls);
+  if(name !== "dark") document.body.classList.add("theme-"+name);
+  S.theme = name;
+  $("themeSel").value = name;
+  updateUI();
+}
+$("themeSel").onchange = e => setTheme(e.target.value);
+
+/* ---------------- animation ---------------- */
+let lastT = 0;
+function loop(t){
+  if(S.playing){
+    const dt = Math.min(0.05, (t-lastT)/1000 || 0);
+    S.phase += dt * 0.85 * S.speed;
+    draw();
+  }
+  lastT = t;
+  requestAnimationFrame(loop);
+}
+
+/* ---------------- boot ---------------- */
+window.addEventListener("resize", () => { resize(); updateUI(); });
+if(window.ResizeObserver) new ResizeObserver(() => resize()).observe($("cvwrap"));
+resize();
+updateUI();
+requestAnimationFrame(loop);
+
+</script>
+</body>
+</html>
