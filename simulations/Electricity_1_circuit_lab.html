@@ -145,7 +145,18 @@ body{font-family:'Inter',sans-serif;padding:8px 12px;height:100vh;overflow:hidde
       padding:3px 9px;border-radius:8px;background:var(--card);
       border:1px solid var(--border);color:var(--text-dim);pointer-events:none}
 .chip.tl{top:8px;left:8px} .chip.tr{top:8px;right:8px}
-.chip.br{bottom:8px;right:8px} .chip.bl{bottom:8px;left:8px}
+.chip.tr2{top:34px;right:8px;color:var(--accent);border-color:var(--accent)}
+/* live hover inspector, centred on the same line as the mode chip */
+.chip.tc{top:8px;left:50%;transform:translateX(-50%);max-width:min(58%,720px);
+         white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+         color:var(--text);border-color:var(--accent)}
+.chip.tc b{color:var(--accent)}
+.chipstack{position:absolute;bottom:8px;left:8px;display:flex;flex-direction:column;
+           align-items:flex-start;gap:4px;max-width:calc(100% - 16px);pointer-events:none}
+.chipstack .chip{position:static;max-width:100%}
+.chip2{font-size:9.5px;color:var(--text-muted);white-space:normal;text-align:left;line-height:1.5}
+.chip2 b{color:var(--accent)}
+.sw{display:inline-block;width:9px;height:9px;border-radius:3px;vertical-align:middle}
 .chip b{color:var(--accent)}
 
 .panel{flex:0 0 360px;display:flex;flex-direction:column;background:var(--card);
@@ -228,7 +239,7 @@ table.dt tr[data-i]{cursor:pointer}
 
   <!-- ===== HEADER ZONE ===== -->
   <div class="top-bar">
-    <h1>⚡ <span>Circuit Lab</span> <span class="badge-top">v1.0.0</span></h1>
+    <h1>⚡ <span>Circuit Lab</span> <span class="badge-top">v1.3.2</span></h1>
     <div class="top-right">
       <select class="theme-select" id="themeSel">
         <option value="dark">🌙 Classic Dark</option>
@@ -257,6 +268,7 @@ table.dt tr[data-i]{cursor:pointer}
         <div class="tgroup"><span class="tlabel">Tool</span>
           <div class="pills">
             <button class="pill active" data-tool="select">▣ Select</button>
+            <button class="pill" data-tool="group" title="Drag a box to select several parts at once, then move, rotate or delete them together.">▦ Group</button>
             <button class="pill" data-tool="wire">🔗 Wire</button>
             <button class="pill" data-tool="delete">✂ Delete</button>
           </div>
@@ -267,8 +279,6 @@ table.dt tr[data-i]{cursor:pointer}
           <button class="tbtn" id="undoBtn">↺ Undo</button>
           <button class="tbtn" id="clearBtn">🗑 Clear all</button>
         </div>
-        <div class="rule"></div>
-        <span class="hint">Pick a part below → click the grid. Wire tool: click node → node (right-click to stop). R rotates, Del removes, Ctrl+Z undoes.</span>
       </div>
 
       <!-- ---- Tester ---- -->
@@ -281,8 +291,6 @@ table.dt tr[data-i]{cursor:pointer}
             <button class="pill" data-preset="divider">Potential divider</button>
           </div>
         </div>
-        <div class="rule"></div>
-        <span class="hint">Click any component to read its V, I, R and P. Double-click a switch to open or close it. Editing is locked in this mode.</span>
       </div>
 
       <!-- ---- Resistance Lab ---- -->
@@ -317,7 +325,16 @@ table.dt tr[data-i]{cursor:pointer}
           <button class="pill active" data-show="grid">⊞ Grid</button>
           <button class="pill active" data-show="labels">🏷 Labels</button>
           <button class="pill active" data-show="values">📈 Values</button>
-          <button class="pill active" data-show="flow">⚡ Current flow</button>
+        </div>
+      </div>
+      <div class="rule"></div>
+      <div class="tgroup"><span class="tlabel">Flow</span>
+        <div class="pills" id="flowPills">
+          <button class="pill" data-flow="off" title="Hide the moving charge dots.">✕ Off</button>
+          <button class="pill active" data-flow="current"
+            title="Conventional current: from the + terminal to the − terminal in the external circuit.">⚡ Current</button>
+          <button class="pill" data-flow="electrons"
+            title="Electron flow: the same paths, travelling the opposite way to conventional current.">⊖ Electrons</button>
         </div>
       </div>
       <div class="rule"></div>
@@ -342,8 +359,13 @@ table.dt tr[data-i]{cursor:pointer}
     <div class="stage">
       <canvas id="cv"></canvas>
       <div class="chip tl" id="chipMode">Free-form Builder</div>
+      <div class="chip tc" id="chipHover" style="display:none"></div>
       <div class="chip tr" id="chipGrid">1 square = <b>1 unit</b></div>
-      <div class="chip br" id="chipHint">click a component to inspect it</div>
+      <div class="chip tr2" id="chipZoom" style="display:none"></div>
+      <div class="chipstack">
+        <div class="chip" id="chipHint">click a component to inspect it</div>
+        <div class="chip chip2" id="chipHint2"></div>
+      </div>
     </div>
 
     <aside class="panel">
@@ -896,13 +918,21 @@ const S = {
   ghostO:'h',
   comps:[], wires:[],
   sel:-1, selWire:-1,
+  selSet:[], selWireSet:[],     // group selection (Group tool only)
+  marquee:null, groupDrag:null,
   wireFrom:null, hoverNode:null, hoverComp:-1,
   drag:null,
   undo:[],
-  show:{grid:true, labels:true, values:true, flow:true},
+  show:{grid:true, labels:true, values:true},
+  flow:'current',               // 'off' | 'current' (conventional, + → −) | 'electrons'
+  flowCols:null,                // distinct current magnitude -> palette index
+  swHover:null,                 // {i, start} — switch armed by hovering
+  zoom:1, tx:0, ty:0,           // view: screen = logical*VX.s + VX.ox
+  panDrag:null,
   anim:true, speed:1, t:0,
   res:null,
   panelTab:'comp',
+  rowTop:0, rowBot:ROWS,        // grid extent; grows past 0..ROWS when the window is tall
   preset:'series',
   rlab:{dev:'resistor', p:RLAB.resistor.pdef, V:6, rows:[], sweeping:false},
   theme:'dark'
@@ -916,17 +946,97 @@ function resize(){
   CV.width = Math.max(1, Math.round(r.width*dpr));
   CV.height= Math.max(1, Math.round(r.height*dpr));
   CV.style.width = r.width+'px'; CV.style.height = r.height+'px';
+  /* The logical space stays centred (so nothing already drawn ever moves),
+     but the GRID is allowed to grow past row 0 and past row ROWS into whatever
+     vertical slack the window leaves.  On a wide window there is no slack and
+     nothing changes; on a tall window the dead letterbox bands above and below
+     become usable squares instead of wasted canvas. */
   const s = Math.min(r.width/GW, r.height/GH);
-  VX = {s, ox:(r.width - GW*s)/2, oy:(r.height - GH*s)/2, dpr};
+  const visH = r.height / s;                   // logical height actually visible
+  const slack = Math.max(0, (visH - GH)/2);    // spare logical px on each side
+  const extra = Math.max(0, Math.floor((slack - 10)/CELL));
+  /* the grid extent is derived from the UNZOOMED fit, so zooming never
+     changes how many squares exist — only how much of them you can see */
+  S.rowTop = -extra;
+  S.rowBot = ROWS + extra;
+  VX = {base:{s, ox:(r.width - GW*s)/2, oy:(r.height - GH*s)/2}, dpr,
+        top:-slack, visH, s, ox:0, oy:0};
+  applyView(r);
+  keepInsideGrid();
   draw();
 }
+/* If the window shrinks, the grid loses rows — nudge the whole circuit back
+   inside so nothing can end up clipped where the user cannot reach it. */
+function keepInsideGrid(){
+  if(!S.comps.length && !S.wires.length) return;
+  const rows = S.comps.flatMap(c => termsOf(c).map(t => t.r))
+        .concat(S.wires.flatMap(w => [w.r1, w.r2]));
+  if(!rows.length) return;
+  const lo = Math.min(...rows), hi = Math.max(...rows);
+  let dy = 0;
+  if(lo < S.rowTop) dy = S.rowTop - lo;
+  else if(hi > S.rowBot) dy = S.rowBot - hi;
+  if(dy && (hi + dy) <= S.rowBot && (lo + dy) >= S.rowTop) shiftRows(dy);
+}
+function shiftRows(dy){
+  S.comps.forEach(c => c.r += dy);
+  S.wires.forEach(w => { w.r1 += dy; w.r2 += dy; });
+}
+/* A freshly built circuit is anchored a few squares below the TOP of the
+   visible grid, so it lands at comfortable eye level instead of drifting
+   toward the bottom on a tall window. */
+function anchorToTop(){
+  /* Not flush against the top edge: take 3/4 of the slack, so a very tall
+     window keeps a comfortable margin above the circuit instead of gluing
+     it to the border, while a normal window is unaffected. */
+  const dy = Math.round(S.rowTop * 0.75);
+  if(dy) shiftRows(dy);
+}
+
+/* the whole drawable area, in logical px — used for clipping and pan clamping */
+function contentBounds(){
+  return {x0:0, x1:GW, y0:gy(S.rowTop) - OY, y1:gy(S.rowBot) + OY};
+}
+/* turns S.zoom / S.tx / S.ty into the concrete canvas transform, clamping the
+   pan so the view can never wander off the grid */
+function applyView(r){
+  if(!VX.base) return;                  // called before the first resize()
+  const b = VX.base, k = b.s * S.zoom;
+  if(S.zoom === 1){ S.tx = b.ox; S.ty = b.oy; }
+  else {
+    const c = contentBounds();
+    const cw = (c.x1 - c.x0)*k, ch = (c.y1 - c.y0)*k;
+    S.tx = (cw <= r.width)  ? (r.width  - cw)/2 - c.x0*k
+         : Math.min(-c.x0*k, Math.max(r.width  - c.x1*k, S.tx));
+    S.ty = (ch <= r.height) ? (r.height - ch)/2 - c.y0*k
+         : Math.min(-c.y0*k, Math.max(r.height - c.y1*k, S.ty));
+  }
+  VX.s = k; VX.ox = S.tx; VX.oy = S.ty;
+  CV.style.cursor = S.zoom > 1 ? (S.panDrag ? 'grabbing' : 'grab') : 'default';
+}
+function setZoom(z, anchor, screenPt){
+  const r = CV.getBoundingClientRect();
+  if(!VX.base){ S.zoom = 1; return; }
+  S.zoom = z;
+  if(z !== 1 && anchor){                 // keep the double-clicked point still
+    const k = VX.base.s * z;
+    S.tx = screenPt.x - anchor.x*k;
+    S.ty = screenPt.y - anchor.y*k;
+  }
+  applyView(r);
+  const c = $('chipZoom');
+  c.style.display = (S.zoom > 1 && S.mode !== 'rlab') ? 'block' : 'none';
+  c.innerHTML = '🔍 <b>' + S.zoom + '×</b> — drag to pan · double-click to reset';
+  draw();
+}
+
 function toLogical(ev){
   const r = CV.getBoundingClientRect();
   return {x:(ev.clientX - r.left - VX.ox)/VX.s, y:(ev.clientY - r.top - VX.oy)/VX.s};
 }
 function nearestNode(p){
   const c = Math.round((p.x - OX)/CELL), r = Math.round((p.y - OY)/CELL);
-  if(c < 0 || c > COLS || r < 0 || r > ROWS) return null;
+  if(c < 0 || c > COLS || r < S.rowTop || r > S.rowBot) return null;
   const d = Math.hypot(p.x - gx(c), p.y - gy(r));
   return {c, r, d};
 }
@@ -940,6 +1050,7 @@ function undo(){
   if(!S.undo.length) return;
   const st = JSON.parse(S.undo.pop());
   S.comps = st.c; S.wires = st.w; S.sel = -1; S.selWire = -1;
+  clearGroup();
   recompute();
 }
 
@@ -959,9 +1070,41 @@ function makeComp(type, c, r, o){
   return cp;
 }
 
+/* ---------- flow display ---------- */
+const flowOn   = () => S.flow !== 'off';
+/* Conventional current runs + → − in the external circuit, which is exactly the
+   sign the solver produces (verified: the segment on a battery's + terminal
+   carries current away from it).  Electron flow is the same paths reversed. */
+const flowSign = () => (S.flow === 'electrons' ? -1 : 1);
+
+/* Each distinct current magnitude in the circuit gets its own colour, so the
+   main current and the smaller branch currents are told apart at a glance —
+   and two branches carrying the SAME current deliberately share a colour. */
+const FLOW_KEY = (m, ref) => Math.round((m/ref)*1000)/1000;
+function buildFlowColors(res){
+  if(!res || !res.ok){ S.flowCols = null; return; }
+  const ref = Math.max(1e-12, res.maxI);
+  const mags = [];
+  Object.values(res.wire).forEach(seg => mags.push(Math.abs(seg.I)));
+  res.comp.forEach(r => { if(r) mags.push(Math.abs(r.I)); });
+  const keys = [...new Set(mags.filter(m => m > ref*0.005).map(m => FLOW_KEY(m, ref)))]
+                 .sort((a,b) => b - a);
+  S.flowCols = {ref, map:new Map(keys.map((k,i) => [k,i])), n:keys.length};
+}
+function flowPalette(){
+  return [PAL.flow, PAL.green, PAL.violet, PAL.orange, PAL.rose, PAL.amber];
+}
+function flowColor(I){
+  if(!S.flowCols) return PAL.flow;
+  const i = S.flowCols.map.get(FLOW_KEY(Math.abs(I), S.flowCols.ref));
+  const pal = flowPalette();
+  return i == null ? PAL.flow : pal[i % pal.length];
+}
+
 /* ---------- solve + repaint ---------- */
 function recompute(){
   S.res = (S.mode === 'rlab') ? null : solveCircuit(S.comps, S.wires);
+  buildFlowColors(S.res);
   updatePanel(); updateSummary(); draw();
 }
 
@@ -976,7 +1119,8 @@ function draw(){
   CX.fillStyle = PAL.graphbg; CX.fillRect(0,0,r.width,r.height);
   CX.save();
   CX.translate(VX.ox, VX.oy); CX.scale(VX.s, VX.s);
-  CX.beginPath(); CX.rect(0,0,GW,GH); CX.clip();
+  const cb = contentBounds();
+  CX.beginPath(); CX.rect(cb.x0, cb.y0, cb.x1-cb.x0, cb.y1-cb.y0); CX.clip();
   if(S.mode === 'rlab') drawRLab(); else drawSchematic();
   CX.restore();
 }
@@ -984,7 +1128,7 @@ function draw(){
 function drawGrid(){
   if(!S.show.grid) return;
   CX.fillStyle = PAL.grid;
-  for(let c=0;c<=COLS;c++) for(let r=0;r<=ROWS;r++){
+  for(let c=0;c<=COLS;c++) for(let r=S.rowTop;r<=S.rowBot;r++){
     CX.beginPath(); CX.arc(gx(c), gy(r), 1.3, 0, 7); CX.fill();
   }
 }
@@ -996,25 +1140,27 @@ function drawSchematic(){
   /* --- wires --- */
   CX.lineCap='round'; CX.lineJoin='round';
   S.wires.forEach((w,i)=>{
-    CX.strokeStyle = (i === S.selWire) ? PAL.accent : PAL.wire;
-    CX.lineWidth = (i === S.selWire) ? 4 : 2.6;
+    const inGrp = S.selWireSet.includes(i);
+    CX.strokeStyle = (i === S.selWire || inGrp) ? PAL.accent : PAL.wire;
+    CX.lineWidth = (i === S.selWire || inGrp) ? 4 : 2.6;
     CX.beginPath(); CX.moveTo(gx(w.c1), gy(w.r1)); CX.lineTo(gx(w.c2), gy(w.r2)); CX.stroke();
   });
 
   /* --- current-flow dots --- */
-  if(S.show.flow && res && res.ok && !res.shorted){
-    const ref = Math.max(1e-9, res.maxI);
-    CX.fillStyle = PAL.flow;
+  if(flowOn() && res && res.ok && !res.shorted){
+    const ref = Math.max(1e-9, res.maxI), fs = flowSign();
     Object.values(res.wire).forEach(seg=>{
       const I = seg.I; if(Math.abs(I) < ref*0.005) return;
-      flowDots(gx(seg.p.c), gy(seg.p.r), gx(seg.q.c), gy(seg.q.r), I, ref);
+      CX.fillStyle = flowColor(I);
+      flowDots(gx(seg.p.c), gy(seg.p.r), gx(seg.q.c), gy(seg.q.r), I*fs, ref);
     });
     S.comps.forEach((cp,i)=>{
       const rr = res.comp[i]; if(!rr || Math.abs(rr.I) < ref*0.005) return;
       const g = compGeom(cp);
       const [t0] = termsOf(cp);
       const sgn = (t0.c === cp.c && t0.r === cp.r) ? 1 : -1;
-      flowDots(g.x1, g.y1, g.x2, g.y2, rr.I*sgn, ref, true);
+      CX.fillStyle = flowColor(rr.I);
+      flowDots(g.x1, g.y1, g.x2, g.y2, rr.I*sgn*fs, ref, true);
     });
   }
 
@@ -1032,7 +1178,8 @@ function drawSchematic(){
   S.comps.forEach((cp, i)=>{
     const g = compGeom(cp);
     const rr = res && res.ok ? idealise(cp, res.comp[i]) : null;
-    const sel = (i === S.sel);
+    const inGrp = S.selSet.includes(i);
+    const sel = (i === S.sel) || inGrp;
     if(sel){
       CX.fillStyle = PAL.glow;
       CX.beginPath(); CX.roundRect(g.mx - (g.h?46:24), g.my - (g.h?24:46),
@@ -1059,11 +1206,50 @@ function drawSchematic(){
       CX.fillText(cp.name + valueTag(cp), g.mx + ox, g.my + oy);
     }
     if(S.show.values && rr && res.ok && !res.shorted){
-      CX.fillStyle = PAL.blue; CX.font = '500 11px JetBrains Mono';
+      CX.fillStyle = (flowOn() && Math.abs(rr.I) > res.maxI*0.005)
+                     ? flowColor(rr.I) : PAL.blue;
+      CX.font = '500 11px JetBrains Mono';
       const txt = readoutFor(cp, rr);
       if(txt) CX.fillText(txt, g.mx + (g.h?0:38), g.my + (g.h?26:22));
     }
   });
+
+  /* --- switch hold-to-toggle countdown --- */
+  if(S.swHover && S.comps[S.swHover.i]){
+    const cp = S.comps[S.swHover.i], g = compGeom(cp);
+    const el = (performance.now() - S.swHover.start)/1000;
+    const prog = Math.max(0, Math.min(1, el/SW_HOLD));
+    const left = Math.max(1, Math.ceil(SW_HOLD - el));
+    CX.strokeStyle = PAL.border; CX.lineWidth = 3;
+    CX.beginPath(); CX.arc(g.mx, g.my, 24, 0, Math.PI*2); CX.stroke();
+    CX.strokeStyle = PAL.accent; CX.lineWidth = 3; CX.lineCap = 'round';
+    CX.beginPath(); CX.arc(g.mx, g.my, 24, -Math.PI/2, -Math.PI/2 + prog*Math.PI*2); CX.stroke();
+    CX.fillStyle = PAL.accent; CX.font = '800 15px JetBrains Mono';
+    CX.textAlign = 'center'; CX.textBaseline = 'middle';
+    CX.fillText(String(left), g.mx + 32, g.my - 20);
+    CX.textBaseline = 'alphabetic';
+  }
+
+  /* --- group selection: bounding box + live marquee --- */
+  if(hasGroup()){
+    const bb = groupBBox();
+    if(bb){
+      CX.strokeStyle = PAL.accent; CX.lineWidth = 1.4; CX.setLineDash([7,5]);
+      CX.strokeRect(bb.x0-14, bb.y0-14, bb.x1-bb.x0+28, bb.y1-bb.y0+28);
+      CX.setLineDash([]);
+      /* No caption here: component name labels already occupy the band just
+         above a part, and the count + keys are shown in the side panel, the
+         summary bar and the corner hint chip. */
+    }
+  }
+  if(S.marquee){
+    const m = S.marquee;
+    const x = Math.min(m.x0,m.x1), y = Math.min(m.y0,m.y1);
+    const w2 = Math.abs(m.x1-m.x0), h2 = Math.abs(m.y1-m.y0);
+    CX.fillStyle = PAL.glow; CX.fillRect(x,y,w2,h2);
+    CX.strokeStyle = PAL.accent; CX.lineWidth = 1.4; CX.setLineDash([6,4]);
+    CX.strokeRect(x,y,w2,h2); CX.setLineDash([]);
+  }
 
   /* --- wire being drawn --- */
   if(S.wireFrom && S.hoverNode){
@@ -1091,11 +1277,13 @@ function drawSchematic(){
 
   /* --- short-circuit warning --- */
   if(res && res.ok && res.shorted){
-    CX.fillStyle = 'rgba(220,50,50,0.14)'; CX.fillRect(0,0,GW,GH);
+    const cb2 = contentBounds(), cy = GH/2;
+    CX.fillStyle = 'rgba(220,50,50,0.14)';
+    CX.fillRect(cb2.x0, cb2.y0, cb2.x1-cb2.x0, cb2.y1-cb2.y0);
     CX.fillStyle = PAL.rose; CX.font = '800 30px Inter'; CX.textAlign='center';
-    CX.fillText('⚠  SHORT CIRCUIT', GW/2, GH/2 - 8);
+    CX.fillText('⚠  SHORT CIRCUIT', GW/2, cy - 8);
     CX.font = '500 15px Inter'; CX.fillStyle = PAL.text;
-    CX.fillText('a source is connected by a path with (almost) no resistance', GW/2, GH/2 + 20);
+    CX.fillText('a source is connected by a path with (almost) no resistance', GW/2, cy + 20);
   }
 }
 
@@ -1168,12 +1356,13 @@ function drawRLab(){
   line(RL.right, 430, RL.vmx, 430); line(RL.vmx, RL.midB, RL.vmx, 430);
 
   const ref = Math.max(1e-9, Math.abs(A));
-  if(S.show.flow && Math.abs(A) > 1e-9){
+  if(flowOn() && Math.abs(A) > 1e-9){
+    const fs = flowSign();
     CX.fillStyle = PAL.flow;
-    flowDots(RL.left, RL.top, RL.right, RL.top, A, ref);
-    flowDots(RL.right, RL.bot, RL.left, RL.bot, A, ref);
-    flowDots(RL.right, RL.top, RL.right, RL.bot, A, ref);
-    flowDots(RL.left, RL.bot, RL.left, RL.top, A, ref);
+    flowDots(RL.left, RL.top, RL.right, RL.top, A*fs, ref);
+    flowDots(RL.right, RL.bot, RL.left, RL.bot, A*fs, ref);
+    flowDots(RL.right, RL.top, RL.right, RL.bot, A*fs, ref);
+    flowDots(RL.left, RL.bot, RL.left, RL.top, A*fs, ref);
   }
 
   const mid = (RL.midT + RL.midB)/2;
@@ -1213,10 +1402,6 @@ function drawRLab(){
     CX.fillStyle = PAL.violet; CX.font='700 13px JetBrains Mono';
     CX.fillText('R = V / I = ' + fmtR(Math.abs(out.R)), RL.right, RL.bot + 86);
   }
-  CX.textAlign = 'left';
-  CX.fillStyle = PAL.muted; CX.font='500 12px Inter';
-  CX.fillText('Sweep the supply, press ● Record to add a point, and watch the I–V graph build up.',
-              60, GH - 18);
 }
 
 /* ============================================================
@@ -1354,8 +1539,57 @@ function graphNote(){
   return 'Every source is swept from 0 up to its set value and the circuit re-solved at each step. The blue dot is the present operating point of <b>'+S.comps[S.sel].name+'</b>.';
 }
 
+function paneGroup(){
+  const el = $('pane-comp');
+  const parts = S.selSet.map(i => S.comps[i]);
+  let h = sectionTitle('▦','GROUP SELECTION');
+  if(!hasGroup()){
+    el.innerHTML = h + '<div class="empty">Drag a box on the canvas to select several parts and wires at once.</div>' +
+      '<div class="note"><b>Group tool</b><br>· drag on empty grid → marquee select<br>' +
+      '· drag inside the box → move everything together<br>' +
+      '· <b>Del</b> deletes the whole selection · <b>R</b> rotates each part<br>' +
+      '· <b>Ctrl/⌘ + A</b> selects the whole circuit · <b>Esc</b> clears</div>';
+    return;
+  }
+  h += '<div class="kv"><span>Components</span><b>'+S.selSet.length+'</b></div>' +
+       '<div class="kv"><span>Wires</span><b>'+S.selWireSet.length+'</b></div>';
+  if(parts.length){
+    const tally = {};
+    parts.forEach(c => { tally[CATALOG[c.t].label] = (tally[CATALOG[c.t].label]||0)+1; });
+    h += '<div class="kv"><span>Contents</span><b>' +
+         Object.entries(tally).map(([k,n]) => n+'× '+k).join(', ') + '</b></div>';
+  }
+  h += '<div class="rowbtns" style="margin-top:9px">' +
+       '<button class="mini" id="grpRot">⟳ Rotate each</button>' +
+       '<button class="mini" id="grpDel">🗑 Delete selection</button>' +
+       '<button class="mini" id="grpAll">▦ Select all</button></div>';
+  const rs = parts.filter(c => CATALOG[c.t].kind === 'res');
+  if(rs.length > 1){
+    const same = rs.every(c => c.R === rs[0].R);
+    h += slider('grpR','Set R on all '+rs.length+' resistive parts', same ? rs[0].R : 10,
+                0.1, 200, 0.1, 'Ω');
+  }
+  h += '<table class="dt" style="margin-top:8px"><tr><th>name</th><th>type</th><th>value</th></tr>';
+  parts.slice(0,14).forEach(c => h += '<tr><td>'+c.name+'</td><td>'+CATALOG[c.t].label+
+    '</td><td>'+(valueTag(c).trim()||'—')+'</td></tr>');
+  if(parts.length > 14) h += '<tr><td colspan="3" class="empty">… and '+(parts.length-14)+' more</td></tr>';
+  h += '</table>';
+  el.innerHTML = h;
+  $('grpRot').onclick = rotateGroup;
+  $('grpDel').onclick = deleteGroup;
+  $('grpAll').onclick = selectAllGroup;
+  const gr = $('grpR');
+  if(gr) gr.oninput = e => {
+    const v = +e.target.value;
+    $('grpROut').textContent = fmtR(v);
+    S.selSet.forEach(i => { if(CATALOG[S.comps[i].t].kind === 'res') S.comps[i].R = v; });
+    S.res = solveCircuit(S.comps, S.wires); updateSummary(); draw();
+  };
+}
+
 function paneComp(){
   const el = $('pane-comp');
+  if(S.tool === 'group' && S.mode === 'build'){ paneGroup(); return; }
   if(S.mode === 'rlab'){
     const dev = RLAB[S.rlab.dev];
     const o = dev.solve(S.rlab.V, S.rlab.p);
@@ -1474,17 +1708,21 @@ function paneData(){
   }
   const r = S.res;
   let h = sectionTitle('📋','ALL COMPONENTS') +
-    '<table class="dt"><tr><th>name</th><th>V</th><th>I</th><th>R</th><th>P</th></tr>';
-  if(!S.comps.length) h += '<tr><td colspan="5" class="empty">circuit is empty</td></tr>';
+    '<table class="dt"><tr><th></th><th>name</th><th>V</th><th>I</th><th>R</th><th>P</th></tr>';
+  if(!S.comps.length) h += '<tr><td colspan="6" class="empty">circuit is empty</td></tr>';
   S.comps.forEach((c,i)=>{
     const rr = r&&r.ok ? idealise(c, r.comp[i]) : null;
-    h += '<tr class="'+(i===S.sel?'sel':'')+'" data-i="'+i+'"><td>'+c.name+'</td><td>'+
+    const lit = rr && r.ok && Math.abs(rr.I) > r.maxI*0.005;
+    h += '<tr class="'+(i===S.sel?'sel':'')+'" data-i="'+i+'"><td>'+
+      (lit ? '<span class="sw" style="background:'+flowColor(rr.I)+'"></span>' : '') +
+      '</td><td>'+c.name+'</td><td>'+
       (rr?fmt(Math.abs(rr.V),'').replace(' ',''):'—')+'</td><td>'+
       (rr?fmt(Math.abs(rr.I),'').replace(' ',''):'—')+'</td><td>'+
       (rr?fmt(Math.abs(rr.R),'').replace(' ',''):'—')+'</td><td>'+
       (rr?fmt(Math.abs(rr.P),'').replace(' ',''):'—')+'</td></tr>';
   });
-  h += '</table><div class="note">V in volt, I in amp, R in ohm, P in watt (k/m/µ prefixes where useful).</div>';
+  h += '</table><div class="note">V in volt, I in amp, R in ohm, P in watt (k/m/µ prefixes where useful).<br>' +
+       'The swatch is the colour of that part\'s flow dots on the canvas — <b>parts carrying the same current share a colour</b>, so the main current stands apart from the branch currents.</div>';
   el.innerHTML = h;
   el.querySelectorAll('tr[data-i]').forEach(tr=>tr.onclick = ()=>{
     S.sel = +tr.dataset.i; S.panelTab='comp'; updatePanel(); draw(); });
@@ -1512,6 +1750,11 @@ function updateSummary(){
     return;
   }
   if(S.mode === 'test' && S.sel < 0){ el.innerHTML = '📝 <b>'+PRESETS[S.preset].name+'</b> — '+S.note; return; }
+  if(S.tool === 'group' && S.mode === 'build' && hasGroup()){
+    el.innerHTML = '📝 <b>'+S.selSet.length+'</b> component(s) and <b>'+S.selWireSet.length+
+      '</b> wire(s) selected — drag inside the dashed box to move them, Del to delete, R to rotate each.';
+    return;
+  }
   const r = S.res;
   if(!S.comps.length){ el.innerHTML = '📝 Empty canvas — pick a component from the palette and click on the grid to place it.'; return; }
   if(!r || !r.ok){ el.innerHTML = '📝 Circuit not solvable yet.'; return; }
@@ -1561,62 +1804,63 @@ const PRESETS = {
     name:'Series circuit',
     note:'One path only, so the <b>same current</b> flows everywhere; the p.d.s across the parts add up to the e.m.f. (6 V ÷ 20 Ω = 0.30 A).',
     build:()=>({comps:[
-        C('battery',3,3,'h',{name:'B1',V:6}),
-        C('ammeter',8,3,'h',{name:'A1'}),
-        C('switch',13,3,'h',{name:'SW1',closed:true}),
-        C('lamp',18,3,'h',{name:'L1',R:12}),
-        C('resistor',12,12,'h',{name:'R1',R:8}),
-        C('voltmeter',18,7,'h',{name:'V1'})],
-      wires:[w(5,3,8,3), w(10,3,13,3), w(15,3,18,3), w(20,3,23,3),
-             w(23,3,23,12), w(23,12,14,12), w(12,12,3,12), w(3,12,3,3),
-             w(18,3,18,7), w(20,3,20,7)]})
+        C('battery',3,2,'h',{name:'B1',V:6}),
+        C('ammeter',8,2,'h',{name:'A1'}),
+        C('switch',13,2,'h',{name:'SW1',closed:true}),
+        C('lamp',18,2,'h',{name:'L1',R:12}),
+        C('resistor',12,10,'h',{name:'R1',R:8}),
+        C('voltmeter',18,5,'h',{name:'V1'})],
+      wires:[w(5,2,8,2), w(10,2,13,2), w(15,2,18,2), w(20,2,23,2),
+             w(23,2,23,10), w(23,10,14,10), w(12,10,3,10), w(3,10,3,2),
+             w(18,2,18,5), w(20,2,20,5)]})
   },
   parallel: {
     name:'Parallel circuit',
     note:'Both branches sit across the <b>same 6 V</b>. The branch currents (0.50 A and 0.25 A) add up to the 0.75 A leaving the battery.',
     build:()=>({comps:[
-        C('battery',3,3,'h',{name:'B1',V:6}),
-        C('ammeter',7,3,'h',{name:'A1'}),
-        C('voltmeter',11,6,'v',{name:'V1'}),
-        C('lamp',15,6,'v',{name:'L1',R:12}),
-        C('lamp',21,6,'v',{name:'L2',R:24})],
-      wires:[w(5,3,7,3), w(9,3,21,3),
-             w(11,3,11,6), w(11,8,11,12),
-             w(15,3,15,6), w(15,8,15,12),
-             w(21,3,21,6), w(21,8,21,12),
-             w(3,12,21,12), w(3,12,3,3)]})
+        C('battery',3,2,'h',{name:'B1',V:6}),
+        C('ammeter',7,2,'h',{name:'A1'}),
+        C('voltmeter',11,5,'v',{name:'V1'}),
+        C('lamp',15,5,'v',{name:'L1',R:12}),
+        C('lamp',21,5,'v',{name:'L2',R:24})],
+      wires:[w(5,2,7,2), w(9,2,21,2),
+             w(11,2,11,5), w(11,7,11,10),
+             w(15,2,15,5), w(15,7,15,10),
+             w(21,2,21,5), w(21,7,21,10),
+             w(3,10,21,10), w(3,10,3,2)]})
   },
   mixed: {
     name:'Series + parallel',
     note:'R1 is in series with the pair R2 ∥ R3. Combine the parallel pair first (20 ∥ 30 = 12 Ω), then add R1: 22 Ω total, so I = 12/22 = 0.55 A.',
     build:()=>({comps:[
-        C('supply',3,3,'h',{name:'S1',V:12}),
-        C('resistor',8,3,'h',{name:'R1',R:10}),
-        C('resistor',16,6,'v',{name:'R2',R:20}),
-        C('resistor',22,6,'v',{name:'R3',R:30}),
-        C('ammeter',8,12,'h',{name:'A1'})],
-      wires:[w(5,3,8,3), w(10,3,22,3),
-             w(16,3,16,6), w(22,3,22,6),
-             w(16,8,16,12), w(22,8,22,12),
-             w(10,12,22,12), w(8,12,3,12), w(3,12,3,3)]})
+        C('supply',3,2,'h',{name:'S1',V:12}),
+        C('resistor',8,2,'h',{name:'R1',R:10}),
+        C('resistor',16,5,'v',{name:'R2',R:20}),
+        C('resistor',22,5,'v',{name:'R3',R:30}),
+        C('ammeter',8,10,'h',{name:'A1'})],
+      wires:[w(5,2,8,2), w(10,2,22,2),
+             w(16,2,16,5), w(22,2,22,5),
+             w(16,7,16,10), w(22,7,22,10),
+             w(10,10,22,10), w(8,10,3,10), w(3,10,3,2)]})
   },
   divider: {
     name:'Potential divider',
     note:'The 12 V splits in the ratio of the resistances: V_out = 12 × 600/(400+600) = 7.2 V. Drag the VR1 slider and watch V1 follow.',
     build:()=>({comps:[
-        C('supply',3,3,'h',{name:'S1',V:12}),
-        C('resistor',9,3,'h',{name:'R1',R:400}),
-        C('varres',16,3,'h',{name:'VR1',R:600}),
-        C('voltmeter',16,9,'h',{name:'V1'})],
-      wires:[w(5,3,9,3), w(11,3,16,3), w(18,3,22,3), w(22,3,22,12),
-             w(22,12,3,12), w(3,12,3,3), w(16,3,16,9), w(18,3,18,9)]})
+        C('supply',3,2,'h',{name:'S1',V:12}),
+        C('resistor',9,2,'h',{name:'R1',R:400}),
+        C('varres',16,2,'h',{name:'VR1',R:600}),
+        C('voltmeter',16,7,'h',{name:'V1'})],
+      wires:[w(5,2,9,2), w(11,2,16,2), w(18,2,22,2), w(22,2,22,10),
+             w(22,10,3,10), w(3,10,3,2), w(16,2,16,7), w(18,2,18,7)]})
   }
 };
 function w(c1,r1,c2,r2){ return {c1,r1,c2,r2}; }
 function loadPreset(k){
   const p = PRESETS[k].build();
   S.comps = p.comps; S.wires = p.wires;
-  S.sel = -1; S.selWire = -1; S.undo = [];
+  anchorToTop();
+  S.sel = -1; S.selWire = -1; clearGroup(); S.undo = [];
   S.note = PRESETS[k].note;
   $('chipMode').textContent = 'Circuit Tester — ' + PRESETS[k].name;
   recompute();
@@ -1626,15 +1870,93 @@ function loadPreset(k){
    DEFAULT CIRCUIT for Builder
    ============================================================ */
 function defaultCircuit(){
+  /* Top rail: switch · battery · ammeter.  Bottom rail: the lamp, centred
+     under the battery, with the voltmeter connected across it below. */
   S.comps = [
-    C('battery',3,4,'h',{name:'B1',V:6}),
-    C('switch',9,4,'h',{name:'SW1',closed:true}),
-    C('ammeter',15,4,'h',{name:'A1'}),
-    C('lamp',21,7,'v',{name:'L1',R:12})
+    C('battery',13,2,'h',{name:'B1',V:6}),
+    C('switch',6,2,'h',{name:'SW1',closed:true}),
+    C('ammeter',20,2,'h',{name:'A1'}),
+    C('lamp',13,9,'h',{name:'L1',R:12}),
+    C('voltmeter',13,12,'h',{name:'V1'})
   ];
-  S.wires = [w(5,4,9,4), w(11,4,15,4), w(17,4,21,4), w(21,4,21,7),
-             w(21,9,21,12), w(21,12,3,12), w(3,12,3,4)];
-  S.sel = -1; S.selWire = -1; S.undo = [];
+  S.wires = [
+    w(2,2,6,2), w(8,2,13,2), w(15,2,20,2), w(22,2,26,2),   // top rail
+    w(2,2,2,9), w(26,2,26,9),                              // side rails
+    w(2,9,13,9), w(15,9,26,9),                             // bottom rail
+    w(13,9,13,12), w(15,9,15,12)                           // voltmeter across L1
+  ];
+  anchorToTop();
+  S.sel = -1; S.selWire = -1; clearGroup(); S.undo = [];
+}
+
+/* ============================================================
+   GROUP SELECTION  (Group tool only — every entry point is guarded
+   by S.tool === 'group', so no other tool's behaviour changes)
+   ============================================================ */
+function clearGroup(){ S.selSet = []; S.selWireSet = []; S.marquee = null; S.groupDrag = null; S.swHover = null; }
+const hasGroup = () => S.selSet.length > 0 || S.selWireSet.length > 0;
+
+/* bounding box of the selection, in logical px */
+function groupBBox(){
+  const xs = [], ys = [];
+  S.selSet.forEach(i => { const g = compGeom(S.comps[i]); xs.push(g.x1, g.x2); ys.push(g.y1, g.y2); });
+  S.selWireSet.forEach(i => { const w = S.wires[i];
+    xs.push(gx(w.c1), gx(w.c2)); ys.push(gy(w.r1), gy(w.r2)); });
+  if(!xs.length) return null;
+  return {x0:Math.min(...xs), y0:Math.min(...ys), x1:Math.max(...xs), y1:Math.max(...ys)};
+}
+
+/* marquee -> selection.  A component counts as inside when its whole body is
+   inside; a wire when BOTH its ends are, so a half-covered wire is never moved
+   away from the node it is attached to. */
+function applyMarquee(m){
+  const x0 = Math.min(m.x0,m.x1), x1 = Math.max(m.x0,m.x1);
+  const y0 = Math.min(m.y0,m.y1), y1 = Math.max(m.y0,m.y1);
+  const inside = (x,y) => x >= x0 && x <= x1 && y >= y0 && y <= y1;
+  S.selSet = S.comps.map((c,i)=>i).filter(i => {
+    const g = compGeom(S.comps[i]); return inside(g.x1,g.y1) && inside(g.x2,g.y2); });
+  S.selWireSet = S.wires.map((w,i)=>i).filter(i => {
+    const w = S.wires[i];
+    return inside(gx(w.c1),gy(w.r1)) && inside(gx(w.c2),gy(w.r2)); });
+}
+
+/* can the whole selection sit at this offset? */
+function groupFits(dc, dr, orig){
+  for(const o of orig.comps){
+    const cp = S.comps[o.i];
+    if(!fits(o.c + dc, o.r + dr, cp.o)) return false;
+  }
+  for(const o of orig.wires){
+    for(const [c,r] of [[o.c1+dc,o.r1+dr],[o.c2+dc,o.r2+dr]])
+      if(c < 0 || c > COLS || r < S.rowTop || r > S.rowBot) return false;
+  }
+  return true;
+}
+function moveGroup(dc, dr, orig){
+  orig.comps.forEach(o => { S.comps[o.i].c = o.c + dc; S.comps[o.i].r = o.r + dr; });
+  orig.wires.forEach(o => { const w = S.wires[o.i];
+    w.c1 = o.c1 + dc; w.r1 = o.r1 + dr; w.c2 = o.c2 + dc; w.r2 = o.r2 + dr; });
+}
+function deleteGroup(){
+  if(!hasGroup()) return;
+  snapshot();
+  [...S.selSet].sort((a,b)=>b-a).forEach(i => S.comps.splice(i,1));
+  [...S.selWireSet].sort((a,b)=>b-a).forEach(i => S.wires.splice(i,1));
+  S.sel = -1; S.selWire = -1; clearGroup(); recompute();
+}
+function rotateGroup(){
+  if(!S.selSet.length) return;
+  snapshot();
+  S.selSet.forEach(i => {
+    const cp = S.comps[i], o = cp.o === 'h' ? 'v' : 'h';
+    if(fits(cp.c, cp.r, o)) cp.o = o;
+  });
+  recompute();
+}
+function selectAllGroup(){
+  S.selSet = S.comps.map((_,i)=>i);
+  S.selWireSet = S.wires.map((_,i)=>i);
+  S.sel = -1; S.selWire = -1; updatePanel(); updateSummary(); draw();
 }
 
 /* ============================================================
@@ -1650,6 +1972,82 @@ function hitComp(p){
   }
   return -1;
 }
+/* every component whose body contains the pointer, not just the topmost —
+   this is what lets the hover bar report "3 parts stacked here" */
+function hitCompAll(p){
+  const out = [];
+  for(let i = S.comps.length-1; i >= 0; i--){
+    const g = compGeom(S.comps[i]);
+    const hw = g.h ? 44 : 20, hh = g.h ? 20 : 44;
+    if(Math.abs(p.x-g.mx) <= hw && Math.abs(p.y-g.my) <= hh) out.push(i);
+  }
+  return out;
+}
+
+/* ---- hold-to-toggle a switch ----
+   Resting the pointer on a switch arms a 3 s countdown; when it reaches zero
+   the switch flips, and it keeps flipping every 3 s for as long as the pointer
+   stays there.  Only ever armed when exactly ONE component is under the
+   pointer and no drag / marquee / placement is in progress, so it can never
+   fire by accident while the user is doing something else. */
+const SW_HOLD = 3;                                   // seconds
+function armSwitchHover(p, now){
+  const allowed = (S.mode === 'test') || (S.mode === 'build' && S.tool === 'select');
+  let idx = -1;
+  if(allowed && !S.drag && !S.groupDrag && !S.marquee && !S.place){
+    const all = hitCompAll(p);
+    if(all.length === 1 && S.comps[all[0]].t === 'switch') idx = all[0];
+  }
+  if(idx < 0){ S.swHover = null; return; }
+  if(!S.swHover || S.swHover.i !== idx) S.swHover = {i:idx, start:now};
+}
+
+/* one-line description of whatever sits under the pointer */
+function hoverInfo(p){
+  const res = S.res;
+  const parts = hitCompAll(p);
+  if(parts.length > 1){
+    const names = parts.map(i => S.comps[i].name);
+    return '⧉ <b>' + parts.length + ' parts stacked here</b> — ' +
+           names.slice(0,6).join(', ') + (names.length > 6 ? ', …' : '') +
+           ' · drag them apart or use ▦ Group';
+  }
+  if(parts.length === 1){
+    const i = parts[0], cp = S.comps[i], d = CATALOG[cp.t];
+    let t = '<b>' + d.label + ' ' + cp.name + '</b>';
+    if(d.kind === 'src')                      t += ' — ℰ = ' + fmt(cp.V,'V');
+    else if(d.kind === 'sw'){
+      t += ' — ' + (cp.closed === false ? 'open' : 'closed');
+      if(S.swHover && S.swHover.i === i){
+        const left = Math.max(0, SW_HOLD - (performance.now() - S.swHover.start)/1000);
+        t += ' · keep hovering to flip it in <b>' + Math.ceil(left) + ' s</b>';
+      } else t += ' · hover ' + SW_HOLD + ' s to flip it';
+    }
+    else if(d.kind === 'meterA')              t += ' — ammeter, in series';
+    else if(d.kind === 'meterV')              t += ' — voltmeter, in parallel';
+    else if(cp.R != null)                     t += ' — R = ' + fmtR(cp.R);
+    const rr = res && res.ok ? idealise(cp, res.comp[i]) : null;
+    if(rr && !res.shorted)
+      t += '  ·  ' + fmt(Math.abs(rr.V),'V') + ' · ' + fmt(Math.abs(rr.I),'A') +
+           ' · ' + fmt(Math.abs(rr.P),'W');
+    return t;
+  }
+  const wi = hitWire(p);
+  if(wi >= 0){
+    let I = null, best = 1e9;
+    if(res && res.ok) Object.values(res.wire).forEach(seg => {
+      if(seg.wire !== wi) return;
+      const d = Math.hypot((gx(seg.p.c)+gx(seg.q.c))/2 - p.x,
+                           (gy(seg.p.r)+gy(seg.q.r))/2 - p.y);
+      if(d < best){ best = d; I = seg.I; }
+    });
+    return '<b>Wire</b>' + (I != null ? ' — carrying ' + fmt(Math.abs(I),'A') : ' — no current');
+  }
+  const n = nearestNode(p);
+  if(n && n.d < 14) return 'empty grid node <b>(' + n.c + ', ' + n.r + ')</b>';
+  return '';
+}
+
 function hitWire(p){
   for(let i=S.wires.length-1;i>=0;i--){
     const w = S.wires[i];
@@ -1662,13 +2060,32 @@ function hitWire(p){
   return -1;
 }
 function fits(c,r,o){
-  return o==='h' ? (c>=0 && c+SPAN<=COLS && r>=0 && r<=ROWS)
-                 : (c>=0 && c<=COLS && r>=0 && r+SPAN<=ROWS);
+  return o==='h' ? (c>=0 && c+SPAN<=COLS && r>=S.rowTop && r<=S.rowBot)
+                 : (c>=0 && c<=COLS && r>=S.rowTop && r+SPAN<=S.rowBot);
 }
 
 CV.addEventListener('pointermove', e=>{
   if(S.mode === 'rlab') return;
+  if(S.panDrag){
+    const d = S.panDrag;
+    S.tx = d.tx + (e.clientX - d.px);
+    S.ty = d.ty + (e.clientY - d.py);
+    if(Math.abs(e.clientX - d.px) + Math.abs(e.clientY - d.py) > 3) d.moved = true;
+    applyView(CV.getBoundingClientRect()); draw();
+    return;
+  }
   const p = toLogical(e);
+  if(S.marquee){ S.marquee.x1 = p.x; S.marquee.y1 = p.y; draw(); return; }
+  if(S.groupDrag){
+    const g = S.groupDrag;
+    const dc = Math.round((p.x - g.sx)/CELL), dr = Math.round((p.y - g.sy)/CELL);
+    if((dc || dr) && groupFits(dc, dr, g.orig)){ g.moved = true; moveGroup(dc, dr, g.orig); recompute(); }
+    return;
+  }
+  armSwitchHover(p, performance.now());
+  const info = hoverInfo(p);
+  const hv = $('chipHover');
+  hv.innerHTML = info; hv.style.display = info ? 'block' : 'none';
   const n = nearestNode(p);
   S.hoverNode = (n && n.d < 26) ? n : (S.place || S.tool==='wire' ? n : null);
   if(S.drag){
@@ -1680,14 +2097,44 @@ CV.addEventListener('pointermove', e=>{
   }
   draw();
 });
-CV.addEventListener('pointerleave', ()=>{ S.hoverNode=null; draw(); });
+CV.addEventListener('pointerleave', ()=>{
+  S.hoverNode = null; S.swHover = null;
+  $('chipHover').style.display = 'none';
+  draw(); });
+
+/* Middle button anywhere on the canvas = "never mind": drop the selection,
+   the group, a half-drawn wire and any queued part.  Same effect as clicking
+   the active tool again, but reachable without moving the pointer away. */
+function cancelSelection(){
+  const had = S.sel >= 0 || S.selWire >= 0 || hasGroup() || S.wireFrom || S.place;
+  S.sel = -1; S.selWire = -1; S.wireFrom = null; S.place = null;
+  clearGroup(); syncPalette(); updatePanel(); updateSummary(); draw();
+  return had;
+}
+CV.addEventListener('auxclick', e => { if(e.button === 1) e.preventDefault(); });
+CV.addEventListener('mousedown', e => { if(e.button === 1) e.preventDefault(); });
 
 CV.addEventListener('pointerdown', e=>{
+  if(e.button === 1){ e.preventDefault(); cancelSelection(); return; }
   if(S.mode === 'rlab') return;
-  CV.setPointerCapture(e.pointerId);
+  try { CV.setPointerCapture(e.pointerId); } catch(_){}   // can throw if the pointer already went away
   const p = toLogical(e);
   const n = nearestNode(p);
 
+  if(S.tool === 'group' && editable()){
+    const bb = hasGroup() ? groupBBox() : null;
+    if(bb && p.x >= bb.x0-14 && p.x <= bb.x1+14 && p.y >= bb.y0-14 && p.y <= bb.y1+14){
+      snapshot();                                   // grab the selection and drag it
+      S.groupDrag = {sx:p.x, sy:p.y, moved:false, orig:{
+        comps: S.selSet.map(i => ({i, c:S.comps[i].c, r:S.comps[i].r})),
+        wires: S.selWireSet.map(i => ({i, ...S.wires[i]}))}};
+      return;
+    }
+    clearGroup();
+    S.marquee = {x0:p.x, y0:p.y, x1:p.x, y1:p.y};
+    updatePanel(); draw();
+    return;
+  }
   if(S.place && editable()){
     if(n && fits(n.c, n.r, S.ghostO)){
       snapshot();
@@ -1719,6 +2166,13 @@ CV.addEventListener('pointerdown', e=>{
     if(wi >= 0){ snapshot(); S.wires.splice(wi,1); S.selWire=-1; recompute(); }
     return;
   }
+  // while zoomed, press-and-hold on empty canvas pans the view
+  if(S.zoom > 1 && (S.mode === 'test' || S.tool === 'select') &&
+     hitComp(p) < 0 && hitWire(p) < 0){
+    S.panDrag = {px:e.clientX, py:e.clientY, tx:S.tx, ty:S.ty, moved:false};
+    CV.style.cursor = 'grabbing';
+    return;
+  }
   // select tool
   const ci = hitComp(p);
   if(ci >= 0){
@@ -1730,18 +2184,51 @@ CV.addEventListener('pointerdown', e=>{
   S.selWire = wi; S.sel = -1;
   updatePanel(); draw();
 });
-CV.addEventListener('pointerup', ()=>{ S.drag = null; });
-CV.addEventListener('dblclick', e=>{
-  const i = hitComp(toLogical(e));
-  if(i >= 0 && S.comps[i].t === 'switch'){
-    snapshot(); S.comps[i].closed = (S.comps[i].closed === false); recompute();
+CV.addEventListener('pointerup', ()=>{
+  if(S.panDrag){
+    const moved = S.panDrag.moved;
+    S.panDrag = null;
+    applyView(CV.getBoundingClientRect());
+    if(!moved){ S.sel = -1; S.selWire = -1; updatePanel(); }   // plain click = deselect
+    draw();
+    return;
   }
+  S.drag = null;
+  if(S.marquee){
+    const m = S.marquee; S.marquee = null;
+    if(Math.abs(m.x1-m.x0) > 6 || Math.abs(m.y1-m.y0) > 6) applyMarquee(m);
+    updatePanel(); updateSummary(); draw();
+  }
+  if(S.groupDrag){ if(!S.groupDrag.moved) S.undo.pop(); S.groupDrag = null; }
 });
+CV.addEventListener('pointercancel', ()=>{
+  S.marquee = null; S.groupDrag = null; S.panDrag = null;
+  applyView(CV.getBoundingClientRect()); draw(); });
+/* Double-click toggles 2× zoom about the clicked point.  It is deliberately
+   inert while ANY other selection/edit gesture is live or something is already
+   selected, so it can never fire in the middle of another action. */
+function zoomAllowed(){
+  return S.mode !== 'rlab' && !S.drag && !S.groupDrag && !S.marquee &&
+         !S.panDrag && !S.place && !S.wireFrom && !hasGroup() &&
+         S.sel < 0 && S.selWire < 0;
+}
+CV.addEventListener('dblclick', e=>{
+  if(!zoomAllowed()) return;
+  const r = CV.getBoundingClientRect();
+  const anchor = toLogical(e);                     // measured BEFORE the change
+  setZoom(S.zoom === 1 ? 2 : 1, anchor,
+          {x:e.clientX - r.left, y:e.clientY - r.top});
+});
+
 CV.addEventListener('contextmenu', e=>{ e.preventDefault(); S.wireFrom = null; draw(); });
 
 window.addEventListener('keydown', e=>{
   if(e.target.tagName === 'INPUT') return;
+  if((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A') && S.tool === 'group' && editable()){
+    e.preventDefault(); selectAllGroup(); return;
+  }
   if(e.key === 'r' || e.key === 'R'){
+    if(S.tool === 'group' && hasGroup()){ rotateGroup(); return; }
     if(S.place){ S.ghostO = S.ghostO === 'h' ? 'v' : 'h'; draw(); }
     else if(S.sel >= 0 && editable()){
       snapshot(); const cp = S.comps[S.sel];
@@ -1749,8 +2236,9 @@ window.addEventListener('keydown', e=>{
       if(fits(cp.c, cp.r, o)){ cp.o = o; recompute(); }
     }
   }
-  if(e.key === 'Escape'){ S.place = null; S.wireFrom = null; setTool('select'); syncPalette(); draw(); }
+  if(e.key === 'Escape'){ S.place = null; S.wireFrom = null; clearGroup(); setTool('select'); syncPalette(); draw(); }
   if((e.key === 'Delete' || e.key === 'Backspace') && editable()){
+    if(hasGroup()){ deleteGroup(); return; }
     if(S.sel >= 0){ snapshot(); S.comps.splice(S.sel,1); S.sel=-1; recompute(); }
     else if(S.selWire >= 0){ snapshot(); S.wires.splice(S.selWire,1); S.selWire=-1; recompute(); }
   }
@@ -1762,6 +2250,9 @@ window.addEventListener('keydown', e=>{
    ============================================================ */
 function setTool(t){
   S.tool = t; S.place = null; S.wireFrom = null;
+  clearGroup();
+  if(t === 'group'){ S.sel = -1; S.selWire = -1; }
+  updatePanel();
   document.querySelectorAll('[data-tool]').forEach(b =>
     b.classList.toggle('active', b.dataset.tool === t));
   syncPalette(); draw();
@@ -1779,7 +2270,7 @@ function setMode(m){
     b.classList.toggle('active', b.dataset.mode === m));
   ['build','test','rlab'].forEach(k =>
     $('slot-'+k).style.display = (k===m) ? 'flex' : 'none');
-  S.place = null; S.wireFrom = null; S.sel = -1; S.selWire = -1;
+  S.place = null; S.wireFrom = null; S.sel = -1; S.selWire = -1; clearGroup();
   if(m === 'build'){
     if(S.saveBuild){ const st = JSON.parse(S.saveBuild); S.comps = st.c; S.wires = st.w; }
     else if(!S.comps.length) defaultCircuit();
@@ -1790,10 +2281,27 @@ function setMode(m){
   $('palette').classList.toggle('locked', m !== 'build');
   $('chipMode').textContent = {build:'Free-form Builder', test:'Circuit Tester — '+PRESETS[S.preset].name,
                                rlab:'Resistance Lab'}[m];
-  $('chipHint').textContent = {build:'place · wire · drag · double-click a switch',
+  $('chipHint').textContent = {build:'place · wire · drag · hover a switch for 3 s to flip it',
                                test:'click a component to inspect it',
                                rlab:'sweep the supply, then Record'}[m];
+  $('chipHint2').innerHTML = {
+    build:['Pick a part below, then click the grid to place it.',
+           '<b>Wire tool</b> — click node → node (right-click to stop).',
+           '<b>Group tool</b> — drag a box, then drag inside it to move.',
+           '<b>Switches</b> — rest the pointer on one for 3 s to flip it.',
+           '<b>Zoom</b> — double-click empty canvas for 2×, then drag to pan.',
+           '<b>Shortcuts</b> — R rotates · Del removes · Ctrl+Z undoes · middle-click clears the selection'
+          ].join('<br>'),
+    test :['Click any component to read its V, I, R and P.',
+           'Rest the pointer on a switch for 3 s to open or close it.',
+           '<b>Zoom</b> — double-click empty canvas for 2×, then drag to pan.',
+           'Editing is locked in this mode.',
+           '<b>Shortcuts</b> — middle-click clears the selection'].join('<br>'),
+    rlab :['Sweep the supply, then press ● Record to add a point.',
+           'The I–V graph and the data table build up as you go.'].join('<br>')}[m];
   $('chipGrid').style.display = (m === 'rlab') ? 'none' : 'block';
+  $('chipHover').style.display = 'none';
+  setZoom(1);
   recompute();
 }
 function setTheme(name){
@@ -1840,7 +2348,24 @@ function drawPaletteIcons(){
 let last = performance.now();
 function tick(now){
   const dt = Math.min(0.05, (now - last)/1000); last = now;
-  if(S.anim && S.show.flow){ S.t += dt; draw(); }
+  let need = false;
+  if(S.anim && flowOn()){ S.t += dt; need = true; }
+  /* the countdown runs on wall-clock time, so it works even with the
+     animation paused or the flow dots switched off */
+  if(S.swHover){
+    const cp = S.comps[S.swHover.i];
+    if(!cp || cp.t !== 'switch') S.swHover = null;
+    else {
+      if(now - S.swHover.start >= SW_HOLD*1000){
+        snapshot();
+        cp.closed = (cp.closed === false);
+        S.swHover.start = now;
+        recompute();
+      }
+      need = true;
+    }
+  }
+  if(need) draw();
   requestAnimationFrame(tick);
 }
 
@@ -1908,6 +2433,9 @@ document.querySelectorAll('[data-show]').forEach(b => b.onclick = () => {
   draw();
 });
 
+/* flow: off / conventional current / electron flow */
+bindPills('[data-flow]', 'flow', v => { S.flow = v; draw(); });
+
 /* animation */
 $('playBtn').onclick = () => {
   S.anim = !S.anim;
@@ -1926,12 +2454,16 @@ $('resetBtn').onclick = () => {
     $('rlP').value = d.pdef; $('rlPOut').textContent = d.pdef + ' ' + d.unit;
     $('rlV').value = S.rlab.V; $('rlVOut').textContent = fmt(S.rlab.V,'V');
   }
-  S.show = {grid:true, labels:true, values:true, flow:true};
+  S.show = {grid:true, labels:true, values:true};
   document.querySelectorAll('[data-show]').forEach(b => b.classList.add('active'));
+  S.flow = 'current';
+  document.querySelectorAll('[data-flow]').forEach(b =>
+    b.classList.toggle('active', b.dataset.flow === 'current'));
   S.speed = 1;
   document.querySelectorAll('[data-speed]').forEach(b =>
     b.classList.toggle('active', b.dataset.speed === '1'));
   S.anim = true; $('playBtn').textContent = '⏸ Pause';
+  setZoom(1);
   recompute();
 };
 
@@ -1945,6 +2477,7 @@ $('themeSel').onchange = e => { setTheme(e.target.value); drawPaletteIcons(); };
 
 /* start */
 buildPalette();
+resize();                    // builds VX.base, so setMode/setZoom have a view
 defaultCircuit();
 setMode('build');
 new ResizeObserver(() => resize()).observe(CV.parentElement);
