@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Circuit Lab — HAUS Academy</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
 <style>
 /* ============ THEME TOKENS (6 themes) ============ */
 :root {
@@ -115,6 +117,11 @@ body{font-family:'Inter',sans-serif;padding:8px 12px;height:100vh;overflow:hidde
 .tbtn{border:1px solid var(--border);background:var(--bg);color:var(--text-dim);
       font-size:11px;padding:4px 10px;border-radius:8px;cursor:pointer;white-space:nowrap}
 .tbtn:hover{color:var(--text);border-color:var(--accent)}
+.slot-sel{background:var(--bg);border:1px solid var(--border);color:var(--text);
+          font-family:'JetBrains Mono',monospace;font-size:10.5px;
+          padding:3px 6px;border-radius:8px;cursor:pointer;outline:none;
+          width:196px;max-width:196px}
+.tbtn.ico{padding:4px 7px}
 .tslider{display:flex;align-items:center;gap:7px;flex:0 0 auto}
 .tslider input[type=range]{width:130px;accent-color:var(--accent)}
 .tval{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);
@@ -197,15 +204,31 @@ body{font-family:'Inter',sans-serif;padding:8px 12px;height:100vh;overflow:hidde
            color:var(--blue);margin:2px 0}
 .meter .ms{font-size:9px;color:var(--text-muted)}
 .sl{margin:8px 0}
-.sl label{display:flex;justify-content:space-between;font-size:11px;
-          color:var(--text-dim);margin-bottom:3px}
+.sl label{display:flex;justify-content:space-between;align-items:center;font-size:11px;
+          color:var(--text-dim);margin-bottom:4px;gap:8px}
 .sl label b{font-family:'JetBrains Mono',monospace;color:var(--accent)}
+.numwrap{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.numin{width:78px;background:var(--bg);border:1px solid var(--border);border-radius:7px;
+       color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;
+       font-weight:600;text-align:right;padding:3px 6px;outline:none}
+.numin:focus{border-color:var(--accent)}
+.numin::-webkit-outer-spin-button,.numin::-webkit-inner-spin-button{opacity:.45}
+.numu{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);
+      min-width:12px;text-align:left}
 .sl input[type=range]{width:100%;accent-color:var(--accent)}
 .formula{background:var(--bg);border:1px solid var(--border);border-radius:9px;
          padding:8px 10px;margin-top:8px}
 .formula .f1{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--blue)}
 .formula .f2{font-family:'JetBrains Mono',monospace;font-size:11.5px;
              color:var(--text);margin-top:3px}
+.ptitle.sub{margin-top:12px}
+.working{background:var(--bg);border:1px solid var(--border);border-radius:9px;
+         padding:9px 11px;margin-top:4px}
+.working .mrow{padding:3px 0;color:var(--text);font-size:12.5px;line-height:1.5}
+.working .mrow + .mrow{border-top:1px solid var(--border)}
+.working .mrow.plain{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--text)}
+.working .katex{font-size:1.02em;color:var(--text)}
+.fromslot{color:var(--accent)}
 .note{font-size:10.5px;color:var(--text-muted);line-height:1.5;margin-top:9px;
       background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:7px 9px}
 .note b{color:var(--text-dim)}
@@ -239,7 +262,7 @@ table.dt tr[data-i]{cursor:pointer}
 
   <!-- ===== HEADER ZONE ===== -->
   <div class="top-bar">
-    <h1>⚡ <span>Circuit Lab</span> <span class="badge-top">v1.3.2</span></h1>
+    <h1>⚡ <span>Circuit Lab</span> <span class="badge-top">v1.6.0</span></h1>
     <div class="top-right">
       <select class="theme-select" id="themeSel">
         <option value="dark">🌙 Classic Dark</option>
@@ -274,6 +297,18 @@ table.dt tr[data-i]{cursor:pointer}
           </div>
         </div>
         <div class="rule"></div>
+        <div class="tgroup"><span class="tlabel">Slots</span>
+          <select class="slot-sel" id="slotSel"
+            title="20 save slots, stored in this browser for this file."></select>
+          <button class="tbtn" id="slotSave" title="Save the circuit now on the canvas into the chosen slot.">💾 Save</button>
+          <button class="tbtn" id="slotLoad" title="Replace the canvas with the circuit in the chosen slot. Ctrl+Z undoes it.">📂 Load</button>
+          <button class="tbtn ico" id="slotDel"  title="Empty the chosen slot.">🗑</button>
+          <button class="tbtn" id="slotHome" title="Go back to the circuit the file opens with.">🏠 Start</button>
+          <button class="tbtn ico" id="slotExp" title="Download all 20 slots as a .json file you can keep or move to another computer.">⭳</button>
+          <button class="tbtn ico" id="slotImp" title="Load slots back from a .json file.">⭱</button>
+          <input type="file" id="slotFile" accept="application/json,.json" style="display:none">
+        </div>
+        <div class="rule"></div>
         <div class="tgroup">
           <button class="tbtn" id="rotBtn">⟳ Rotate</button>
           <button class="tbtn" id="undoBtn">↺ Undo</button>
@@ -285,7 +320,10 @@ table.dt tr[data-i]{cursor:pointer}
       <div class="slot" id="slot-test">
         <div class="tgroup"><span class="tlabel">Circuit</span>
           <div class="pills">
-            <button class="pill active" data-preset="series">Series</button>
+            <button class="pill active" data-preset="series1"
+              title="Loads save slot 11 if you have saved one there; otherwise the built-in Series 1.">Series 1</button>
+            <button class="pill" data-preset="series2"
+              title="Loads save slot 12 if you have saved one there; otherwise the built-in Series 2.">Series 2</button>
             <button class="pill" data-preset="parallel">Parallel</button>
             <button class="pill" data-preset="mixed">Series + Parallel</button>
             <button class="pill" data-preset="divider">Potential divider</button>
@@ -303,13 +341,6 @@ table.dt tr[data-i]{cursor:pointer}
             <button class="pill" data-dev="thermistor">Thermistor</button>
           </div>
         </div>
-        <div class="rule"></div>
-        <div class="tslider"><span class="tlabel">Supply</span>
-          <input type="range" id="rlV" min="0" max="12" step="0.1" value="6">
-          <span class="tval" id="rlVOut">6.0 V</span></div>
-        <div class="tslider"><span class="tlabel" id="rlPLab">R</span>
-          <input type="range" id="rlP" min="1" max="100" step="1" value="20">
-          <span class="tval" id="rlPOut">20 Ω</span></div>
         <div class="rule"></div>
         <div class="tgroup">
           <button class="tbtn" id="recBtn2">● Record</button>
@@ -330,7 +361,7 @@ table.dt tr[data-i]{cursor:pointer}
       <div class="rule"></div>
       <div class="tgroup"><span class="tlabel">Flow</span>
         <div class="pills" id="flowPills">
-          <button class="pill" data-flow="off" title="Hide the moving charge dots.">✕ Off</button>
+          <button class="pill" data-flow="off" title="Hide the moving charge dots.">Off</button>
           <button class="pill active" data-flow="current"
             title="Conventional current: from the + terminal to the − terminal in the external circuit.">⚡ Current</button>
           <button class="pill" data-flow="electrons"
@@ -347,7 +378,7 @@ table.dt tr[data-i]{cursor:pointer}
         </div>
       </div>
       <div class="rule"></div>
-      <button class="tbtn" id="resetBtn" title="Resets only the current mode — it does not switch tab.">↺ Reset this mode</button>
+      <button class="tbtn" id="resetBtn" title="Resets only the current mode — it does not switch tab.">Reset</button>
     </div>
   </div>
 
@@ -363,7 +394,6 @@ table.dt tr[data-i]{cursor:pointer}
       <div class="chip tr" id="chipGrid">1 square = <b>1 unit</b></div>
       <div class="chip tr2" id="chipZoom" style="display:none"></div>
       <div class="chipstack">
-        <div class="chip" id="chipHint">click a component to inspect it</div>
         <div class="chip chip2" id="chipHint2"></div>
       </div>
     </div>
@@ -379,6 +409,7 @@ table.dt tr[data-i]{cursor:pointer}
         <div id="pane-comp"></div>
         <div id="pane-meters" style="display:none"></div>
         <div id="pane-graph" style="display:none">
+          <div id="rlabCtl" style="display:none"></div>
           <div class="ptitle"><span>📊</span>I–V GRAPH</div>
           <div class="gwrap"><canvas id="gcv"></canvas></div>
           <div class="note" id="graphNote"></div>
@@ -671,12 +702,12 @@ function solveCircuit(comps, wires){
    ============================================================ */
 const RLAB = {
   resistor: {
-    label:'Fixed resistor', pname:'R', unit:'Ω', pmin:1, pmax:100, pstep:1, pdef:20,
+    label:'Fixed resistor', pname:'R', pfull:'Resistance R', unit:'Ω', pmin:1, pmax:100, pstep:1, pdef:20,
     vmin:0, vmax:12, vdef:6, ohmic:true,
     solve:(V, p) => ({I: V/p, Vd: V, R: p})
   },
   lamp: {
-    label:'Filament lamp', pname:'R₀', unit:'Ω cold', pmin:1, pmax:20, pstep:0.5, pdef:4,
+    label:'Filament lamp', pname:'R₀', pfull:'Cold resistance R₀', unit:'Ω', pmin:1, pmax:20, pstep:0.5, pdef:4,
     vmin:0, vmax:12, vdef:6, ohmic:false,
     solve:(V, R0) => {                       // R = R0 (1 + α·k·P)
       const alpha = 0.0045, k = 260;
@@ -692,7 +723,7 @@ const RLAB = {
     }
   },
   diode: {
-    label:'Diode (Si)', pname:'Rₚ', unit:'Ω series', pmin:10, pmax:200, pstep:10, pdef:50,
+    label:'Diode (Si)', pname:'Rₚ', pfull:'Protective resistor Rₚ', unit:'Ω', pmin:10, pmax:200, pstep:10, pdef:50,
     vmin:-3, vmax:3, vdef:1.5, ohmic:false,
     solve:(V, Rp) => {                       // Shockley + series protection R
       const Is = 1e-9, n = 1.8, Vt = 0.025852;
@@ -708,7 +739,7 @@ const RLAB = {
     }
   },
   thermistor: {
-    label:'Thermistor (NTC)', pname:'θ', unit:'°C', pmin:0, pmax:100, pstep:5, pdef:25,
+    label:'Thermistor (NTC)', pname:'θ', pfull:'Temperature θ', unit:'°C', pmin:0, pmax:100, pstep:5, pdef:25,
     vmin:0, vmax:12, vdef:6, ohmic:true,
     solve:(V, degC) => {                     // R = R0 exp(B(1/T − 1/T0))
       const R0 = 1000, B = 3200, T0 = 298.15, T = degC + 273.15;
@@ -933,7 +964,7 @@ const S = {
   res:null,
   panelTab:'comp',
   rowTop:0, rowBot:ROWS,        // grid extent; grows past 0..ROWS when the window is tall
-  preset:'series',
+  preset:'series1',
   rlab:{dev:'resistor', p:RLAB.resistor.pdef, V:6, rows:[], sweeping:false},
   theme:'dark'
 };
@@ -1524,8 +1555,31 @@ function updatePanel(){
   });
   if(tab==='comp')   paneComp();
   if(tab==='meters') paneMeters();
-  if(tab==='graph'){ drawGraph(); $('graphNote').innerHTML = graphNote(); }
+  if(tab==='graph'){ renderRlabControls(); drawGraph(); $('graphNote').innerHTML = graphNote(); }
   if(tab==='data')   paneData();
+}
+
+/* Resistance Lab: the supply and the device setting live at the top of the
+   Graph panel — supply on the first row, the device parameter on the second,
+   the I–V graph underneath — so the apparatus and its curve are read together. */
+function rlabRanges(){
+  const d = RLAB[S.rlab.dev];
+  return {
+    d,
+    V:{min:d.vmin, max:d.vmax, step:0.1,     base:d.vmax, unit:'V'},
+    P:{min:d.pmin, max:d.pmax, step:d.pstep, base:d.pmax, unit:d.unit}
+  };
+}
+function renderRlabControls(){
+  const box = $('rlabCtl'); if(!box) return;
+  if(S.mode !== 'rlab'){ box.style.display = 'none'; box.innerHTML = ''; return; }
+  const R = rlabRanges();
+  box.style.display = 'block';
+  box.innerHTML = sectionTitle('🎚','APPARATUS — ' + R.d.label) +
+    numSlider('rlSup', 'Supply voltage', S.rlab.V, R.V) +
+    numSlider('rlPar', R.d.pfull || R.d.pname, S.rlab.p, R.P);
+  bindNumSlider('rlSup', R.V, v => { S.rlab.V = v; });
+  bindNumSlider('rlPar', R.P, v => { S.rlab.p = v; });
 }
 
 function graphNote(){
@@ -1566,8 +1620,8 @@ function paneGroup(){
   const rs = parts.filter(c => CATALOG[c.t].kind === 'res');
   if(rs.length > 1){
     const same = rs.every(c => c.R === rs[0].R);
-    h += slider('grpR','Set R on all '+rs.length+' resistive parts', same ? rs[0].R : 10,
-                0.1, 200, 0.1, 'Ω');
+    h += numSlider('grpR','Set R on all '+rs.length+' resistive parts',
+                   same ? rs[0].R : 10, RANGE.R);
   }
   h += '<table class="dt" style="margin-top:8px"><tr><th>name</th><th>type</th><th>value</th></tr>';
   parts.slice(0,14).forEach(c => h += '<tr><td>'+c.name+'</td><td>'+CATALOG[c.t].label+
@@ -1578,13 +1632,9 @@ function paneGroup(){
   $('grpRot').onclick = rotateGroup;
   $('grpDel').onclick = deleteGroup;
   $('grpAll').onclick = selectAllGroup;
-  const gr = $('grpR');
-  if(gr) gr.oninput = e => {
-    const v = +e.target.value;
-    $('grpROut').textContent = fmtR(v);
+  bindNumSlider('grpR', RANGE.R, v => {
     S.selSet.forEach(i => { if(CATALOG[S.comps[i].t].kind === 'res') S.comps[i].R = v; });
-    S.res = solveCircuit(S.comps, S.wires); updateSummary(); draw();
-  };
+  });
 }
 
 function paneComp(){
@@ -1618,28 +1668,107 @@ function paneComp(){
   let h = sectionTitle('🔧','COMPONENT') +
     '<div class="cname">'+cp.name+' <span>'+d.label+'</span></div>';
   if(d.kind === 'src')
-    h += slider('vEdit','emf ℰ', cp.V, 0, 24, 0.1, 'V');
+    h += numSlider('vEdit','emf ℰ', cp.V, RANGE.V);
   else if(d.kind === 'sw')
     h += '<div class="kv"><span>State</span><button class="mini" id="swToggle">'+
          (cp.closed===false?'OPEN — click to close':'CLOSED — click to open')+'</button></div>';
   else if(d.kind !== 'meterA' && d.kind !== 'meterV')
-    h += slider('rEdit','Resistance R', cp.R, 0.1, Math.max(200, Math.ceil(cp.R*2/50)*50), 0.1, 'Ω');
+    h += numSlider('rEdit','Resistance R', cp.R, RANGE.R);
   if(d.pol) h += '<div class="kv"><span>Polarity</span><button class="mini" id="flipBtn">⇄ reverse</button></div>';
   if(rr && S.res.ok && !S.res.shorted){
     h += '<div class="grid2">' +
-      card('V', fmt(Math.abs(rr.V),'V'), 'potential difference') +
-      card('I', fmt(Math.abs(rr.I),'A'), 'current') +
-      card('R', fmtR(Math.abs(rr.R)), 'resistance') +
-      card('P', fmt(Math.abs(rr.P),'W'), 'power') + '</div>' +
+      card('V', fmt(Math.abs(rr.V),'V'), 'potential difference', 'cvV') +
+      card('I', fmt(Math.abs(rr.I),'A'), 'current', 'cvI') +
+      card('R', fmtR(Math.abs(rr.R)), 'resistance', 'cvR') +
+      card('P', fmt(Math.abs(rr.P),'W'), 'power', 'cvP') + '</div>' +
       '<div class="formula"><div class="f1">V = I R&nbsp;&nbsp;·&nbsp;&nbsp;P = V I</div>' +
-      '<div class="f2">'+fmt(Math.abs(rr.V),'V')+' = '+fmt(Math.abs(rr.I),'A')+' × '+
+      '<div class="f2" id="cvF">'+fmt(Math.abs(rr.V),'V')+' = '+fmt(Math.abs(rr.I),'A')+' × '+
       fmtR(Math.abs(rr.R))+'</div></div>';
   }
   el.innerHTML = h + circuitTotals();
-  const ve = $('vEdit'); if(ve) ve.oninput = e => { cp.V = +e.target.value; $('vEditOut').textContent = fmt(cp.V,'V'); recompute(); };
-  const re = $('rEdit'); if(re) re.oninput = e => { cp.R = +e.target.value; $('rEditOut').textContent = fmtR(cp.R); recompute(); };
+  bindNumSlider('vEdit', RANGE.V, v => { cp.V = v; });
+  bindNumSlider('rEdit', RANGE.R, v => { cp.R = v; });
   const sw = $('swToggle'); if(sw) sw.onclick = () => { snapshot(); cp.closed = (cp.closed === false); recompute(); };
   const fb = $('flipBtn'); if(fb) fb.onclick = () => { snapshot(); cp.flip = !cp.flip; recompute(); };
+}
+
+/* ---------- worked solution (Circuit Tester only) ----------
+   Rendered with KaTeX when it is available; every line also carries a
+   plain-text twin, so an offline classroom sees readable maths rather
+   than raw LaTeX. */
+const sig = v => (!isFinite(v) ? '∞' : String(+(+v).toPrecision(3)));
+function mathLine(tex, plain){
+  if(typeof katex !== 'undefined'){
+    try { return '<div class="mrow">' +
+      katex.renderToString(tex, {throwOnError:false, displayMode:false}) + '</div>'; }
+    catch(_){}
+  }
+  return '<div class="mrow plain">' + plain + '</div>';
+}
+function workingHTML(){
+  const r = S.res;
+  if(S.mode !== 'test' || !r || !r.ok || r.shorted) return '';
+  const srcs  = S.comps.map((c,i)=>({c,i})).filter(o=>CATALOG[o.c.t].kind==='src');
+  const loads = S.comps.map((c,i)=>({c,i}))
+                  .filter(o=>CATALOG[o.c.t].kind==='res' || CATALOG[o.c.t].kind==='diode');
+  if(!srcs.length || !loads.length) return '';
+  const emf = srcs.reduce((a,o)=>a+Math.abs(o.c.V),0);
+  const It  = Math.abs(r.comp[srcs[0].i].I);
+  if(!(It > 1e-9)) return '';
+  const Rt  = emf/It;
+
+  const allSeries   = loads.every(o => Math.abs(Math.abs(r.comp[o.i].I) - It) < It*1e-3);
+  const allParallel = loads.length > 1 &&
+        loads.every(o => Math.abs(Math.abs(r.comp[o.i].V) - emf) < Math.max(1e-6, emf*1e-3));
+
+  let h = '<div class="ptitle sub"><span>🧮</span>WORKING</div>';
+
+  if(srcs.length > 1)
+    h += mathLine('\\mathcal{E} = ' + srcs.map(o=>sig(Math.abs(o.c.V))).join(' + ') +
+                  ' = ' + sig(emf) + '\\ \\mathrm{V}',
+                  'ℰ = ' + srcs.map(o=>sig(Math.abs(o.c.V))).join(' + ') + ' = ' + sig(emf) + ' V');
+  else
+    h += mathLine('\\mathcal{E} = ' + sig(emf) + '\\ \\mathrm{V}', 'ℰ = ' + sig(emf) + ' V');
+
+  if(allSeries && loads.length > 1){
+    h += mathLine('R_{\\text{total}} = ' + loads.map(o=>sig(o.c.R)).join(' + ') +
+                  ' = ' + sig(Rt) + '\\ \\Omega',
+                  'R total = ' + loads.map(o=>sig(o.c.R)).join(' + ') + ' = ' + sig(Rt) + ' Ω');
+  } else if(allParallel){
+    h += mathLine('\\frac{1}{R_{\\text{total}}} = ' +
+                  loads.map(o=>'\\frac{1}{'+sig(o.c.R)+'}').join(' + ') +
+                  ' \\Rightarrow R_{\\text{total}} = ' + sig(Rt) + '\\ \\Omega',
+                  '1/R total = ' + loads.map(o=>'1/'+sig(o.c.R)).join(' + ') +
+                  '  →  R total = ' + sig(Rt) + ' Ω');
+  } else {
+    h += mathLine('R_{\\text{total}} = \\frac{\\mathcal{E}}{I} = \\frac{' + sig(emf) +
+                  '}{' + sig(It) + '} = ' + sig(Rt) + '\\ \\Omega',
+                  'R total = ℰ / I = ' + sig(emf) + ' / ' + sig(It) + ' = ' + sig(Rt) + ' Ω');
+  }
+
+  h += mathLine('I = \\frac{\\mathcal{E}}{R_{\\text{total}}} = \\frac{' + sig(emf) + '}{' +
+                sig(Rt) + '} = ' + sig(It) + '\\ \\mathrm{A}',
+                'I = ℰ / R total = ' + sig(emf) + ' / ' + sig(Rt) + ' = ' + sig(It) + ' A');
+
+  if(allSeries && loads.length > 1){
+    const o = loads[0];
+    h += mathLine('V_{' + o.c.name + '} = I R = ' + sig(It) + ' \\times ' + sig(o.c.R) +
+                  ' = ' + sig(Math.abs(r.comp[o.i].V)) + '\\ \\mathrm{V}',
+                  'V(' + o.c.name + ') = I R = ' + sig(It) + ' × ' + sig(o.c.R) +
+                  ' = ' + sig(Math.abs(r.comp[o.i].V)) + ' V');
+  } else if(allParallel){
+    const o = loads[0];
+    h += mathLine('I_{' + o.c.name + '} = \\frac{\\mathcal{E}}{R} = \\frac{' + sig(emf) +
+                  '}{' + sig(o.c.R) + '} = ' + sig(Math.abs(r.comp[o.i].I)) + '\\ \\mathrm{A}',
+                  'I(' + o.c.name + ') = ℰ / R = ' + sig(emf) + ' / ' + sig(o.c.R) +
+                  ' = ' + sig(Math.abs(r.comp[o.i].I)) + ' A');
+  }
+
+  h += mathLine('P = \\mathcal{E} I = ' + sig(emf) + ' \\times ' + sig(It) + ' = ' +
+                sig(emf*It) + '\\ \\mathrm{W}',
+                'P = ℰ I = ' + sig(emf) + ' × ' + sig(It) + ' = ' + sig(emf*It) + ' W');
+
+  return '<div class="working" id="wcWork">' + h + '</div>';
 }
 
 function circuitTotals(){
@@ -1649,12 +1778,15 @@ function circuitTotals(){
   if(!srcs.length) return '<div class="note">Add a cell, battery or supply to drive the circuit.</div>';
   const emf = srcs.reduce((a,o)=>a+Math.abs(o.c.V),0);
   const It  = Math.abs(r.comp[srcs[0].i].I);
-  const Rt  = It > 1e-9 ? Math.abs(r.comp[srcs[0].i].V)/It : Infinity;
+  /* total resistance is TOTAL e.m.f. / current — dividing by one cell's p.d.
+     under-reports it whenever several sources are stacked in series */
+  const Rt  = It > 1e-9 ? emf/It : Infinity;
   return sectionTitle('Σ','WHOLE CIRCUIT') +
-    '<div class="kv"><span>Total e.m.f.</span><b>'+fmt(emf,'V')+'</b></div>' +
-    '<div class="kv"><span>Current from source</span><b class="v-blue">'+fmt(It,'A')+'</b></div>' +
-    '<div class="kv"><span>Total resistance</span><b class="v-violet">'+fmtR(Rt)+'</b></div>' +
-    '<div class="kv"><span>Power delivered</span><b class="v-amber">'+fmt(emf*It,'W')+'</b></div>';
+    '<div class="kv"><span>Total e.m.f.</span><b id="wcE">'+fmt(emf,'V')+'</b></div>' +
+    '<div class="kv"><span>Current from source</span><b class="v-blue" id="wcI">'+fmt(It,'A')+'</b></div>' +
+    '<div class="kv"><span>Total resistance</span><b class="v-violet" id="wcR">'+fmtR(Rt)+'</b></div>' +
+    '<div class="kv"><span>Power delivered</span><b class="v-amber" id="wcP">'+fmt(emf*It,'W')+'</b></div>' +
+    workingHTML();
 }
 
 function paneMeters(){
@@ -1729,12 +1861,99 @@ function paneData(){
 }
 
 const sectionTitle = (ic,t) => '<div class="ptitle"><span>'+ic+'</span>'+t+'</div>';
-const card  = (l,v,s) => '<div class="card"><div class="cl">'+l+'</div><div class="cv">'+v+'</div><div class="cu">'+s+'</div></div>';
+const card  = (l,v,s,id) => '<div class="card"><div class="cl">'+l+'</div><div class="cv"'+
+  (id?' id="'+id+'"':'')+'>'+v+'</div><div class="cu">'+s+'</div></div>';
 const meter = (l,v,s) => '<div class="meter"><div class="ml">'+l+'</div><div class="mv">'+v+'</div><div class="ms">'+s+'</div></div>';
-function slider(id,label,val,min,max,step,unit){
-  return '<div class="sl"><label>'+label+'<b id="'+id+'Out">'+
-    (unit==='Ω'?fmtR(val):fmt(val,unit))+'</b></label>'+
-    '<input type="range" id="'+id+'" min="'+min+'" max="'+max+'" step="'+step+'" value="'+val+'"></div>';
+/* A slider paired with a box you can type into.  The two always agree:
+   typing a value inside the slider's range moves the handle, and a value
+   beyond it widens the slider's range so the handle stays usable. */
+const RANGE = {
+  V: {min:0,   max:240,     step:0.1, base:24,  unit:'V'},   // e.m.f.
+  R: {min:0.1, max:1000000, step:0.1, base:200, unit:'Ω'}    // resistance
+};
+function niceCeil(v){
+  if(!(v > 0)) return 1;
+  const e = Math.pow(10, Math.floor(Math.log10(v)));
+  for(const m of [1,2,5,10]) if(v <= m*e) return m*e;
+  return 10*e;
+}
+const sliderMax = (v, R) => Math.max(R.base, niceCeil(v));
+const trimNum = v => String(+(+v).toFixed(4));
+
+function numSlider(id, label, val, R){
+  return '<div class="sl"><label><span>'+label+'</span>' +
+    '<span class="numwrap">' +
+      '<input class="numin" type="number" id="'+id+'Num" value="'+trimNum(val)+'" ' +
+        'step="'+R.step+'" min="'+R.min+'" max="'+R.max+'" ' +
+        'title="Type any value from '+R.min+' to '+R.max+' '+R.unit+'">' +
+      '<span class="numu">'+R.unit+'</span></span></label>' +
+    '<input type="range" id="'+id+'" min="'+R.min+'" max="'+sliderMax(val,R)+
+      '" step="'+R.step+'" value="'+val+'"></div>';
+}
+
+/* Re-solve and refresh WITHOUT rebuilding the panel — otherwise the very
+   input the user is dragging or typing into gets replaced mid-gesture. */
+function liveUpdate(){
+  if(S.mode === 'rlab'){                 // R-Lab has its own model, no netlist
+    updateSummary(); drawGraph(); draw();
+    return;
+  }
+  S.res = solveCircuit(S.comps, S.wires);
+  buildFlowColors(S.res);
+  patchLiveValues(); updateSummary(); draw();
+}
+function bindNumSlider(id, R, apply){
+  const rng = $(id), num = $(id+'Num');
+  if(!rng || !num) return;
+  const commit = (v, fromBox) => {
+    if(!isFinite(v)) return;
+    v = Math.min(R.max, Math.max(R.min, v));
+    v = +(Math.round(v/R.step)*R.step).toFixed(4);
+    apply(v);
+    const sm = sliderMax(v, R);
+    if(+rng.max !== sm) rng.max = String(sm);
+    rng.value = String(v);
+    if(!fromBox) num.value = trimNum(v);
+    liveUpdate();
+  };
+  rng.oninput  = e => commit(+e.target.value, false);
+  num.oninput  = e => {                       // live only while it is a legal value
+    const v = parseFloat(e.target.value);
+    if(isFinite(v) && v >= R.min && v <= R.max) commit(v, true);
+  };
+  num.onchange = e => {                       // on blur / Enter: clamp and tidy up
+    const v = parseFloat(e.target.value);
+    commit(isFinite(v) ? v : +rng.value, true);
+    num.value = trimNum(rng.value);
+  };
+  num.onkeydown = e => { if(e.key === 'Enter') num.blur(); };
+}
+
+/* patch just the live numbers in the open panel */
+function patchLiveValues(){
+  const set = (id, t) => { const e = $(id); if(e) e.textContent = t; };
+  const r = S.res;
+  const i = S.sel;
+  if(i >= 0 && S.comps[i] && r && r.ok){
+    const rr = idealise(S.comps[i], r.comp[i]);
+    set('cvV', fmt(Math.abs(rr.V),'V'));  set('cvI', fmt(Math.abs(rr.I),'A'));
+    set('cvR', fmtR(Math.abs(rr.R)));     set('cvP', fmt(Math.abs(rr.P),'W'));
+    set('cvF', fmt(Math.abs(rr.V),'V') + ' = ' + fmt(Math.abs(rr.I),'A') +
+               ' × ' + fmtR(Math.abs(rr.R)));
+  }
+  if(r && r.ok){
+    const srcs = S.comps.map((c,k)=>({c,k})).filter(o=>CATALOG[o.c.t].kind==='src');
+    if(srcs.length){
+      const emf = srcs.reduce((a,o)=>a+Math.abs(o.c.V),0);
+      const It  = Math.abs(r.comp[srcs[0].k].I);
+      const Rt  = It > 1e-9 ? emf/It : Infinity;
+      set('wcE', fmt(emf,'V')); set('wcI', fmt(It,'A'));
+      set('wcR', fmtR(Rt));     set('wcP', fmt(emf*It,'W'));
+      const wk = $('wcWork');
+      if(wk){ const html = workingHTML();
+        wk.outerHTML = html || '<div class="working" id="wcWork"></div>'; }
+    }
+  }
 }
 
 /* ---------- summary line ---------- */
@@ -1800,9 +2019,38 @@ function autoSweep(){
    ============================================================ */
 const C = (t,c,r,o,extra) => Object.assign({t,c,r,o}, extra||{});
 const PRESETS = {
-  series: {
-    name:'Series circuit',
-    note:'One path only, so the <b>same current</b> flows everywhere; the p.d.s across the parts add up to the e.m.f. (6 V ÷ 20 Ω = 0.30 A).',
+  series1: {
+    name:'Series 1', slot:10,
+    note:'One path only, so the <b>same current</b> flows everywhere and the p.d.s add up to the e.m.f. (10 V ÷ 60 Ω = 167 mA).',
+    build(){ return fromSlotOr(this.slot, {comps:[
+        C('cell',12,2,'h',{name:'E1',V:10}),
+        C('ammeter',22,4,'v',{name:'A1'}),
+        C('resistor',8,9,'h',{name:'R1',R:40}),
+        C('resistor',15,9,'h',{name:'R2',R:20}),
+        C('voltmeter',8,12,'h',{name:'V1'}),
+        C('voltmeter',15,12,'h',{name:'V2'})],
+      wires:[w(4,2,12,2), w(14,2,22,2), w(22,2,22,4), w(22,6,22,9),
+             w(4,2,4,9), w(4,9,8,9), w(10,9,15,9), w(17,9,22,9),
+             w(8,9,8,12), w(10,9,10,12), w(15,9,15,12), w(17,9,17,12)]}); }
+  },
+  series2: {
+    name:'Series 2', slot:11,
+    note:'Three cells in series give 24 V; three lamps in series give 36 Ω, so I = 24 ÷ 36 = 667 mA — and the brightest lamp is the one with the largest resistance.',
+    build(){ return fromSlotOr(this.slot, {comps:[
+        C('battery',10,2,'h',{name:'B1',V:6}),
+        C('battery',13,2,'h',{name:'B2',V:6}),
+        C('battery',16,2,'h',{name:'B3',V:12}),
+        C('ammeter',24,5,'v',{name:'A1'}),
+        C('lamp',5,10,'h',{name:'L1',R:6}),
+        C('lamp',12,10,'h',{name:'L2',R:12}),
+        C('lamp',19,10,'h',{name:'L3',R:18})],
+      wires:[w(3,2,10,2), w(12,2,13,2), w(15,2,16,2), w(18,2,24,2),
+             w(24,2,24,5), w(24,7,24,10),
+             w(3,2,3,10), w(3,10,5,10), w(7,10,12,10), w(14,10,19,10), w(21,10,24,10)]}); }
+  },
+  parallel: {
+    name:'Parallel circuit',
+    note:'Both branches sit across the <b>same 6 V</b>. The branch currents (0.50 A and 0.25 A) add up to the 0.75 A leaving the battery.',
     build:()=>({comps:[
         C('battery',3,2,'h',{name:'B1',V:6}),
         C('ammeter',8,2,'h',{name:'A1'}),
@@ -1856,15 +2104,122 @@ const PRESETS = {
   }
 };
 function w(c1,r1,c2,r2){ return {c1,r1,c2,r2}; }
+/* Series 1 / Series 2 are meant to be the teacher's own saved layouts.
+   Use save slot 11 / 12 when it holds something, otherwise fall back to the
+   built-in copy so the preset always works on a fresh machine. */
+function fromSlotOr(slotIdx, builtin){
+  const rec = slotsRead()[slotIdx];
+  if(rec && Array.isArray(rec.comps) && rec.comps.length)
+    return {comps:clone(rec.comps), wires:clone(rec.wires), fromSlot:true, rowTop:rec.rowTop};
+  return builtin;
+}
 function loadPreset(k){
-  const p = PRESETS[k].build();
+  const P = PRESETS[k], p = P.build();
   S.comps = p.comps; S.wires = p.wires;
-  anchorToTop();
+  if(p.fromSlot){ const dy = S.rowTop - (p.rowTop != null ? p.rowTop : 0); if(dy) shiftRows(dy); }
+  else anchorToTop();
+  keepInsideGrid();
   S.sel = -1; S.selWire = -1; clearGroup(); S.undo = [];
-  S.note = PRESETS[k].note;
+  S.note = PRESETS[k].note +
+    (p.fromSlot ? ' <span class="fromslot">· loaded from save slot ' + (P.slot+1) + '</span>' : '');
   $('chipMode').textContent = 'Circuit Tester — ' + PRESETS[k].name;
   recompute();
 }
+
+/* ============================================================
+   SAVE / LOAD — 20 named slots, kept in the browser's local storage
+   for this file.  If storage is blocked (some file:// setups), the
+   slots still work for the session and the user is told so.
+   ============================================================ */
+const SLOT_KEY = 'hausCircuitLab.slots.v1';
+const NSLOTS   = 20;
+let   MEMSLOTS = null;              // session fallback, only used if storage fails
+
+function slotsRead(){
+  if(MEMSLOTS) return MEMSLOTS;
+  try{
+    const a = JSON.parse(localStorage.getItem(SLOT_KEY));
+    if(Array.isArray(a)){ const b = new Array(NSLOTS).fill(null);
+      a.slice(0,NSLOTS).forEach((v,i)=>b[i]=v); return b; }
+  }catch(_){}
+  return new Array(NSLOTS).fill(null);
+}
+function slotsWrite(a){
+  try{ localStorage.setItem(SLOT_KEY, JSON.stringify(a)); MEMSLOTS = null; return true; }
+  catch(_){ MEMSLOTS = a; return false; }
+}
+const clone = o => JSON.parse(JSON.stringify(o));
+const slotStamp = ts => { const d = new Date(ts);
+  return d.toLocaleDateString(undefined,{day:'2-digit',month:'short'}) + ' ' +
+         d.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'}); };
+
+function saveSlot(i, name){
+  const a = slotsRead();
+  a[i] = {name, ts:Date.now(), rowTop:S.rowTop,
+          comps:clone(S.comps), wires:clone(S.wires)};
+  const ok = slotsWrite(a);
+  refreshSlotList(i);
+  flash('Saved to slot ' + (i+1) + ' — “' + name + '” (' + S.comps.length + ' parts, ' +
+        S.wires.length + ' wires)' +
+        (ok ? '' : ' · ⚠ this browser blocks local storage, so it will be lost when you close the file — use ⭳ Export'));
+  return ok;
+}
+function loadSlot(i){
+  const rec = slotsRead()[i];
+  if(!rec){ flash('Slot ' + (i+1) + ' is empty.'); return false; }
+  snapshot();
+  S.comps = clone(rec.comps); S.wires = clone(rec.wires);
+  /* saved on a different window shape?  keep the same distance from the
+     top of the grid, then clamp so nothing lands outside it */
+  const dy = S.rowTop - (rec.rowTop != null ? rec.rowTop : 0);
+  if(dy) shiftRows(dy);
+  keepInsideGrid();
+  S.sel = -1; S.selWire = -1; clearGroup(); setZoom(1);
+  recompute();
+  flash('Loaded slot ' + (i+1) + ' — “' + rec.name + '” · ' + S.comps.length +
+        ' parts, ' + S.wires.length + ' wires · Ctrl+Z undoes this');
+  return true;
+}
+function deleteSlot(i){
+  const a = slotsRead();
+  if(!a[i]){ flash('Slot ' + (i+1) + ' is already empty.'); return; }
+  const nm = a[i].name; a[i] = null; slotsWrite(a);
+  refreshSlotList(i);
+  flash('Cleared slot ' + (i+1) + ' — “' + nm + '”');
+}
+function loadHome(){
+  snapshot(); S.saveBuild = null;
+  defaultCircuit(); setZoom(1); recompute();
+  flash('Back to the starting circuit.');
+}
+function exportSlots(){
+  const blob = new Blob([JSON.stringify({app:'HAUS Circuit Lab', v:1,
+                          saved:new Date().toISOString(), slots:slotsRead()}, null, 1)],
+                        {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'circuit-lab-slots.json';
+  a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 4000);
+  flash('Exported all 20 slots to circuit-lab-slots.json');
+}
+function importSlots(text){
+  let d; try{ d = JSON.parse(text); }catch(_){ flash('⚠ That file is not a Circuit Lab slot file.'); return; }
+  const src = Array.isArray(d) ? d : d.slots;
+  if(!Array.isArray(src)){ flash('⚠ That file is not a Circuit Lab slot file.'); return; }
+  const a = slotsRead(); let n = 0;
+  src.slice(0,NSLOTS).forEach((v,i)=>{ if(v && v.comps && v.wires){ a[i] = v; n++; } });
+  slotsWrite(a); refreshSlotList();
+  flash('Imported ' + n + ' slot(s).');
+}
+function refreshSlotList(keep){
+  const sel = $('slotSel'); if(!sel) return;
+  const a = slotsRead(), cur = keep != null ? keep : (+sel.value || 0);
+  sel.innerHTML = a.map((v,i) =>
+    '<option value="'+i+'">' + String(i+1).padStart(2,'0') + ' · ' +
+    (v ? (v.name + '  (' + slotStamp(v.ts) + ')') : '— empty —') + '</option>').join('');
+  sel.value = String(Math.max(0, Math.min(NSLOTS-1, cur)));
+}
+function flash(msg){ $('summary').innerHTML = '💾 ' + msg; }
 
 /* ============================================================
    DEFAULT CIRCUIT for Builder
@@ -2281,23 +2636,21 @@ function setMode(m){
   $('palette').classList.toggle('locked', m !== 'build');
   $('chipMode').textContent = {build:'Free-form Builder', test:'Circuit Tester — '+PRESETS[S.preset].name,
                                rlab:'Resistance Lab'}[m];
-  $('chipHint').textContent = {build:'place · wire · drag · hover a switch for 3 s to flip it',
-                               test:'click a component to inspect it',
-                               rlab:'sweep the supply, then Record'}[m];
   $('chipHint2').innerHTML = {
-    build:['Pick a part below, then click the grid to place it.',
+    build:['<b>Click any component</b> to read its V, I, R and P in the panel.',
+           'Pick a part below, then click the grid to place a new one.',
            '<b>Wire tool</b> — click node → node (right-click to stop).',
            '<b>Group tool</b> — drag a box, then drag inside it to move.',
            '<b>Switches</b> — rest the pointer on one for 3 s to flip it.',
            '<b>Zoom</b> — double-click empty canvas for 2×, then drag to pan.',
            '<b>Shortcuts</b> — R rotates · Del removes · Ctrl+Z undoes · middle-click clears the selection'
           ].join('<br>'),
-    test :['Click any component to read its V, I, R and P.',
+    test :['<b>Click any component</b> to read its V, I, R and P in the panel.',
            'Rest the pointer on a switch for 3 s to open or close it.',
            '<b>Zoom</b> — double-click empty canvas for 2×, then drag to pan.',
            'Editing is locked in this mode.',
            '<b>Shortcuts</b> — middle-click clears the selection'].join('<br>'),
-    rlab :['Sweep the supply, then press ● Record to add a point.',
+    rlab :['<b>Sweep the supply</b>, then press ● Record to add a point.',
            'The I–V graph and the data table build up as you go.'].join('<br>')}[m];
   $('chipGrid').style.display = (m === 'rlab') ? 'none' : 'block';
   $('chipHover').style.display = 'none';
@@ -2396,31 +2749,44 @@ $('rotBtn').onclick = () => {
 $('undoBtn').onclick = undo;
 $('clearBtn').onclick = () => { snapshot(); S.comps = []; S.wires = []; S.sel = -1; S.selWire = -1; recompute(); };
 
+/* save / load slots */
+refreshSlotList(0);
+const slotIdx = () => +$('slotSel').value || 0;
+$('slotSave').onclick = () => {
+  const i = slotIdx(), cur = slotsRead()[i];
+  if(cur && !confirm('Slot ' + (i+1) + ' already holds “' + cur.name + '”.\nOverwrite it?')) return;
+  let name = prompt('Name for slot ' + (i+1) + ':', cur ? cur.name : ('Circuit ' + (i+1)));
+  if(name === null) return;                                   // cancelled
+  name = (name.trim() || ('Circuit ' + (i+1))).slice(0, 30);
+  saveSlot(i, name);
+};
+$('slotLoad').onclick = () => loadSlot(slotIdx());
+$('slotDel').onclick  = () => {
+  const i = slotIdx(), cur = slotsRead()[i];
+  if(cur && !confirm('Clear slot ' + (i+1) + ' — “' + cur.name + '”?')) return;
+  deleteSlot(i);
+};
+$('slotHome').onclick = loadHome;
+$('slotExp').onclick  = exportSlots;
+$('slotImp').onclick  = () => $('slotFile').click();
+$('slotFile').onchange = e => {
+  const f = e.target.files && e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => importSlots(String(rd.result));
+  rd.readAsText(f);
+  e.target.value = '';
+};
+
 /* tester presets */
 bindPills('[data-preset]', 'preset', k => { S.preset = k; loadPreset(k); });
 
 /* R-lab */
 bindPills('[data-dev]', 'dev', k => {
-  S.rlab.dev = k;
   const d = RLAB[k];
-  S.rlab.p = d.pdef;
-  S.rlab.rows = [];
-  const p = $('rlP');
-  p.min = d.pmin; p.max = d.pmax; p.step = d.pstep; p.value = d.pdef;
-  $('rlPLab').textContent = d.pname;
-  $('rlPOut').textContent = d.pdef + ' ' + d.unit;
-  const v = $('rlV');
-  v.min = d.vmin; v.max = d.vmax; v.step = (d.vmax - d.vmin) / 120;
-  S.rlab.V = d.vdef;
-  v.value = S.rlab.V; $('rlVOut').textContent = fmt(S.rlab.V, 'V');
-  recompute();
+  S.rlab.dev = k; S.rlab.p = d.pdef; S.rlab.V = d.vdef; S.rlab.rows = [];
+  S.panelTab = 'graph';                      // the sliders live in the Graph panel
+  recompute();                               // -> updatePanel -> renderRlabControls
 });
-$('rlV').oninput = e => { S.rlab.V = +e.target.value; $('rlVOut').textContent = fmt(S.rlab.V,'V'); recompute(); };
-$('rlP').oninput = e => {
-  S.rlab.p = +e.target.value;
-  $('rlPOut').textContent = S.rlab.p + ' ' + RLAB[S.rlab.dev].unit;
-  recompute();
-};
 $('recBtn2').onclick = recordPoint;
 $('autoBtn2').onclick = autoSweep;
 $('clrBtn2').onclick = () => { S.rlab.rows = []; recompute(); };
@@ -2451,8 +2817,6 @@ $('resetBtn').onclick = () => {
   else {
     const d = RLAB[S.rlab.dev];
     S.rlab.p = d.pdef; S.rlab.V = d.vdef; S.rlab.rows = [];
-    $('rlP').value = d.pdef; $('rlPOut').textContent = d.pdef + ' ' + d.unit;
-    $('rlV').value = S.rlab.V; $('rlVOut').textContent = fmt(S.rlab.V,'V');
   }
   S.show = {grid:true, labels:true, values:true};
   document.querySelectorAll('[data-show]').forEach(b => b.classList.add('active'));
@@ -2484,6 +2848,9 @@ new ResizeObserver(() => resize()).observe(CV.parentElement);
 window.addEventListener('resize', resize);
 resize();
 requestAnimationFrame(t => { last = t; tick(t); });
+/* KaTeX is deferred; once it lands, redraw the panel so the working box
+   switches from its plain-text twin to typeset maths */
+window.addEventListener('load', () => { if(typeof katex !== 'undefined') updatePanel(); });
 
 </script>
 </body>
