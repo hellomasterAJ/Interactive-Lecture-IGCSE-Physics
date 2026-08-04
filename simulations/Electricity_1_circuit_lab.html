@@ -248,6 +248,13 @@ table.dt tr.sel td{background:var(--accent-glow);color:var(--accent)}
 table.dt tr[data-i]{cursor:pointer}
 .gwrap{background:var(--graph-bg);border:1px solid var(--border);border-radius:9px;
        padding:1px;overflow:hidden}
+/* which graph to draw — only ONE plot is ever on screen, so the panel stays readable */
+.gpick{display:flex;gap:5px;flex-wrap:wrap;margin:0 0 8px}
+.gpick button{border:1px solid var(--border);background:var(--bg);color:var(--text-dim);
+      font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;white-space:nowrap;
+      padding:4px 11px;border-radius:14px;cursor:pointer}
+.gpick button:hover{color:var(--text);border-color:var(--accent)}
+.gpick button.on{background:var(--accent-glow);color:var(--accent);border-color:var(--accent)}
 
 /* --- summary bar: fixed 34 px --- */
 .summary{flex:0 0 auto;margin-top:6px;height:34px;display:flex;align-items:center;
@@ -262,7 +269,7 @@ table.dt tr[data-i]{cursor:pointer}
 
   <!-- ===== HEADER ZONE ===== -->
   <div class="top-bar">
-    <h1>⚡ <span>Circuit Lab</span> <span class="badge-top">v1.6.0</span></h1>
+    <h1>⚡ <span>Circuit Lab</span> <span class="badge-top">v1.9.0</span></h1>
     <div class="top-right">
       <select class="theme-select" id="themeSel">
         <option value="dark">🌙 Classic Dark</option>
@@ -320,13 +327,14 @@ table.dt tr[data-i]{cursor:pointer}
       <div class="slot" id="slot-test">
         <div class="tgroup"><span class="tlabel">Circuit</span>
           <div class="pills">
-            <button class="pill active" data-preset="series1"
-              title="Loads save slot 11 if you have saved one there; otherwise the built-in Series 1.">Series 1</button>
-            <button class="pill" data-preset="series2"
-              title="Loads save slot 12 if you have saved one there; otherwise the built-in Series 2.">Series 2</button>
-            <button class="pill" data-preset="parallel">Parallel</button>
-            <button class="pill" data-preset="mixed">Series + Parallel</button>
-            <button class="pill" data-preset="divider">Potential divider</button>
+            <button class="pill active" data-preset="series1">Series 1</button>
+            <button class="pill" data-preset="series2">Series 2</button>
+            <button class="pill" data-preset="parallel1">Parallel 1</button>
+            <button class="pill" data-preset="parallel2">Parallel 2</button>
+            <button class="pill" data-preset="mixed1">Mixed 1</button>
+            <button class="pill" data-preset="mixed2">Mixed 2</button>
+            <button class="pill" data-preset="pdivider">Potential Divider</button>
+            <button class="pill" data-preset="cdivider">Current Divider</button>
           </div>
         </div>
       </div>
@@ -339,13 +347,14 @@ table.dt tr[data-i]{cursor:pointer}
             <button class="pill" data-dev="lamp">Filament lamp</button>
             <button class="pill" data-dev="diode">Diode</button>
             <button class="pill" data-dev="thermistor">Thermistor</button>
+            <button class="pill" data-dev="ldr">LDR</button>
           </div>
         </div>
         <div class="rule"></div>
-        <div class="tgroup">
-          <button class="tbtn" id="recBtn2">● Record</button>
-          <button class="tbtn" id="autoBtn2">⟲ Auto-sweep</button>
-          <button class="tbtn" id="clrBtn2">✕ Clear</button>
+        <div class="tgroup"><span class="tlabel">Record</span>
+          <button class="tbtn" id="recBtn2" title="Add ONE reading — the meters as they stand right now — to the table and the graph.">● Point</button>
+          <button class="tbtn" id="autoBtn2" title="Fill the table automatically: 11 readings taken right across the axis of the graph you are looking at.">⟲ Auto-Points</button>
+          <button class="tbtn" id="clrBtn2" title="Throw away every recorded reading.">✕ Clear</button>
         </div>
       </div>
     </div>
@@ -410,7 +419,8 @@ table.dt tr[data-i]{cursor:pointer}
         <div id="pane-meters" style="display:none"></div>
         <div id="pane-graph" style="display:none">
           <div id="rlabCtl" style="display:none"></div>
-          <div class="ptitle"><span>📊</span>I–V GRAPH</div>
+          <div class="ptitle"><span>📊</span><span id="graphTitle">I–V GRAPH</span></div>
+          <div class="gpick" id="graphPick" style="display:none"></div>
           <div class="gwrap"><canvas id="gcv"></canvas></div>
           <div class="note" id="graphNote"></div>
         </div>
@@ -703,12 +713,12 @@ function solveCircuit(comps, wires){
 const RLAB = {
   resistor: {
     label:'Fixed resistor', pname:'R', pfull:'Resistance R', unit:'Ω', pmin:1, pmax:100, pstep:1, pdef:20,
-    vmin:0, vmax:12, vdef:6, ohmic:true,
+    vmin:0, vmax:12, vdef:6, ohmic:true, graphs:['iv','rv'],
     solve:(V, p) => ({I: V/p, Vd: V, R: p})
   },
   lamp: {
     label:'Filament lamp', pname:'R₀', pfull:'Cold resistance R₀', unit:'Ω', pmin:1, pmax:20, pstep:0.5, pdef:4,
-    vmin:0, vmax:12, vdef:6, ohmic:false,
+    vmin:0, vmax:12, vdef:6, ohmic:false, graphs:['iv','rv'],
     solve:(V, R0) => {                       // R = R0 (1 + α·k·P)
       const alpha = 0.0045, k = 260;
       let R = R0;
@@ -724,7 +734,10 @@ const RLAB = {
   },
   diode: {
     label:'Diode (Si)', pname:'Rₚ', pfull:'Protective resistor Rₚ', unit:'Ω', pmin:10, pmax:200, pstep:10, pdef:50,
-    vmin:-3, vmax:3, vdef:1.5, ohmic:false,
+    vmin:-3, vmax:3, vdef:1.5, ohmic:false, graphs:['iv','rv'],
+    /* reverse-biased, R = V/I runs into the gigaohms; anything above this is
+       simply off the top of an R-V plot, so those points are not drawn */
+    rcap: 5000,
     solve:(V, Rp) => {                       // Shockley + series protection R
       const Is = 1e-9, n = 1.8, Vt = 0.025852;
       const f = vd => Is*(Math.exp(Math.min(vd/(n*Vt), 60)) - 1) - (V - vd)/Rp;
@@ -740,10 +753,24 @@ const RLAB = {
   },
   thermistor: {
     label:'Thermistor (NTC)', pname:'θ', pfull:'Temperature θ', unit:'°C', pmin:0, pmax:100, pstep:5, pdef:25,
-    vmin:0, vmax:12, vdef:6, ohmic:true,
+    vmin:0, vmax:12, vdef:6, ohmic:true, graphs:['iv','rt'],
     solve:(V, degC) => {                     // R = R0 exp(B(1/T − 1/T0))
       const R0 = 1000, B = 3200, T0 = 298.15, T = degC + 273.15;
       const R = R0*Math.exp(B*(1/T - 1/T0));
+      return {I: V/R, Vd: V, R};
+    }
+  },
+  ldr: {
+    /* Light-dependent resistor.  At a FIXED illumination it obeys Ohm's law,
+       so its I-V line is straight; what the syllabus cares about is how R
+       collapses as the light gets brighter, hence the R-E graph. */
+    /* 2-250 lx: dim room to bright desk lamp.  Wider than this and the curve
+       spends nearly all its width on the flat bright-end tail. */
+    label:'LDR', pname:'E', pfull:'Light intensity E', unit:'lx', pmin:2, pmax:250, pstep:1, pdef:100,
+    vmin:0, vmax:12, vdef:6, ohmic:true, graphs:['iv','re'],
+    solve:(V, E) => {                        // R = R₀ (E/E₀)^(−γ)
+      const R0 = 1000, E0 = 100, gamma = 0.8;
+      const R = R0*Math.pow(Math.max(E, 0.05)/E0, -gamma);
       return {I: V/R, Vd: V, R};
     }
   }
@@ -965,7 +992,7 @@ const S = {
   panelTab:'comp',
   rowTop:0, rowBot:ROWS,        // grid extent; grows past 0..ROWS when the window is tall
   preset:'series1',
-  rlab:{dev:'resistor', p:RLAB.resistor.pdef, V:6, rows:[], sweeping:false},
+  rlab:{dev:'resistor', p:RLAB.resistor.pdef, V:6, rows:[], sweeping:false, graph:'iv'},
   theme:'dark'
 };
 
@@ -1111,14 +1138,17 @@ const flowSign = () => (S.flow === 'electrons' ? -1 : 1);
 /* Each distinct current magnitude in the circuit gets its own colour, so the
    main current and the smaller branch currents are told apart at a glance —
    and two branches carrying the SAME current deliberately share a colour. */
+const I_FLOOR = 1e-6;          // 1 µA — below this the circuit is open, not "flowing"
 const FLOW_KEY = (m, ref) => Math.round((m/ref)*1000)/1000;
 function buildFlowColors(res){
   if(!res || !res.ok){ S.flowCols = null; return; }
+  if(res.maxI < I_FLOOR){ S.flowCols = null; return; }   // open circuit
   const ref = Math.max(1e-12, res.maxI);
   const mags = [];
   Object.values(res.wire).forEach(seg => mags.push(Math.abs(seg.I)));
   res.comp.forEach(r => { if(r) mags.push(Math.abs(r.I)); });
-  const keys = [...new Set(mags.filter(m => m > ref*0.005).map(m => FLOW_KEY(m, ref)))]
+  const keys = [...new Set(mags.filter(m => m > Math.max(ref*0.005, I_FLOOR))
+                                .map(m => FLOW_KEY(m, ref)))]
                  .sort((a,b) => b - a);
   S.flowCols = {ref, map:new Map(keys.map((k,i) => [k,i])), n:keys.length};
 }
@@ -1178,15 +1208,19 @@ function drawSchematic(){
   });
 
   /* --- current-flow dots --- */
-  if(flowOn() && res && res.ok && !res.shorted){
+  /* An open circuit carries only numerical dust (~1e-11 A).  Without an
+     ABSOLUTE floor the relative threshold would happily animate that dust,
+     which is exactly what a student must not see on a broken circuit. */
+  if(flowOn() && res && res.ok && !res.shorted && res.maxI >= I_FLOOR){
     const ref = Math.max(1e-9, res.maxI), fs = flowSign();
+    const cut = Math.max(ref*0.005, I_FLOOR);
     Object.values(res.wire).forEach(seg=>{
-      const I = seg.I; if(Math.abs(I) < ref*0.005) return;
+      const I = seg.I; if(Math.abs(I) < cut) return;
       CX.fillStyle = flowColor(I);
       flowDots(gx(seg.p.c), gy(seg.p.r), gx(seg.q.c), gy(seg.q.r), I*fs, ref);
     });
     S.comps.forEach((cp,i)=>{
-      const rr = res.comp[i]; if(!rr || Math.abs(rr.I) < ref*0.005) return;
+      const rr = res.comp[i]; if(!rr || Math.abs(rr.I) < cut) return;
       const g = compGeom(cp);
       const [t0] = termsOf(cp);
       const sgn = (t0.c === cp.c && t0.r === cp.r) ? 1 : -1;
@@ -1237,7 +1271,8 @@ function drawSchematic(){
       CX.fillText(cp.name + valueTag(cp), g.mx + ox, g.my + oy);
     }
     if(S.show.values && rr && res.ok && !res.shorted){
-      CX.fillStyle = (flowOn() && Math.abs(rr.I) > res.maxI*0.005)
+      CX.fillStyle = (flowOn() && res.maxI >= I_FLOOR &&
+                      Math.abs(rr.I) > Math.max(res.maxI*0.005, I_FLOOR))
                      ? flowColor(rr.I) : PAL.blue;
       CX.font = '500 11px JetBrains Mono';
       const txt = readoutFor(cp, rr);
@@ -1371,10 +1406,37 @@ function elbow(a, b){
    R-LAB — fixed apparatus, its own physics
    ============================================================ */
 const RL = {left:280, right:900, top:170, bot:490, vmx:1082, midT:290, midB:370};
+/* Everything the apparatus occupies, derived from RL so it follows any change.
+   The margins allow for the text that sits outside the wire rectangle:
+   the ammeter reading above, the supply label to the left, the voltmeter
+   caption to the right, and the device name block below. */
+function rlabBBox(){
+  return {l: RL.left - 156, r: RL.vmx + 88, t: RL.top - 56, b: RL.bot + 96};
+}
+/* The apparatus is lined up with the "Supply voltage" row in the panel.
+   That row sits at a fixed CSS offset from the top of the stage, so measure
+   it rather than deriving it from the grid, which moves with the window. */
+let rlabTopPx = 100;
+function rlabAnchorPx(){
+  const row = $('rlabCtl') && $('rlabCtl').querySelector('.sl');
+  if(row){
+    const r = row.getBoundingClientRect();
+    if(r.height > 0) rlabTopPx = r.top - CV.getBoundingClientRect().top;
+  }
+  return rlabTopPx;                       // last good value if the tab is hidden
+}
 function drawRLab(){
   const dev = RLAB[S.rlab.dev];
   const out = dev.solve(S.rlab.V, S.rlab.p);
   const A = out.I, Vd = out.Vd;
+
+  /* Park the apparatus near the TOP of the visible canvas and centre it
+     horizontally, instead of leaving it stranded in the middle of the
+     fixed 1200x640 logical box. */
+  const bb = rlabBBox();
+  const dx = GW/2 - (bb.l + bb.r)/2;
+  const dy = (-VX.oy + rlabAnchorPx())/VX.s - bb.t;
+  CX.save(); CX.translate(dx, dy);
 
   CX.strokeStyle = PAL.wire; CX.lineWidth = 2.6; CX.lineCap='round';
   line(RL.left, RL.top, RL.right, RL.top);
@@ -1401,9 +1463,8 @@ function drawRLab(){
   drawSymAt('ammeter', (RL.left+RL.right)/2, RL.top, 0, {rot:0});
   drawSymAt('voltmeter', RL.vmx, mid, Math.PI/2, {rot:Math.PI/2});
   const glow = S.rlab.dev === 'lamp' ? Math.min(1, Math.abs(Vd*A)/3) : 0;
-  drawSymAt(S.rlab.dev === 'resistor' ? 'res'
-          : S.rlab.dev === 'lamp' ? 'lamp'
-          : S.rlab.dev === 'diode' ? 'diode' : 'thermistor',
+  drawSymAt({resistor:'res', lamp:'lamp', diode:'diode',
+             thermistor:'thermistor', ldr:'ldr'}[S.rlab.dev] || 'res',
           RL.right, mid, Math.PI/2, {rot:Math.PI/2, glow});
 
   /* --- readouts, each in its own band, none of them on a symbol --- */
@@ -1433,22 +1494,58 @@ function drawRLab(){
     CX.fillStyle = PAL.violet; CX.font='700 13px JetBrains Mono';
     CX.fillText('R = V / I = ' + fmtR(Math.abs(out.R)), RL.right, RL.bot + 86);
   }
+  CX.restore();
 }
 
 /* ============================================================
    GRAPH (panel)
    ============================================================ */
+/* The graphs the syllabus asks for.  `sweep:'V'` means the supply is turned up
+   across its range with the device setting held; `sweep:'P'` means the supply
+   is held and the device's own quantity (temperature, illumination) is varied. */
+const GKIND = {
+  iv:{short:'I–V', title:'I–V GRAPH',                 xl:'V / volt', yl:'I / amp', sweep:'V',
+      tip:'Current against p.d. — the standard characteristic curve.'},
+  rv:{short:'R–V', title:'R–V GRAPH',                 xl:'V / volt', yl:'R / ohm', sweep:'V',
+      tip:'Resistance R = V/I against p.d. Flat means ohmic.'},
+  rt:{short:'R–θ', title:'R–TEMPERATURE GRAPH',       xl:'θ / °C',   yl:'R / ohm', sweep:'P',
+      tip:'Resistance against temperature — the thermistor curve.'},
+  re:{short:'R–E', title:'R–LIGHT INTENSITY GRAPH',   xl:'E / lux',  yl:'R / ohm', sweep:'P',
+      tip:'Resistance against light intensity — the LDR curve.'}
+};
+/* Which graph is on screen.  Self-healing: switching to a device that has no
+   R–V graph, say, silently drops back to that device's first graph. */
+function rlabGraph(){
+  const list = RLAB[S.rlab.dev].graphs || ['iv'];
+  if(list.indexOf(S.rlab.graph) < 0) S.rlab.graph = list[0];
+  return S.rlab.graph;
+}
 function sweepSeries(){
   if(S.mode === 'rlab'){
-    const dev = RLAB[S.rlab.dev];
-    const pts = [];
-    for(let i=0;i<=140;i++){
-      const V = dev.vmin + (dev.vmax - dev.vmin)*i/140;
-      const o = dev.solve(V, S.rlab.p);
-      pts.push({x:o.Vd, y:o.I});
+    const dev = RLAB[S.rlab.dev], k = rlabGraph(), g = GKIND[k];
+    const cap = dev.rcap || Infinity;
+    const keep = y => isFinite(y) && Math.abs(y) <= cap;
+    const pts = [], N = 160;
+    if(g.sweep === 'V'){
+      for(let i=0;i<=N;i++){
+        const V = dev.vmin + (dev.vmax - dev.vmin)*i/N;
+        const o = dev.solve(V, S.rlab.p);
+        const y = (k === 'iv') ? o.I : Math.abs(o.R);
+        if(k === 'iv' ? isFinite(y) : keep(y)) pts.push({x:o.Vd, y});
+      }
+    }else{
+      for(let i=0;i<=N;i++){
+        const p = dev.pmin + (dev.pmax - dev.pmin)*i/N;
+        const o = dev.solve(S.rlab.V, p);
+        if(isFinite(o.R)) pts.push({x:p, y:Math.abs(o.R)});
+      }
     }
-    return {pts, rec:S.rlab.rows.map(r=>({x:r.V, y:r.I})),
-            xl:'V / V', yl:'I / A', title:'I–V characteristic'};
+    const rec = S.rlab.rows.map(r =>
+        k === 'iv' ? {x:r.V, y:r.I}
+      : g.sweep === 'V' ? {x:r.V, y:Math.abs(r.R)}
+      : {x:r.p, y:Math.abs(r.R)})
+      .filter(p => isFinite(p.x) && isFinite(p.y) && Math.abs(p.y) <= cap);
+    return {pts, rec, xl:g.xl, yl:g.yl, title:g.title};
   }
   // Builder / Tester: sweep every source together, track the selected component
   const i = S.sel; if(i < 0 || !S.res || !S.res.ok) return null;
@@ -1466,7 +1563,7 @@ function sweepSeries(){
   srcs.forEach((o,j)=>{ o.c.V = base[j]; });
   const now = S.res.comp[i];
   return {pts, rec:[{x:Math.abs(now.V), y:Math.abs(now.I)}],
-          xl:'V / V', yl:'I / A', title:'I–V of ' + S.comps[i].name};
+          xl:'V / volt', yl:'I / amp', title:'I–V of ' + S.comps[i].name};
 }
 
 /* round tick step, so axes read 0 / 0.25 / 0.5 ... instead of 0 / 236m / 471m */
@@ -1480,6 +1577,9 @@ function niceAxis(lo, hi, n){
 }
 function tickTxt(v, step){
   if(Math.abs(v) < step*1e-6) return '0';
+  /* resistance axes run into the tens of kilohms — "40k" fits the margin,
+     "40000" does not */
+  if(Math.abs(v) >= 1000) return (v/1000).toFixed(step >= 1000 ? 0 : 1) + 'k';
   const dp = Math.max(0, -Math.floor(Math.log10(step)) + (step < 1 ? 0 : 0));
   return v.toFixed(Math.min(6, dp));
 }
@@ -1526,9 +1626,9 @@ function drawGraph(){
   for(let i=0;i<=nx;i++){ const v = ax.lo + i*ax.step;
     GX.fillText(tickTxt(v, ax.step), px(v), h-B+14); }
   GX.fillStyle = PAL.dim; GX.font='600 10px Inter';
-  GX.fillText('V / volt', (L+w-R)/2, h-4);
+  GX.fillText((d && d.xl) || 'V / volt', (L+w-R)/2, h-4);
   GX.save(); GX.translate(11, (T+h-B)/2); GX.rotate(-Math.PI/2);
-  GX.fillText('I / amp', 0, 0); GX.restore();
+  GX.fillText((d && d.yl) || 'I / amp', 0, 0); GX.restore();
 
   if(!d || !d.pts.length){
     GX.fillStyle = PAL.muted; GX.font='500 11px Inter'; GX.textAlign='center';
@@ -1555,7 +1655,8 @@ function updatePanel(){
   });
   if(tab==='comp')   paneComp();
   if(tab==='meters') paneMeters();
-  if(tab==='graph'){ renderRlabControls(); drawGraph(); $('graphNote').innerHTML = graphNote(); }
+  if(tab==='graph'){ renderRlabControls(); renderGraphPick(); drawGraph();
+                     $('graphNote').innerHTML = graphNote(); }
   if(tab==='data')   paneData();
 }
 
@@ -1582,12 +1683,44 @@ function renderRlabControls(){
   bindNumSlider('rlPar', R.P, v => { S.rlab.p = v; });
 }
 
+/* Only ONE graph is ever plotted, chosen here — the panel would be unreadable
+   with four curves stacked in it.  Which graphs a device offers comes from the
+   device itself, so the thermistor and the LDR never show an R–V button. */
+function renderGraphPick(){
+  const box = $('graphPick'), ttl = $('graphTitle');
+  if(!box) return;
+  if(S.mode !== 'rlab'){
+    box.style.display = 'none'; box.innerHTML = '';
+    if(ttl) ttl.textContent = 'I–V GRAPH';
+    return;
+  }
+  const list = RLAB[S.rlab.dev].graphs || ['iv'], k = rlabGraph();
+  box.style.display = 'flex';
+  box.innerHTML = list.map(g =>
+    '<button data-g="'+g+'" class="'+(g === k ? 'on' : '')+'" title="'+
+    GKIND[g].tip+'">'+GKIND[g].short+' graph</button>').join('');
+  if(ttl) ttl.textContent = GKIND[k].title;
+  box.querySelectorAll('button').forEach(b => b.onclick = () => {
+    S.rlab.graph = b.dataset.g; updatePanel();
+  });
+}
+
 function graphNote(){
   if(S.mode === 'rlab'){
-    const d = RLAB[S.rlab.dev];
-    return d.ohmic
-      ? 'Gold curve = the device model swept over the whole supply range. Blue dots = readings you recorded. A <b>straight line through the origin</b> means R is constant — the device is <b>ohmic</b>.'
-      : 'Gold curve = the device model swept over the whole supply range. Blue dots = readings you recorded. The line is <b>curved</b>, so R = V/I changes with the operating point — the device is <b>non-ohmic</b>.';
+    const d = RLAB[S.rlab.dev], k = rlabGraph();
+    const lead = 'Gold curve = the device model swept right across its range. ' +
+                 'Blue dots = the readings you took with <b>● Point</b> or <b>⟲ Auto-Points</b>. ';
+    if(k === 'iv') return lead + (d.ohmic
+      ? 'A <b>straight line through the origin</b> means R is constant — the device is <b>ohmic</b>.'
+      : 'The line is <b>curved</b>, so R = V/I changes with the operating point — the device is <b>non-ohmic</b>.');
+    if(k === 'rv') return lead + (d.ohmic
+      ? 'Here R = V/I is plotted against V. The line stays <b>flat</b> — the resistance does not depend on the p.d., which is exactly what <b>ohmic</b> means.'
+      : 'Here R = V/I is plotted against V. The line is <b>not flat</b>, so the resistance depends on the operating point — the device is <b>non-ohmic</b>.' +
+        (S.rlab.dev === 'lamp'
+          ? ' The filament gets hotter as V rises, and a hotter metal has a <b>higher</b> resistance.'
+          : ' Reverse-biased, almost no current flows, so R is enormous and runs off the top of the scale; forward-biased past about 0.6 V it drops sharply.'));
+    if(k === 'rt') return lead + 'Resistance against temperature for an <b>NTC thermistor</b>: as θ rises, R <b>falls</b> — and it falls fastest at the cold end. This is what makes it useful in a temperature-sensing potential divider.';
+    if(k === 're') return lead + 'Resistance against light intensity for an <b>LDR</b>: the brighter the light, the <b>lower</b> the resistance. In the dark it is hundreds of times larger, which is what makes it useful in a light-sensing potential divider.';
   }
   if(S.sel < 0) return 'Select a component on the canvas. The graph then re-solves the whole circuit while every source is turned up from 0 to its set value, and plots I against V for that component.';
   return 'Every source is swept from 0 up to its set value and the circuit re-solved at each step. The blue dot is the present operating point of <b>'+S.comps[S.sel].name+'</b>.';
@@ -1714,59 +1847,90 @@ function workingHTML(){
   if(!srcs.length || !loads.length) return '';
   const emf = srcs.reduce((a,o)=>a+Math.abs(o.c.V),0);
   const It  = Math.abs(r.comp[srcs[0].i].I);
-  if(!(It > 1e-9)) return '';
-  const Rt  = emf/It;
+  if(!(It > I_FLOOR)) return '';
+  const Rt  = emf/It;                       // same value the panel shows
 
   const allSeries   = loads.every(o => Math.abs(Math.abs(r.comp[o.i].I) - It) < It*1e-3);
   const allParallel = loads.length > 1 &&
         loads.every(o => Math.abs(Math.abs(r.comp[o.i].V) - emf) < Math.max(1e-6, emf*1e-3));
+  const sub = n => '\\mathrm{' + String(n).replace(/([A-Za-z]+)(\d*)/, '$1$2') + '}';
 
-  let h = '<div class="ptitle sub"><span>🧮</span>WORKING</div>';
+  let h = '<div class="ptitle sub"><span>&#129518;</span>WORKING</div>';
 
-  if(srcs.length > 1)
-    h += mathLine('\\mathcal{E} = ' + srcs.map(o=>sig(Math.abs(o.c.V))).join(' + ') +
-                  ' = ' + sig(emf) + '\\ \\mathrm{V}',
-                  'ℰ = ' + srcs.map(o=>sig(Math.abs(o.c.V))).join(' + ') + ' = ' + sig(emf) + ' V');
-  else
-    h += mathLine('\\mathcal{E} = ' + sig(emf) + '\\ \\mathrm{V}', 'ℰ = ' + sig(emf) + ' V');
-
-  if(allSeries && loads.length > 1){
-    h += mathLine('R_{\\text{total}} = ' + loads.map(o=>sig(o.c.R)).join(' + ') +
-                  ' = ' + sig(Rt) + '\\ \\Omega',
-                  'R total = ' + loads.map(o=>sig(o.c.R)).join(' + ') + ' = ' + sig(Rt) + ' Ω');
-  } else if(allParallel){
-    h += mathLine('\\frac{1}{R_{\\text{total}}} = ' +
-                  loads.map(o=>'\\frac{1}{'+sig(o.c.R)+'}').join(' + ') +
-                  ' \\Rightarrow R_{\\text{total}} = ' + sig(Rt) + '\\ \\Omega',
-                  '1/R total = ' + loads.map(o=>'1/'+sig(o.c.R)).join(' + ') +
-                  '  →  R total = ' + sig(Rt) + ' Ω');
+  /* ---- e.m.f. ---- */
+  if(srcs.length > 1){
+    h += mathLine(
+      '\\mathcal{E} = ' + srcs.map(o=>'\\mathcal{E}_{'+sub(o.c.name)+'}').join(' + ') +
+      ' = ' + srcs.map(o=>sig(Math.abs(o.c.V))).join(' + ') + ' = ' + sig(emf) + '\\ \\mathrm{V}',
+      'E = ' + srcs.map(o=>'E('+o.c.name+')').join(' + ') + ' = ' +
+      srcs.map(o=>sig(Math.abs(o.c.V))).join(' + ') + ' = ' + sig(emf) + ' V');
   } else {
-    h += mathLine('R_{\\text{total}} = \\frac{\\mathcal{E}}{I} = \\frac{' + sig(emf) +
-                  '}{' + sig(It) + '} = ' + sig(Rt) + '\\ \\Omega',
-                  'R total = ℰ / I = ' + sig(emf) + ' / ' + sig(It) + ' = ' + sig(Rt) + ' Ω');
+    h += mathLine('\\mathcal{E} = ' + sig(emf) + '\\ \\mathrm{V}', 'E = ' + sig(emf) + ' V');
   }
 
-  h += mathLine('I = \\frac{\\mathcal{E}}{R_{\\text{total}}} = \\frac{' + sig(emf) + '}{' +
-                sig(Rt) + '} = ' + sig(It) + '\\ \\mathrm{A}',
-                'I = ℰ / R total = ' + sig(emf) + ' / ' + sig(Rt) + ' = ' + sig(It) + ' A');
-
+  /* ---- total resistance: formula, then substitution, then result ---- */
   if(allSeries && loads.length > 1){
-    const o = loads[0];
-    h += mathLine('V_{' + o.c.name + '} = I R = ' + sig(It) + ' \\times ' + sig(o.c.R) +
-                  ' = ' + sig(Math.abs(r.comp[o.i].V)) + '\\ \\mathrm{V}',
-                  'V(' + o.c.name + ') = I R = ' + sig(It) + ' × ' + sig(o.c.R) +
-                  ' = ' + sig(Math.abs(r.comp[o.i].V)) + ' V');
+    h += mathLine(
+      'R_{\\text{total}} = ' + loads.map(o=>'R_{'+sub(o.c.name)+'}').join(' + ') +
+      ' = ' + loads.map(o=>sig(o.c.R)).join(' + ') + ' = ' + sig(Rt) + '\\ \\Omega',
+      'R total = ' + loads.map(o=>'R('+o.c.name+')').join(' + ') + ' = ' +
+      loads.map(o=>sig(o.c.R)).join(' + ') + ' = ' + sig(Rt) + ' Ω');
   } else if(allParallel){
-    const o = loads[0];
-    h += mathLine('I_{' + o.c.name + '} = \\frac{\\mathcal{E}}{R} = \\frac{' + sig(emf) +
-                  '}{' + sig(o.c.R) + '} = ' + sig(Math.abs(r.comp[o.i].I)) + '\\ \\mathrm{A}',
-                  'I(' + o.c.name + ') = ℰ / R = ' + sig(emf) + ' / ' + sig(o.c.R) +
-                  ' = ' + sig(Math.abs(r.comp[o.i].I)) + ' A');
+    h += mathLine(
+      '\\frac{1}{R_{\\text{total}}} = ' +
+      loads.map(o=>'\\frac{1}{R_{'+sub(o.c.name)+'}}').join(' + ') + ' = ' +
+      loads.map(o=>'\\frac{1}{'+sig(o.c.R)+'}').join(' + ') +
+      ' \\;\\Rightarrow\\; R_{\\text{total}} = ' + sig(Rt) + '\\ \\Omega',
+      '1/R total = ' + loads.map(o=>'1/R('+o.c.name+')').join(' + ') + ' = ' +
+      loads.map(o=>'1/'+sig(o.c.R)).join(' + ') + '  =>  R total = ' + sig(Rt) + ' Ω');
   }
 
-  h += mathLine('P = \\mathcal{E} I = ' + sig(emf) + ' \\times ' + sig(It) + ' = ' +
-                sig(emf*It) + '\\ \\mathrm{W}',
-                'P = ℰ I = ' + sig(emf) + ' × ' + sig(It) + ' = ' + sig(emf*It) + ' W');
+  /* ---- current, then the total resistance if it could not be built up ---- */
+  if(allSeries || allParallel){
+    h += mathLine(
+      'I = \\frac{\\mathcal{E}}{R_{\\text{total}}} = \\frac{' + sig(emf) + '}{' + sig(Rt) +
+      '} = ' + sig(It) + '\\ \\mathrm{A}',
+      'I = E / R total = ' + sig(emf) + ' / ' + sig(Rt) + ' = ' + sig(It) + ' A');
+  } else {
+    h += mathLine('I = ' + sig(It) + '\\ \\mathrm{A}\\quad\\text{(from the circuit)}',
+                  'I = ' + sig(It) + ' A  (from the circuit)');
+    h += mathLine(
+      'R_{\\text{total}} = \\frac{\\mathcal{E}}{I} = \\frac{' + sig(emf) + '}{' + sig(It) +
+      '} = ' + sig(Rt) + '\\ \\Omega',
+      'R total = E / I = ' + sig(emf) + ' / ' + sig(It) + ' = ' + sig(Rt) + ' Ω');
+  }
+
+  /* ---- exactly two resistors in SERIES = potential divider: the V rule ---- */
+  if(allSeries && loads.length === 2){
+    const [x, y] = loads, sum = x.c.R + y.c.R;
+    [x, y].forEach(o => {
+      h += mathLine(
+        'V_{' + sub(o.c.name) + '} = \\mathcal{E}\\times\\frac{R_{' + sub(o.c.name) + '}}{R_{' +
+        sub(x.c.name) + '}+R_{' + sub(y.c.name) + '}} = ' + sig(emf) + '\\times\\frac{' +
+        sig(o.c.R) + '}{' + sig(sum) + '} = ' + sig(emf*o.c.R/sum) + '\\ \\mathrm{V}',
+        'V(' + o.c.name + ') = E × R(' + o.c.name + ') / (R(' + x.c.name + ') + R(' + y.c.name +
+        ')) = ' + sig(emf) + ' × ' + sig(o.c.R) + ' / ' + sig(sum) + ' = ' + sig(emf*o.c.R/sum) + ' V');
+    });
+  }
+  /* ---- exactly two resistors in PARALLEL = current divider: the I rule ----
+     each branch is weighted by the OTHER branch's resistance, so the larger
+     resistor takes the smaller share of the current                          */
+  if(allParallel && loads.length === 2){
+    const [x, y] = loads, sum = x.c.R + y.c.R;
+    [[x, y], [y, x]].forEach(([o, other]) => {
+      h += mathLine(
+        'I_{' + sub(o.c.name) + '} = I\\times\\frac{R_{' + sub(other.c.name) + '}}{R_{' +
+        sub(x.c.name) + '}+R_{' + sub(y.c.name) + '}} = ' + sig(It) + '\\times\\frac{' +
+        sig(other.c.R) + '}{' + sig(sum) + '} = ' + sig(It*other.c.R/sum) + '\\ \\mathrm{A}',
+        'I(' + o.c.name + ') = I × R(' + other.c.name + ') / (R(' + x.c.name + ') + R(' + y.c.name +
+        ')) = ' + sig(It) + ' × ' + sig(other.c.R) + ' / ' + sig(sum) + ' = ' + sig(It*other.c.R/sum) + ' A');
+    });
+  }
+
+  /* ---- power ---- */
+  h += mathLine(
+    'P = \\mathcal{E} I = ' + sig(emf) + ' \\times ' + sig(It) + ' = ' + sig(emf*It) + '\\ \\mathrm{W}',
+    'P = E I = ' + sig(emf) + ' × ' + sig(It) + ' = ' + sig(emf*It) + ' W');
 
   return '<div class="working" id="wcWork">' + h + '</div>';
 }
@@ -1822,15 +1986,17 @@ function paneMeters(){
 function paneData(){
   const el = $('pane-data');
   if(S.mode === 'rlab'){
-    const rows = S.rlab.rows;
+    const rows = S.rlab.rows, dv = RLAB[S.rlab.dev];
     let h = sectionTitle('📋','RECORDED READINGS') +
-      '<div class="rowbtns"><button class="mini" id="recBtn">● Record</button>' +
-      '<button class="mini" id="autoBtn">⟲ Auto-sweep</button>' +
+      '<div class="rowbtns"><button class="mini" id="recBtn">● Point</button>' +
+      '<button class="mini" id="autoBtn">⟲ Auto-Points</button>' +
       '<button class="mini" id="clrBtn">✕ Clear</button></div>';
-    h += '<table class="dt"><tr><th>#</th><th>V / V</th><th>I / A</th><th>R = V/I</th></tr>';
-    rows.forEach((r,i)=> h += '<tr><td>'+(i+1)+'</td><td>'+r.V.toPrecision(3)+'</td><td>'+
+    h += '<table class="dt"><tr><th>#</th><th>'+dv.pname+' / '+dv.unit+
+         '</th><th>V / V</th><th>I / A</th><th>R = V/I</th></tr>';
+    rows.forEach((r,i)=> h += '<tr><td>'+(i+1)+'</td><td>'+
+      (r.p == null ? '—' : trimNum(r.p))+'</td><td>'+r.V.toPrecision(3)+'</td><td>'+
       fmt(r.I,'').replace(' ','')+'</td><td>'+fmtR(Math.abs(r.R))+'</td></tr>');
-    if(!rows.length) h += '<tr><td colspan="4" class="empty">no readings yet</td></tr>';
+    if(!rows.length) h += '<tr><td colspan="5" class="empty">no readings yet</td></tr>';
     h += '</table>';
     el.innerHTML = h;
     $('recBtn').onclick = recordPoint;
@@ -1844,7 +2010,8 @@ function paneData(){
   if(!S.comps.length) h += '<tr><td colspan="6" class="empty">circuit is empty</td></tr>';
   S.comps.forEach((c,i)=>{
     const rr = r&&r.ok ? idealise(c, r.comp[i]) : null;
-    const lit = rr && r.ok && Math.abs(rr.I) > r.maxI*0.005;
+    const lit = rr && r.ok && r.maxI >= I_FLOOR &&
+                Math.abs(rr.I) > Math.max(r.maxI*0.005, I_FLOOR);
     h += '<tr class="'+(i===S.sel?'sel':'')+'" data-i="'+i+'"><td>'+
       (lit ? '<span class="sw" style="background:'+flowColor(rr.I)+'"></span>' : '') +
       '</td><td>'+c.name+'</td><td>'+
@@ -1999,17 +2166,27 @@ function updateSummary(){
 function recordPoint(){
   const dev = RLAB[S.rlab.dev];
   const o = dev.solve(S.rlab.V, S.rlab.p);
-  S.rlab.rows.push({V:o.Vd, I:o.I, R:o.R});
+  S.rlab.rows.push({V:o.Vd, I:o.I, R:o.R, p:S.rlab.p});
   updatePanel(); updateSummary();
 }
+/* Auto-Points fills the table along whichever axis the chosen graph uses:
+   the supply for I–V and R–V, the device's own quantity for R–θ and R–E. */
 function autoSweep(){
   const dev = RLAB[S.rlab.dev];
+  const byV = GKIND[rlabGraph()].sweep === 'V';
   S.rlab.rows = [];
   const n = 11;
   for(let i=0;i<n;i++){
-    const V = dev.vmin + (dev.vmax-dev.vmin)*i/(n-1);
-    const o = dev.solve(V, S.rlab.p);
-    S.rlab.rows.push({V:o.Vd, I:o.I, R:o.R});
+    const f = i/(n-1);
+    if(byV){
+      const V = dev.vmin + (dev.vmax-dev.vmin)*f;
+      const o = dev.solve(V, S.rlab.p);
+      S.rlab.rows.push({V:o.Vd, I:o.I, R:o.R, p:S.rlab.p});
+    }else{
+      const p = dev.pmin + (dev.pmax-dev.pmin)*f;
+      const o = dev.solve(S.rlab.V, p);
+      S.rlab.rows.push({V:o.Vd, I:o.I, R:o.R, p});
+    }
   }
   updatePanel(); updateSummary();
 }
@@ -2018,110 +2195,38 @@ function autoSweep(){
    PRESET CIRCUITS (Tester mode)
    ============================================================ */
 const C = (t,c,r,o,extra) => Object.assign({t,c,r,o}, extra||{});
+/* ============================================================
+   PRESET_DATA — the teacher's own layouts, exported from save
+   slots 11-16 and baked in.  Nothing here is read from local
+   storage at run time, so every machine shows the same circuits.
+   ============================================================ */
+const PRESET_DATA = {"series1":{"rowTop":-6,"comps":[{"t":"cell","c":13,"r":-3,"o":"h","name":"E1","V":10},{"t":"resistor","c":10,"r":3,"o":"h","name":"R1","R":40},{"t":"resistor","c":16,"r":3,"o":"h","name":"R2","R":20},{"t":"ammeter","c":21,"r":-1,"o":"v","name":"A1"},{"t":"voltmeter","c":10,"r":6,"o":"h","name":"V1"},{"t":"voltmeter","c":16,"r":6,"o":"h","name":"V2"},{"t":"switch","c":7,"r":-1,"o":"v","name":"SW1","closed":true}],"wires":[{"c1":13,"r1":-3,"c2":7,"r2":-3},{"c1":7,"r1":3,"c2":10,"r2":3},{"c1":12,"r1":3,"c2":16,"r2":3},{"c1":18,"r1":3,"c2":21,"r2":3},{"c1":15,"r1":-3,"c2":21,"r2":-3},{"c1":21,"r1":-3,"c2":21,"r2":-1},{"c1":21,"r1":1,"c2":21,"r2":3},{"c1":10,"r1":6,"c2":9,"r2":6},{"c1":9,"r1":6,"c2":9,"r2":3},{"c1":12,"r1":6,"c2":13,"r2":6},{"c1":13,"r1":6,"c2":13,"r2":3},{"c1":16,"r1":6,"c2":15,"r2":6},{"c1":15,"r1":6,"c2":15,"r2":3},{"c1":18,"r1":6,"c2":19,"r2":6},{"c1":19,"r1":6,"c2":19,"r2":3},{"c1":7,"r1":-3,"c2":7,"r2":-1},{"c1":7,"r1":1,"c2":7,"r2":3}]},"series2":{"rowTop":-6,"comps":[{"t":"ammeter","c":23,"r":0,"o":"v","name":"A1"},{"t":"lamp","c":7,"r":5,"o":"h","name":"L1","R":6},{"t":"lamp","c":13,"r":5,"o":"h","name":"L2","R":12},{"t":"lamp","c":19,"r":5,"o":"h","name":"L3","R":18},{"t":"battery","c":11,"r":-3,"o":"h","name":"B1","V":6},{"t":"battery","c":13,"r":-3,"o":"h","name":"B2","V":6},{"t":"battery","c":15,"r":-3,"o":"h","name":"B3","V":12},{"t":"switch","c":4,"r":0,"o":"v","name":"SW1","closed":true}],"wires":[{"c1":4,"r1":5,"c2":7,"r2":5},{"c1":9,"r1":5,"c2":13,"r2":5},{"c1":15,"r1":5,"c2":19,"r2":5},{"c1":21,"r1":5,"c2":23,"r2":5},{"c1":23,"r1":5,"c2":23,"r2":2},{"c1":23,"r1":0,"c2":23,"r2":-3},{"c1":21,"r1":-3,"c2":23,"r2":-3},{"c1":11,"r1":-3,"c2":4,"r2":-3},{"c1":17,"r1":-3,"c2":21,"r2":-3},{"c1":4,"r1":-3,"c2":4,"r2":0},{"c1":4,"r1":2,"c2":4,"r2":5}]},"parallel1":{"rowTop":-6,"comps":[{"t":"cell","c":13,"r":-3,"o":"h","name":"E1","V":10},{"t":"resistor","c":15,"r":2,"o":"h","name":"R1","R":40},{"t":"resistor","c":15,"r":5,"o":"h","name":"R2","R":20},{"t":"voltmeter","c":13,"r":8,"o":"h","name":"V1"},{"t":"switch","c":7,"r":-2,"o":"v","name":"SW1","closed":true},{"t":"ammeter","c":21,"r":-2,"o":"v","name":"A1"},{"t":"ammeter","c":11,"r":2,"o":"h","name":"A2"},{"t":"ammeter","c":11,"r":5,"o":"h","name":"A3"}],"wires":[{"c1":13,"r1":-3,"c2":7,"r2":-3},{"c1":15,"r1":-3,"c2":21,"r2":-3},{"c1":21,"r1":1,"c2":21,"r2":3},{"c1":21,"r1":5,"c2":21,"r2":3},{"c1":11,"r1":5,"c2":7,"r2":5},{"c1":13,"r1":5,"c2":15,"r2":5},{"c1":17,"r1":5,"c2":21,"r2":5},{"c1":7,"r1":-3,"c2":7,"r2":-2},{"c1":7,"r1":0,"c2":7,"r2":5},{"c1":21,"r1":-3,"c2":21,"r2":-2},{"c1":21,"r1":0,"c2":21,"r2":1},{"c1":7,"r1":2,"c2":11,"r2":2},{"c1":13,"r1":2,"c2":15,"r2":2},{"c1":17,"r1":2,"c2":21,"r2":2},{"c1":7,"r1":5,"c2":7,"r2":8},{"c1":7,"r1":8,"c2":13,"r2":8},{"c1":15,"r1":8,"c2":21,"r2":8},{"c1":21,"r1":8,"c2":21,"r2":5}]},"parallel2":{"rowTop":-6,"comps":[{"t":"voltmeter","c":13,"r":9,"o":"h","name":"V1"},{"t":"switch","c":7,"r":-2,"o":"v","name":"SW1","closed":true},{"t":"ammeter","c":21,"r":-2,"o":"v","name":"A1"},{"t":"lamp","c":13,"r":1,"o":"h","name":"L1","R":10},{"t":"lamp","c":13,"r":3,"o":"h","name":"L2","R":20},{"t":"lamp","c":13,"r":5,"o":"h","name":"L3","R":40},{"t":"battery","c":12,"r":-3,"o":"h","name":"B1","V":10},{"t":"battery","c":14,"r":-3,"o":"h","name":"B2","V":20}],"wires":[{"c1":7,"r1":-3,"c2":7,"r2":-2},{"c1":21,"r1":-3,"c2":21,"r2":-2},{"c1":21,"r1":0,"c2":21,"r2":1},{"c1":7,"r1":0,"c2":7,"r2":1},{"c1":7,"r1":1,"c2":13,"r2":1},{"c1":15,"r1":1,"c2":21,"r2":1},{"c1":15,"r1":3,"c2":21,"r2":3},{"c1":21,"r1":3,"c2":21,"r2":1},{"c1":13,"r1":3,"c2":7,"r2":3},{"c1":7,"r1":3,"c2":7,"r2":1},{"c1":7,"r1":3,"c2":7,"r2":5},{"c1":7,"r1":5,"c2":13,"r2":5},{"c1":15,"r1":5,"c2":21,"r2":5},{"c1":21,"r1":5,"c2":21,"r2":3},{"c1":11,"r1":5,"c2":11,"r2":9},{"c1":11,"r1":9,"c2":13,"r2":9},{"c1":15,"r1":9,"c2":17,"r2":9},{"c1":17,"r1":9,"c2":17,"r2":5},{"c1":7,"r1":-3,"c2":12,"r2":-3},{"c1":16,"r1":-3,"c2":21,"r2":-3}]},"mixed1":{"rowTop":-6,"comps":[{"t":"cell","c":13,"r":-3,"o":"h","name":"E1","V":10},{"t":"resistor","c":8,"r":4,"o":"h","name":"R1","R":20},{"t":"resistor","c":18,"r":2,"o":"h","name":"R2","R":20},{"t":"voltmeter","c":8,"r":9,"o":"h","name":"V1"},{"t":"switch","c":6,"r":-1,"o":"v","name":"SW1","closed":true},{"t":"ammeter","c":23,"r":-1,"o":"v","name":"A1"},{"t":"ammeter","c":14,"r":2,"o":"h","name":"A2"},{"t":"ammeter","c":14,"r":6,"o":"h","name":"A3"},{"t":"resistor","c":18,"r":6,"o":"h","name":"R3","R":40},{"t":"voltmeter","c":16,"r":9,"o":"h","name":"V2"}],"wires":[{"c1":16,"r1":6,"c2":18,"r2":6},{"c1":16,"r1":2,"c2":18,"r2":2},{"c1":14,"r1":2,"c2":13,"r2":2},{"c1":13,"r1":6,"c2":14,"r2":6},{"c1":20,"r1":2,"c2":21,"r2":2},{"c1":21,"r1":6,"c2":20,"r2":6},{"c1":13,"r1":2,"c2":13,"r2":6},{"c1":21,"r1":2,"c2":21,"r2":6},{"c1":21,"r1":4,"c2":23,"r2":4},{"c1":23,"r1":-3,"c2":15,"r2":-3},{"c1":13,"r1":-3,"c2":6,"r2":-3},{"c1":6,"r1":-3,"c2":6,"r2":-2},{"c1":6,"r1":4,"c2":8,"r2":4},{"c1":10,"r1":4,"c2":13,"r2":4},{"c1":10,"r1":9,"c2":11,"r2":9},{"c1":11,"r1":9,"c2":11,"r2":4},{"c1":8,"r1":9,"c2":7,"r2":9},{"c1":7,"r1":9,"c2":7,"r2":4},{"c1":12,"r1":4,"c2":12,"r2":9},{"c1":12,"r1":9,"c2":16,"r2":9},{"c1":18,"r1":9,"c2":22,"r2":9},{"c1":22,"r1":9,"c2":22,"r2":4},{"c1":6,"r1":-2,"c2":6,"r2":-1},{"c1":6,"r1":1,"c2":6,"r2":4},{"c1":23,"r1":-3,"c2":23,"r2":-1},{"c1":23,"r1":1,"c2":23,"r2":4}]},"mixed2":{"rowTop":-6,"comps":[{"t":"resistor","c":10,"r":2,"o":"h","name":"R1","R":10},{"t":"resistor","c":10,"r":6,"o":"h","name":"R2","R":20},{"t":"voltmeter","c":8,"r":10,"o":"h","name":"V1"},{"t":"ammeter","c":7,"r":6,"o":"h","name":"A2"},{"t":"ammeter","c":17,"r":2,"o":"h","name":"A3"},{"t":"resistor","c":20,"r":2,"o":"h","name":"R3","R":30},{"t":"voltmeter","c":19,"r":10,"o":"h","name":"V2"},{"t":"ammeter","c":7,"r":2,"o":"h","name":"A1"},{"t":"ammeter","c":17,"r":6,"o":"h","name":"A4"},{"t":"ammeter","c":24,"r":-2,"o":"v","name":"A5"},{"t":"resistor","c":20,"r":6,"o":"h","name":"R4","R":40},{"t":"switch","c":5,"r":-2,"o":"v","name":"SW1","closed":true},{"t":"battery","c":12,"r":-3,"o":"h","name":"B1","V":10},{"t":"battery","c":15,"r":-3,"o":"h","name":"B3","V":15}],"wires":[{"c1":17,"r1":2,"c2":16,"r2":2},{"c1":16,"r1":6,"c2":17,"r2":6},{"c1":22,"r1":2,"c2":23,"r2":2},{"c1":23,"r1":6,"c2":22,"r2":6},{"c1":16,"r1":2,"c2":16,"r2":6},{"c1":23,"r1":2,"c2":23,"r2":6},{"c1":9,"r1":2,"c2":10,"r2":2},{"c1":12,"r1":2,"c2":13,"r2":2},{"c1":13,"r1":2,"c2":13,"r2":6},{"c1":7,"r1":2,"c2":6,"r2":2},{"c1":6,"r1":2,"c2":6,"r2":6},{"c1":6,"r1":6,"c2":7,"r2":6},{"c1":9,"r1":6,"c2":10,"r2":6},{"c1":12,"r1":6,"c2":13,"r2":6},{"c1":19,"r1":6,"c2":20,"r2":6},{"c1":13,"r1":4,"c2":16,"r2":4},{"c1":19,"r1":2,"c2":20,"r2":2},{"c1":6,"r1":4,"c2":5,"r2":4},{"c1":5,"r1":-3,"c2":6,"r2":-3},{"c1":23,"r1":-3,"c2":24,"r2":-3},{"c1":24,"r1":4,"c2":23,"r2":4},{"c1":5,"r1":-3,"c2":5,"r2":-2},{"c1":5,"r1":0,"c2":5,"r2":4},{"c1":24,"r1":-3,"c2":24,"r2":-2},{"c1":24,"r1":0,"c2":24,"r2":4},{"c1":10,"r1":10,"c2":12,"r2":10},{"c1":12,"r1":10,"c2":14,"r2":10},{"c1":14,"r1":10,"c2":14,"r2":4},{"c1":8,"r1":10,"c2":5,"r2":10},{"c1":5,"r1":10,"c2":5,"r2":4},{"c1":15,"r1":4,"c2":15,"r2":10},{"c1":15,"r1":10,"c2":19,"r2":10},{"c1":21,"r1":10,"c2":24,"r2":10},{"c1":24,"r1":10,"c2":24,"r2":4},{"c1":14,"r1":-3,"c2":15,"r2":-3},{"c1":17,"r1":-3,"c2":23,"r2":-3},{"c1":12,"r1":-3,"c2":6,"r2":-3}]},"pdivider":{"rowTop":-6,"comps":[{"t":"supply","c":13,"r":-4,"o":"h","name":"S1","V":10},{"t":"resistor","c":10,"r":2,"o":"h","name":"R1","R":10},{"t":"ammeter","c":22,"r":-2,"o":"v","name":"A1"},{"t":"switch","c":6,"r":-2,"o":"v","name":"SW1","closed":true},{"t":"varres","c":16,"r":2,"o":"h","name":"VR1","R":10},{"t":"voltmeter","c":10,"r":5,"o":"h","name":"V1"},{"t":"voltmeter","c":16,"r":5,"o":"h","name":"V2"}],"wires":[{"c1":6,"r1":-2,"c2":6,"r2":-4},{"c1":6,"r1":-4,"c2":13,"r2":-4},{"c1":15,"r1":-4,"c2":22,"r2":-4},{"c1":22,"r1":-4,"c2":22,"r2":-2},{"c1":22,"r1":0,"c2":22,"r2":2},{"c1":22,"r1":2,"c2":18,"r2":2},{"c1":12,"r1":2,"c2":16,"r2":2},{"c1":10,"r1":2,"c2":6,"r2":2},{"c1":6,"r1":2,"c2":6,"r2":0},{"c1":10,"r1":5,"c2":9,"r2":5},{"c1":9,"r1":5,"c2":9,"r2":2},{"c1":12,"r1":5,"c2":13,"r2":5},{"c1":13,"r1":5,"c2":13,"r2":2},{"c1":15,"r1":2,"c2":15,"r2":5},{"c1":15,"r1":5,"c2":16,"r2":5},{"c1":18,"r1":5,"c2":19,"r2":5},{"c1":19,"r1":5,"c2":19,"r2":2}]},"cdivider":{"rowTop":-6,"comps":[{"t":"supply","c":13,"r":-4,"o":"h","name":"S1","V":10},{"t":"resistor","c":11,"r":2,"o":"h","name":"R1","R":20},{"t":"ammeter","c":22,"r":-1,"o":"v","name":"A1"},{"t":"switch","c":6,"r":-1,"o":"v","name":"SW1","closed":true},{"t":"varres","c":11,"r":6,"o":"h","name":"VR1","R":20},{"t":"voltmeter","c":13,"r":9,"o":"h","name":"V1"},{"t":"ammeter","c":15,"r":2,"o":"h","name":"A2"},{"t":"ammeter","c":15,"r":6,"o":"h","name":"A3"}],"wires":[{"c1":6,"r1":-4,"c2":13,"r2":-4},{"c1":15,"r1":-4,"c2":22,"r2":-4},{"c1":13,"r1":2,"c2":15,"r2":2},{"c1":13,"r1":6,"c2":15,"r2":6},{"c1":11,"r1":2,"c2":10,"r2":2},{"c1":10,"r1":6,"c2":11,"r2":6},{"c1":17,"r1":2,"c2":18,"r2":2},{"c1":18,"r1":6,"c2":17,"r2":6},{"c1":10,"r1":2,"c2":10,"r2":6},{"c1":18,"r1":2,"c2":18,"r2":6},{"c1":10,"r1":4,"c2":6,"r2":4},{"c1":6,"r1":4,"c2":6,"r2":2},{"c1":18,"r1":4,"c2":22,"r2":4},{"c1":9,"r1":4,"c2":9,"r2":9},{"c1":9,"r1":9,"c2":13,"r2":9},{"c1":15,"r1":9,"c2":19,"r2":9},{"c1":19,"r1":9,"c2":19,"r2":4},{"c1":6,"r1":-4,"c2":6,"r2":-1},{"c1":6,"r1":1,"c2":6,"r2":2},{"c1":22,"r1":-4,"c2":22,"r2":-1},{"c1":22,"r1":1,"c2":22,"r2":4}]}};
+
 const PRESETS = {
-  series1: {
-    name:'Series 1', slot:10,
-    note:'One path only, so the <b>same current</b> flows everywhere and the p.d.s add up to the e.m.f. (10 V ÷ 60 Ω = 167 mA).',
-    build(){ return fromSlotOr(this.slot, {comps:[
-        C('cell',12,2,'h',{name:'E1',V:10}),
-        C('ammeter',22,4,'v',{name:'A1'}),
-        C('resistor',8,9,'h',{name:'R1',R:40}),
-        C('resistor',15,9,'h',{name:'R2',R:20}),
-        C('voltmeter',8,12,'h',{name:'V1'}),
-        C('voltmeter',15,12,'h',{name:'V2'})],
-      wires:[w(4,2,12,2), w(14,2,22,2), w(22,2,22,4), w(22,6,22,9),
-             w(4,2,4,9), w(4,9,8,9), w(10,9,15,9), w(17,9,22,9),
-             w(8,9,8,12), w(10,9,10,12), w(15,9,15,12), w(17,9,17,12)]}); }
-  },
-  series2: {
-    name:'Series 2', slot:11,
-    note:'Three cells in series give 24 V; three lamps in series give 36 Ω, so I = 24 ÷ 36 = 667 mA — and the brightest lamp is the one with the largest resistance.',
-    build(){ return fromSlotOr(this.slot, {comps:[
-        C('battery',10,2,'h',{name:'B1',V:6}),
-        C('battery',13,2,'h',{name:'B2',V:6}),
-        C('battery',16,2,'h',{name:'B3',V:12}),
-        C('ammeter',24,5,'v',{name:'A1'}),
-        C('lamp',5,10,'h',{name:'L1',R:6}),
-        C('lamp',12,10,'h',{name:'L2',R:12}),
-        C('lamp',19,10,'h',{name:'L3',R:18})],
-      wires:[w(3,2,10,2), w(12,2,13,2), w(15,2,16,2), w(18,2,24,2),
-             w(24,2,24,5), w(24,7,24,10),
-             w(3,2,3,10), w(3,10,5,10), w(7,10,12,10), w(14,10,19,10), w(21,10,24,10)]}); }
-  },
-  parallel: {
-    name:'Parallel circuit',
-    note:'Both branches sit across the <b>same 6 V</b>. The branch currents (0.50 A and 0.25 A) add up to the 0.75 A leaving the battery.',
-    build:()=>({comps:[
-        C('battery',3,2,'h',{name:'B1',V:6}),
-        C('ammeter',8,2,'h',{name:'A1'}),
-        C('switch',13,2,'h',{name:'SW1',closed:true}),
-        C('lamp',18,2,'h',{name:'L1',R:12}),
-        C('resistor',12,10,'h',{name:'R1',R:8}),
-        C('voltmeter',18,5,'h',{name:'V1'})],
-      wires:[w(5,2,8,2), w(10,2,13,2), w(15,2,18,2), w(20,2,23,2),
-             w(23,2,23,10), w(23,10,14,10), w(12,10,3,10), w(3,10,3,2),
-             w(18,2,18,5), w(20,2,20,5)]})
-  },
-  parallel: {
-    name:'Parallel circuit',
-    note:'Both branches sit across the <b>same 6 V</b>. The branch currents (0.50 A and 0.25 A) add up to the 0.75 A leaving the battery.',
-    build:()=>({comps:[
-        C('battery',3,2,'h',{name:'B1',V:6}),
-        C('ammeter',7,2,'h',{name:'A1'}),
-        C('voltmeter',11,5,'v',{name:'V1'}),
-        C('lamp',15,5,'v',{name:'L1',R:12}),
-        C('lamp',21,5,'v',{name:'L2',R:24})],
-      wires:[w(5,2,7,2), w(9,2,21,2),
-             w(11,2,11,5), w(11,7,11,10),
-             w(15,2,15,5), w(15,7,15,10),
-             w(21,2,21,5), w(21,7,21,10),
-             w(3,10,21,10), w(3,10,3,2)]})
-  },
-  mixed: {
-    name:'Series + parallel',
-    note:'R1 is in series with the pair R2 ∥ R3. Combine the parallel pair first (20 ∥ 30 = 12 Ω), then add R1: 22 Ω total, so I = 12/22 = 0.55 A.',
-    build:()=>({comps:[
-        C('supply',3,2,'h',{name:'S1',V:12}),
-        C('resistor',8,2,'h',{name:'R1',R:10}),
-        C('resistor',16,5,'v',{name:'R2',R:20}),
-        C('resistor',22,5,'v',{name:'R3',R:30}),
-        C('ammeter',8,10,'h',{name:'A1'})],
-      wires:[w(5,2,8,2), w(10,2,22,2),
-             w(16,2,16,5), w(22,2,22,5),
-             w(16,7,16,10), w(22,7,22,10),
-             w(10,10,22,10), w(8,10,3,10), w(3,10,3,2)]})
-  },
-  divider: {
-    name:'Potential divider',
-    note:'The 12 V splits in the ratio of the resistances: V_out = 12 × 600/(400+600) = 7.2 V. Drag the VR1 slider and watch V1 follow.',
-    build:()=>({comps:[
-        C('supply',3,2,'h',{name:'S1',V:12}),
-        C('resistor',9,2,'h',{name:'R1',R:400}),
-        C('varres',16,2,'h',{name:'VR1',R:600}),
-        C('voltmeter',16,7,'h',{name:'V1'})],
-      wires:[w(5,2,9,2), w(11,2,16,2), w(18,2,22,2), w(22,2,22,10),
-             w(22,10,3,10), w(3,10,3,2), w(16,2,16,7), w(18,2,18,7)]})
-  }
+  series1: {name:'Series 1', note:'One path only, so the <b>same current</b> flows everywhere and the p.d.s add up to the e.m.f.: 10 V ÷ (40 + 20) Ω = 167 mA.', build:()=>fromData('series1')},
+  series2: {name:'Series 2', note:'Three cells in series give 24 V; three lamps in series give 36 Ω, so I = 24 ÷ 36 = 667 mA — the lamp with the largest resistance takes the largest p.d.', build:()=>fromData('series2')},
+  parallel1: {name:'Parallel 1', note:'Two branches across the same 10 V. An ammeter in each branch shows the currents <b>add up</b>: 250 mA + 500 mA = 750 mA from the cell.', build:()=>fromData('parallel1')},
+  parallel2: {name:'Parallel 2', note:'Two batteries give 30 V across three parallel lamps. Each lamp gets the full 30 V; the smallest resistance draws the largest current (3 A + 1.5 A + 0.75 A = 5.25 A).', build:()=>fromData('parallel2')},
+  mixed1: {name:'Mixed 1', note:'R1 is in series with the pair R2 ∥ R3. Combine the parallel pair first (20 ∥ 40 = 13.3 Ω), then add R1: 33.3 Ω total, so I = 10 ÷ 33.3 = 300 mA.', build:()=>fromData('mixed1')},
+  mixed2: {name:'Mixed 2', note:'Two parallel pairs in series across 25 V: (10 ∥ 20 = 6.67 Ω) + (30 ∥ 40 = 17.1 Ω) = 23.8 Ω, so I = 1.05 A, splitting 7 V and 18 V across the two pairs.', build:()=>fromData('mixed2')},
+  pdivider: {name:'Potential Divider', note:'R1 and VR1 <b>in series</b> share the 10 V in the ratio of their resistances. Equal 10 Ω values give 5 V each — drag VR1 in the Builder and watch V1 and V2 trade places.', build:()=>fromData('pdivider')},
+  cdivider: {name:'Current Divider', note:'R1 and VR1 <b>in parallel</b> share the 1 A in the <i>inverse</i> ratio of their resistances. Equal 20 Ω values give 500 mA each — the smaller resistance always takes the larger share.', build:()=>fromData('cdivider')},
 };
 function w(c1,r1,c2,r2){ return {c1,r1,c2,r2}; }
-/* Series 1 / Series 2 are meant to be the teacher's own saved layouts.
-   Use save slot 11 / 12 when it holds something, otherwise fall back to the
-   built-in copy so the preset always works on a fresh machine. */
-function fromSlotOr(slotIdx, builtin){
-  const rec = slotsRead()[slotIdx];
-  if(rec && Array.isArray(rec.comps) && rec.comps.length)
-    return {comps:clone(rec.comps), wires:clone(rec.wires), fromSlot:true, rowTop:rec.rowTop};
-  return builtin;
+/* Same treatment a saved slot gets: keep the circuit's distance from the top
+   of the grid, then clamp it inside whatever grid this window has. */
+function fromData(k){
+  const d = PRESET_DATA[k];
+  return {comps:clone(d.comps), wires:clone(d.wires), rowTop:d.rowTop, baked:true};
 }
 function loadPreset(k){
   const P = PRESETS[k], p = P.build();
   S.comps = p.comps; S.wires = p.wires;
-  if(p.fromSlot){ const dy = S.rowTop - (p.rowTop != null ? p.rowTop : 0); if(dy) shiftRows(dy); }
+  if(p.baked){ const dy = S.rowTop - (p.rowTop != null ? p.rowTop : 0); if(dy) shiftRows(dy); }
   else anchorToTop();
   keepInsideGrid();
   S.sel = -1; S.selWire = -1; clearGroup(); S.undo = [];
-  S.note = PRESETS[k].note +
-    (p.fromSlot ? ' <span class="fromslot">· loaded from save slot ' + (P.slot+1) + '</span>' : '');
+  S.note = PRESETS[k].note;
   $('chipMode').textContent = 'Circuit Tester — ' + PRESETS[k].name;
   recompute();
 }
@@ -2650,8 +2755,9 @@ function setMode(m){
            '<b>Zoom</b> — double-click empty canvas for 2×, then drag to pan.',
            'Editing is locked in this mode.',
            '<b>Shortcuts</b> — middle-click clears the selection'].join('<br>'),
-    rlab :['<b>Sweep the supply</b>, then press ● Record to add a point.',
-           'The I–V graph and the data table build up as you go.'].join('<br>')}[m];
+    rlab :['<b>Sweep the supply</b>, then press ● Point to add one reading.',
+           '<b>⟲ Auto-Points</b> fills the table right across the axis in one go.',
+           'Pick the graph you want in the <b>Graph</b> panel — one is drawn at a time.'].join('<br>')}[m];
   $('chipGrid').style.display = (m === 'rlab') ? 'none' : 'block';
   $('chipHover').style.display = 'none';
   setZoom(1);
@@ -2784,6 +2890,7 @@ bindPills('[data-preset]', 'preset', k => { S.preset = k; loadPreset(k); });
 bindPills('[data-dev]', 'dev', k => {
   const d = RLAB[k];
   S.rlab.dev = k; S.rlab.p = d.pdef; S.rlab.V = d.vdef; S.rlab.rows = [];
+  if((d.graphs || ['iv']).indexOf(S.rlab.graph) < 0) S.rlab.graph = (d.graphs || ['iv'])[0];
   S.panelTab = 'graph';                      // the sliders live in the Graph panel
   recompute();                               // -> updatePanel -> renderRlabControls
 });
@@ -2816,7 +2923,7 @@ $('resetBtn').onclick = () => {
   else if(S.mode === 'test'){ loadPreset(S.preset); }
   else {
     const d = RLAB[S.rlab.dev];
-    S.rlab.p = d.pdef; S.rlab.V = d.vdef; S.rlab.rows = [];
+    S.rlab.p = d.pdef; S.rlab.V = d.vdef; S.rlab.rows = []; S.rlab.graph = 'iv';
   }
   S.show = {grid:true, labels:true, values:true};
   document.querySelectorAll('[data-show]').forEach(b => b.classList.add('active'));
