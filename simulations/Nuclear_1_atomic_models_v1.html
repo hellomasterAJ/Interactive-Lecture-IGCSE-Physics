@@ -1,0 +1,1513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atomic Models — Dalton · Thomson · Rutherford · Bohr</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ================= THEMES (6, exactly) ================= */
+:root{
+  --bg:#0f172a; --card:#1e293b; --border:#334155;
+  --text:#e2e8f0; --text-dim:#94a3b8; --text-muted:#64748b;
+  --accent:#e3b341; --accent-glow:rgba(227,179,65,0.12);
+  --grid:#1e293b; --stage:#0a0f1a;
+  --green:#34d399; --rose:#fb7185; --violet:#a78bfa;
+  --amber:#fbbf24; --blue:#38bdf8; --orange:#fb923c;
+  --foil:#e3b341; --foil2:#8a6a1c; --beam:#5eead4; --screen:#a78bfa;
+  --nucleus:#fb7185; --electron:#38bdf8; --proton:#fb7185; --neutron:#94a3b8;
+  --alpha:#fbbf24; --alphaHit:#fb923c; --glass:#7dd3fc; --plate:#94a3b8;
+  --pudding:#f472b6; --sphereH:#cbd5e1; --sphereO:#ef4444; --photon:#a78bfa;
+  --shell:#475569; --tube:#0e1a2b; --efield:#c084fc;
+}
+.theme-hausnight{
+  --bg:#1a1c20; --card:#26282d; --border:#3a3c42;
+  --text:#FFFFFF; --text-dim:#e0e2e8; --text-muted:#a8aab2;
+  --accent:#F4C01E; --accent-glow:rgba(244,192,30,0.10);
+  --grid:#2a2c32; --stage:#121418;
+  --green:#A6B36A; --rose:#D68B57; --violet:#CBAA6A;
+  --amber:#F4C01E; --blue:#5FB0C4; --orange:#D68B57;
+  --foil:#F4C01E; --foil2:#8a6a12; --beam:#7FD3C4; --screen:#CBAA6A;
+  --nucleus:#D68B57; --electron:#5FB0C4; --proton:#D68B57; --neutron:#a8aab2;
+  --alpha:#F4C01E; --alphaHit:#E0913F; --glass:#8FC3D4; --plate:#a8aab2;
+  --pudding:#D07A8E; --sphereH:#d8dae0; --sphereO:#C4553A; --photon:#CBAA6A;
+  --shell:#4a4c54; --tube:#15181d; --efield:#CBAA6A;
+}
+.theme-neon{
+  --bg:#0d0f1a; --card:#1a1c2e; --border:#2a2d4a;
+  --text:#e0e0f0; --text-dim:#8888b8; --text-muted:#5a5a8a;
+  --accent:#00ffc8; --accent-glow:rgba(0,255,200,0.10);
+  --grid:#1a1c2e; --stage:#080a14;
+  --green:#00ff88; --rose:#ff4499; --violet:#8844ff;
+  --amber:#ffcc00; --blue:#4488ff; --orange:#ff6633;
+  --foil:#ffcc00; --foil2:#7a6200; --beam:#00ffc8; --screen:#8844ff;
+  --nucleus:#ff4499; --electron:#4488ff; --proton:#ff4499; --neutron:#8888b8;
+  --alpha:#ffcc00; --alphaHit:#ff6633; --glass:#00e5ff; --plate:#6a6d9a;
+  --pudding:#ff4499; --sphereH:#b8b8d8; --sphereO:#ff3366; --photon:#8844ff;
+  --shell:#3a3d5a; --tube:#0b0d18; --efield:#ff44cc;
+}
+.theme-light{
+  --bg:#ffffff; --card:#f3f4f6; --border:#d1d5db;
+  --text:#111827; --text-dim:#4b5563; --text-muted:#9ca3af;
+  --accent:#b45309; --accent-glow:rgba(180,83,9,0.10);
+  --grid:#e5e7eb; --stage:#f9fafb;
+  --green:#059669; --rose:#dc2626; --violet:#7c3aed;
+  --amber:#d97706; --blue:#2563eb; --orange:#ea580c;
+  --foil:#b8860b; --foil2:#6b4e06; --beam:#0d9488; --screen:#7c3aed;
+  --nucleus:#dc2626; --electron:#2563eb; --proton:#dc2626; --neutron:#6b7280;
+  --alpha:#b45309; --alphaHit:#ea580c; --glass:#0369a1; --plate:#6b7280;
+  --pudding:#db2777; --sphereH:#94a3b8; --sphereO:#dc2626; --photon:#7c3aed;
+  --shell:#cbd5e1; --tube:#eef2f7; --efield:#9333ea;
+}
+.theme-haus{
+  --bg:#F4EEE0; --card:#FFFFFF; --border:#E4DAC4;
+  --text:#1A1712; --text-dim:#5B5344; --text-muted:#948A74;
+  --accent:#A9820F; --accent-glow:rgba(169,130,15,0.12);
+  --grid:#EBE3D0; --stage:#FCFAF2;
+  --green:#4E7A3F; --rose:#B5502E; --violet:#8A6D3B;
+  --amber:#A9820F; --blue:#4A7AB8; --orange:#A87A4A;
+  --foil:#A9820F; --foil2:#6a5108; --beam:#2F7F6F; --screen:#8A6D3B;
+  --nucleus:#B5502E; --electron:#4A7AB8; --proton:#B5502E; --neutron:#948A74;
+  --alpha:#A9820F; --alphaHit:#A87A4A; --glass:#4A7AB8; --plate:#948A74;
+  --pudding:#B5502E; --sphereH:#A9A091; --sphereO:#B5502E; --photon:#8A6D3B;
+  --shell:#D8CDB6; --tube:#F6F1E6; --efield:#7A5E8C;
+}
+.theme-clay{
+  --bg:#d4c8be; --card:#e5d9d0; --border:#c2b5aa;
+  --text:#2d2622; --text-dim:#6a5a4d; --text-muted:#928078;
+  --accent:#a55a3a; --accent-glow:rgba(165,90,58,0.10);
+  --grid:#ccbfb5; --stage:#eee6de;
+  --green:#5a7a4a; --rose:#a03a3a; --violet:#6a4d7a;
+  --amber:#b07a2a; --blue:#3a5a7a; --orange:#b05a2a;
+  --foil:#b07a2a; --foil2:#6d4a13; --beam:#2f6b60; --screen:#6a4d7a;
+  --nucleus:#a03a3a; --electron:#3a5a7a; --proton:#a03a3a; --neutron:#928078;
+  --alpha:#b07a2a; --alphaHit:#b05a2a; --glass:#3a5a7a; --plate:#928078;
+  --pudding:#a03a3a; --sphereH:#9e9188; --sphereO:#a03a3a; --photon:#6a4d7a;
+  --shell:#bcaea3; --tube:#e8dfd6; --efield:#7a5a8a;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:'Inter',system-ui,-apple-system,sans-serif;
+  padding:8px 12px; height:100vh; overflow:hidden;
+  display:flex; flex-direction:column; align-items:center;
+  background:var(--bg); color:var(--text);
+  transition:background .3s,color .3s; -webkit-font-smoothing:antialiased;
+}
+.container{max-width:1420px;width:100%;height:100%;display:flex;flex-direction:column;min-height:0}
+
+/* ---------- HEADER ZONE (standard 45 px row) ---------- */
+.top-bar{display:flex;justify-content:space-between;align-items:center;
+         margin-bottom:6px;flex-wrap:wrap;gap:8px;flex:0 0 auto}
+.top-bar h1{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.top-bar h1 .sub{font-size:11px;font-weight:500;color:var(--text-dim)}
+.badge-top{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 8px;
+           border-radius:12px;background:var(--accent-glow);color:var(--accent);
+           border:1px solid var(--accent)}
+.top-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.theme-select{background:var(--card);border:1px solid var(--border);color:var(--text);
+              padding:4px 10px;border-radius:8px;cursor:pointer;
+              font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;min-width:110px}
+.brand{background:#F4C01E;border-radius:10px;padding:7px 8px;
+       box-shadow:0 2px 6px rgba(0,0,0,.25);display:flex;align-items:center}
+.brand img{height:31px;width:auto;display:block}
+@media(max-width:640px){.brand{display:none}}
+.theme-haus .badge-top{background:#F4C01E;color:#1A1712;border-color:#1A1712}
+
+/* ---------- era tabs ---------- */
+.eratabs{flex:0 0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:6px}
+.eratab{background:var(--card);border:1px solid var(--border);border-radius:11px;
+        padding:5px 8px;cursor:pointer;transition:.15s;color:var(--text-dim);
+        display:flex;flex-direction:column;align-items:center;gap:1px;height:44px;justify-content:center}
+.eratab:hover{color:var(--text);border-color:var(--text-muted)}
+.eratab .nm{font-size:13px;font-weight:700;letter-spacing:.2px}
+.eratab .yr{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text-muted)}
+.eratab.active{background:var(--accent-glow);border-color:var(--accent);color:var(--accent)}
+.eratab.active .yr{color:var(--accent)}
+
+/* ---------- toolbar: exactly 2 fixed rows ---------- */
+.toolbar{flex:0 0 auto;padding:4px 12px;background:var(--card);
+         border:1px solid var(--border);border-radius:14px}
+.trow{display:flex;align-items:center;gap:8px;height:32px;flex-wrap:nowrap;overflow:hidden}
+.tgroup{display:flex;align-items:center;gap:5px}
+.tlabel{font-size:9px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;
+        color:var(--text-muted);margin-right:2px;white-space:nowrap}
+.tsep{width:1px;height:20px;background:var(--border);margin:0 3px}
+.tbtn{background:var(--bg);color:var(--text-dim);border:1px solid var(--border);
+      border-radius:7px;padding:4px 9px;font-size:11px;font-weight:600;
+      font-family:'Inter',sans-serif;cursor:pointer;transition:.14s;white-space:nowrap}
+.tbtn:hover{color:var(--text);border-color:var(--text-muted)}
+.tbtn.on{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.tbtn.primary{background:var(--blue);color:var(--bg);border-color:var(--blue)}
+.tbtn.primary:hover{filter:brightness(1.12)}
+.tbtn.fire{background:var(--orange);color:var(--bg);border-color:var(--orange)}
+.pills{display:flex;gap:3px}
+.pill{background:var(--bg);color:var(--text-dim);border:1px solid var(--border);
+      border-radius:7px;padding:4px 9px;font-size:11px;font-weight:600;
+      font-family:'JetBrains Mono',monospace;cursor:pointer;transition:.14s}
+.pill:hover{color:var(--text)}
+.pill.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
+.erabadge{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;
+          font-weight:600;padding:4px 10px;border-radius:8px;
+          background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent);
+          white-space:nowrap}
+.slot-hidden{visibility:hidden}
+/* very narrow windows: drop the era badge rather than let the row clip */
+@media(max-width:1250px){ .erabadge{display:none} }
+
+/* ---------- canvas ---------- */
+/* v1.2.2: canvas reduced 20 % in the vertical direction (logical 1200x416) */
+.cvwrap{flex:0 0 auto;
+        height:clamp(200px, min(48.5vh, calc(100vh - 420px)), 528px);
+        margin-top:7px;border:1px solid var(--border);border-radius:14px;
+        position:relative;overflow:hidden;background:var(--stage)}
+#cv{display:block;width:100%;height:100%}
+.chip{position:absolute;font-family:'JetBrains Mono',monospace;font-size:10px;
+      line-height:1.45;padding:5px 9px;border-radius:9px;background:var(--card);
+      border:1px solid var(--border);color:var(--text-dim);pointer-events:none;
+      max-width:44%;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+#chipInfo{top:8px;left:8px;color:var(--text);max-width:52%}
+#chipInfo b{color:var(--accent)}
+#chipStatus{top:8px;right:8px;text-align:right}
+#chipWarn{top:8px;left:50%;transform:translateX(-50%);text-align:center;
+         border-color:var(--orange);color:var(--orange);display:none}
+#hintEl{bottom:8px;right:8px;text-align:right;font-size:9.5px;color:var(--text-muted)}
+
+/* ---------- below-canvas panels (46 / 54) ---------- */
+.below{flex:1 1 auto;min-height:0;overflow-y:auto;margin-top:7px;
+       display:grid;grid-template-columns:46fr 54fr;gap:8px;padding-bottom:2px}
+.col{display:flex;flex-direction:column;gap:8px;min-width:0}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:8px 11px}
+.phead{width:100%;display:flex;align-items:center;gap:6px;margin-bottom:6px;
+       background:none;border:none;padding:0;cursor:pointer;text-align:left;
+       font-family:'Inter',sans-serif;font-size:11px;font-weight:700;
+       letter-spacing:.4px;text-transform:uppercase;color:var(--accent)}
+.phead:hover{filter:brightness(1.18)}
+.phead:focus-visible{outline:1px solid var(--accent);outline-offset:3px;border-radius:4px}
+.phead .chev{margin-left:auto;font-size:11px;color:var(--text-muted);
+             transition:transform .18s}
+.panel.collapsed .phead{margin-bottom:0}
+.panel.collapsed .pbody{display:none}
+.panel.collapsed .chev{transform:rotate(-90deg)}
+table.feat{width:100%;border-collapse:collapse;font-size:11.5px}
+table.feat th{text-align:left;font-size:9px;letter-spacing:.6px;text-transform:uppercase;
+              color:var(--text-muted);padding:3px 6px;border-bottom:1px solid var(--border);font-weight:700}
+table.feat td{padding:4px 6px;border-bottom:1px solid var(--border);vertical-align:top;color:var(--text-dim)}
+table.feat td:first-child{color:var(--text);font-weight:600;width:38%}
+table.feat tr:last-child td{border-bottom:none}
+.ptext{font-size:11.5px;line-height:1.55;color:var(--text-dim)}
+.ptext b{color:var(--text)}
+.why{border-left:3px solid var(--orange)}
+.why .phead{color:var(--orange)}
+.nextp{display:inline-block;margin-top:5px;font-family:'JetBrains Mono',monospace;
+        font-size:10px;font-weight:600;padding:2px 8px;border-radius:7px;
+        background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent)}
+.info{border-left:3px solid var(--blue)}
+.info .phead{color:var(--blue)}
+.exam{margin-top:6px;padding:6px 8px;border-radius:8px;background:var(--accent-glow);
+       border:1px solid var(--accent);font-size:11px;line-height:1.5;color:var(--text)}
+.exam ol{margin:4px 0 0 16px}
+.exam li{margin-bottom:2px}
+.exam .tag{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;
+           color:var(--accent);letter-spacing:.5px}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ===== HEADER ZONE ===== -->
+  <div class="top-bar">
+    <h1>⚛️ Atomic Models
+      <span class="badge-top">v1.2.2</span>
+      <span class="sub">IGCSE Physics 0625 · Topic 5.1 Nuclear Physics</span>
+    </h1>
+    <div class="top-right">
+      <!-- No mode panel: this sim has one real mode (explore / simulate) -->
+      <select class="theme-select" id="themeSel" title="Theme">
+        <option value="dark">🌙 Classic Dark</option>
+        <option value="hausnight">⌂ HAUS Night</option>
+        <option value="neon">🌃 Cyberpunk Neon</option>
+        <option value="light">☀️ Classic Light</option>
+        <option value="haus">⌂ HAUS Day</option>
+        <option value="clay">🏺 Warm Clay</option>
+      </select>
+      <div class="brand" aria-label="HAUS Academy">
+      <img src="data:image/png;base64,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" alt="HAUS Academy" style="height:31px;width:auto;display:block;">
+    </div>
+    </div>
+  </div>
+
+  <!-- ===== ERA TABS ===== -->
+  <div class="eratabs" id="eraTabs">
+    <button class="eratab active" data-era="0"><span class="nm">Dalton</span><span class="yr">1803</span></button>
+    <button class="eratab" data-era="1"><span class="nm">Thomson</span><span class="yr">1897</span></button>
+    <button class="eratab" data-era="2"><span class="nm">Rutherford ⭐</span><span class="yr">1911</span></button>
+    <button class="eratab" data-era="3"><span class="nm">Bohr</span><span class="yr">1913</span></button>
+  </div>
+
+  <!-- ===== TOOLBAR — ONE fixed row: SHOW | STORY | PLAY | GOLD FOIL | RESET ===== -->
+  <div class="toolbar">
+    <div class="trow">
+      <div class="tgroup">
+        <span class="tlabel">Show</span>
+        <button class="tbtn on" id="btnParticles" title="Show / hide the moving particles">⚛️ Particles</button>
+        <button class="tbtn on" id="btnLabels" title="Show / hide the drawn labels">🏷 Labels</button>
+        <button class="tbtn on" id="btnAngles" title="Show / hide the angle-of-deviation detail: the 0° / ±90° / 180° marks, the θ arc and the legend">📐 Angles</button>
+      </div>
+      <div class="tsep"></div>
+      <div class="tgroup">
+        <span class="tlabel">Story</span>
+        <button class="tbtn primary" id="btnStory" title="Auto-advance Dalton to Bohr with narration">▶ Story</button>
+      </div>
+      <div class="tsep"></div>
+      <div class="tgroup">
+        <span class="tlabel">Play</span>
+        <button class="tbtn primary" id="btnPlay" title="Play / pause the animation and the Story dwell">▶ Play</button>
+        <div class="pills" id="speedPills">
+          <button class="pill" data-sp="0.5">0.5×</button>
+          <button class="pill active" data-sp="1">1×</button>
+          <button class="pill" data-sp="2">2×</button>
+        </div>
+      </div>
+      <div class="tsep" id="fieldSep"></div>
+      <div class="tgroup" id="fieldGroup">
+        <span class="tlabel">Field</span>
+        <button class="tbtn on" id="btnField" title="Show / hide the electric field between the deflection plates">⚡ E-field</button>
+      </div>
+      <div class="tsep" id="foilSep"></div>
+      <div class="tgroup" id="foilGroup">
+        <span class="tlabel">Gold Foil</span>
+        <button class="tbtn fire" id="btnBurst" title="Fire 120 alpha particles at once (works while paused)">🔥 Fire burst</button>
+      </div>
+      <div class="tsep"></div>
+      <button class="tbtn" id="btnReset" title="Reset this era only — does not change the selected era">↺ Reset</button>
+      <div class="erabadge" id="eraBadge">Solid Sphere Model · 1803</div>
+    </div>
+  </div>
+
+  <!-- ===== CANVAS ===== -->
+  <div class="cvwrap" id="cvwrap">
+    <canvas id="cv"></canvas>
+    <div class="chip" id="chipInfo"></div>
+    <div class="chip" id="chipStatus"></div>
+    <div class="chip" id="chipWarn"></div>
+    <div class="chip" id="hintEl"></div>
+  </div>
+
+  <!-- ===== BELOW-CANVAS PANELS (46 / 54) =====
+       LEFT  : Model Features  ->  Info
+       RIGHT : The Experiment  ->  Why it changed                       -->
+  <div class="below">
+    <div class="col">
+      <div class="panel" id="pFeat">
+        <button class="phead" aria-expanded="true" title="Click to fold / unfold this panel">
+          📋 Model Features<span class="chev">▾</span></button>
+        <div class="pbody">
+          <table class="feat">
+            <thead><tr><th>Feature</th><th>Detail</th></tr></thead>
+            <tbody id="featBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel info" id="pInfo">
+        <button class="phead" aria-expanded="true" title="Click to fold / unfold this panel">
+          💡 Info<span class="chev">▾</span></button>
+        <div class="pbody"><div class="ptext" id="infoText"></div></div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="panel" id="pExp">
+        <button class="phead" aria-expanded="true" title="Click to fold / unfold this panel">
+          🧪 The Experiment<span class="chev">▾</span></button>
+        <div class="pbody"><div class="ptext" id="expText"></div></div>
+      </div>
+      <div class="panel why" id="pWhy">
+        <button class="phead" aria-expanded="true" title="Click to fold / unfold this panel">
+          ⚠️ Why it changed<span class="chev">▾</span></button>
+        <div class="pbody"><div class="ptext" id="whyText"></div></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<script>
+/* =====================================================================
+   Atomic Models — Dalton / Thomson / Rutherford / Bohr      v1.0.0
+   HAUS Academy · IGCSE Physics 0625 · Topic 5.1 Nuclear Physics
+   Single self-contained file. Everything drawn procedurally on Canvas.
+   ===================================================================== */
+'use strict';
+
+const $ = id => document.getElementById(id);
+
+/* ---------- logical canvas ---------- */
+const W = 1200, H = 416;      /* v1.1.0: 20 % shorter than the original 520 */
+const cv = $('cv'), CX = cv.getContext('2d');
+let scale = 1, offX = 0, offY = 0;
+
+/* ---------- single state object ---------- */
+const S = {
+  era: 0,
+  playing: true,
+  speed: 1,
+  showParticles: true,
+  showLabels: true,
+  showField: true,           /* Thomson: E field between the plates */
+  showAngles: true,          /* Rutherford: angle-of-deviation annotations */
+  story: false,
+  storyTimer: 0,
+  /* per-era animation clocks */
+  t: [0, 0, 0, 0],
+  /* Rutherford */
+  alphas: [],
+  flashes: [],
+  spawnAcc: 0,
+  stats: { passed: 0, deflected: 0, bounced: 0 },
+  warn: ''
+};
+
+/* ---------- Rutherford geometry (logical 1200x416) ------------------------
+   SINGLE SOURCE OF GEOMETRY. Everything on the beam line is derived from one
+   number, RU.axisY, so the radium source, the lead collimator slit, the gold
+   foil and the ZnS detector ring can never drift out of alignment. This
+   matches the real Geiger-Marsden layout: source -> collimating aperture ->
+   foil at the CENTRE of the circular fluorescent screen.
+   -------------------------------------------------------------------------*/
+const RU = (function(){
+  const axisY = 208;                              // the one beam axis
+  return {
+    axisY:    axisY,
+    src:      { x: 70, y: axisY - 52, w: 70, h: 104 },   // lead-shielded radium
+    slotH:    20,                                  // emission slot in the source
+    spawnX:   140,                                 // right face of the source
+    colX:     332, colW: 26, colGap: 26,           // lead collimator + its aperture
+    vx0:      300, vxr: 60,
+    vyr:      60,                                  // wide emission cone; the
+                                                   // collimator absorbs the rest
+    foilX:    760, foilHalf: 160,
+    screenR:  180,                                 // ZnS ring, centred ON the foil
+    P_BOUNCE: 1 / 8000,
+    P_DEFLECT: 1 / 60,
+    CAP:      3000,                                // steady state ~1200
+    RATE:     480,                                 // emitted/s; ~63 % survive
+                                                   // the collimator -> ~300/s
+                                                   // reach the foil, as specified
+    BURST:    170                                  // ~120 survive the collimator
+  };
+})();
+RU.foilY0 = RU.axisY - RU.foilHalf;
+RU.foilY1 = RU.axisY + RU.foilHalf;
+RU.screenCx = RU.foilX;
+RU.screenCy = RU.axisY;
+
+/* ---------- story ---------- */
+const STORY_DWELL = 3.2;   // seconds per era at 1x
+
+/* =====================================================================
+   ERA CONTENT
+   ===================================================================== */
+const ERAS = [
+{
+  key:'dalton', name:'Dalton', year:1803, model:'Solid Sphere Model',
+  summary:'<b>Dalton 1803</b> — the atom is a tiny solid indivisible sphere.',
+  narr:'1803 — John Dalton pictures the atom as a solid, indivisible sphere. Atoms of one element are all identical, and they combine in simple whole-number ratios: water 2:1, carbon dioxide 1:2, ammonia 3:1, methane 4:1.',
+  hint:'Four compounds build in turn: H₂O · CO₂ · NH₃ · CH₄.<br>Each has its own fixed whole-number ratio.<br>No experiment here — this model came from chemistry.',
+  status:'',
+  feats:[
+    ['Structure','Atoms are indivisible <b>solid spheres</b> — they cannot be split'],
+    ['Same element','All atoms of one element are <b>identical</b> (same mass, same size)'],
+    ['Compounds','Atoms combine in <b>fixed whole-number ratios</b> — H₂O 2:1 · CO₂ 1:2 · NH₃ 3:1 · CH₄ 4:1'],
+    ['Sub-structure','<b>None</b> — no nucleus, no electrons'],
+    ['Charge','Not described — the model says nothing about charge']
+  ],
+  exp:'<b>No experiment.</b> Dalton’s model was reasoned from the chemical laws of his time — the <b>conservation of mass</b> and the <b>law of definite (constant) proportions</b>. Because a compound always contains the same elements in the same fixed proportion by mass, Dalton concluded that matter must be made of discrete particles that combine in simple whole-number ratios. The canvas builds four of them in turn: <b>H₂O</b> (2 H : 1 O), <b>CO₂</b> (1 C : 2 O), <b>NH₃</b> (3 H : 1 N) and <b>CH₄</b> (4 H : 1 C) — never 1.7 H to 1 O.',
+  why:'The model could not explain <b>electricity</b> — why matter can be charged, why current flows, or how static electricity works. A solid indivisible sphere has no parts to move. The electron had not yet been discovered.',
+  next:'➜ next: Thomson (1897)',
+  info:'<b>John Dalton</b>, 1803 (Manchester). Dalton started <b>modern atomic theory</b> — the first model to treat atoms as real physical objects with measurable masses rather than a philosophical idea.'
+},
+{
+  key:'thomson', name:'Thomson', year:1897, model:'Plum Pudding Model',
+  summary:'<b>Thomson 1897</b> — cathode rays bend toward the + plate, so they are negative.',
+  narr:'1897 — J. J. Thomson fires cathode rays through a vacuum tube. The beam bends toward the positive plate, so the rays must be negatively charged particles: electrons.',
+  hint:'<b>⚡ E-field</b> shows the field between the plates.<br><b>E</b> points + → − (down), but the electron is negative,<br>so <b>F = −eE</b> pushes it <b>UP</b>, toward the + plate.',
+  status:'CRT &middot; beam deflection<br><b>E</b> down &middot; <b>F</b> on e⁻ up<br>bends toward <b>+</b> plate',
+  feats:[
+    ['Structure','A <b>sphere of positive charge</b> with electrons embedded in it'],
+    ['Electrons','Tiny <b>negative</b> particles — the “plums” in the pudding'],
+    ['Field test','In a field <b>E</b> the force is <b>F = −eE</b> — opposite to <b>E</b>, so the beam bends to the <b>+</b> plate'],
+    ['Overall charge','<b>Neutral</b> — the positive dough exactly cancels the electrons'],
+    ['Mass','Spread <b>evenly</b> throughout the whole sphere'],
+    ['Nucleus','<b>None</b> — no concentrated centre of charge or mass']
+  ],
+  exp:'<b>Cathode ray tube (CRT).</b> A beam is emitted from the <b>cathode (−)</b>, accelerated through a hole in the <b>anode (+)</b>, and passed between two charged deflection plates. The beam bends <b>toward the positive plate</b>. Since opposite charges attract, the cathode rays must carry <b>negative</b> charge — and they came out of the metal cathode, so <b>every atom must contain these negative particles</b>. Thomson also measured their charge-to-mass ratio and found them ~1800× lighter than a hydrogen atom.',
+  why:'The plum-pudding atom predicts that <b>every</b> α particle should sail almost straight through a thin foil, because the positive charge is spread thinly over the whole atom. It could not explain Rutherford’s α-scattering result — a few α particles bouncing straight back.',
+  next:'➜ next: Rutherford (1911)',
+  info:'<b>J. J. Thomson</b>, 1897 (Cavendish Laboratory, Cambridge). Discovered the <b>electron</b> — the first sub-atomic particle ever found, and the first proof that the atom is <i>not</i> indivisible.'
+},
+{
+  key:'ruther', name:'Rutherford', year:1911, model:'Nuclear Model',
+  summary:'<b>Rutherford 1911</b> — gold foil experiment. Fire α particles and count what happens.',
+  narr:'1911 — Geiger and Marsden fire alpha particles at gold foil. Most pass straight through, some are deflected, and about one in eight thousand bounces straight back. The atom must have a tiny, dense, positive nucleus.',
+  hint:'<b>📐 Angles</b> shows/hides the deviation detail.<br>θ is measured from the <b>original direction</b> of travel — the foil<br>plane is the <b>90°</b> boundary. <b>🔥 Fire burst</b> fires 170 α at once.',
+  status:'',
+  feats:[
+    ['Structure','The atom is <b>mostly empty space</b>'],
+    ['Deviation θ','Measured from the <b>original direction of travel</b> — 0° = undeviated'],
+    ['Small angle','θ &lt; 90° — <b>deflected</b>, still travelling forwards'],
+    ['Large angle','θ &gt; 90° — <b>deflected through a large angle</b>; at 180° it is <b>bounced straight back</b>'],
+    ['Nucleus','A <b>tiny, dense, positively charged</b> nucleus at the centre'],
+    ['Mass','<b>Almost all</b> the atom’s mass is in the nucleus'],
+    ['Size','Nucleus ≈ <b>1/10 000</b> of the atom’s diameter'],
+    ['Electrons','Orbit the nucleus far out, in the empty space']
+  ],
+  exp:'<b>Geiger–Marsden gold foil experiment.</b> A radium source fires <b>α particles</b> (helium nuclei: 2 protons + 2 neutrons, charge <b>+2e</b>) at a gold foil about <b>2 000 atoms thick</b>. A movable <b>zinc-sulfide screen</b> flashes wherever an α particle lands, and the flashes are counted by eye through a microscope.<div class="exam"><span class="tag">ANGLE OF DEVIATION θ — the words the exam uses</span><ol><li><b>θ = 0°</b> — the α particle is <b>undeviated</b>: it passes straight through, its path unchanged.</li><li><b>θ &lt; 90°</b> — <b>deflected through a small angle</b>: its path is changed but it still travels forwards, past the foil.</li><li><b>θ &gt; 90°</b> — <b>deflected through a large angle</b>; at θ = 180° it is <b>bounced (reflected) straight back</b> toward the source.</li></ol>θ is always measured from the <b>original direction of travel</b>, so the plane of the foil itself is the 90° boundary.</div>',
+  why:'Classical physics says an orbiting electron is <b>accelerating</b>, so it must continuously <b>radiate energy</b> — it would spiral into the nucleus in a fraction of a second and the atom would collapse. Atoms are stable, so something was missing.',
+  next:'➜ next: Bohr (1913)',
+  info:'<b>Ernest Rutherford</b>, 1911 (Manchester), with Hans Geiger and Ernest Marsden.<div class="exam"><span class="tag">⭐ EXAM TIP — 3 OBSERVATIONS → 3 CONCLUSIONS</span><ol><li><b>Most α pass straight through, undeviated (θ = 0°)</b> → the atom is mostly <b>empty space</b></li><li><b>Some α are deflected through a small angle (θ &lt; 90°)</b> → there is a <b>tiny dense positive nucleus</b> (α is + and is repelled)</li><li><b>≈ 1 in 8000 is deflected through a large angle (θ &gt; 90°) — bounced back</b> → the nucleus holds <b>almost all the mass</b></li></ol></div>'
+},
+{
+  key:'bohr', name:'Bohr', year:1913, model:'Energy Levels Model',
+  summary:'<b>Bohr 1913</b> — electrons sit in fixed shells; jumps emit or absorb photons.',
+  narr:'1913 — Niels Bohr fixes the collapsing atom. Electrons are only allowed in certain energy levels, and light is emitted or absorbed only when an electron jumps between them.',
+  hint:'Shells hold <b>2, 8, 8</b> electrons — fixed energy levels.<br>Electron jumps <b>up</b> → photon <b>absorbed</b>.<br>Electron falls <b>down</b> → photon <b>emitted</b> (a spectral line).',
+  status:'Shells &middot; <b>2, 8, 8</b><br>jump → photon',
+  feats:[
+    ['Structure','Nucleus in the centre, electrons in <b>fixed shells</b> (energy levels)'],
+    ['Shells','Hold <b>2, 8, 8, …</b> electrons — filled from the inside out'],
+    ['Stability','An electron in a shell does <b>not</b> radiate — the atom is stable'],
+    ['Photons','Jumping between levels <b>emits or absorbs</b> a photon'],
+    ['Energy','Levels are <b>quantised</b> — only certain energies are allowed']
+  ],
+  exp:'<b>Evidence: line spectra.</b> Hot hydrogen gas does not glow with every colour — it emits only a few sharp coloured lines. Bohr explained this by allowing electrons only in fixed energy levels: the photon energy is exactly the <b>gap</b> between two levels, so only certain colours can appear. Each element has its own set of gaps, and therefore its own unique spectral fingerprint.',
+  why:'★ <b>End of the IGCSE timeline.</b> Beyond this point the model is refined further (electron clouds, orbitals, quantum mechanics), but that is A-Level and above.',
+  next:'★ end of IGCSE timeline',
+  info:'<b>Niels Bohr</b>, 1913 (Copenhagen / Manchester). <b>Beyond the IGCSE syllabus</b> — shown here for the visual concept only. It bridges to A-Level: you need it to explain line spectra, and it is the picture behind the electron-shell diagrams used in Chemistry.'
+}
+];
+
+/* =====================================================================
+   PANELS + CHIPS
+   ===================================================================== */
+function updatePanels(){
+  const E = ERAS[S.era];
+  $('featBody').innerHTML = E.feats
+    .map(r => '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td></tr>').join('');
+  $('expText').innerHTML  = E.exp;
+  $('whyText').innerHTML  = E.why + '<br><span class="nextp">' + E.next + '</span>';
+  $('infoText').innerHTML = E.info;
+  $('eraBadge').textContent = E.model + ' · ' + E.year;
+  $('hintEl').innerHTML = E.hint;
+  [].forEach.call(document.querySelectorAll('.eratab'), b => {
+    b.classList.toggle('active', +b.dataset.era === S.era);
+  });
+  /* Era-specific toolbar groups. They are hidden with visibility (slot-hidden),
+     never display:none, so the toolbar row width never changes.               */
+  const th = (S.era === 1), ru = (S.era === 2);
+  $('btnAngles').classList.toggle('slot-hidden', !ru);
+  $('fieldGroup').classList.toggle('slot-hidden', !th);
+  $('fieldSep').classList.toggle('slot-hidden', !th);
+  $('foilGroup').classList.toggle('slot-hidden', !ru);
+  $('foilSep').classList.toggle('slot-hidden', !ru);
+  updateChips();
+}
+
+function updateChips(){
+  const E = ERAS[S.era];
+  $('chipInfo').innerHTML = S.story
+    ? '▶ <b>Story</b> — ' + E.narr
+    : E.summary;
+  if (S.era === 0){
+    const m = MOLS[daltonIndex()];
+    $('chipStatus').innerHTML = 'Compound <b>' + m.f + '</b><br>ratio <b>' + m.ratio + '</b><br>' + m.shape;
+  } else if (S.era === 2){
+    const st = S.stats, tot = st.passed + st.deflected + st.bounced;
+    let ratio = '—';
+    if (st.bounced > 0) ratio = '≈ 1 in ' + Math.round(tot / st.bounced).toLocaleString();
+    $('chipStatus').innerHTML =
+      'Passed <b>'    + st.passed.toLocaleString()    + '</b><br>' +
+      'Deflected <b>' + st.deflected.toLocaleString() + '</b><br>' +
+      'Bounced <b>'   + st.bounced.toLocaleString()   + '</b><br>' +
+      'Bounce ratio <b>' + ratio + '</b>';
+  } else {
+    $('chipStatus').innerHTML = E.status;
+  }
+  const wEl = $('chipWarn');
+  wEl.style.display = S.warn ? 'block' : 'none';
+  wEl.innerHTML = S.warn;
+}
+
+/* =====================================================================
+   CANVAS SETUP — DPR aware, letterboxed, never moves
+   ===================================================================== */
+function setupCanvas(){
+  const wrap = $('cvwrap');
+  const cw = wrap.clientWidth, ch = wrap.clientHeight;
+  const dpr = window.devicePixelRatio || 1;
+  cv.width  = Math.round(cw * dpr);
+  cv.height = Math.round(ch * dpr);
+  cv.style.width = cw + 'px';
+  cv.style.height = ch + 'px';
+  scale = Math.min(cw / W, ch / H);
+  offX = (cw - W * scale) / 2;
+  offY = (ch - H * scale) / 2;
+  CX.setTransform(dpr, 0, 0, dpr, 0, 0);
+  draw();
+}
+new ResizeObserver(setupCanvas).observe($('cvwrap'));
+window.addEventListener('resize', setupCanvas);
+
+function cssVar(n){ return getComputedStyle(document.body).getPropertyValue(n).trim() || '#888'; }
+
+/* =====================================================================
+   SMALL DRAWING HELPERS
+   ===================================================================== */
+function sphere(x, y, r, col, hi){
+  const g = CX.createRadialGradient(x - r * .35, y - r * .38, r * .08, x, y, r);
+  g.addColorStop(0, hi || '#ffffff');
+  g.addColorStop(.32, col);
+  g.addColorStop(1, shade(col, -.45));
+  CX.fillStyle = g;
+  CX.beginPath(); CX.arc(x, y, r, 0, 6.2832); CX.fill();
+  CX.strokeStyle = shade(col, -.55); CX.lineWidth = 1.1; CX.stroke();
+}
+function shade(hex, amt){
+  hex = (hex || '#888888').replace('#','');
+  if (hex.length === 3) hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+  let r = parseInt(hex.substr(0,2),16), g = parseInt(hex.substr(2,2),16), b = parseInt(hex.substr(4,2),16);
+  if (isNaN(r)) { r = g = b = 136; }
+  const f = v => Math.max(0, Math.min(255, Math.round(amt < 0 ? v * (1 + amt) : v + (255 - v) * amt)));
+  return 'rgb(' + f(r) + ',' + f(g) + ',' + f(b) + ')';
+}
+function label(txt, x, y, col, size, align, weight, noPlate){
+  if (!S.showLabels) return;
+  CX.save();
+  CX.font = (weight || 600) + ' ' + (size || 13) + "px 'Inter',sans-serif";
+  CX.textAlign = align || 'center';
+  CX.textBaseline = 'middle';
+  const w = CX.measureText(txt).width;
+  const pad = 4;
+  if (!noPlate){
+    CX.globalAlpha = .74;
+    CX.fillStyle = cssVar('--stage');
+    const bx = align === 'left' ? x - pad : align === 'right' ? x - w - pad : x - w/2 - pad;
+    CX.fillRect(bx, y - (size||13)*.72, w + pad*2, (size||13)*1.44);
+    CX.globalAlpha = 1;
+  }
+  CX.fillStyle = col || cssVar('--text');
+  CX.fillText(txt, x, y);
+  CX.restore();
+}
+function arrow(x1, y1, x2, y2, col, lw, head){
+  CX.strokeStyle = col; CX.lineWidth = lw || 2; CX.lineCap = 'round';
+  CX.beginPath(); CX.moveTo(x1, y1); CX.lineTo(x2, y2); CX.stroke();
+  const a = Math.atan2(y2 - y1, x2 - x1), h = head || 9;
+  CX.fillStyle = col;
+  CX.beginPath();
+  CX.moveTo(x2, y2);
+  CX.lineTo(x2 - h * Math.cos(a - .4), y2 - h * Math.sin(a - .4));
+  CX.lineTo(x2 - h * Math.cos(a + .4), y2 - h * Math.sin(a + .4));
+  CX.closePath(); CX.fill();
+}
+function card(x, y, w, h, title){
+  CX.save();
+  CX.fillStyle = cssVar('--card'); CX.globalAlpha = .93;
+  roundRect(x, y, w, h, 12); CX.fill();
+  CX.globalAlpha = 1;
+  CX.strokeStyle = cssVar('--border'); CX.lineWidth = 1; CX.stroke();
+  CX.restore();
+  if (title) label(title, x + w/2, y + 15, cssVar('--text-muted'), 11, 'center', 700);
+}
+function roundRect(x, y, w, h, r){
+  CX.beginPath();
+  CX.moveTo(x + r, y);
+  CX.arcTo(x + w, y, x + w, y + h, r);
+  CX.arcTo(x + w, y + h, x, y + h, r);
+  CX.arcTo(x, y + h, x, y, r);
+  CX.arcTo(x, y, x + w, y, r);
+  CX.closePath();
+}
+const ease = t => t < .5 ? 2*t*t : 1 - Math.pow(-2*t + 2, 2)/2;
+
+/* =====================================================================
+   ERA 0 — DALTON 1803 : solid spheres combining in whole-number ratios
+   Four compounds, one per element in the key (H, C, N, O). Shapes are the
+   real molecular geometries: H2O bent 104.5 deg, CO2 linear, NH3 trigonal
+   pyramidal, CH4 tetrahedral (tripod + one bond, near atom drawn larger).
+   ===================================================================== */
+const D_CY = 186, D_CYCLE = 4.5;
+/* a = bond direction in canvas radians (y down); d = bond length;
+   front = atom pointing toward the viewer -> drawn last, larger, bolder bond */
+const MOLS = [
+  { f:'H₂O', nm:'water',          ratio:'2 H : 1 O', shape:'bent 104.5°',
+    cx:150, core:{ el:'O', r:32, c:'--sphereO', tc:'#ffffff' },
+    atoms:[ { el:'H', r:19, c:'--sphereH', a: 0.659, d:58 },
+            { el:'H', r:19, c:'--sphereH', a: 2.483, d:58 } ] },
+  { f:'CO₂', nm:'carbon dioxide', ratio:'1 C : 2 O', shape:'linear 180°',
+    cx:450, core:{ el:'C', r:30, c:'--neutron', tc:'#ffffff' },
+    atoms:[ { el:'O', r:32, c:'--sphereO', a: 0,      d:64 },
+            { el:'O', r:32, c:'--sphereO', a: 3.1416, d:64 } ] },
+  { f:'NH₃', nm:'ammonia',        ratio:'3 H : 1 N', shape:'trigonal pyramidal',
+    cx:750, core:{ el:'N', r:30, c:'--electron', tc:'#ffffff' },
+    atoms:[ { el:'H', r:19, c:'--sphereH', a: 0.5236, d:58 },
+            { el:'H', r:19, c:'--sphereH', a: 2.6180, d:58 },
+            { el:'H', r:19, c:'--sphereH', a: 1.5708, d:44, front:true } ] },
+  { f:'CH₄', nm:'methane',        ratio:'4 H : 1 C', shape:'tetrahedral',
+    cx:1050, core:{ el:'C', r:30, c:'--neutron', tc:'#ffffff' },
+    atoms:[ { el:'H', r:19, c:'--sphereH', a:-1.5708, d:58 },
+            { el:'H', r:19, c:'--sphereH', a: 0.5236, d:58 },
+            { el:'H', r:19, c:'--sphereH', a: 2.6180, d:58 },
+            { el:'H', r:19, c:'--sphereH', a: 1.5708, d:44, front:true } ] }
+];
+/* which compound is assembling right now — used by draw() and by the chip */
+function daltonIndex(){
+  const n = MOLS.length;
+  return ((Math.floor(Math.max(0, S.t[0]) / D_CYCLE) % n) + n) % n;
+}
+
+function drawMolecule(m, k, active){
+  const cx = m.cx, cy = D_CY;
+  /* k = 0 fully apart, 1 fully bonded */
+  const parts = m.atoms.map(at => {
+    const dist = at.d * k + (at.d + 96) * (1 - k);
+    return { at: at,
+             x: cx + Math.cos(at.a) * dist,
+             y: cy + Math.sin(at.a) * dist };
+  });
+  /* bonds fade in only once the atoms have arrived */
+  if (k > .82){
+    CX.save();
+    CX.globalAlpha = (k - .82) / .18;
+    CX.strokeStyle = cssVar('--text-muted'); CX.lineCap = 'round';
+    parts.forEach(p => {
+      CX.lineWidth = p.at.front ? 9 : 6.5;
+      CX.beginPath(); CX.moveTo(cx, cy); CX.lineTo(p.x, p.y); CX.stroke();
+    });
+    CX.restore();
+  }
+  if (S.showParticles){
+    /* far atoms first, the near ("front") atom last and a little larger */
+    const order = parts.slice().sort((a, b) => (a.at.front ? 1 : 0) - (b.at.front ? 1 : 0));
+    order.filter(p => !p.at.front).forEach(p => {
+      sphere(p.x, p.y, p.at.r, cssVar(p.at.c));
+      label(p.at.el, p.x, p.y, '#1b2430', 13, 'center', 800, true);
+    });
+    sphere(cx, cy, m.core.r, cssVar(m.core.c));
+    label(m.core.el, cx, cy, m.core.tc, 17, 'center', 800, true);
+    order.filter(p => p.at.front).forEach(p => {
+      sphere(p.x, p.y, p.at.r + 3, cssVar(p.at.c));
+      label(p.at.el, p.x, p.y, '#1b2430', 13, 'center', 800, true);
+    });
+  }
+  label(m.f, cx, 300, active ? cssVar('--accent') : cssVar('--text'), 16, 'center', 800);
+  label(m.ratio, cx, 322, active ? cssVar('--accent') : cssVar('--text-dim'), 12, 'center', 700);
+  label(m.nm + ' · ' + m.shape, cx, 342, cssVar('--text-muted'), 10);
+}
+
+function drawDalton(t){
+  const idx = daltonIndex();
+  const u = (Math.max(0, t) % D_CYCLE) / D_CYCLE;
+  let k;                                     /* the ACTIVE compound assembles */
+  if (u < .28)      k = ease(u / .28);
+  else if (u < .80) k = 1;
+  else              k = 1 - ease((u - .80) / .20);
+
+  label('⚛️ Solid sphere · indivisible — atoms combine in whole-number ratios',
+        600, 44, cssVar('--accent'), 15, 'center', 700);
+  label('the same elements always join in the same fixed ratio — the law of constant proportions',
+        600, 70, cssVar('--text-dim'), 12);
+
+  /* highlight panel behind the compound currently being built */
+  CX.save();
+  CX.globalAlpha = .5;
+  CX.fillStyle = cssVar('--accent-glow');
+  roundRect(MOLS[idx].cx - 140, 92, 280, 264, 14); CX.fill();
+  CX.globalAlpha = 1;
+  CX.strokeStyle = cssVar('--accent'); CX.lineWidth = 1.2; CX.stroke();
+  CX.restore();
+
+  MOLS.forEach((m, i) => drawMolecule(m, i === idx ? k : 1, i === idx));
+
+  /* compact element key, kept clear of the bottom-right hint chip */
+  const key = [['H', '--sphereH'], ['C', '--neutron'], ['N', '--electron'], ['O', '--sphereO']];
+  label('one element = one kind of sphere:', 62, 384, cssVar('--text-muted'), 11, 'left', 700);
+  let kx = 268;
+  key.forEach(e => {
+    sphere(kx, 384, 10, cssVar(e[1]));
+    label(e[0], kx + 15, 384, cssVar('--text-dim'), 12, 'left', 700);
+    kx += 54;
+  });
+}
+
+/* =====================================================================
+   ERA 1 — THOMSON 1897 : cathode ray tube + plum pudding
+   ===================================================================== */
+const TH = {
+  tx: 62, ty: 96, tw: 590, th: 240,              // glass tube -> 96 .. 336
+  cath: 108, anode: 232,
+  plX0: 330, plX1: 480, plTop: 152, plBot: 280,
+  scrX: 636,
+  beamY: 216,
+  pudX: 940, pudY: 214, pudR: 100
+};
+function drawThomson(t){
+  const T = TH;
+  const prog = Math.min(1, (t % 6) / 3.4);       // beam grows, then holds
+
+  /* --- glass tube --- */
+  CX.save();
+  CX.fillStyle = cssVar('--tube');
+  roundRect(T.tx, T.ty, T.tw, T.th, 24); CX.fill();
+  CX.strokeStyle = cssVar('--glass'); CX.lineWidth = 2.4; CX.globalAlpha = .75; CX.stroke();
+  CX.restore();
+  label('vacuum tube', T.tx + 92, T.ty + 18, cssVar('--text-muted'), 10);
+
+  /* --- cathode (−) --- */
+  CX.fillStyle = cssVar('--plate');
+  CX.fillRect(T.cath - 7, T.beamY - 36, 13, 72);
+  label('cathode −', T.cath, T.beamY + 56, cssVar('--electron'), 12, 'center', 700);
+
+  /* --- anode (+) with hole --- */
+  CX.fillStyle = cssVar('--plate');
+  CX.fillRect(T.anode - 5, T.beamY - 54, 10, 40);
+  CX.fillRect(T.anode - 5, T.beamY + 14, 10, 40);
+  label('anode +', T.anode, T.beamY + 88, cssVar('--nucleus'), 12, 'center', 700);
+
+  /* --- deflection plates --- */
+  CX.fillStyle = cssVar('--nucleus');
+  CX.fillRect(T.plX0, T.plTop - 9, T.plX1 - T.plX0, 11);
+  label('+ plate', (T.plX0 + T.plX1) / 2, T.plTop - 24, cssVar('--nucleus'), 12, 'center', 700);
+  CX.fillStyle = cssVar('--electron');
+  CX.fillRect(T.plX0, T.plBot, T.plX1 - T.plX0, 11);
+  label('− plate', (T.plX0 + T.plX1) / 2, T.plBot + 26, cssVar('--electron'), 12, 'center', 700);
+
+  /* --- uniform E field between the plates ------------------------------
+     The + plate is on TOP, so E points DOWNWARD (+ -> -). The electron is
+     NEGATIVE, so F = -eE points UPWARD — which is exactly why the beam bends
+     toward the + plate. Drawn before the beam so the beam stays on top.    */
+  if (S.showField){
+    const ec = cssVar('--efield');
+    const y0 = T.plTop + 4, y1 = T.plBot - 2;
+    CX.save();
+    CX.globalAlpha = .55;
+    for (let i = 0; i < 7; i++){
+      const x = T.plX0 + 26 + i * ((T.plX1 - T.plX0 - 46) / 6);
+      arrow(x, y0, x, y1, ec, 1.6, 7);
+    }
+    CX.restore();
+    label('E', T.plX1 + 12, y0 + 22, ec, 15, 'left', 800);
+    /* Force on the electron. Drawn INSIDE the plates, where the field
+       actually acts, and opposite to E because the charge is negative.   */
+    const fx = T.plX0 + 10, fy = T.beamY;
+    arrow(fx, fy + 26, fx, fy - 34, cssVar('--green'), 3.2, 10);
+    label('F', fx - 9, fy - 12, cssVar('--green'), 14, 'right', 800);
+  }
+
+  /* --- fluorescent end screen --- */
+  CX.fillStyle = cssVar('--screen'); CX.globalAlpha = .30;
+  CX.fillRect(T.scrX, T.ty + 22, 10, T.th - 44);
+  CX.globalAlpha = 1;
+  CX.strokeStyle = cssVar('--screen'); CX.lineWidth = 1.4;
+  CX.strokeRect(T.scrX, T.ty + 22, 10, T.th - 44);
+
+  /* --- beam path (bends UP toward the + plate) --- */
+  const pts = beamPath();
+  if (S.showParticles){
+    CX.save();
+    /* grow with progress: clip a rect that widens, never stroke-then-clip */
+    const x0 = T.cath, xEnd = T.scrX;
+    CX.beginPath();
+    CX.rect(x0 - 4, 0, (xEnd - x0 + 14) * prog + 4, H);
+    CX.clip();
+    CX.strokeStyle = cssVar('--beam'); CX.lineWidth = 4.2; CX.lineCap = 'round';
+    CX.shadowColor = cssVar('--beam'); CX.shadowBlur = 12;
+    CX.beginPath();
+    CX.moveTo(pts[0].x, pts[0].y);
+    for (let i = 1; i < pts.length; i++) CX.lineTo(pts[i].x, pts[i].y);
+    CX.stroke();
+    CX.restore();
+
+    /* glowing spot where the beam lands, once it has arrived */
+    if (prog >= 1){
+      const e = pts[pts.length - 1];
+      CX.save();
+      const g = CX.createRadialGradient(e.x, e.y, 1, e.x, e.y, 24);
+      g.addColorStop(0, cssVar('--beam')); g.addColorStop(1, 'rgba(0,0,0,0)');
+      CX.fillStyle = g; CX.globalAlpha = .85;
+      CX.beginPath(); CX.arc(e.x, e.y, 24, 0, 6.2832); CX.fill();
+      CX.restore();
+      label('bends toward +', T.plX1 + 70, e.y - 26, cssVar('--beam'), 12, 'center', 700);
+    }
+    /* undeflected reference line */
+    CX.save();
+    CX.setLineDash([5, 6]); CX.strokeStyle = cssVar('--text-muted'); CX.lineWidth = 1.2; CX.globalAlpha = .7;
+    CX.beginPath(); CX.moveTo(T.plX0, T.beamY); CX.lineTo(T.scrX, T.beamY); CX.stroke();
+    CX.restore();
+  }
+  label('cathode rays = electrons (negative)', (T.tx + T.scrX) / 2, T.ty - 22, cssVar('--accent'), 14, 'center', 700);
+
+  /* --- plum pudding model --- */
+  const P = TH;
+  CX.save();
+  const g = CX.createRadialGradient(P.pudX - 30, P.pudY - 34, 8, P.pudX, P.pudY, P.pudR);
+  g.addColorStop(0, shade(cssVar('--pudding'), .35));
+  g.addColorStop(1, shade(cssVar('--pudding'), -.42));
+  CX.fillStyle = g; CX.globalAlpha = .9;
+  CX.beginPath(); CX.arc(P.pudX, P.pudY, P.pudR, 0, 6.2832); CX.fill();
+  CX.restore();
+  CX.strokeStyle = shade(cssVar('--pudding'), -.5); CX.lineWidth = 1.4;
+  CX.beginPath(); CX.arc(P.pudX, P.pudY, P.pudR, 0, 6.2832); CX.stroke();
+
+  if (S.showParticles){
+    for (let i = 0; i < 9; i++){
+      /* golden-angle spiral: 9 electrons spread evenly, never collinear */
+      const a = i * 2.39996 + 0.4, rr = P.pudR * 0.82 * Math.sqrt((i + 0.5) / 9);
+      const jx = Math.sin(t * 2.6 + i * 1.7) * 4.0, jy = Math.cos(t * 2.2 + i * 2.3) * 4.0;
+      const x = P.pudX + Math.cos(a) * rr + jx, y = P.pudY + Math.sin(a) * rr + jy;
+      CX.fillStyle = cssVar('--electron');
+      CX.beginPath(); CX.arc(x, y, 8, 0, 6.2832); CX.fill();
+      CX.fillStyle = '#ffffff';
+      CX.font = "700 10px 'Inter',sans-serif"; CX.textAlign = 'center'; CX.textBaseline = 'middle';
+      CX.fillText('−', x, y + .5);
+    }
+  }
+  label('“plum pudding” atom', P.pudX, P.pudY - P.pudR - 24, cssVar('--accent'), 14, 'center', 700);
+  label('electrons in a + sphere · neutral overall', P.pudX, P.pudY + P.pudR + 26, cssVar('--text-dim'), 11);
+  if (S.showField)
+    label('⚡ E points + → − (downward) · the electron is negative, so F = −eE pushes it UP',
+          430, 360, cssVar('--efield'), 12, 'center', 700);
+  label('the electron: about 1/1836 the mass of a hydrogen atom — the first sub-atomic particle',
+        430, 388, cssVar('--text-muted'), 12);
+}
+function beamPath(){
+  const T = TH, pts = [];
+  pts.push({ x: T.cath + 7, y: T.beamY });
+  pts.push({ x: T.plX0,     y: T.beamY });
+  /* Deflection sized so the beam stays INSIDE the tube and lands on the
+     fluorescent screen: parabola inside the plates, straight line after.
+     Exit slope = 2*dropTot/plateLength, so dropTot is capped by geometry.   */
+  const dropTot = 27;                                   // upward deflection
+  const n = 16;
+  for (let i = 1; i <= n; i++){
+    const u = i / n;
+    pts.push({ x: T.plX0 + (T.plX1 - T.plX0) * u, y: T.beamY - dropTot * u * u });
+  }
+  const yEnd = T.beamY - dropTot;
+  const slope = 2 * dropTot / (T.plX1 - T.plX0);
+  pts.push({ x: T.scrX + 5, y: yEnd - slope * (T.scrX + 5 - T.plX1) });
+  return pts;
+}
+
+/* =====================================================================
+   ERA 2 — RUTHERFORD 1911 : gold foil experiment
+   Beam line: radium source -> collimator aperture -> gold foil -> ZnS ring.
+   Every y-coordinate below is derived from RU.axisY (see the RU block).
+   ===================================================================== */
+function spawnAlpha(){
+  if (S.alphas.length >= RU.CAP) S.alphas.shift();
+  S.alphas.push({
+    x: RU.spawnX,
+    y: RU.axisY + (Math.random() - 0.5) * RU.slotH,     // inside the source slot
+    vx: RU.vx0 + Math.random() * RU.vxr,
+    vy: (Math.random() - 0.5) * RU.vyr,                 // emission cone
+    col: false,                                          // has passed collimator
+    hit: false,
+    kind: 0                                             // 0 pass, 1 deflected, 2 bounced
+  });
+}
+function fireBurst(){
+  for (let i = 0; i < RU.BURST; i++) spawnAlpha();
+  if (!S.playing){
+    S.warn = '⚠️ Burst fired while paused —<br>press <b>▶ Play</b> to see it travel.';
+    updateChips();
+  }
+}
+function updateRutherford(dt){
+  const sdt = dt * S.speed;
+  if (S.playing){
+    S.spawnAcc += RU.RATE * sdt;
+    const n = Math.floor(S.spawnAcc);
+    S.spawnAcc -= n;
+    for (let i = 0; i < n; i++) spawnAlpha();
+  }
+  if (!S.playing) return;
+
+  const colFace = RU.colX + RU.colW, colHalf = RU.colGap / 2;
+  const arr = S.alphas, out = [];
+  for (let i = 0; i < arr.length; i++){
+    const p = arr[i];
+    const px = p.x;
+    p.x += p.vx * sdt;
+    p.y += p.vy * sdt;
+
+    /* --- lead collimator: absorbs everything off-axis (this is what makes
+           the beam a narrow pencil, exactly as in the real apparatus) ---- */
+    if (!p.col && px < colFace && p.x >= RU.colX){
+      if (Math.abs(p.y - RU.axisY) > colHalf) continue;   // absorbed in the lead
+      p.col = true;
+    }
+
+    /* --- crossing the foil — one interaction per particle --- */
+    if (!p.hit && px < RU.foilX && p.x >= RU.foilX && p.y > RU.foilY0 && p.y < RU.foilY1){
+      p.hit = true;
+      const r = Math.random();
+      if (r < RU.P_BOUNCE){
+        p.vx *= -0.55;
+        p.vy = (Math.random() < .5 ? -1 : 1) * 110;
+        p.kind = 2; S.stats.bounced++;
+        S.flashes.push({ x: RU.foilX, y: p.y, a: 1, big: true });
+      } else if (r < RU.P_DEFLECT){
+        p.vx *= 0.45;
+        p.vy = (Math.random() < .5 ? -1 : 1) * 150;
+        p.kind = 1; S.stats.deflected++;
+        S.flashes.push({ x: RU.foilX, y: p.y, a: 1, big: false });
+      } else {
+        S.stats.passed++;
+      }
+    }
+
+    /* --- ZnS ring: scintillation where a scattered alpha is detected --- */
+    if (p.kind > 0 && p.hit){
+      const dx = p.x - RU.screenCx, dy = p.y - RU.screenCy;
+      if (dx * dx + dy * dy >= RU.screenR * RU.screenR){
+        const L = Math.hypot(dx, dy) || 1;
+        S.flashes.push({ x: RU.screenCx + dx / L * RU.screenR,
+                         y: RU.screenCy + dy / L * RU.screenR,
+                         a: 1, big: p.kind === 2, scint: true });
+        continue;                                        // detected -> counted
+      }
+    }
+    if (p.x > -40 && p.x < W + 40 && p.y > -40 && p.y < H + 40) out.push(p);
+  }
+  S.alphas = out;
+
+  for (let i = S.flashes.length - 1; i >= 0; i--){
+    S.flashes[i].a -= sdt * 1.7;
+    if (S.flashes[i].a <= 0) S.flashes.splice(i, 1);
+  }
+}
+function drawRutherford(){
+  const ax = RU.axisY;
+
+  /* --- ZnS detector ring, centred exactly ON the foil --- */
+  CX.save();
+  CX.setLineDash([7, 8]); CX.strokeStyle = cssVar('--screen'); CX.lineWidth = 2.2;
+  CX.globalAlpha = .28;
+  CX.beginPath(); CX.arc(RU.screenCx, RU.screenCy, RU.screenR, 0, 6.2832); CX.stroke();
+  CX.globalAlpha = .62; CX.lineWidth = 2.8;
+  CX.beginPath(); CX.arc(RU.screenCx, RU.screenCy, RU.screenR, -1.25, 1.25); CX.stroke();
+  CX.restore();
+  label('zinc-sulfide screen', RU.screenCx + RU.screenR + 8,
+        RU.screenCy - RU.screenR + 30, cssVar('--screen'), 11, 'left', 700);
+
+  /* --- beam axis (construction line) --- */
+  CX.save();
+  CX.setLineDash([2, 9]); CX.strokeStyle = cssVar('--text-muted');
+  CX.lineWidth = 1; CX.globalAlpha = .45;
+  CX.beginPath(); CX.moveTo(RU.src.x + RU.src.w, ax); CX.lineTo(W - 10, ax); CX.stroke();
+  CX.restore();
+
+  /* --- radium source, centred on the axis --- */
+  const s = RU.src;
+  CX.save();
+  const g = CX.createLinearGradient(s.x, s.y, s.x + s.w, s.y + s.h);
+  g.addColorStop(0, cssVar('--text-muted')); g.addColorStop(1, shade(cssVar('--text-muted'), -.55));
+  CX.fillStyle = g;
+  roundRect(s.x, s.y, s.w, s.h, 8); CX.fill();
+  CX.strokeStyle = cssVar('--border'); CX.lineWidth = 1.6; CX.stroke();
+  CX.restore();
+  /* emission slot cut in the right face, on the axis */
+  CX.fillStyle = cssVar('--stage');
+  CX.fillRect(s.x + s.w - 7, ax - RU.slotH / 2, 11, RU.slotH);
+  label('☢ Radium — α source', s.x + s.w / 2, s.y - 18, cssVar('--alpha'), 12, 'center', 700);
+
+  /* --- lead collimator: two blocks with the aperture on the axis --- */
+  const cH = RU.colGap / 2;
+  CX.fillStyle = cssVar('--plate');
+  CX.fillRect(RU.colX, 34, RU.colW, (ax - cH) - 34);
+  CX.fillRect(RU.colX, ax + cH, RU.colW, (H - 34) - (ax + cH));
+  CX.strokeStyle = shade(cssVar('--plate'), -.4); CX.lineWidth = 1;
+  CX.strokeRect(RU.colX, 34, RU.colW, (ax - cH) - 34);
+  CX.strokeRect(RU.colX, ax + cH, RU.colW, (H - 34) - (ax + cH));
+  label('lead collimator', RU.colX + RU.colW / 2, H - 14, cssVar('--text-dim'), 11, 'center', 700);
+  label('aperture', RU.colX - 8, ax - cH - 16, cssVar('--text-muted'), 10, 'right');
+
+  /* --- gold foil, centred on the axis, at the centre of the ring --- */
+  CX.save();
+  const fg = CX.createLinearGradient(RU.foilX - 5, 0, RU.foilX + 5, 0);
+  fg.addColorStop(0, cssVar('--foil2'));
+  fg.addColorStop(.5, cssVar('--foil'));
+  fg.addColorStop(1, cssVar('--foil2'));
+  CX.fillStyle = fg;
+  CX.fillRect(RU.foilX - 4, RU.foilY0, 8, RU.foilY1 - RU.foilY0);
+  CX.restore();
+  /* pushed off the centre line so the ±90° markers can sit on the vertical */
+  label('gold foil', RU.foilX - 48, RU.foilY0 - 18, cssVar('--foil'), 13, 'right', 700);
+  label('≈ 2 000 atoms thick', RU.foilX - 48, RU.foilY1 + 20, cssVar('--text-dim'), 11, 'right');
+
+  /* --- ANGLE OF DEVIATION guides (drawn under the particles) --------------
+     theta is measured from the ORIGINAL direction of travel (+x). The foil
+     plane itself is the 90 deg boundary: downstream of it theta < 90 deg
+     (a small angle), upstream theta > 90 deg (a large angle / bounced back). */
+  if (S.showAngles){
+    CX.save();
+    CX.setLineDash([3, 6]); CX.globalAlpha = .45;
+    CX.strokeStyle = cssVar('--text-muted'); CX.lineWidth = 1;
+    /* join the foil ends to the +-90 deg points on the ring */
+    CX.beginPath();
+    CX.moveTo(RU.foilX, RU.foilY0); CX.lineTo(RU.foilX, RU.screenCy - RU.screenR);
+    CX.moveTo(RU.foilX, RU.foilY1); CX.lineTo(RU.foilX, RU.screenCy + RU.screenR);
+    CX.stroke();
+    CX.restore();
+    /* tick marks across the ring at 0 deg, +90 deg and -90 deg */
+    CX.save();
+    CX.strokeStyle = cssVar('--accent'); CX.lineWidth = 2.6; CX.lineCap = 'round';
+    [[1, 0], [0, -1], [0, 1]].forEach(d => {
+      CX.beginPath();
+      CX.moveTo(RU.screenCx + d[0] * (RU.screenR - 11), RU.screenCy + d[1] * (RU.screenR - 11));
+      CX.lineTo(RU.screenCx + d[0] * (RU.screenR + 11), RU.screenCy + d[1] * (RU.screenR + 11));
+      CX.stroke();
+    });
+    /* theta arc: from the 0 deg line round to a typical small-angle deflection */
+    CX.globalAlpha = .9; CX.lineWidth = 2;
+    CX.beginPath(); CX.arc(RU.screenCx, RU.screenCy, 74, -0.70, 0); CX.stroke();
+    CX.restore();
+    label('θ', RU.screenCx + 96, RU.screenCy - 34, cssVar('--accent'), 15, 'center', 800);
+  }
+
+  /* --- alpha particles --- */
+  if (S.showParticles){
+    const cPass = cssVar('--alpha'), cHit = cssVar('--alphaHit'), cB = cssVar('--nucleus');
+    CX.save();
+    for (let i = 0; i < S.alphas.length; i++){
+      const p = S.alphas[i];
+      CX.fillStyle = p.kind === 2 ? cB : (p.kind === 1 ? cHit : cPass);
+      CX.globalAlpha = p.kind ? 1 : .8;
+      CX.beginPath(); CX.arc(p.x, p.y, p.kind ? 3.6 : 2.4, 0, 6.2832); CX.fill();
+    }
+    CX.restore();
+  }
+  /* --- flashes: at the foil, and scintillations on the ZnS ring --- */
+  for (let i = 0; i < S.flashes.length; i++){
+    const f = S.flashes[i];
+    CX.save();
+    CX.globalAlpha = Math.max(0, f.a) * (f.scint ? 1 : .85);
+    const r = f.scint ? (f.big ? 20 : 13) : (f.big ? 24 : 13);
+    const fg2 = CX.createRadialGradient(f.x, f.y, 1, f.x, f.y, r);
+    fg2.addColorStop(0, f.scint ? cssVar('--screen')
+                                : (f.big ? cssVar('--nucleus') : cssVar('--alphaHit')));
+    fg2.addColorStop(1, 'rgba(0,0,0,0)');
+    CX.fillStyle = fg2;
+    CX.beginPath(); CX.arc(f.x, f.y, r, 0, 6.2832); CX.fill();
+    CX.restore();
+  }
+
+  label('α = helium nucleus (2p + 2n), charge +2e', 190, 62, cssVar('--alpha'), 12, 'center', 700);
+
+  /* --- the three reference angles the IGCSE syllabus asks for --- */
+  if (S.showAngles){
+  label('0°  undeviated', RU.screenCx + RU.screenR + 16, RU.screenCy, cssVar('--accent'), 12, 'left', 700);
+  label('+90°', RU.foilX + 26, RU.screenCy - RU.screenR + 2, cssVar('--accent'), 12, 'left', 700);
+  label('−90°', RU.foilX + 26, RU.screenCy + RU.screenR - 2, cssVar('--accent'), 12, 'left', 700);
+  label('180° straight back', RU.screenCx - RU.screenR - 16, RU.screenCy - 18, cssVar('--nucleus'), 11, 'right', 700);
+
+  /* --- angle-of-deviation legend: colour → angle → IGCSE wording --- */
+  /* placed right of the collimator and above the beam, so it covers neither
+     the radium source nor the alpha stream                                  */
+  const gx = 392, gy = 54, gw = 240, gh = 100;
+  card(gx, gy, gw, gh, 'ANGLE OF DEVIATION θ');
+  const rows = [
+    ['--alpha',    '0°',     'undeviated'],
+    ['--alphaHit', '< 90°',  'small angle'],
+    ['--nucleus',  '> 90°',  'large angle · bounced back']
+  ];
+  rows.forEach((r, i) => {
+    const y = gy + 38 + i * 20;
+    CX.fillStyle = cssVar(r[0]);
+    CX.beginPath(); CX.arc(gx + 20, y, 5, 0, 6.2832); CX.fill();
+    label(r[1], gx + 34, y, cssVar('--text'), 11, 'left', 800);
+    label(r[2], gx + 84, y, cssVar('--text-dim'), 10, 'left');
+  });
+  }
+
+  /* --- nuclear-model inset, drawn last so nothing overlaps it --- */
+  const ix = 34, iy = 278, iw = 194, ih = 126;
+  card(ix, iy, iw, ih, 'NUCLEAR MODEL');
+  const mx = ix + iw / 2, my = iy + 68;
+  CX.save();
+  CX.setLineDash([3, 5]); CX.strokeStyle = cssVar('--shell'); CX.lineWidth = 1.1;
+  [24, 42].forEach(r => { CX.beginPath(); CX.arc(mx, my, r, 0, 6.2832); CX.stroke(); });
+  CX.restore();
+  CX.fillStyle = cssVar('--nucleus');
+  CX.beginPath(); CX.arc(mx, my, 6.5, 0, 6.2832); CX.fill();
+  if (S.showParticles){
+    const a = S.t[2] * 1.4;
+    [[24, a], [24, a + 3.14], [42, -a * .7], [42, -a * .7 + 2.09], [42, -a * .7 + 4.19]].forEach(e => {
+      CX.fillStyle = cssVar('--electron');
+      CX.beginPath(); CX.arc(mx + Math.cos(e[1]) * e[0], my + Math.sin(e[1]) * e[0], 3.8, 0, 6.2832); CX.fill();
+    });
+  }
+  label('mostly empty space', mx, iy + ih - 14, cssVar('--text-dim'), 10);
+}
+
+/* =====================================================================
+   ERA 3 — BOHR 1913 : energy levels, photon absorbed / emitted
+   ===================================================================== */
+/* Energy levels are drawn to SCALE from the Bohr formula E(n) = -13.6/n^2 eV,
+   NOT evenly spaced: the gaps must shrink as n rises and crowd toward the
+   ionisation limit. Physics wins over an evenly spaced ladder.              */
+const BO = (function(){
+  const lx = 880, lw = 200, yInf = 100, y1 = 346;
+  const E = n => -13.6 / (n * n);
+  const k = (y1 - yInf) / 13.6;                       // px per eV
+  const yOf = n => yInf + k * (-E(n));
+  return { cx: 470, cy: 212, r: [56, 102, 148], n: [2, 8, 8],
+           lx: lx, lw: lw, yInf: yInf, E: E,
+           ly: [yOf(1), yOf(2), yOf(3)] };
+})();
+function drawBohr(t){
+  const cyc = 9, cycStart = Math.floor(Math.max(0, t) / cyc) * cyc;
+  const p = (Math.max(0, t) % cyc) / cyc;
+  const OMEGA = 0.47;                        // electron angular speed (rad/s)
+
+  /* --- timeline -------------------------------------------------------
+     .00-.16  photon travels IN from outside the atom (nothing moves yet)
+     .16-.34  the photon has been absorbed -> electron jumps n=2 -> n=3
+     .34-.56  hold at n=3
+     .56-.74  electron falls n=3 -> n=2
+     .58-.92  the emitted photon travels OUT past the outer shell
+     A photon is only absorbed/emitted at the instant of the jump — the wave
+     must therefore ARRIVE before the jump up, and LEAVE as it falls back. */
+  let jump = 0, phAbs = -1, phEmit = -1;
+  if      (p < .16){ jump = 0;                          phAbs  = p / .16; }
+  else if (p < .34){ jump = ease((p - .16) / .18); }
+  else if (p < .56){ jump = 1; }
+  else if (p < .74){ jump = 1 - ease((p - .56) / .18);
+                     if (p >= .58) phEmit = (p - .58) / .34; }
+  else if (p < .92){ jump = 0;                          phEmit = (p - .58) / .34; }
+
+  /* --- shells --- */
+  CX.save();
+  CX.setLineDash([4, 7]);
+  BO.r.forEach((r, i) => {
+    CX.strokeStyle = cssVar('--shell'); CX.lineWidth = i === 1 ? 1.9 : 1.3;
+    CX.globalAlpha = .85;
+    CX.beginPath(); CX.arc(BO.cx, BO.cy, r, 0, 6.2832); CX.stroke();
+  });
+  CX.restore();
+
+  /* --- nucleus --- */
+  const ng = CX.createRadialGradient(BO.cx - 5, BO.cy - 6, 2, BO.cx, BO.cy, 21);
+  ng.addColorStop(0, shade(cssVar('--nucleus'), .5));
+  ng.addColorStop(1, shade(cssVar('--nucleus'), -.35));
+  CX.fillStyle = ng;
+  CX.beginPath(); CX.arc(BO.cx, BO.cy, 21, 0, 6.2832); CX.fill();
+  label('nucleus', BO.cx, BO.cy + 38, cssVar('--nucleus'), 11, 'center', 700);
+
+  if (S.showParticles){
+    /* --- the electrons that are not jumping --- */
+    for (let s = 0; s < 3; s++){
+      const cnt = BO.n[s], base = t * (0.62 - s * 0.15) + s * 0.7;
+      for (let i = 0; i < cnt; i++){
+        if (s === 1 && i === 0) continue;              // this one is jumping
+        const a = base + i * 6.2832 / cnt;
+        const x = BO.cx + Math.cos(a) * BO.r[s], y = BO.cy + Math.sin(a) * BO.r[s];
+        CX.fillStyle = cssVar('--electron');
+        CX.beginPath(); CX.arc(x, y, 6.5, 0, 6.2832); CX.fill();
+      }
+      label('n=' + (s + 1) + '  (' + cnt + ')', BO.cx, BO.cy - BO.r[s] - 12, cssVar('--text-muted'), 11, 'center', 700);
+    }
+
+    /* --- the jumping electron --- */
+    const aj = t * OMEGA;
+    const rj = BO.r[1] + (BO.r[2] - BO.r[1]) * jump;
+    const jx = BO.cx + Math.cos(aj) * rj, jy = BO.cy + Math.sin(aj) * rj;
+
+    /* --- ABSORPTION: a wave train comes in from OUTSIDE the atom ---------
+       It is aimed at where the electron WILL be at the instant of arrival
+       (p = .16), so the line is fixed for the whole cycle and the wave and
+       the electron genuinely meet.                                       */
+    if (phAbs >= 0){
+      const aHit = (cycStart + .16 * cyc) * OMEGA;
+      const tx = BO.cx + Math.cos(aHit) * BO.r[1];
+      const ty = BO.cy + Math.sin(aHit) * BO.r[1];
+      photonTrain(PH_SRC.x, PH_SRC.y, tx, ty, phAbs, cssVar('--photon'));
+      label('photon absorbed → electron jumps UP', 236, 52, cssVar('--photon'), 13, 'center', 700);
+    }
+    /* --- EMISSION: a wave train leaves the electron and flies OUT -------
+       Launched radially from where the electron is at p = .58, clipped so
+       it always stops inside the canvas.                                 */
+    if (phEmit >= 0 && phEmit <= 1){
+      const aEm = (cycStart + .58 * cyc) * OMEGA;
+      const ox = BO.cx + Math.cos(aEm) * BO.r[2];
+      const oy = BO.cy + Math.sin(aEm) * BO.r[2];
+      const dx = Math.cos(aEm), dy = Math.sin(aEm);
+      const L = Math.min(260, raySegLimit(ox, oy, dx, dy, 16));
+      photonTrain(ox, oy, ox + dx * L, oy + dy * L, phEmit, cssVar('--photon'));
+      label('photon emitted → electron falls DOWN', 236, 52, cssVar('--photon'), 13, 'center', 700);
+    }
+
+    CX.save();
+    CX.shadowColor = cssVar('--accent'); CX.shadowBlur = 14;
+    CX.fillStyle = cssVar('--accent');
+    CX.beginPath(); CX.arc(jx, jy, 8, 0, 6.2832); CX.fill();
+    CX.restore();
+  }
+
+  /* --- energy level ladder, spaced to scale from E(n) = -13.6/n² eV --- */
+  card(BO.lx - 52, 66, BO.lw + 96, 306, 'ENERGY LEVELS (to scale)');
+  CX.save();
+  CX.setLineDash([4, 5]); CX.strokeStyle = cssVar('--text-muted'); CX.lineWidth = 1.4;
+  CX.beginPath(); CX.moveTo(BO.lx, BO.yInf); CX.lineTo(BO.lx + BO.lw, BO.yInf); CX.stroke();
+  CX.restore();
+  label('n=∞   0 eV', BO.lx - 10, BO.yInf, cssVar('--text-muted'), 10, 'right', 700);
+  const lvl = ['n=1', 'n=2', 'n=3'];
+  BO.ly.forEach((y, i) => {
+    CX.strokeStyle = cssVar('--text-dim'); CX.lineWidth = 2.4;
+    CX.beginPath(); CX.moveTo(BO.lx, y); CX.lineTo(BO.lx + BO.lw, y); CX.stroke();
+    label(lvl[i] + '   ' + BO.E(i + 1).toFixed(2) + ' eV',
+          BO.lx - 10, y, cssVar('--text-dim'), 10, 'right', 700);
+  });
+  const y2 = BO.ly[1], y3 = BO.ly[2], axx = BO.lx + BO.lw * .5;
+  if (p >= .16 && p < .34)      arrow(axx, y2, axx, y2 + (y3 - y2) * jump, cssVar('--photon'), 3, 10);
+  else if (p >= .56 && p < .74) arrow(axx, y3, axx, y3 + (y2 - y3) * (1 - jump), cssVar('--photon'), 3, 10);
+  label('ΔE = photon energy', BO.lx + BO.lw * .5 + 70, (y2 + y3) / 2, cssVar('--photon'), 11);
+  label('level gaps shrink as n rises', BO.lx + BO.lw / 2, 300, cssVar('--text-muted'), 10);
+  const sy = 226, sx0 = BO.lx - 18, sw = BO.lw + 36;
+  CX.fillStyle = cssVar('--stage');
+  CX.fillRect(sx0, sy, sw, 18);
+  CX.strokeStyle = cssVar('--border'); CX.lineWidth = 1; CX.strokeRect(sx0, sy, sw, 18);
+  [[0.14, '#7c3aed'], [0.24, '#4488ff'], [0.40, '#22d3ee'], [0.80, '#ef4444']].forEach(l => {
+    CX.fillStyle = l[1];
+    CX.fillRect(sx0 + sw * l[0], sy + 2, 3, 14);
+  });
+  label('line spectrum', BO.lx + BO.lw / 2, sy - 13, cssVar('--text-muted'), 10);
+
+  label('electrons in fixed shells: 2, 8, 8', BO.cx, 390, cssVar('--accent'), 14, 'center', 700);
+}
+
+/* Fixed point outside the atom that the incoming photon starts from. */
+const PH_SRC = { x: 66, y: 92 };
+const PH = { packet: 116, lambda: 24, amp: 9 };
+
+/* Longest distance you can travel from (x,y) along (dx,dy) and stay on canvas. */
+function raySegLimit(x, y, dx, dy, m){
+  let tm = 1e9;
+  if (dx >  1e-6) tm = Math.min(tm, (W - m - x) / dx);
+  if (dx < -1e-6) tm = Math.min(tm, (m - x) / dx);
+  if (dy >  1e-6) tm = Math.min(tm, (H - m - y) / dy);
+  if (dy < -1e-6) tm = Math.min(tm, (m - y) / dy);
+  return Math.max(0, tm);
+}
+
+/* A photon drawn as a travelling SINE WAVE TRAIN: a burst of sine cycles
+   inside a smooth envelope, moving head-first along the path. `headFrac`
+   0 -> 1 slides the packet from the start of the path to its end.        */
+function photonTrain(x0, y0, x1, y1, headFrac, col){
+  const dx = x1 - x0, dy = y1 - y0, L = Math.hypot(dx, dy);
+  if (L < 6) return;
+  const ux = dx / L, uy = dy / L, nx = -uy, ny = ux;
+  const pk = Math.min(PH.packet, L);
+  /* the head runs from 0 to L + pk so the tail can clear the target too */
+  const head = headFrac * (L + pk);
+  const a = Math.max(0, head - pk), b = Math.min(L, head);
+  if (b <= a) return;
+
+  CX.save();
+  CX.strokeStyle = col; CX.lineWidth = 2.6; CX.lineCap = 'round';
+  CX.shadowColor = col; CX.shadowBlur = 9;
+  CX.beginPath();
+  let first = true, lx = 0, ly = 0;
+  for (let d = a; d <= b; d += 1.6){
+    const u = (d - (head - pk)) / pk;             // 0 at the tail, 1 at the head
+    const env = Math.sin(Math.PI * u);            // smooth wave-packet envelope
+    const w = PH.amp * env * Math.sin((d / PH.lambda) * 6.2832 - headFrac * 22);
+    lx = x0 + ux * d + nx * w;
+    ly = y0 + uy * d + ny * w;
+    if (first){ CX.moveTo(lx, ly); first = false; } else CX.lineTo(lx, ly);
+  }
+  CX.stroke();
+  /* faint straight guide showing where the photon is heading */
+  CX.globalAlpha = .22; CX.shadowBlur = 0;
+  CX.setLineDash([2, 7]); CX.lineWidth = 1;
+  CX.beginPath(); CX.moveTo(x0, y0); CX.lineTo(x1, y1); CX.stroke();
+  CX.restore();
+  /* bright head marker so the direction of travel is unambiguous */
+  CX.save();
+  CX.globalAlpha = .9; CX.fillStyle = col;
+  CX.shadowColor = col; CX.shadowBlur = 10;
+  CX.beginPath(); CX.arc(x0 + ux * b, y0 + uy * b, 3.4, 0, 6.2832); CX.fill();
+  CX.restore();
+}
+
+/* =====================================================================
+   MAIN DRAW
+   ===================================================================== */
+function draw(){
+  const wrap = $('cvwrap');
+  CX.clearRect(0, 0, wrap.clientWidth, wrap.clientHeight);
+  CX.save();
+  CX.translate(offX, offY);
+  CX.scale(scale, scale);
+  CX.beginPath(); CX.rect(0, 0, W, H); CX.clip();
+
+  CX.fillStyle = cssVar('--stage');
+  CX.fillRect(0, 0, W, H);
+
+  CX.textAlign = 'center'; CX.textBaseline = 'middle';
+  const t = S.t[S.era];
+  if      (S.era === 0) drawDalton(t);
+  else if (S.era === 1) drawThomson(t);
+  else if (S.era === 2) drawRutherford();
+  else                  drawBohr(t);
+
+  CX.restore();
+}
+
+/* =====================================================================
+   LOOP
+   ===================================================================== */
+let last = performance.now();
+function frame(now){
+  let dt = (now - last) / 1000; last = now;
+  /* the first rAF timestamp can PRE-DATE the performance.now() captured at parse
+     time, so dt must be clamped at both ends or every clock starts negative     */
+  if (!(dt > 0)) dt = 0;
+  if (dt > 0.1) dt = 0.1;
+
+  if (S.playing) S.t[S.era] += dt * S.speed;
+  if (S.era === 2) updateRutherford(dt);
+
+  /* story auto-advance */
+  if (S.story && S.playing){
+    S.storyTimer += dt * S.speed;
+    if (S.storyTimer >= STORY_DWELL){
+      S.storyTimer = 0;
+      if (S.era < 3){ setEra(S.era + 1, true); }
+      else { S.story = false; syncStoryBtn(); updateChips(); }
+    }
+  }
+  if (S.era === 0 || S.era === 2) updateChips();   /* live: compound / stats */
+  draw();
+  requestAnimationFrame(frame);
+}
+
+/* =====================================================================
+   UI
+   ===================================================================== */
+function setEra(i, keepStory){
+  if (!keepStory && S.story){ S.story = false; syncStoryBtn(); }
+  S.era = i;
+  resetEra();
+  updatePanels();
+}
+function resetEra(){
+  S.t[S.era] = 0;
+  S.warn = '';
+  if (S.era === 2){
+    S.alphas = []; S.flashes = []; S.spawnAcc = 0;
+    S.stats = { passed: 0, deflected: 0, bounced: 0 };
+  }
+  updateChips();
+}
+function syncStoryBtn(){
+  const b = $('btnStory');
+  b.textContent = S.story ? '⏸ Pause Story' : '▶ Story';
+  b.classList.toggle('on', S.story);
+}
+function syncPlayBtn(){
+  const b = $('btnPlay');
+  b.textContent = S.playing ? '⏸ Pause' : '▶ Play';
+  b.classList.toggle('on', !S.playing);
+}
+
+[].forEach.call(document.querySelectorAll('.eratab'), b => {
+  b.addEventListener('click', () => setEra(+b.dataset.era, false));
+});
+$('btnParticles').addEventListener('click', function(){
+  S.showParticles = !S.showParticles; this.classList.toggle('on', S.showParticles);
+});
+$('btnLabels').addEventListener('click', function(){
+  S.showLabels = !S.showLabels; this.classList.toggle('on', S.showLabels);
+});
+$('btnAngles').addEventListener('click', function(){
+  S.showAngles = !S.showAngles; this.classList.toggle('on', S.showAngles);
+});
+$('btnField').addEventListener('click', function(){
+  S.showField = !S.showField; this.classList.toggle('on', S.showField);
+});
+$('btnStory').addEventListener('click', () => {
+  if (S.story){ S.story = false; }
+  else {
+    S.story = true; S.storyTimer = 0;
+    if (!S.playing){ S.playing = true; syncPlayBtn(); }
+    setEra(0, true);
+  }
+  syncStoryBtn(); updateChips();
+});
+$('btnReset').addEventListener('click', () => { resetEra(); updateChips(); });
+$('btnPlay').addEventListener('click', () => {
+  S.playing = !S.playing;
+  if (S.playing) S.warn = '';
+  syncPlayBtn(); updateChips();
+});
+$('btnBurst').addEventListener('click', () => { if (S.era === 2) fireBurst(); });
+[].forEach.call(document.querySelectorAll('#speedPills .pill'), p => {
+  p.addEventListener('click', () => {
+    S.speed = parseFloat(p.dataset.sp);
+    [].forEach.call(document.querySelectorAll('#speedPills .pill'), q => q.classList.remove('active'));
+    p.classList.add('active');
+  });
+});
+$('themeSel').addEventListener('change', e => applyTheme(e.target.value));
+
+function applyTheme(v){
+  document.body.className = (v === 'dark') ? '' : 'theme-' + v;
+  try { localStorage.setItem('atomicModelsTheme', v); } catch (err) {}
+  $('themeSel').value = v;
+}
+/* ---------- collapsible below-canvas panels ----------------------------
+   Folding a panel only changes the height of content inside the scrolling
+   .below area — the canvas is sized from the window alone, so it cannot
+   move. Fold Model Features and the Info panel rises into view.          */
+function setPanelOpen(pn, open){
+  pn.classList.toggle('collapsed', !open);
+  pn.querySelector('.phead').setAttribute('aria-expanded', open ? 'true' : 'false');
+  try { localStorage.setItem('atomicPanel_' + pn.id, open ? '1' : '0'); } catch (err) {}
+}
+[].forEach.call(document.querySelectorAll('.below .panel'), pn => {
+  pn.querySelector('.phead').addEventListener('click', () => {
+    setPanelOpen(pn, pn.classList.contains('collapsed'));
+  });
+});
+
+document.addEventListener('keydown', e => {
+  /* BUTTON is excluded so Space on a focused panel header (or toolbar
+     button) activates that button instead of also toggling Play          */
+  if (e.target && /INPUT|SELECT|TEXTAREA|BUTTON/.test(e.target.tagName)) return;
+  if (e.code === 'Space'){ e.preventDefault(); $('btnPlay').click(); }
+  else if (e.code === 'ArrowRight'){ e.preventDefault(); setEra(Math.min(3, S.era + 1), false); }
+  else if (e.code === 'ArrowLeft'){  e.preventDefault(); setEra(Math.max(0, S.era - 1), false); }
+});
+
+/* ---------- boot ---------- */
+(function init(){
+  let th = 'dark';
+  try { th = localStorage.getItem('atomicModelsTheme') || 'dark'; } catch (err) {}
+  applyTheme(th);
+  [].forEach.call(document.querySelectorAll('.below .panel'), pn => {
+    let v = '1';
+    try { v = localStorage.getItem('atomicPanel_' + pn.id) || '1'; } catch (err) {}
+    setPanelOpen(pn, v === '1');
+  });
+  syncPlayBtn(); syncStoryBtn();
+  updatePanels();
+  setupCanvas();
+  requestAnimationFrame(frame);
+})();
+
+</script>
+</body>
+</html>
