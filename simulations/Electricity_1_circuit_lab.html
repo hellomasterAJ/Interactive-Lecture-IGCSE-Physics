@@ -269,7 +269,7 @@ table.dt tr[data-i]{cursor:pointer}
 
   <!-- ===== HEADER ZONE ===== -->
   <div class="top-bar">
-    <h1>⚡ <span>Circuit Lab</span> <span class="badge-top">v1.9.0</span></h1>
+    <h1>⚡ <span>Circuit Lab</span> <span class="badge-top">v1.9.1</span></h1>
     <div class="top-right">
       <select class="theme-select" id="themeSel">
         <option value="dark">🌙 Classic Dark</option>
@@ -365,6 +365,8 @@ table.dt tr[data-i]{cursor:pointer}
           <button class="pill active" data-show="grid">⊞ Grid</button>
           <button class="pill active" data-show="labels">🏷 Labels</button>
           <button class="pill active" data-show="values">📈 Values</button>
+          <button class="pill active" data-show="hints"
+            title="Show or hide the block of usage instructions in the bottom-left corner of the canvas.">💬 Hints</button>
         </div>
       </div>
       <div class="rule"></div>
@@ -402,7 +404,7 @@ table.dt tr[data-i]{cursor:pointer}
       <div class="chip tc" id="chipHover" style="display:none"></div>
       <div class="chip tr" id="chipGrid">1 square = <b>1 unit</b></div>
       <div class="chip tr2" id="chipZoom" style="display:none"></div>
-      <div class="chipstack">
+      <div class="chipstack" id="chipStack">
         <div class="chip chip2" id="chipHint2"></div>
       </div>
     </div>
@@ -981,7 +983,7 @@ const S = {
   wireFrom:null, hoverNode:null, hoverComp:-1,
   drag:null,
   undo:[],
-  show:{grid:true, labels:true, values:true},
+  show:{grid:true, labels:true, values:true, hints:true},
   flow:'current',               // 'off' | 'current' (conventional, + → −) | 'electrons'
   flowCols:null,                // distinct current magnitude -> palette index
   swHover:null,                 // {i, start} — switch armed by hovering
@@ -2721,6 +2723,15 @@ function syncPalette(){
   document.querySelectorAll('[data-place]').forEach(b =>
     b.classList.toggle('active', b.dataset.place === S.place));
 }
+/* The instructions block is a DOM chip overlaid on the canvas, not something
+   drawn on it, so Show ▸ Hints toggles the element rather than a draw flag.
+   It sits inside the stage with pointer-events:none, so hiding it cannot move
+   the canvas or anything else. */
+function syncHints(){
+  const st = $('chipStack');
+  if(st) st.style.display = S.show.hints ? 'flex' : 'none';
+}
+
 function setMode(m){
   const prev = S.mode;
   if(prev === 'build' && m !== 'build')
@@ -2760,6 +2771,7 @@ function setMode(m){
            'Pick the graph you want in the <b>Graph</b> panel — one is drawn at a time.'].join('<br>')}[m];
   $('chipGrid').style.display = (m === 'rlab') ? 'none' : 'block';
   $('chipHover').style.display = 'none';
+  syncHints();
   setZoom(1);
   recompute();
 }
@@ -2903,6 +2915,7 @@ document.querySelectorAll('[data-show]').forEach(b => b.onclick = () => {
   const k = b.dataset.show;
   S.show[k] = !S.show[k];
   b.classList.toggle('active', S.show[k]);
+  if(k === 'hints') syncHints();          // a DOM chip, not something drawn
   draw();
 });
 
@@ -2925,8 +2938,9 @@ $('resetBtn').onclick = () => {
     const d = RLAB[S.rlab.dev];
     S.rlab.p = d.pdef; S.rlab.V = d.vdef; S.rlab.rows = []; S.rlab.graph = 'iv';
   }
-  S.show = {grid:true, labels:true, values:true};
+  S.show = {grid:true, labels:true, values:true, hints:true};
   document.querySelectorAll('[data-show]').forEach(b => b.classList.add('active'));
+  syncHints();
   S.flow = 'current';
   document.querySelectorAll('[data-flow]').forEach(b =>
     b.classList.toggle('active', b.dataset.flow === 'current'));
