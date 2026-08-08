@@ -102,7 +102,8 @@ body{
 /* ---------- HEADER ZONE (standard 45 px row) ---------- */
 .top-bar{display:flex;justify-content:space-between;align-items:center;
          margin-bottom:6px;flex-wrap:wrap;gap:8px;flex:0 0 auto}
-.top-bar h1{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.top-bar h1{font-size:18px;font-weight:700;font-family:'Inter',sans-serif;display:flex;align-items:center;gap:8px}
+.top-bar h1 .ttl{color:var(--accent)}
 .top-bar h1 .sub{font-size:11px;font-weight:500;color:var(--text-dim)}
 .badge-top{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 8px;
            border-radius:12px;background:var(--accent-glow);color:var(--accent);
@@ -220,8 +221,8 @@ table.feat tr:last-child td{border-bottom:none}
 
   <!-- ===== HEADER ZONE ===== -->
   <div class="top-bar">
-    <h1>⚛️ Atomic Models
-      <span class="badge-top">v1.2.2</span>
+    <h1>⚛️ <span class="ttl">Atomic Models</span>
+      <span class="badge-top">v1.2.3</span>
       <span class="sub">IGCSE Physics 0625 · Topic 5.1 Nuclear Physics</span>
     </h1>
     <div class="top-right">
