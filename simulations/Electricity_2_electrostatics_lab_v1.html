@@ -1,0 +1,3243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Electrostatics Lab — HAUS Academy</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" crossorigin="anonymous">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js" crossorigin="anonymous"></script>
+<style>
+/* ============ THEME TOKENS (6 themes) ============ */
+:root {
+  --bg:#0f172a; --card:#1e293b; --card2:#172033; --border:#334155;
+  --text:#e2e8f0; --text-dim:#94a3b8; --text-muted:#64748b;
+  --accent:#e3b341; --accent-glow:rgba(227,179,65,0.12);
+  --grid:#1e293b; --canvas-bg:#0a0f1a;
+  --green:#34d399; --rose:#fb7185; --violet:#a78bfa;
+  --amber:#fbbf24; --blue:#38bdf8; --orange:#fb923c;
+}
+.theme-hausnight {
+  --bg:#1a1c20; --card:#26282d; --card2:#1f2126; --border:#3a3c42;
+  --text:#FFFFFF; --text-dim:#e0e2e8; --text-muted:#a8aab2;
+  --accent:#F4C01E; --accent-glow:rgba(244,192,30,0.10);
+  --grid:#2a2c32; --canvas-bg:#121418;
+  --green:#A6B36A; --rose:#D68B57; --violet:#CBAA6A;
+  --amber:#F4C01E; --blue:#5FB0C4; --orange:#D68B57;
+}
+.theme-neon {
+  --bg:#0d0f1a; --card:#1a1c2e; --card2:#141628; --border:#2a2d4a;
+  --text:#e0e0f0; --text-dim:#8888b8; --text-muted:#5a5a8a;
+  --accent:#00ffc8; --accent-glow:rgba(0,255,200,0.1);
+  --grid:#1a1c2e; --canvas-bg:#080a14;
+  --green:#00ff88; --rose:#ff4499; --violet:#8844ff;
+  --amber:#ffcc00; --blue:#4488ff; --orange:#ff6633;
+}
+.theme-light {
+  --bg:#ffffff; --card:#f3f4f6; --card2:#e9ebef; --border:#d1d5db;
+  --text:#111827; --text-dim:#4b5563; --text-muted:#9ca3af;
+  --accent:#b45309; --accent-glow:rgba(180,83,9,0.10);
+  --grid:#e5e7eb; --canvas-bg:#f9fafb;
+  --green:#059669; --rose:#dc2626; --violet:#7c3aed;
+  --amber:#d97706; --blue:#2563eb; --orange:#ea580c;
+}
+.theme-haus {
+  --bg:#F4EEE0; --card:#FFFFFF; --card2:#F7F2E6; --border:#E4DAC4;
+  --text:#1A1712; --text-dim:#5B5344; --text-muted:#948A74;
+  --accent:#A9820F; --accent-glow:rgba(169,130,15,0.12);
+  --grid:#EBE3D0; --canvas-bg:#FCFAF2;
+  --green:#4E7A3F; --rose:#B5502E; --violet:#8A6D3B;
+  --amber:#A9820F; --blue:#4A7AB8; --orange:#A87A4A;
+}
+.theme-clay {
+  --bg:#d4c8be; --card:#e5d9d0; --card2:#dfd2c8; --border:#c2b5aa;
+  --text:#2d2622; --text-dim:#6a5a4d; --text-muted:#928078;
+  --accent:#a55a3a; --accent-glow:rgba(165,90,58,0.1);
+  --grid:#ccbfb5; --canvas-bg:#eee6de;
+  --green:#5a7a4a; --rose:#a03a3a; --violet:#6a4d7a;
+  --amber:#b07a2a; --blue:#3a5a7a; --orange:#b05a2a;
+}
+/* ---- electrostatics colours ----
+   These are PRINTED-REFERENCE facts, not decoration: red always means a
+   positive charge and blue always means a negative one, in every theme, so
+   a screenshot taken in HAUS Day reads the same as one taken in Neon. Only
+   the two structural greys shift, because a metal that reads on black is
+   invisible on cream. */
+:root, .theme-hausnight, .theme-neon, .theme-light, .theme-haus, .theme-clay {
+  --charge-pos:#ff4444; --charge-neg:#4488ff; --neutral:#888888;
+  --field-line:rgba(255,200,50,0.55); --spark:#ffdd00; --electron:#4488ff;
+  --ground:#44aa44; --glass:#88ccff; --silk:#ff88aa; --wool:#ccaa88;
+}
+:root, .theme-hausnight, .theme-neon { --metal:#7c8899; --metal-hi:#aab4c2; --insul:#5b4636; }
+.theme-light, .theme-haus, .theme-clay { --metal:#5d6875; --metal-hi:#98a3b0; --insul:#7a5c42; }
+
+/* ============ PAGE SHELL — every chrome height is fixed ============ */
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',sans-serif;padding:8px 12px;height:100vh;overflow:hidden;
+     display:flex;flex-direction:column;align-items:center;
+     background:var(--bg);color:var(--text);transition:background .3s,color .3s}
+.container{max-width:1560px;width:100%;height:100%;display:flex;flex-direction:column;min-height:0}
+
+/* --- header zone: 45 px, set by .brand --- */
+.top-bar{display:flex;justify-content:space-between;align-items:center;
+         margin-bottom:6px;flex-wrap:wrap;gap:8px;flex:0 0 auto}
+.top-bar h1{font-size:18px;font-weight:700;display:flex;align-items:center;gap:8px}
+.badge-top{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 8px;
+           border-radius:12px;background:var(--accent-glow);color:var(--accent);
+           border:1px solid var(--accent)}
+.top-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.mode-tabs{display:flex;gap:4px;background:var(--card);border-radius:8px;
+           padding:3px;border:1px solid var(--border)}
+.mode-tab{padding:5px 12px;border-radius:6px;border:none;
+          font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;
+          transition:all .2s;background:transparent;color:var(--text-dim)}
+.mode-tab:hover{color:var(--text)}
+.mode-tab.active{background:var(--accent-glow);color:var(--accent)}
+.theme-select{background:var(--card);border:1px solid var(--border);color:var(--text);
+              padding:4px 10px;border-radius:8px;cursor:pointer;
+              font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;min-width:110px}
+.brand{background:#F4C01E;border-radius:10px;padding:7px 8px;
+       box-shadow:0 2px 6px rgba(0,0,0,.25);display:flex;align-items:center}
+.brand img{height:31px;width:auto;display:block}
+@media(max-width:640px){.brand{display:none}}
+
+/* --- section tabs: 3 equal buttons, 34 px.  Present in EVERY mode: outside
+       Simulate they are dimmed and inert, never display:none, because
+       removing the row would move the canvas. --- */
+.sectabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;
+         flex:0 0 auto;margin-bottom:6px}
+.sbtn{height:34px;border:1px solid var(--border);background:var(--card);color:var(--text-dim);
+      border-radius:9px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;
+      font-weight:600;transition:all .18s;display:flex;align-items:center;
+      justify-content:center;gap:7px}
+.sbtn:hover{color:var(--text)}
+.sbtn.active{background:var(--accent-glow);color:var(--accent);border-color:var(--accent)}
+.sectabs.locked{opacity:.35;pointer-events:none}
+
+/* --- toolbar: two fixed rows --- */
+.toolbar{display:flex;flex-direction:column;gap:8px;background:var(--card);
+         border:1px solid var(--border);border-radius:11px;padding:8px 12px;
+         flex:0 0 auto;margin-bottom:6px}
+.trow{display:flex;align-items:center;gap:14px;min-height:28px;height:28px;overflow:hidden}
+.slot{display:none;align-items:center;gap:14px;width:100%;overflow:hidden}
+.slot.on{display:flex}
+.tgroup{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+/* a group that does not apply to the current sub-mode is removed from the
+   row rather than merely hidden, so the groups after it close up.  Safe
+   here because the row height is fixed and nothing below it moves. */
+.tgroup.hid{display:none}
+.tlabel{font-size:10px;color:var(--text-muted);text-transform:uppercase;
+        letter-spacing:.6px;font-weight:600;white-space:nowrap}
+.rule{width:1px;height:20px;background:var(--border);flex:0 0 auto}
+.pills{display:flex;background:var(--bg);border:1px solid var(--border);
+       border-radius:20px;padding:2px}
+.pill{border:none;background:transparent;color:var(--text-dim);font-size:11px;
+      padding:4px 11px;border-radius:16px;cursor:pointer;white-space:nowrap;
+      font-family:'Inter',sans-serif;font-weight:500}
+.pill:hover{color:var(--text)}
+.pill.active{background:var(--accent-glow);color:var(--accent)}
+.tbtn{border:1px solid var(--border);background:var(--bg);color:var(--text-dim);
+      font-size:11px;padding:4px 10px;border-radius:8px;cursor:pointer;white-space:nowrap}
+.tbtn:hover{color:var(--text);border-color:var(--accent)}
+.tbtn.on{color:var(--accent);border-color:var(--accent);background:var(--accent-glow)}
+.tsel{background:var(--bg);border:1px solid var(--border);color:var(--text);
+      font-family:'JetBrains Mono',monospace;font-size:10.5px;
+      padding:3px 6px;border-radius:8px;cursor:pointer;outline:none}
+.spacer{margin-left:auto}
+
+/* --- main split: canvas + side panel --- */
+.main{flex:1 1 auto;min-height:0;display:flex;gap:8px}
+.stage{flex:1 1 auto;min-width:0;position:relative;background:var(--canvas-bg);
+       border:1px solid var(--border);border-radius:11px;overflow:hidden}
+#cv{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
+.chip{position:absolute;font-family:'JetBrains Mono',monospace;font-size:10px;
+      padding:3px 9px;border-radius:8px;background:var(--card);
+      border:1px solid var(--border);color:var(--text-dim);pointer-events:none;
+      max-width:46%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chip b{color:var(--accent)}
+.chip.tl{top:8px;left:8px}
+.chip.tr{top:8px;right:8px;color:var(--text)}
+.chip.tc{top:8px;left:50%;transform:translateX(-50%);color:var(--amber);
+         border-color:var(--amber);background:var(--card)}
+.chip.tr2{top:34px;right:8px;color:var(--accent);border-color:var(--accent)}
+.chip.br{bottom:8px;right:8px;max-width:min(64%,640px);white-space:normal;
+         text-align:left;line-height:1.55;font-size:9.5px;color:var(--text-muted)}
+.chip.br b{color:var(--accent)}
+
+/* --- side panel --- */
+.panel{flex:0 0 30%;min-width:290px;max-width:400px;display:flex;flex-direction:column;
+       background:var(--card);border:1px solid var(--border);border-radius:11px;
+       min-height:0;overflow:hidden}
+.ptabs{display:grid;grid-template-columns:repeat(3,1fr);gap:3px;padding:5px;
+       border-bottom:1px solid var(--border);flex:0 0 auto}
+.ptab{border:none;background:transparent;color:var(--text-dim);font-size:11px;
+      padding:5px 0;border-radius:7px;cursor:pointer;font-weight:600}
+.ptab:hover{color:var(--text)}
+.ptab.active{background:var(--accent-glow);color:var(--accent)}
+.panes{flex:1 1 auto;min-height:0;overflow-y:auto;padding:10px 12px 14px}
+
+.ptitle{display:flex;align-items:center;gap:7px;font-size:10px;font-weight:700;
+        letter-spacing:.9px;color:var(--text-muted);text-transform:uppercase;
+        margin:12px 0 7px;padding-bottom:5px;border-bottom:1px solid var(--border)}
+.ptitle:first-child{margin-top:0}
+.ptitle span{font-size:12px}
+.kv{display:flex;justify-content:space-between;align-items:center;gap:10px;
+    font-size:11.5px;color:var(--text-dim);padding:4px 0}
+.kv b{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text);
+      font-weight:600;text-align:right}
+.v-pos{color:var(--charge-pos)!important} .v-neg{color:var(--charge-neg)!important}
+.v-amber{color:var(--amber)!important} .v-green{color:var(--green)!important}
+.v-violet{color:var(--violet)!important}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin:8px 0}
+.card{background:var(--bg);border:1px solid var(--border);border-radius:9px;
+      padding:7px 8px;text-align:center}
+.card .cl{font-size:10px;color:var(--text-muted);font-weight:700}
+.card .cv{font-size:15px;font-weight:700;font-family:'JetBrains Mono',monospace;color:var(--text)}
+.card .cu{font-size:9px;color:var(--text-muted)}
+.sl{margin:9px 0}
+.sl label{display:flex;justify-content:space-between;align-items:center;font-size:11px;
+          color:var(--text-dim);margin-bottom:4px;gap:8px}
+.numwrap{display:flex;align-items:center;gap:4px;flex:0 0 auto}
+.numin{width:70px;background:var(--bg);border:1px solid var(--border);border-radius:7px;
+       color:var(--accent);font-family:'JetBrains Mono',monospace;font-size:12px;
+       font-weight:600;text-align:right;padding:3px 6px;outline:none}
+.numin:focus{border-color:var(--accent)}
+.numu{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);
+      min-width:12px;text-align:left}
+.sl input[type=range]{width:100%;accent-color:var(--accent)}
+.rowbtns{display:flex;gap:5px;margin:8px 0;flex-wrap:wrap}
+.mini{border:1px solid var(--border);background:var(--bg);color:var(--text-dim);
+      font-size:10.5px;padding:5px 10px;border-radius:7px;cursor:pointer}
+.mini:hover{color:var(--accent);border-color:var(--accent)}
+.mini.on{color:var(--accent);border-color:var(--accent);background:var(--accent-glow)}
+.mini:disabled{opacity:.4;cursor:default}
+.note{font-size:10.5px;color:var(--text-muted);line-height:1.55;margin-top:9px;
+      background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 10px}
+.note b{color:var(--text-dim)}
+.note.warn{border-color:var(--amber);color:var(--text-dim)}
+.note.warn b{color:var(--amber)}
+.empty{font-size:11px;color:var(--text-muted);text-align:center;padding:16px 6px;font-style:italic}
+.rule-list{font-size:11px;color:var(--text-dim);line-height:1.7;padding-left:16px;margin:4px 0}
+.rule-list li{margin:2px 0}
+.rule-list b{color:var(--text)}
+.working{background:var(--bg);border:1px solid var(--border);border-radius:9px;
+         padding:9px 11px;margin-top:4px}
+.working .mrow{padding:3px 0;color:var(--text);font-size:12.5px;line-height:1.5}
+.working .mrow + .mrow{border-top:1px solid var(--border)}
+.working .mrow.plain{font-family:'JetBrains Mono',monospace;font-size:11.5px}
+.working .katex{font-size:1.02em;color:var(--text)}
+table.dt{width:100%;border-collapse:collapse;font-family:'JetBrains Mono',monospace;font-size:10.5px}
+table.dt th{color:var(--text-muted);font-weight:600;text-align:right;padding:4px 5px;
+            border-bottom:1px solid var(--border);font-size:9.5px}
+table.dt th:first-child{text-align:left}
+table.dt td{padding:3px 5px;text-align:right;color:var(--text-dim);
+            border-bottom:1px solid var(--border)}
+table.dt td:first-child{text-align:left;color:var(--text)}
+table.dt tr.hi td{background:var(--accent-glow);color:var(--accent)}
+table.dt tr.pos td:first-child{color:var(--charge-pos)}
+table.dt tr.neg td:first-child{color:var(--charge-neg)}
+.swatch{display:inline-block;width:9px;height:9px;border-radius:3px;vertical-align:middle;margin-right:5px}
+.soon{background:var(--bg);border:1px dashed var(--border);border-radius:10px;
+      padding:18px 14px;text-align:center;color:var(--text-muted);font-size:11.5px;line-height:1.7}
+.soon b{color:var(--accent);display:block;font-size:13px;margin-bottom:6px}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- ===== HEADER ZONE (45 px) ===== -->
+  <div class="top-bar">
+    <h1>⚡ <span>Electrostatics Lab</span> <span class="badge-top" id="badgeTop">v1.4.0</span></h1>
+    <div class="top-right">
+      <div class="mode-tabs" id="modeTabs">
+        <button class="mode-tab active" data-mode="sim">Simulate</button>
+        <button class="mode-tab" data-mode="prac">Practice</button>
+        <button class="mode-tab" data-mode="quiz">Quiz</button>
+      </div>
+      <select class="theme-select" id="themeSel">
+        <option value="dark">🌙 Classic Dark</option>
+        <option value="hausnight">⌂ HAUS Night</option>
+        <option value="neon">🌃 Cyberpunk Neon</option>
+        <option value="light">☀️ Classic Light</option>
+        <option value="haus">⌂ HAUS Day</option>
+        <option value="clay">🏺 Warm Clay</option>
+      </select>
+      <div class="brand" aria-label="HAUS Academy"><img src="data:image/png;base64,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" alt="HAUS Academy"></div>
+    </div>
+  </div>
+
+  <!-- ===== SECTION TABS ===== -->
+  <div class="sectabs" id="secTabs">
+    <button class="sbtn active" data-sec="charging">🔬 Charging</button>
+    <button class="sbtn" data-sec="fields">🌐 Fields</button>
+    <button class="sbtn" data-sec="devices">⚡ Devices</button>
+  </div>
+
+  <!-- ===== TOOLBAR: two fixed rows ===== -->
+  <div class="toolbar">
+    <!-- row 1: context controls, one slot per section -->
+    <div class="trow">
+      <div class="slot on" id="slot-charging">
+        <div class="tgroup"><span class="tlabel">Method</span>
+          <div class="pills">
+            <button class="pill active" data-method="friction">Friction</button>
+            <button class="pill" data-method="induction">Induction</button>
+          </div>
+        </div>
+        <div class="rule"></div>
+        <div class="tgroup" id="grp-pair"><span class="tlabel">Materials</span>
+          <select class="tsel" id="pairSel" title="Which rod is rubbed with which cloth."></select>
+          <button class="tbtn" id="rubBtn" title="Rub the cloth along the rod once. Drag the cloth on the canvas to do it by hand.">✋ Rub once</button>
+        </div>
+        <div class="tgroup hid" id="grp-ind"><span class="tlabel">Rod</span>
+          <div class="pills">
+            <button class="pill" data-rodsign="1">+ charged</button>
+            <button class="pill active" data-rodsign="-1">− charged</button>
+          </div>
+          <button class="tbtn" id="indPrev" title="Previous step">‹ Back</button>
+          <button class="tbtn" id="indNext" title="Next step of the induction sequence">Next ›</button>
+        </div>
+      </div>
+
+      <div class="slot" id="slot-fields">
+        <div class="tgroup"><span class="tlabel">Study</span>
+          <div class="pills">
+            <button class="pill active" data-fmode="force">Force</button>
+            <button class="pill" data-fmode="pattern">Field patterns</button>
+            <button class="pill" data-fmode="plates">Parallel plates</button>
+          </div>
+        </div>
+        <div class="rule"></div>
+        <div class="tgroup" id="grp-pat"><span class="tlabel">Pattern</span>
+          <select class="tsel" id="patSel" style="min-width:190px"></select>
+        </div>
+        <div class="tgroup" id="grp-fshow"><span class="tlabel">Overlay</span>
+          <div class="pills">
+            <button class="pill active" data-fshow="lines" title="Draw the electric field lines.">Field lines</button>
+            <button class="pill" data-fshow="test" title="Drop a small positive test charge and watch which way the field pushes it.">Test charge</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="slot" id="slot-devices">
+        <div class="tgroup"><span class="tlabel">Device</span>
+          <div class="pills">
+            <button class="pill active" data-dev="electroscope">Electroscope</button>
+            <button class="pill" data-dev="vandegraaff">Van de Graaff</button>
+            <button class="pill" data-dev="sparks">Sparks &amp; Discharge</button>
+            <button class="pill" data-dev="tesla">Tesla Coil</button>
+          </div>
+        </div>
+        <div class="rule"></div>
+        <div class="tgroup" id="grp-devact"></div>
+      </div>
+    </div>
+
+    <!-- row 2: global controls, identical in every section -->
+    <div class="trow">
+      <div class="tgroup"><span class="tlabel">Show</span>
+        <div class="pills">
+          <button class="pill active" data-show="particles" title="Show the moving electrons and ions.">⚛ Particles</button>
+          <button class="pill active" data-show="labels" title="Show the labels drawn on the apparatus.">🏷 Labels</button>
+          <button class="pill active" data-show="hints" title="Show the instructions block in the corner of the canvas.">💬 Hints</button>
+        </div>
+      </div>
+      <div class="rule"></div>
+      <div class="tgroup"><span class="tlabel">Media</span>
+        <button class="tbtn on" id="animBtn" title="Freeze or resume every animation. Frozen keeps the picture, it does not blank it.">▶ Animation</button>
+        <button class="tbtn on" id="soundBtn" title="Master switch for every sound in the file.">🔊 Sound</button>
+      </div>
+      <div class="rule"></div>
+      <div class="tgroup"><span class="tlabel">Speed</span>
+        <div class="pills" id="speedPills">
+          <button class="pill" data-speed="0.5">0.5×</button>
+          <button class="pill active" data-speed="1">1×</button>
+          <button class="pill" data-speed="2">2×</button>
+        </div>
+      </div>
+      <div class="rule spacer"></div>
+      <button class="tbtn" id="resetBtn" title="Resets only the section you are looking at — it does not switch tab.">↺ Reset</button>
+    </div>
+  </div>
+
+  <!-- ===== MAIN: canvas + side panel ===== -->
+  <div class="main">
+    <div class="stage">
+      <canvas id="cv"></canvas>
+      <div class="chip tl" id="chipInfo"></div>
+      <div class="chip tr" id="chipStatus"></div>
+      <div class="chip tc" id="chipWarn" style="display:none"></div>
+      <div class="chip tr2" id="chipZoom" style="display:none"></div>
+      <div class="chip br" id="chipHint"></div>
+    </div>
+
+    <aside class="panel">
+      <div class="ptabs">
+        <button class="ptab active" id="ptab-data" data-ptab="data">📊 Data</button>
+        <button class="ptab" id="ptab-info" data-ptab="info">📐 Info</button>
+        <button class="ptab" id="ptab-answer" data-ptab="answer">✍️ Answer</button>
+      </div>
+      <div class="panes">
+        <div id="pane-data"></div>
+        <div id="pane-info" style="display:none"></div>
+        <div id="pane-answer" style="display:none"></div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<script>
+/* ===== part_js_model.js ===== */
+/* ============================================================
+   ELECTROSTATICS MODEL — pure physics, no DOM.
+   Everything the canvas draws is derived from these functions,
+   so the picture can never disagree with the numbers.
+   ============================================================ */
+
+const E_CHARGE = 1.6e-19;          // coulomb, magnitude of the electron charge
+const E_BREAK  = 3.0e6;            // V/m — dielectric strength of dry air
+const K_E      = 8.99e9;           // N m² C⁻², used only for dome potentials
+
+/* ---------- 1. TRIBOELECTRIC SERIES ----------
+   Ordered most-positive first: the material HIGHER in this list gives up
+   electrons and ends up POSITIVE; the lower one gains them and ends up
+   NEGATIVE.  Fur and Acetate are not in the uploaded spec's list but are
+   needed by three of its material pairs; they are placed where the UK
+   school convention puts them — acetate is the standard "positive rod",
+   polythene and ebonite the standard "negative rods". */
+const TRIBO = [
+  {key:'fur',       name:'Fur',          short:'Fur'},
+  {key:'acetate',   name:'Acetate',      short:'Acetate'},
+  {key:'glass',     name:'Glass',        short:'Glass'},
+  {key:'nylon',     name:'Nylon',        short:'Nylon'},
+  {key:'wool',      name:'Wool',         short:'Wool'},
+  {key:'silk',      name:'Silk',         short:'Silk'},
+  {key:'aluminium', name:'Aluminium',    short:'Alum.'},
+  {key:'cotton',    name:'Cotton',       short:'Cotton'},
+  {key:'paper',     name:'Paper',        short:'Paper'},
+  {key:'polystyrene',name:'Polystyrene', short:'Polyst.'},
+  {key:'polyethylene',name:'Polyethylene',short:'Polythene'},
+  {key:'ebonite',   name:'Ebonite',      short:'Ebonite'},
+  {key:'pvc',       name:'PVC',          short:'PVC'},
+  {key:'teflon',    name:'Teflon',       short:'Teflon'}
+];
+const TRIBO_IDX = {};
+TRIBO.forEach((m, i) => { TRIBO_IDX[m.key] = i; });
+
+/* The five rod+cloth pairs the lab offers.  `rod` is the object held in the
+   hand, `cloth` the material it is rubbed with. */
+const PAIRS = {
+  'glass+silk':        {rod:'glass',        cloth:'silk', label:'Glass + Silk'},
+  'polyethylene+wool': {rod:'polyethylene', cloth:'wool', label:'Polythene + Wool'},
+  'polystyrene+fur':   {rod:'polystyrene',  cloth:'fur',  label:'Polystyrene + Fur'},
+  'acetate+wool':      {rod:'acetate',      cloth:'wool', label:'Acetate + Wool'},
+  'ebonite+fur':       {rod:'ebonite',      cloth:'fur',  label:'Ebonite + Fur'}
+};
+
+/* Which way do the electrons go, and what charge does each object end with?
+   Returns signs as +1 / −1 and the direction of electron transfer. */
+function rubOutcome(pairKey){
+  const p = PAIRS[pairKey];
+  const ir = TRIBO_IDX[p.rod], ic = TRIBO_IDX[p.cloth];
+  /* higher in the list (smaller index) = loses electrons = positive */
+  const rodSign   = ir < ic ? +1 : -1;
+  const clothSign = -rodSign;
+  return {
+    rod:p.rod, cloth:p.cloth, label:p.label,
+    rodName:TRIBO[ir].name, clothName:TRIBO[ic].name,
+    rodSign, clothSign,
+    gap: Math.abs(ir - ic),
+    /* electrons always travel TOWARDS the object that ends up negative */
+    electronsTo: rodSign < 0 ? 'rod' : 'cloth'
+  };
+}
+
+/* Charge is quantised: Q = n e.  Both directions, so the panel and the
+   canvas always quote the same number. */
+const chargeOf   = n => n * E_CHARGE;
+const electronsOf = Q => Math.round(Math.abs(Q) / E_CHARGE);
+
+/* ---------- 2. CHARGING BY INDUCTION ----------
+   Five steps.  `net` is the conductor's total charge in units of the
+   elementary charge count used on screen; `near`/`far` are the charge
+   shown on each face.  `rodSign` is the sign of the charged rod. */
+const INDUCTION_STEPS = ['neutral','approach','earth','unearth','removed'];
+
+function inductionState(step, rodSign, n){
+  n = (n === undefined) ? 6 : n;                 // electrons shown per face
+  const i = INDUCTION_STEPS.indexOf(step);
+  switch(step){
+    case 'neutral':
+      return {i, near:0, far:0, net:0, earthed:false, rodPresent:false,
+              spread:true, flow:0,
+              text:'The sphere is neutral — equal numbers of positive and negative charges, evenly spread.'};
+    case 'approach':
+      /* charges separate: the face nearest the rod attracts the OPPOSITE
+         sign, the far face is left with the SAME sign as the rod.
+         Total is still zero — nothing has entered or left. */
+      return {i, near:-rodSign*n, far:+rodSign*n, net:0, earthed:false,
+              rodPresent:true, spread:false, flow:0,
+              text:'Charges separate. The near face is attracted to the rod; the far face is repelled. The sphere is still NEUTRAL overall.'};
+    case 'earth':
+      /* the far-face charge is neutralised through the earth link.
+         A negative rod pushes electrons DOWN to earth (flow −1);
+         a positive rod pulls electrons UP from earth (flow +1). */
+      return {i, near:-rodSign*n, far:0, net:-rodSign*n, earthed:true,
+              rodPresent:true, spread:false, flow:rodSign > 0 ? +1 : -1,
+              text: rodSign > 0
+                ? 'Earthed. Electrons flow UP from the ground to cancel the repelled positive charge.'
+                : 'Earthed. The repelled electrons flow DOWN to the ground.'};
+    case 'unearth':
+      return {i, near:-rodSign*n, far:0, net:-rodSign*n, earthed:false,
+              rodPresent:true, spread:false, flow:0,
+              text:'Earth removed FIRST, while the rod is still there. The charge is now trapped on the sphere.'};
+    case 'removed':
+      return {i, near:-rodSign*n/2, far:-rodSign*n/2, net:-rodSign*n,
+              earthed:false, rodPresent:false, spread:true, flow:0,
+              text:'Rod removed. The charge spreads evenly — the sphere is left charged OPPOSITE to the rod.'};
+  }
+}
+
+/* ---------- 3. ELECTRIC FIELD ----------
+   Superposition of point charges.  `q` is in arbitrary units; only ratios
+   and directions are ever shown, which is all IGCSE asks for. */
+function fieldAt(x, y, charges){
+  let ex = 0, ey = 0;
+  for(let i = 0; i < charges.length; i++){
+    const c = charges[i];
+    const dx = x - c.x, dy = y - c.y;
+    let r2 = dx*dx + dy*dy;
+    if(r2 < 4) r2 = 4;                       // guard the singularity at r → 0
+    const r = Math.sqrt(r2);
+    const s = c.q / (r2 * r);                // q/r² along the unit vector
+    ex += s*dx; ey += s*dy;
+  }
+  return {ex, ey, mag: Math.hypot(ex, ey)};
+}
+
+/* Field INSIDE a charged conductor is zero — the syllabus point that makes
+   the charged-sphere pattern different from a bare point charge. */
+function fieldAtShielded(x, y, charges, solids){
+  if(solids){
+    for(let i = 0; i < solids.length; i++){
+      const s = solids[i];
+      if(Math.hypot(x - s.x, y - s.y) < s.r) return {ex:0, ey:0, mag:0, inside:true};
+    }
+  }
+  return fieldAt(x, y, charges);
+}
+
+/* ---------- 3b. PARALLEL PLATES ----------
+   A plate is a real object extending OUT of the screen, so each element of
+   it is a finite line SEGMENT of charge, not a point.  This matters: a row
+   of point charges is a line charge (E ∝ 1/r) and gives a field between the
+   plates that is 38% non-uniform — the exact opposite of the syllabus
+   point.  The closed form for a segment of half-depth L is
+
+        E_ρ  =  q · L / ( ρ · √(L² + ρ²) )
+
+   which tends to the line-charge 1/ρ close up and to the point-charge
+   2L/ρ² far away, so the same superposition machinery still applies. */
+const PLATE_DEPTH = 500;                    // half-depth out of the screen, px
+/* Default proportions matter physically, not just visually: the uniform
+   region only extends to about one plate separation in from each edge, so
+   a squat plate has almost no uniform region at all.  At hw 300 / sep 90
+   (width ≈ 6.7 × the gap) the central HALF of the plate is uniform to
+   within 3% and 1° of the normal — measured, not assumed. */
+const PLATE_HW = 400, PLATE_SEP_DEF = 130, PLATE_N = 81;
+function plateGeom(o){
+  o = o || {};
+  return {cx:o.cx || 0, cy:o.cy || 0,
+          hw:o.hw || PLATE_HW, sep:o.sep || PLATE_SEP_DEF,
+          n:o.n || PLATE_N, q:(o.q === undefined ? 1 : o.q),
+          depth:o.depth || PLATE_DEPTH};
+}
+/* How far out from the centre the field may honestly be called uniform.
+   MEASURED from the field itself rather than guessed with a rule of thumb,
+   so the shaded "uniform field" band on the canvas can never claim more
+   than the model actually delivers.  tol is the fractional departure from
+   the centre magnitude that still counts as uniform. */
+function plateUniformHalf(p, tol){
+  tol = tol || 0.03;
+  const c = plateFieldAt(p.cx, p.cy, p).mag;
+  if(!(c > 0)) return 0;
+  const yr = p.sep*0.34, step = Math.max(2, p.hw/60);
+  let best = 0;
+  for(let x = 0; x <= p.hw; x += step){
+    let ok = true;
+    for(let y = -yr; y <= yr + 1e-9; y += yr/2){
+      const f = plateFieldAt(p.cx + x, p.cy + y, p);
+      if(Math.abs(f.mag/c - 1) > tol) { ok = false; break; }
+      if(Math.abs(Math.atan2(f.ey, f.ex)*180/Math.PI - 90) > 1.0) { ok = false; break; }
+    }
+    if(!ok) break;
+    best = x;
+  }
+  return best;
+}
+function plateFieldAt(x, y, p){
+  let ex = 0, ey = 0;
+  const L = p.depth, yT = p.cy - p.sep/2, yB = p.cy + p.sep/2, qe = p.q/p.n;
+  for(let i = 0; i < p.n; i++){
+    const px = p.cx - p.hw + 2*p.hw*i/(p.n - 1);
+    for(let s = 0; s < 2; s++){
+      const py = s ? yB : yT, q = s ? -qe : +qe;
+      const dx = x - px, dy = y - py;
+      const rho = Math.max(Math.hypot(dx, dy), 1e-6);
+      const m = q*L/(rho*Math.sqrt(L*L + rho*rho));
+      ex += m*dx/rho; ey += m*dy/rho;
+    }
+  }
+  return {ex, ey, mag: Math.hypot(ex, ey)};
+}
+
+/* Trace one field line from a seed point.  `F(x,y) -> {ex,ey,mag}` is any
+   field function, so point charges and parallel plates share one tracer.
+   dir = +1 follows the field (away from +), −1 runs against it (into a −).
+   RK2 midpoint, so the line stays on the true field direction. */
+function traceField(F, x0, y0, dir, box, opt){
+  opt = opt || {};
+  const step = opt.step || 5, maxSteps = opt.maxSteps || 900;
+  const stops = opt.stops || [];
+  const pts = [{x:x0, y:y0}];
+  let x = x0, y = y0, ended = null;
+  for(let i = 0; i < maxSteps; i++){
+    const f1 = F(x, y);
+    if(f1.mag < 1e-14){ ended = 'null'; break; }
+    const hx = x + dir*step*0.5*f1.ex/f1.mag, hy = y + dir*step*0.5*f1.ey/f1.mag;
+    const f2 = F(hx, hy);
+    if(f2.mag < 1e-14){ ended = 'null'; break; }
+    x += dir*step*f2.ex/f2.mag; y += dir*step*f2.ey/f2.mag;
+    if(x < box.x0 || x > box.x1 || y < box.y0 || y > box.y1){
+      /* land ON the boundary rather than a whole step past it, or a line can
+         spill into a reserved band (a caption strip, say) by up to one step */
+      pts.push({x:Math.max(box.x0, Math.min(box.x1, x)),
+                y:Math.max(box.y0, Math.min(box.y1, y))});
+      ended = 'edge'; break;
+    }
+    pts.push({x, y});
+    for(let k = 0; k < stops.length; k++){
+      const c = stops[k];
+      if(Math.hypot(x - c.x, y - c.y) < (c.rad || 13)){
+        ended = c.q > 0 ? 'pos' : 'neg'; break;
+      }
+    }
+    if(ended) break;
+  }
+  return {pts, ended};
+}
+
+/* Lines per charge is proportional to |q| — that IS the "closer lines mean
+   a stronger field" rule, so it must not be a free parameter. */
+const LINES_PER_UNIT = 6;
+const lineCount = q => Math.max(3, Math.round(LINES_PER_UNIT * Math.abs(q)));
+
+/* Seed and trace every line for a configuration.  Lines are seeded on a
+   small ring around each POSITIVE charge and run outwards; a net-negative
+   configuration also seeds around each negative charge and runs inwards,
+   so a lone − still shows its inward arrows. */
+function fieldLines(charges, box, opt){
+  opt = opt || {};
+  const seedR = opt.seedR || 16;
+  const F = (x, y) => fieldAt(x, y, charges);
+  const out = [];
+  const hasPos = charges.some(o => o.q > 0);
+  for(const c of charges){
+    const n = lineCount(c.q);
+    const dir = c.q > 0 ? +1 : -1;
+    const r = (c.rad || 0) + seedR;
+    for(let i = 0; i < n; i++){
+      const a = (i + 0.5) * 2*Math.PI/n + (opt.phase || 0);
+      const t = traceField(F, c.x + r*Math.cos(a), c.y + r*Math.sin(a),
+                           dir, box, Object.assign({stops:charges}, opt));
+      if(t.pts.length <= 2) continue;
+      /* A negative charge is ALSO seeded, traced backwards, so the field
+         arriving at it from far away is drawn.  Without this the far side of
+         the − in a dipole is blank, which looks like the field stops there.
+         Lines that simply run back to the + are dropped — they are already
+         drawn, from the + end. */
+      if(c.q < 0 && hasPos && t.ended !== 'edge') continue;
+      out.push(Object.assign({}, t, {from:c, dir}));
+    }
+  }
+  return out;
+}
+
+/* Field lines between plates: seeded evenly along the + plate, so equal
+   spacing on screen IS the statement that the field is uniform. */
+function plateLines(p, box, opt){
+  opt = opt || {};
+  const n = opt.n || 11;
+  const F = (x, y) => plateFieldAt(x, y, p);
+  /* Seed a little way off the plate, not on its surface.  Right against a
+     row of discrete elements the nearest one dominates and drags the line
+     sideways — a pure discretisation artefact that shows up as a visible
+     wiggle.  The ripple dies as exp(−2π·d/spacing), so one element spacing
+     of clearance kills it. */
+  const spacing = 2*p.hw/(p.n - 1);
+  const off = opt.seedOff === undefined ? Math.max(4, spacing*1.1) : opt.seedOff;
+  const yT = p.cy - p.sep/2, yB = p.cy + p.sep/2, out = [];
+  for(let i = 0; i < n; i++){
+    const x = p.cx - p.hw + 2*p.hw*i/(n - 1);
+    const t = traceField(F, x, yT + off, +1, box,
+                         Object.assign({step:3, maxSteps:400}, opt));
+    /* A field line ENDS on the negative plate.  Without this the trace runs
+       straight through the gap and off into the fringe field underneath,
+       where it curves wildly — which then looks like the uniform field
+       between the plates is bent. */
+    /* The line stalls a pixel or two short of the plate: immediately below a
+       negative element the field points back UP at it, so the integrator
+       oscillates on the surface.  That IS the line terminating on the plate,
+       so allow a small tolerance rather than demanding it cross y = yB. */
+    const reach = yB - 3;
+    let k = -1;
+    for(let j = 1; j < t.pts.length; j++)
+      if(t.pts[j].y >= reach){ k = j + 1; break; }
+    if(k > 0){
+      t.pts = t.pts.slice(0, k);
+      t.pts.push({x:t.pts[k-1].x, y:yB});     // finish it cleanly on the metal
+      t.ended = 'plate';
+    }
+    /* start it ON the + plate too, so the line touches both surfaces */
+    t.pts.unshift({x, y:yT});
+    if(t.pts.length > 2) out.push(Object.assign(t, {x0:x}));
+  }
+  return out;
+}
+
+/* The fringe field OUTSIDE the capacitor: lines that leave past the ends and
+   loop round from the + plate to the − plate through open air.  Seeded from
+   the top surface of the + plate near its ends. */
+function plateFringeLines(p, box, opt){
+  opt = opt || {};
+  const F = (x, y) => plateFieldAt(x, y, p);
+  const yT = p.cy - p.sep/2, out = [];
+  /* Seeded close to the ends only.  Seeding further in produces enormous
+     loops that sweep the whole canvas — correct physics, but it reads as
+     decoration rather than as the fringe at the plate edge. */
+  const seeds = opt.seeds || [1.01, 1.06, 1.13];
+  const yB = p.cy + p.sep/2;
+  for(const s of seeds) for(const sgn of [-1, +1]){
+    const t = traceField(F, p.cx + sgn*s*p.hw, yT - Math.max(5, p.sep*0.10),
+                         +1, box, Object.assign({step:4, maxSteps:500}, opt));
+    /* it curls round the end and lands on the OUTSIDE of the − plate */
+    let k = -1;
+    for(let j = 4; j < t.pts.length; j++)
+      if(t.pts[j].y >= yB + 10){ k = j + 1; break; }
+    if(k > 0){ t.pts = t.pts.slice(0, k); t.ended = 'plate'; }
+    if(t.pts.length > 3) out.push(t);
+  }
+  return out;
+}
+
+/* ---------- 4. FORCE BETWEEN TWO CHARGES ----------
+   IGCSE is qualitative: F ∝ Q₁Q₂/r².  Everything is reported as a RATIO to
+   a stated reference case, never in newtons, so no number on screen is
+   beyond the syllabus. */
+const F_REF_Q = 1, F_REF_R = 200;            // +1 and +1, 200 logical px apart
+function forceBetween(q1, q2, r){
+  const rr = Math.max(r, 24);                // charges cannot overlap
+  const f  = Math.abs(q1*q2)/(rr*rr);
+  const f0 = Math.abs(F_REF_Q*F_REF_Q)/(F_REF_R*F_REF_R);
+  return {
+    ratio: f/f0,
+    attract: q1*q2 < 0,
+    /* +1 means the two are pushed apart */
+    sign: q1*q2 > 0 ? +1 : -1
+  };
+}
+
+/* ---------- 5. SPARKS AND DISCHARGE ----------
+   Air breaks down at 3 kV/mm, so a gap of d millimetres needs 3000·d volts.
+   This is the same rule behind the spec's own practice answer of 9 kV
+   across 3 mm. */
+const breakdownVolts = gap_mm => E_BREAK * (gap_mm/1000);
+const sparkLength_mm = V => Math.max(0, V) / (E_BREAK/1000);
+const canSpark = (V, gap_mm) => V >= breakdownVolts(gap_mm);
+
+/* A charged dome behaves as a sphere: V = kQ/R outside it. */
+const domeVolts  = (Q, R_m) => K_E*Q/Math.max(R_m, 1e-3);
+const domeCharge = (V, R_m) => V*Math.max(R_m, 1e-3)/K_E;
+
+/* ---------- 6. ELECTROSCOPE ----------
+   The leaf lifts because it carries the SAME sign as the stem and is
+   repelled by it.  Deflection saturates — a real leaf cannot pass the
+   stem, and it cannot exceed the horizontal. */
+const LEAF_MAX_DEG = 42, LEAF_MIN_Q = 0.6;
+/* `qMin` is the charge needed before the electrostatic repulsion can lift the
+   leaf against its own weight.  Real gold leaf behaves this way, and without
+   it a rod parked at the far side of the bench still held the leaf a few
+   degrees open, which reads as a broken instrument. */
+function leafAngle(charge, full, qMin){
+  const lo = (qMin === undefined) ? LEAF_MIN_Q : qMin;
+  const hi = full || 10;
+  const f = (Math.abs(charge) - lo)/(hi - lo);
+  if(!(f > 0)) return 0;
+  return LEAF_MAX_DEG * Math.sqrt(Math.min(1, f));
+}
+
+/* ---------- 7. FORMATTING ---------- */
+function sciQ(n){                            // n electrons -> "Q = 1.6 × 10⁻¹⁹ C"
+  const Q = chargeOf(n);
+  if(n === 0) return '0 C';
+  const ex = Math.floor(Math.log10(Q));
+  const m  = Q/Math.pow(10, ex);
+  return m.toFixed(1) + ' × 10' + supNum(ex) + ' C';
+}
+function supNum(x){
+  const S = {'-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴',
+             '5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹'};
+  return String(x).split('').map(c => S[c] || c).join('');
+}
+const signStr = s => s > 0 ? '+' : s < 0 ? '−' : '0';
+
+
+/* ===== part_js_app.js ===== */
+/* ============================================================
+   APP CORE — state, view transform, drawing primitives, panels
+   ============================================================ */
+const $ = id => document.getElementById(id);
+const CV = $('cv'), CX = CV.getContext('2d');
+
+/* One fixed logical space, letterboxed into whatever the window gives us,
+   so every coordinate in the file means the same thing everywhere. */
+const W = 1200, H = 675;
+/* Screen-pixel band kept clear at the top of the canvas — about three lines
+   of chip text — so the info / status / warning chips never sit on top of
+   the apparatus.  It is in SCREEN px, not logical px, because the chips are
+   DOM elements whose size does not scale with the drawing. */
+const TOP_PAD = 62;
+
+const S = {
+  mode:'sim',                 // sim | prac | quiz
+  sec:'charging',             // charging | fields | devices
+  /* --- charging --- */
+  method:'friction',
+  pair:'glass+silk',
+  rubs:0, rubT:0, rubbing:false, rubX:0,
+  indStep:'neutral', rodSign:-1, indPlay:false, indT:0,
+  /* --- fields --- */
+  fmode:'force',
+  pattern:'dipole',
+  fshow:'lines',
+  qA:{x:430, y:318, q:2}, qB:{x:770, y:318, q:-2},
+  plateSep:PLATE_SEP_DEF, plateV:6,   // one source of truth, shared with Reset
+  test:null, testTrail:[],
+  /* --- devices --- */
+  dev:'electroscope',
+  esCharge:0, esRod:-1, esRodX:0, esWasTouching:false, esFlash:0,
+  esEarthed:false, esLeaf:0,
+  vgOn:false, vgQ:0, vgBelt:0, vgGap:60, vgFlash:0, vgSparkPts:null, vgHair:false,
+  vgView:'outside',            // outside | inside (cutaway)
+  spGap:4, spV:6000, spFlash:0, spPts:null, spArmed:false,
+  teslaOn:false, teslaT:0, teslaArcs:[],
+  /* --- global --- */
+  show:{particles:true, labels:true, hints:true},
+  anim:true, sound:true, speed:1,
+  theme:'dark', panelTab:'data',
+  zoom:{k:1, ox:0, oy:0, panning:false, px:0, py:0},
+  t:0, warn:''
+};
+
+/* ---------- palette read from CSS so a theme change is just draw() ---------- */
+let PAL = {};
+function readPalette(){
+  const cs = getComputedStyle(document.body);
+  const g = n => cs.getPropertyValue(n).trim();
+  PAL = {
+    text:g('--text'), dim:g('--text-dim'), muted:g('--text-muted'),
+    accent:g('--accent'), border:g('--border'), card:g('--card'),
+    bg:g('--canvas-bg'), grid:g('--grid'),
+    green:g('--green'), rose:g('--rose'), violet:g('--violet'),
+    amber:g('--amber'), blue:g('--blue'), orange:g('--orange'),
+    pos:g('--charge-pos'), neg:g('--charge-neg'), neutral:g('--neutral'),
+    line:g('--field-line'), spark:g('--spark'), electron:g('--electron'),
+    ground:g('--ground'), metal:g('--metal'), metalHi:g('--metal-hi'),
+    insul:g('--insul'), glass:g('--glass'), silk:g('--silk'), wool:g('--wool')
+  };
+}
+function setTheme(name){
+  document.body.className = name === 'dark' ? '' : 'theme-' + name;
+  S.theme = name; readPalette(); draw(); updatePanel();
+}
+
+/* ---------- view transform: letterbox, then magnifier ---------- */
+const VT = {s:1, ox:0, oy:0};
+function resize(){
+  const r = CV.parentElement.getBoundingClientRect();
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  CV.width = Math.max(1, Math.round(r.width*dpr));
+  CV.height = Math.max(1, Math.round(r.height*dpr));
+  /* fit the drawing into what is left BELOW the chip band, then pin it there
+     rather than centring it vertically */
+  const s = Math.min(r.width/W, Math.max(40, r.height - TOP_PAD)/H);
+  VT.s = s; VT.ox = (r.width - W*s)/2; VT.oy = TOP_PAD;
+  VT.dpr = dpr; VT.cw = r.width; VT.ch = r.height;
+  draw();
+}
+/* Screen -> logical, inverting the WHOLE chain, so a zoomed canvas can never
+   desynchronise a click from what is drawn. */
+function toLogical(e){
+  const r = CV.getBoundingClientRect();
+  const sx = (e.clientX - r.left - VT.ox)/VT.s;
+  const sy = (e.clientY - r.top  - VT.oy)/VT.s;
+  const z = S.zoom;
+  return {x:(sx - z.ox)/z.k, y:(sy - z.oy)/z.k};
+}
+function applyView(){
+  CX.setTransform(VT.dpr, 0, 0, VT.dpr, 0, 0);
+  CX.clearRect(0, 0, VT.cw, VT.ch);
+  CX.translate(VT.ox, VT.oy);
+  CX.scale(VT.s, VT.s);
+  CX.translate(S.zoom.ox, S.zoom.oy);
+  CX.scale(S.zoom.k, S.zoom.k);
+}
+function clampPan(){
+  const z = S.zoom;
+  z.ox = Math.min(0, Math.max(W*(1 - z.k), z.ox));
+  z.oy = Math.min(0, Math.max(H*(1 - z.k), z.oy));
+}
+function setZoom(k, L){
+  const z = S.zoom;
+  if(k <= 1){ z.k = 1; z.ox = 0; z.oy = 0; }
+  else{
+    const old = z.k;
+    z.ox = z.ox + old*L.x - k*L.x;
+    z.oy = z.oy + old*L.y - k*L.y;
+    z.k = k; clampPan();
+  }
+  $('chipZoom').style.display = z.k > 1 ? 'block' : 'none';
+  $('chipZoom').textContent = '🔍 ×' + z.k;
+  draw();
+}
+const resetZoom = () => setZoom(1);
+
+/* ---------- drawing primitives ---------- */
+const TAU = Math.PI*2;
+function line(x1, y1, x2, y2){ CX.beginPath(); CX.moveTo(x1, y1); CX.lineTo(x2, y2); CX.stroke(); }
+function rr(x, y, w, h, r){
+  CX.beginPath();
+  CX.moveTo(x+r, y); CX.arcTo(x+w, y, x+w, y+h, r); CX.arcTo(x+w, y+h, x, y+h, r);
+  CX.arcTo(x, y+h, x, y, r); CX.arcTo(x, y, x+w, y, r); CX.closePath();
+}
+function txt(s, x, y, opt){
+  opt = opt || {};
+  CX.font = (opt.weight || 600) + ' ' + (opt.size || 13) + 'px ' + (opt.mono ? "'JetBrains Mono',monospace" : "'Inter',sans-serif");
+  CX.fillStyle = opt.col || PAL.text;
+  CX.textAlign = opt.align || 'center';
+  CX.textBaseline = opt.base || 'middle';
+  if(opt.plate){                                   // translucent backing plate
+    const w = CX.measureText(s).width + 10, h = (opt.size || 13) + 7;
+    const px = opt.align === 'left' ? x-5 : opt.align === 'right' ? x-w+5 : x-w/2;
+    CX.save(); CX.globalAlpha = .72; CX.fillStyle = PAL.card;
+    rr(px, y-h/2, w, h, 5); CX.fill(); CX.restore();
+    CX.fillStyle = opt.col || PAL.text;
+  }
+  CX.fillText(s, x, y);
+}
+/* metal with a highlight strip — used by every conductor in the file */
+function metalFill(x, y, w, h, vert){
+  const g = vert ? CX.createLinearGradient(x, y, x+w, y) : CX.createLinearGradient(x, y, x, y+h);
+  g.addColorStop(0, PAL.metal); g.addColorStop(.35, PAL.metalHi);
+  g.addColorStop(.55, PAL.metal); g.addColorStop(1, PAL.metal);
+  return g;
+}
+function arrow(x1, y1, x2, y2, opt){
+  opt = opt || {};
+  const hd = opt.head || 10, lw = opt.lw || 2.4;
+  CX.strokeStyle = opt.col || PAL.accent; CX.fillStyle = opt.col || PAL.accent;
+  CX.lineWidth = lw; CX.lineCap = 'round';
+  const a = Math.atan2(y2-y1, x2-x1), L = Math.hypot(x2-x1, y2-y1);
+  if(L < 1) return;
+  const bx = x2 - hd*0.9*Math.cos(a), by = y2 - hd*0.9*Math.sin(a);
+  CX.beginPath(); CX.moveTo(x1, y1); CX.lineTo(bx, by); CX.stroke();
+  CX.beginPath(); CX.moveTo(x2, y2);
+  CX.lineTo(x2 - hd*Math.cos(a-0.38), y2 - hd*Math.sin(a-0.38));
+  CX.lineTo(x2 - hd*Math.cos(a+0.38), y2 - hd*Math.sin(a+0.38));
+  CX.closePath(); CX.fill();
+}
+/* one arrowhead sitting on a path, used along field lines */
+function headAt(p, q, col, sz){
+  const a = Math.atan2(q.y-p.y, q.x-p.x), s = sz || 7;
+  CX.fillStyle = col; CX.beginPath();
+  CX.moveTo(q.x, q.y);
+  CX.lineTo(q.x - s*Math.cos(a-0.42), q.y - s*Math.sin(a-0.42));
+  CX.lineTo(q.x - s*Math.cos(a+0.42), q.y - s*Math.sin(a+0.42));
+  CX.closePath(); CX.fill();
+}
+/* a + or − charge glyph.  Red = positive, blue = negative, in every theme. */
+function chargeDot(x, y, sign, r, opt){
+  opt = opt || {};
+  const col = sign > 0 ? PAL.pos : sign < 0 ? PAL.neg : PAL.neutral;
+  if(opt.glow){
+    const g = CX.createRadialGradient(x, y, r*0.4, x, y, r*2.6);
+    g.addColorStop(0, col + '55'); g.addColorStop(1, col + '00');
+    CX.fillStyle = g; CX.beginPath(); CX.arc(x, y, r*2.6, 0, TAU); CX.fill();
+  }
+  CX.fillStyle = col; CX.beginPath(); CX.arc(x, y, r, 0, TAU); CX.fill();
+  CX.strokeStyle = 'rgba(0,0,0,.32)'; CX.lineWidth = Math.max(1, r*0.11);
+  CX.beginPath(); CX.arc(x, y, r, 0, TAU); CX.stroke();
+  CX.strokeStyle = '#fff'; CX.lineWidth = Math.max(1.6, r*0.20); CX.lineCap = 'round';
+  const a = r*0.52;
+  line(x-a, y, x+a, y);
+  if(sign > 0) line(x, y-a, x, y+a);
+}
+/* a free electron: small, blue, always labelled with its minus sign */
+function electron(x, y, r){
+  r = r || 5.5;
+  CX.fillStyle = PAL.electron; CX.beginPath(); CX.arc(x, y, r, 0, TAU); CX.fill();
+  CX.strokeStyle = 'rgba(255,255,255,.85)'; CX.lineWidth = 1.4; CX.lineCap = 'round';
+  line(x - r*0.5, y, x + r*0.5, y);
+}
+/* BS-style earth symbol: three shrinking bars */
+function earthSym(x, y, s, col){
+  CX.strokeStyle = col || PAL.ground; CX.lineWidth = 2.6; CX.lineCap = 'round';
+  for(let i = 0; i < 3; i++){
+    const w = s*(1 - i*0.3);
+    line(x - w, y + i*s*0.34, x + w, y + i*s*0.34);
+  }
+}
+/* battery / d.c. supply symbol, BS 3939 */
+function cellSym(x, y, s, flip){
+  CX.strokeStyle = PAL.text; CX.lineWidth = 2.4; CX.lineCap = 'butt';
+  const f = flip ? -1 : 1;
+  line(x - s*0.18*f, y - s*0.62, x - s*0.18*f, y + s*0.62);   // long = +
+  line(x + s*0.18*f, y - s*0.30, x + s*0.18*f, y + s*0.30);   // short = −
+}
+/* a jagged spark path from a to b, seeded so it is stable within one flash */
+function sparkPath(a, b, seed, amp){
+  const n = 9, pts = [], dx = b.x-a.x, dy = b.y-a.y, L = Math.hypot(dx, dy) || 1;
+  const nx = -dy/L, ny = dx/L;
+  for(let i = 0; i <= n; i++){
+    const u = i/n;
+    const w = (i === 0 || i === n) ? 0 : Math.sin(seed*13.7 + i*2.399)*(amp || L*0.09)*Math.sin(Math.PI*u);
+    pts.push({x:a.x + dx*u + nx*w, y:a.y + dy*u + ny*w});
+  }
+  return pts;
+}
+function drawSpark(pts, alpha, wide){
+  if(!pts || pts.length < 2) return;
+  CX.save();
+  CX.globalAlpha = alpha;
+  CX.lineJoin = 'round'; CX.lineCap = 'round';
+  CX.strokeStyle = PAL.spark; CX.shadowColor = PAL.spark; CX.shadowBlur = 18;
+  for(const lw of [(wide || 6), (wide || 6)*0.42]){
+    CX.lineWidth = lw;
+    CX.strokeStyle = lw > (wide || 6)*0.5 ? PAL.spark + '66' : '#ffffff';
+    CX.beginPath(); CX.moveTo(pts[0].x, pts[0].y);
+    for(let i = 1; i < pts.length; i++) CX.lineTo(pts[i].x, pts[i].y);
+    CX.stroke();
+  }
+  CX.restore();
+}
+/* insulating stand — every charged conductor in the lab sits on one */
+function standSym(x, yTop, h, w){
+  w = w || 46;
+  CX.fillStyle = PAL.insul;
+  CX.beginPath();
+  CX.moveTo(x - w*0.22, yTop); CX.lineTo(x + w*0.22, yTop);
+  CX.lineTo(x + w*0.5, yTop + h); CX.lineTo(x - w*0.5, yTop + h);
+  CX.closePath(); CX.fill();
+  CX.fillStyle = PAL.border;
+  rr(x - w*0.72, yTop + h, w*1.44, 9, 3); CX.fill();
+}
+function benchLine(y){
+  CX.strokeStyle = PAL.border; CX.lineWidth = 2;
+  line(60, y, W-60, y);
+  CX.globalAlpha = .35;
+  for(let x = 60; x < W-60; x += 13){ line(x, y, x-7, y+9); }
+  CX.globalAlpha = 1;
+}
+
+/* ---------- sound: ONE gate, so the master switch silences everything ---------- */
+let AC = null;
+function beep(freq, dur, type, vol){
+  if(!S.sound) return;                     // the single master gate
+  try{
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    const o = AC.createOscillator(), g = AC.createGain();
+    o.type = type || 'square'; o.frequency.value = freq;
+    g.gain.setValueAtTime(vol === undefined ? 0.05 : vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.0001, AC.currentTime + (dur || 0.08));
+    o.connect(g); g.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + (dur || 0.08));
+  }catch(e){}
+}
+const clickSnd = () => beep(880, 0.05, 'square', 0.03);
+function crackle(){
+  if(!S.sound) return;
+  for(let i = 0; i < 5; i++)
+    setTimeout(() => beep(1200 + Math.random()*2600, 0.045, 'sawtooth', 0.055), i*32);
+}
+
+/* ---------- chips ---------- */
+function setChips(info, status, hint, warn){
+  const set = (id, s) => {
+    const el = $(id);
+    el.innerHTML = s || '';
+    el.style.display = s ? 'block' : 'none';    // never leave an empty box
+  };
+  set('chipInfo', info); set('chipStatus', status);
+  set('chipHint', S.show.hints ? hint : '');
+  set('chipWarn', warn);
+}
+
+/* ---------- main draw dispatch ---------- */
+function draw(){
+  if(!VT.cw) return;
+  applyView();
+  CX.fillStyle = PAL.bg; CX.fillRect(-2000, -2000, 6000, 6000);
+  if(S.mode !== 'sim'){ drawSoonCanvas(); return; }
+  if(S.sec === 'charging') drawCharging();
+  else if(S.sec === 'fields') drawFields();
+  else drawDevices();
+}
+function drawSoonCanvas(){
+  const t = S.mode === 'prac' ? 'Practice mode' : 'Quiz mode';
+  txt('✍️', W/2, H/2 - 54, {size:40});
+  txt(t + ' arrives in v1.1', W/2, H/2 + 4, {size:22, col:PAL.accent, weight:700});
+  txt('Version 1 ships the three Simulate sections in full.', W/2, H/2 + 36, {size:14, col:PAL.dim, weight:500});
+  txt('Switch back to Simulate to use the lab.', W/2, H/2 + 60, {size:14, col:PAL.muted, weight:500});
+  setChips(t, '', '', '');
+}
+
+/* ---------- animation loop ---------- */
+let last = 0;
+function tick(now){
+  let dt = (now - last)/1000;
+  last = now;
+  /* clamp both ends: the first rAF timestamp can pre-date `last`, and a
+     backgrounded tab returns a huge dt */
+  if(!(dt > 0)) dt = 0;
+  if(dt > 0.1) dt = 0.1;
+  if(!S.anim) dt = 0;                       // freeze TIME, not the rendering
+  dt *= S.speed;
+  S.t += dt;
+  stepSim(dt);
+  draw();
+  if(dt > 0) patchPanel();   // keep the panel numbers with the canvas
+  requestAnimationFrame(tick);
+}
+
+/* ---------- panel plumbing ---------- */
+const sectionTitle = (ic, t) => '<div class="ptitle"><span>' + ic + '</span>' + t + '</div>';
+const cardHTML = (l, v, u, id) => '<div class="card"><div class="cl">' + l + '</div><div class="cv"' +
+  (id ? ' id="' + id + '"' : '') + '>' + v + '</div><div class="cu">' + u + '</div></div>';
+const kvHTML = (k, v, cls, id) => '<div class="kv"><span>' + k + '</span><b' +
+  (cls ? ' class="' + cls + '"' : '') + (id ? ' id="' + id + '"' : '') + '>' + v + '</b></div>';
+
+function sliderHTML(id, label, val, R){
+  return '<div class="sl"><label><span>' + label + '</span><span class="numwrap">' +
+    '<input class="numin" type="number" id="' + id + 'Num" value="' + val + '" step="' + R.step +
+    '" min="' + R.min + '" max="' + R.max + '"><span class="numu">' + R.unit + '</span></span></label>' +
+    '<input type="range" id="' + id + '" min="' + R.min + '" max="' + R.max +
+    '" step="' + R.step + '" value="' + val + '"></div>';
+}
+function bindSlider(id, R, apply){
+  const s = $(id), b = $(id + 'Num');
+  if(!s) return;
+  const set = (v, from) => {
+    v = Math.max(R.min, Math.min(R.max, +v));
+    if(!isFinite(v)) return;
+    if(from !== 'range') s.value = v;
+    if(from !== 'num') b.value = +v.toFixed(2);
+    apply(v);
+    liveUpdate();
+  };
+  s.oninput = () => set(+s.value, 'range');
+  b.oninput = () => { if(b.value !== '' && b.value !== '-') set(+b.value, 'num'); };
+  b.onblur  = () => set(+b.value || R.min, 'blur');
+}
+/* live edits patch numbers into existing nodes; a full rebuild would replace
+   the very slider the user is dragging */
+function liveUpdate(){ patchPanel(); draw(); }
+
+function updatePanel(){
+  ['data','info','answer'].forEach(t => {
+    $('pane-' + t).style.display = (t === S.panelTab) ? 'block' : 'none';
+    $('ptab-' + t).classList.toggle('active', t === S.panelTab);
+  });
+  if(S.panelTab === 'data')   paneData();
+  if(S.panelTab === 'info')   paneInfo();
+  if(S.panelTab === 'answer') paneAnswer();
+}
+function paneAnswer(){
+  $('pane-answer').innerHTML = sectionTitle('✍️', 'PRACTICE &amp; QUIZ') +
+    '<div class="soon"><b>Coming in v1.1</b>' +
+    'Version 1 puts its effort into the three Simulate sections, so that ' +
+    'every one of them is a lesson you can actually teach from rather than ' +
+    'a demo.<br><br>v1.1 adds the 7 practice exercises and the 6 marked quiz ' +
+    'questions from the spec, using the same apparatus you see here.</div>' +
+    '<div class="note">The <b>Data</b> tab holds the controls and readings for the ' +
+    'section you are in. The <b>Info</b> tab explains the physics behind it.</div>';
+}
+
+/* ===== part_js_charging.js ===== */
+/* ============================================================
+   SECTION 1 — CHARGING (friction and induction)
+   ============================================================ */
+
+/* Single source of geometry: the drawing, the hit tests and the electron
+   paths all read these, so moving the apparatus moves everything with it. */
+const FR = {cx:600, cy:286, rodL:520, rodR:34, clothW:196, clothH:86, clothY:184,
+            travelPerRub:140, ePerRub:3, eMax:24};
+const IN = {cx:672, cy:262, r:92, standTop:354, standH:104,
+            rodFar:52, rodNear:250, rodL:240, rodR:21, rodY:262,
+            earthX:1046, earthY:508};
+
+const MATCOL = {glass:'--glass', silk:'--silk', wool:'--wool'};
+function matColour(key){
+  if(key === 'glass')  return PAL.glass;
+  if(key === 'silk')   return PAL.silk;
+  if(key === 'wool' || key === 'fur') return PAL.wool;
+  if(key === 'acetate') return '#cfe6f5';
+  if(key === 'polyethylene') return '#9aa7b4';
+  if(key === 'polystyrene')  return '#e8e8e0';
+  if(key === 'ebonite') return '#2f3136';
+  return PAL.metal;
+}
+
+/* ---------- friction ---------- */
+let fricE = [];                       // electrons in flight during a rub
+function doRub(){
+  const o = rubOutcome(S.pair);
+  if(S.rubs >= FR.eMax/FR.ePerRub) return;
+  S.rubs++;
+  const toRod = o.electronsTo === 'rod';
+  /* spawn them only where the two objects actually overlap, or electrons
+     heading for the cloth end up floating beside it */
+  const span = toRod ? FR.rodL*0.62 : FR.clothW*0.70;
+  for(let i = 0; i < FR.ePerRub; i++){
+    const x = FR.cx + (Math.random()-0.5)*span;
+    fricE.push({x0:x, y0:toRod ? FR.clothY + FR.clothH*0.42 : FR.cy - FR.rodR,
+                x1:x + (Math.random()-0.5)*(toRod ? 40 : 18),
+                y1:toRod ? FR.cy - FR.rodR*0.4 : FR.clothY + FR.clothH*0.2,
+                t:-i*0.10});
+  }
+  beep(300 + S.rubs*22, 0.05, 'triangle', 0.035);
+}
+function stepCharging(dt){
+  for(const e of fricE) e.t += dt*1.9;
+  fricE = fricE.filter(e => e.t < 1.35);
+  if(S.indPlay){
+    S.indT += dt;
+    if(S.indT > 1.7){
+      S.indT = 0;
+      const i = INDUCTION_STEPS.indexOf(S.indStep);
+      if(i < INDUCTION_STEPS.length - 1){ S.indStep = INDUCTION_STEPS[i+1]; clickSnd(); }
+      else S.indPlay = false;
+    }
+  }
+}
+
+function drawCharging(){
+  if(S.method === 'friction') drawFriction(); else drawInduction();
+}
+
+function drawFriction(){
+  const o = rubOutcome(S.pair);
+  const nE = S.rubs*FR.ePerRub;
+  const rodCol = matColour(o.rod), clothCol = matColour(o.cloth);
+
+  benchLine(FR.cy + 150);
+
+  /* ---- the rod: a cylinder, drawn from the material colour ---- */
+  const x0 = FR.cx - FR.rodL/2, x1 = FR.cx + FR.rodL/2;
+  const g = CX.createLinearGradient(0, FR.cy - FR.rodR, 0, FR.cy + FR.rodR);
+  g.addColorStop(0, 'rgba(255,255,255,.30)');
+  g.addColorStop(.30, rodCol); g.addColorStop(1, 'rgba(0,0,0,.30)');
+  CX.fillStyle = rodCol; rr(x0, FR.cy - FR.rodR, FR.rodL, FR.rodR*2, FR.rodR); CX.fill();
+  CX.fillStyle = g;      rr(x0, FR.cy - FR.rodR, FR.rodL, FR.rodR*2, FR.rodR); CX.fill();
+  CX.strokeStyle = 'rgba(0,0,0,.35)'; CX.lineWidth = 1.4;
+  rr(x0, FR.cy - FR.rodR, FR.rodL, FR.rodR*2, FR.rodR); CX.stroke();
+  /* end cap so it reads as a rod rather than a bar */
+  CX.fillStyle = 'rgba(255,255,255,.18)';
+  CX.beginPath(); CX.ellipse(x1 - 5, FR.cy, 6, FR.rodR - 2, 0, 0, TAU); CX.fill();
+
+  /* ---- the cloth, sitting on top of the rod ---- */
+  const cx = S.rubbing ? S.rubX : FR.cx;
+  const cw = FR.clothW, chh = FR.clothH;
+  CX.save();
+  CX.fillStyle = clothCol;
+  CX.beginPath();
+  CX.moveTo(cx - cw/2, FR.clothY + chh);
+  for(let i = 0; i <= 6; i++){
+    const u = i/6;
+    CX.lineTo(cx - cw/2 + cw*u, FR.clothY + (i%2 ? 7 : 0) + Math.sin(u*4.2 + S.t*3*(S.rubbing?1:0))*3);
+  }
+  CX.lineTo(cx + cw/2, FR.clothY + chh);
+  CX.quadraticCurveTo(cx, FR.clothY + chh + 14, cx - cw/2, FR.clothY + chh);
+  CX.closePath(); CX.fill();
+  CX.globalAlpha = .30; CX.strokeStyle = '#000'; CX.lineWidth = 1;
+  for(let i = 1; i < 6; i++) line(cx - cw/2 + cw*i/6, FR.clothY + 6, cx - cw/2 + cw*i/6, FR.clothY + chh + 4);
+  CX.restore();
+  CX.strokeStyle = 'rgba(0,0,0,.35)'; CX.lineWidth = 1.3;
+  CX.beginPath(); CX.moveTo(cx - cw/2, FR.clothY + chh);
+  CX.lineTo(cx - cw/2, FR.clothY + 3); CX.lineTo(cx + cw/2, FR.clothY + 3);
+  CX.lineTo(cx + cw/2, FR.clothY + chh); CX.stroke();
+
+  /* ---- charge symbols, one per 3 electrons transferred ---- */
+  if(S.show.particles && nE > 0){
+    const nSym = Math.round(nE/FR.ePerRub);
+    for(let i = 0; i < nSym; i++){
+      const u = (i + 0.5)/nSym;
+      chargeDot(x0 + 26 + (FR.rodL - 52)*u, FR.cy + 1, o.rodSign, 8.5, {glow:i === nSym-1});
+      chargeDot(cx - cw*0.36 + cw*0.72*u, FR.clothY + chh*0.52, o.clothSign, 7.5);
+    }
+  }
+
+  /* ---- electrons in flight ---- */
+  if(S.show.particles) for(const e of fricE){
+    if(e.t < 0) continue;
+    const u = Math.min(1, e.t);
+    const x = e.x0 + (e.x1 - e.x0)*u;
+    const y = e.y0 + (e.y1 - e.y0)*u - Math.sin(Math.PI*u)*16;
+    CX.globalAlpha = e.t > 1 ? Math.max(0, 1 - (e.t-1)/0.35) : 1;
+    electron(x, y, 6);
+    CX.globalAlpha = 1;
+  }
+
+  /* ---- labels ---- */
+  if(S.show.labels){
+    const sgnTxt = s => s > 0 ? 'POSITIVE  +' : 'NEGATIVE  −';
+    txt(o.clothName + ' cloth', cx, FR.clothY - 30, {size:15, weight:700, col:PAL.text, plate:true});
+    if(nE > 0) txt(sgnTxt(o.clothSign), cx, FR.clothY - 11,
+                   {size:12, weight:700, col:o.clothSign > 0 ? PAL.pos : PAL.neg, plate:true});
+    txt(o.rodName + ' rod', FR.cx, FR.cy + FR.rodR + 26, {size:15, weight:700, col:PAL.text});
+    if(nE > 0) txt(sgnTxt(o.rodSign), FR.cx, FR.cy + FR.rodR + 46,
+                   {size:12, weight:700, col:o.rodSign > 0 ? PAL.pos : PAL.neg});
+  }
+
+  /* ---- the transfer arrow: the whole teaching point ---- */
+  if(nE > 0){
+    const toRod = o.electronsTo === 'rod';
+    const ax = x0 - 26, ya = FR.clothY + chh + 6, yb = FR.cy - FR.rodR - 6;
+    arrow(ax, toRod ? ya : yb, ax, toRod ? yb : ya, {col:PAL.electron, lw:2.6, head:11});
+    txt('electrons', ax - 10, (ya+yb)/2,
+        {size:11.5, col:PAL.electron, weight:700, align:'right', plate:true});
+  }
+
+  /* ---- running total ---- */
+  const bx = W/2, by = H - 74;
+  CX.fillStyle = PAL.card; CX.globalAlpha = .85;
+  rr(bx - 210, by - 26, 420, 52, 10); CX.fill(); CX.globalAlpha = 1;
+  CX.strokeStyle = PAL.border; CX.lineWidth = 1;
+  rr(bx - 210, by - 26, 420, 52, 10); CX.stroke();
+  txt(nE + ' electron' + (nE === 1 ? '' : 's') + ' transferred', bx, by - 8,
+      {size:13, weight:700, col:PAL.text});
+  txt('Q = n e = ' + nE + ' × 1.6 × 10⁻¹⁹ C = ' + sciQ(nE), bx, by + 12,
+      {size:12, weight:600, col:PAL.accent, mono:true});
+
+  setChips(
+    '🔬 Charging — friction',
+    o.label + ' · ' + nE + ' e⁻',
+    '<b>Rub the cloth</b> — drag it left and right along the rod, or press ✋ Rub once.<br>' +
+    '<b>Watch the electrons</b> — they move one way only; protons never move.<br>' +
+    '<b>Zoom</b> — double-click empty canvas for ×2, then drag to pan.',
+    S.rubs >= FR.eMax/FR.ePerRub ? 'Rod fully charged for this demo — press ↺ Reset to start again' : '');
+}
+
+/* ---------- induction ---------- */
+function drawInduction(){
+  const st = inductionState(S.indStep, S.rodSign);
+  const rodX = st.rodPresent ? IN.rodNear : IN.rodFar;
+  const near = IN.cx - IN.r, far = IN.cx + IN.r;
+
+  benchLine(IN.standTop + IN.standH + 9);
+
+  /* ---- the earth link, drawn behind the sphere ---- */
+  if(st.earthed){
+    CX.strokeStyle = PAL.ground; CX.lineWidth = 3.4; CX.lineCap = 'round';
+    CX.beginPath();
+    CX.moveTo(far - 6, IN.cy);
+    CX.quadraticCurveTo(IN.earthX, IN.cy - 30, IN.earthX, IN.earthY - 30);
+    CX.stroke();
+    earthSym(IN.earthX, IN.earthY - 24, 22);
+    if(S.show.labels) txt('earthed', IN.earthX, IN.earthY + 16, {size:12, col:PAL.ground, weight:700});
+    /* electrons moving along the wire, in the direction the model states */
+    if(S.show.particles && st.flow !== 0){
+      /* sample the SAME quadratic Bezier that was just stroked, so the
+         electrons ride the wire instead of floating beside it */
+      const p0 = {x:far - 6, y:IN.cy},
+            p1 = {x:IN.earthX, y:IN.cy - 30},
+            p2 = {x:IN.earthX, y:IN.earthY - 30};
+      for(let i = 0; i < 5; i++){
+        let u = (S.t*0.5 + i/5) % 1;
+        if(st.flow > 0) u = 1 - u;               // a + rod pulls electrons UP
+        const m = 1 - u;
+        electron(m*m*p0.x + 2*m*u*p1.x + u*u*p2.x,
+                 m*m*p0.y + 2*m*u*p1.y + u*u*p2.y, 5);
+      }
+    }
+  }
+
+  /* ---- insulating stand + sphere ---- */
+  standSym(IN.cx, IN.standTop, IN.standH, 58);
+  const sg = CX.createRadialGradient(IN.cx - IN.r*0.35, IN.cy - IN.r*0.4, IN.r*0.1,
+                                     IN.cx, IN.cy, IN.r*1.15);
+  sg.addColorStop(0, PAL.metalHi); sg.addColorStop(.55, PAL.metal); sg.addColorStop(1, '#2b3138');
+  CX.fillStyle = sg; CX.beginPath(); CX.arc(IN.cx, IN.cy, IN.r, 0, TAU); CX.fill();
+  CX.strokeStyle = 'rgba(0,0,0,.4)'; CX.lineWidth = 1.6;
+  CX.beginPath(); CX.arc(IN.cx, IN.cy, IN.r, 0, TAU); CX.stroke();
+  CX.fillStyle = 'rgba(255,255,255,.22)';
+  CX.beginPath(); CX.ellipse(IN.cx - IN.r*0.34, IN.cy - IN.r*0.42, IN.r*0.24, IN.r*0.15, -0.6, 0, TAU); CX.fill();
+
+  /* ---- charge on the sphere ---- */
+  if(S.show.particles){
+    const n = 6;
+    if(st.spread && st.net !== 0){
+      for(let i = 0; i < Math.abs(st.net); i++){
+        const a = (i + 0.5)*TAU/Math.abs(st.net) - Math.PI/2;
+        chargeDot(IN.cx + Math.cos(a)*IN.r*0.78, IN.cy + Math.sin(a)*IN.r*0.78, Math.sign(st.net), 9);
+      }
+    }else if(!st.spread){
+      for(let i = 0; i < n; i++){
+        const a = Math.PI + (i/(n-1) - 0.5)*1.50;           // face TOWARDS the rod
+        chargeDot(IN.cx + Math.cos(a)*IN.r*0.76, IN.cy + Math.sin(a)*IN.r*0.76, Math.sign(st.near), 9);
+      }
+      if(st.far !== 0) for(let i = 0; i < n; i++){
+        const a = (i/(n-1) - 0.5)*1.50;                     // face AWAY from the rod
+        chargeDot(IN.cx + Math.cos(a)*IN.r*0.76, IN.cy + Math.sin(a)*IN.r*0.76, Math.sign(st.far), 9);
+      }
+    }else{
+      /* genuinely neutral: show the + and − in equal numbers, mixed */
+      for(let i = 0; i < 8; i++){
+        const a = i*TAU/8 + 0.3;
+        chargeDot(IN.cx + Math.cos(a)*IN.r*0.66, IN.cy + Math.sin(a)*IN.r*0.66, i%2 ? 1 : -1, 7);
+      }
+    }
+  }
+
+  /* ---- the charged rod ---- */
+  const rx0 = rodX, rx1 = rodX + IN.rodL;
+  CX.fillStyle = S.rodSign > 0 ? '#cfe6f5' : '#2f3136';
+  rr(rx0, IN.rodY - IN.rodR, IN.rodL, IN.rodR*2, IN.rodR); CX.fill();
+  CX.strokeStyle = 'rgba(0,0,0,.4)'; CX.lineWidth = 1.4;
+  rr(rx0, IN.rodY - IN.rodR, IN.rodL, IN.rodR*2, IN.rodR); CX.stroke();
+  if(S.show.particles) for(let i = 0; i < 5; i++)
+    chargeDot(rx0 + 24 + (IN.rodL - 48)*i/4, IN.rodY, S.rodSign, 8);
+  if(S.show.labels){
+    txt('charged rod', (rx0+rx1)/2, IN.rodY - IN.rodR - 20, {size:14, weight:700, col:PAL.text});
+    txt(S.rodSign > 0 ? 'POSITIVE' : 'NEGATIVE', (rx0+rx1)/2, IN.rodY + IN.rodR + 20,
+        {size:12, weight:700, col:S.rodSign > 0 ? PAL.pos : PAL.neg});
+    txt('metal sphere on an insulating stand', IN.cx, IN.standTop + IN.standH + 30,
+        {size:12.5, weight:600, col:PAL.dim});
+  }
+  /* the gap is the point of induction: nothing ever touches */
+  if(st.rodPresent){
+    CX.strokeStyle = PAL.muted; CX.lineWidth = 1; CX.setLineDash([4, 4]);
+    line(rx1 + 3, IN.rodY, near - 3, IN.rodY); CX.setLineDash([]);
+    txt('no contact', (rx1 + near)/2, IN.rodY - 26,
+        {size:11, col:PAL.muted, weight:600, plate:true});
+  }
+
+  /* ---- step ladder along the top ---- */
+  const names = ['1 Neutral', '2 Approach', '3 Earth', '4 Un-earth', '5 Remove rod'];
+  const bw = 176, gap = 8, total = names.length*bw + (names.length-1)*gap;
+  let sx = (W - total)/2;
+  for(let i = 0; i < names.length; i++){
+    const on = i === st.i, done = i < st.i;
+    CX.fillStyle = on ? PAL.accent : (done ? PAL.card : PAL.bg);
+    CX.globalAlpha = on ? .22 : 1;
+    rr(sx, 26, bw, 30, 8); CX.fill(); CX.globalAlpha = 1;
+    CX.strokeStyle = on ? PAL.accent : PAL.border; CX.lineWidth = on ? 1.8 : 1;
+    rr(sx, 26, bw, 30, 8); CX.stroke();
+    txt(names[i], sx + bw/2, 41, {size:12, weight:on ? 700 : 600,
+        col:on ? PAL.accent : (done ? PAL.dim : PAL.muted)});
+    sx += bw + gap;
+  }
+
+  /* ---- net-charge readout ---- */
+  const by = H - 96;
+  CX.fillStyle = PAL.card; CX.globalAlpha = .85; rr(W/2 - 300, by - 24, 600, 74, 10); CX.fill();
+  CX.globalAlpha = 1; CX.strokeStyle = PAL.border; CX.lineWidth = 1;
+  rr(W/2 - 300, by - 24, 600, 74, 10); CX.stroke();
+  const netTxt = st.net === 0 ? 'NET CHARGE ON SPHERE  =  0   (neutral)'
+       : 'NET CHARGE ON SPHERE  =  ' + signStr(Math.sign(st.net)) + Math.abs(st.net) + ' e';
+  txt(netTxt, W/2, by - 4, {size:14, weight:700, mono:true,
+      col:st.net === 0 ? PAL.dim : (st.net > 0 ? PAL.pos : PAL.neg)});
+  wrapText(st.text, W/2, by + 20, 560, 16, {size:12.5, weight:600, col:PAL.text});
+
+  setChips(
+    '🔬 Charging — induction',
+    'Step ' + (st.i+1) + '/5 · net ' + (st.net === 0 ? '0' : signStr(Math.sign(st.net)) + Math.abs(st.net) + 'e'),
+    '<b>Step through</b> with Next › and ‹ Back, or press ▶ Sequence to watch it run.<br>' +
+    '<b>Flip the rod</b> between + and − — the sphere always ends up the opposite sign.<br>' +
+    '<b>Zoom</b> — double-click empty canvas for ×2, then drag to pan.',
+    S.indStep === 'unearth' ? 'Order matters: the EARTH is removed before the ROD' : '');
+}
+
+/* one small wrapper so a caption never runs off its plate */
+function wrapText(s, cx, y, maxW, lh, opt){
+  CX.font = (opt.weight || 600) + ' ' + (opt.size || 13) + "px 'Inter',sans-serif";
+  const words = String(s).split(' ');
+  const lines = []; let cur = '';
+  for(const w of words){
+    const t = cur ? cur + ' ' + w : w;
+    if(CX.measureText(t).width > maxW && cur){ lines.push(cur); cur = w; }
+    else cur = t;
+  }
+  if(cur) lines.push(cur);
+  const y0 = y - (lines.length - 1)*lh/2;
+  lines.forEach((l, i) => txt(l, cx, y0 + i*lh, opt));
+}
+
+/* ===== part_js_fields.js ===== */
+/* ============================================================
+   SECTION 2 — ELECTRIC FIELDS
+   ============================================================ */
+/* FLOOR is the lowest the drawing may go.  Everything below it is caption
+   space, so a banner can never be laid over a field line again. */
+const FD_FLOOR = H - 106, FD_CAP = H - 46;
+const FD = {cy:318, cx:600, box:{x0:26, y0:74, x1:W-26, y1:FD_FLOOR},
+            qR:26, sphereR:72};
+
+/* The pattern list.  'sphere' is on the 0625 syllabus (4.2.2, "around a
+   charged conducting sphere") but was not in the uploaded spec. */
+const PATTERNS = {
+  'single+': {label:'Single + charge',        charges:[{x:600, y:318, q:3, rad:26}]},
+  'single-': {label:'Single − charge',        charges:[{x:600, y:318, q:-3, rad:26}]},
+  'sphere':  {label:'Charged conducting sphere', sphere:true,
+              charges:[{x:600, y:318, q:4, rad:FD.sphereR}]},
+  'dipole':  {label:'Two opposite charges',   charges:[{x:428, y:318, q:3, rad:26},
+                                                       {x:772, y:318, q:-3, rad:26}]},
+  'like':    {label:'Two like charges (+ +)', charges:[{x:428, y:318, q:3, rad:26},
+                                                       {x:772, y:318, q:3, rad:26}]}
+};
+
+/* Field lines are expensive, so they are traced once per configuration and
+   cached against a signature of everything they depend on. */
+let LINE_CACHE = {sig:'', lines:[], fringe:[], plate:null};
+function fieldSig(){
+  if(S.fmode === 'plates') return 'P' + S.plateSep;
+  if(S.fmode === 'pattern') return 'T' + S.pattern;
+  return 'F' + Math.round(S.qA.x) + ',' + Math.round(S.qA.y) + ',' + S.qA.q + '|' +
+             Math.round(S.qB.x) + ',' + Math.round(S.qB.y) + ',' + S.qB.q;
+}
+function activeCharges(){
+  if(S.fmode === 'pattern') return PATTERNS[S.pattern].charges;
+  return [Object.assign({rad:FD.qR}, S.qA), Object.assign({rad:FD.qR}, S.qB)];
+}
+function activePlate(){
+  return plateGeom({cx:FD.cx, cy:FD.cy, sep:S.plateSep});
+}
+/* One field function for the whole section, so the lines, the test charge and
+   the readouts can never disagree about what the field is. */
+function sectionField(x, y){
+  if(S.fmode === 'plates') return plateFieldAt(x, y, activePlate());
+  const cfg = S.fmode === 'pattern' ? PATTERNS[S.pattern] : null;
+  if(cfg && cfg.sphere)
+    return fieldAtShielded(x, y, cfg.charges, [{x:cfg.charges[0].x, y:cfg.charges[0].y, r:FD.sphereR}]);
+  return fieldAt(x, y, activeCharges());
+}
+function rebuildLines(){
+  const sig = fieldSig();
+  if(sig === LINE_CACHE.sig) return;
+  LINE_CACHE.sig = sig;
+  if(S.fmode === 'plates'){
+    const p = activePlate();
+    LINE_CACHE.plate = p;
+    LINE_CACHE.lines = plateLines(p, FD.box, {n:15});
+    /* the external arcs are deliberately NOT drawn — the bend in the
+       outermost interior lines already shows the fringe field */
+    LINE_CACHE.fringe = [];
+  }else{
+    LINE_CACHE.lines = fieldLines(activeCharges(), FD.box, {step:5, maxSteps:700});
+    LINE_CACHE.fringe = [];
+  }
+}
+
+function stepFields(dt){
+  if(!S.test || dt === 0) return;
+  /* a small positive test charge drifts along the field — the definition of
+     what a field line means */
+  const f = sectionField(S.test.x, S.test.y);
+  if(f.mag < 1e-13){ return; }
+  const v = 150*dt;
+  S.test.x += v*f.ex/f.mag; S.test.y += v*f.ey/f.mag;
+  S.testTrail.push({x:S.test.x, y:S.test.y});
+  if(S.testTrail.length > 220) S.testTrail.shift();
+  const b = FD.box;
+  if(S.test.x < b.x0 || S.test.x > b.x1 || S.test.y < b.y0 || S.test.y > b.y1){ S.test = null; return; }
+  for(const c of activeCharges())
+    if(Math.hypot(S.test.x - c.x, S.test.y - c.y) < (c.rad || 20) + 4){ S.test = null; return; }
+}
+
+function drawFields(){
+  rebuildLines();
+  if(S.fmode === 'force')   drawForce();
+  else if(S.fmode === 'pattern') drawPattern();
+  else                      drawPlates();
+}
+
+/* ---------- shared: draw a traced set of lines with arrowheads ---------- */
+function paintLines(lines, col, headEvery){
+  CX.strokeStyle = col || PAL.line; CX.lineWidth = 1.9; CX.lineCap = 'round';
+  for(const L of lines){
+    const p = L.pts;
+    if(p.length < 2) continue;
+    CX.beginPath(); CX.moveTo(p[0].x, p[0].y);
+    for(let i = 1; i < p.length; i++) CX.lineTo(p[i].x, p[i].y);
+    CX.stroke();
+  }
+  /* arrowheads say which way a POSITIVE charge would be pushed */
+  const every = headEvery || 62;
+  const hc = (col || PAL.line).replace(/[\d.]+\)$/, '0.95)');
+  for(const L of lines){
+    const p = L.pts;
+    /* A line traced BACKWARDS (into a negative charge) is stored from the
+       charge outwards, so its arrowheads must point the other way along the
+       polyline or the field of a − charge reads as pointing away from it. */
+    const back = L.dir < 0;
+    let acc = 0;
+    for(let i = 1; i < p.length; i++){
+      acc += Math.hypot(p[i].x-p[i-1].x, p[i].y-p[i-1].y);
+      if(acc >= every && i > 3){
+        acc = 0;
+        if(back) headAt(p[i], p[i-1], hc, 7.5);
+        else     headAt(p[i-1], p[i], hc, 7.5);
+      }
+    }
+  }
+}
+
+/* ---------- force between two charges ---------- */
+function drawForce(){
+  const a = S.qA, b = S.qB;
+  const d = Math.hypot(b.x-a.x, b.y-a.y);
+  const F = forceBetween(a.q, b.q, d);
+
+  if(S.fshow === 'lines') paintLines(LINE_CACHE.lines);
+
+  /* separation line */
+  CX.strokeStyle = PAL.muted; CX.lineWidth = 1.2; CX.setLineDash([6, 5]);
+  line(a.x, a.y, b.x, b.y); CX.setLineDash([]);
+  const mx = (a.x+b.x)/2, my = (a.y+b.y)/2;
+  txt('r = ' + Math.round(d/10) + ' cm', mx, my - 16, {size:12.5, weight:700, col:PAL.dim, mono:true, plate:true});
+
+  /* the force arrows: length grows with F but is compressed so a ×36 force
+     still fits on the canvas */
+  const L = Math.max(30, Math.min(190, 30 + 55*Math.sqrt(F.ratio)));
+  const ux = (b.x-a.x)/(d||1), uy = (b.y-a.y)/(d||1);
+  const s = F.attract ? +1 : -1;                 // +1 = pulled towards the other
+  arrow(a.x + ux*FD.qR*s*1.05, a.y + uy*FD.qR*s*1.05,
+        a.x + ux*(FD.qR*1.05 + L)*s, a.y + uy*(FD.qR*1.05 + L)*s,
+        {col:PAL.amber, lw:4, head:15});
+  arrow(b.x - ux*FD.qR*s*1.05, b.y - uy*FD.qR*s*1.05,
+        b.x - ux*(FD.qR*1.05 + L)*s, b.y - uy*(FD.qR*1.05 + L)*s,
+        {col:PAL.amber, lw:4, head:15});
+
+  drawTestCharge();
+  chargeDot(a.x, a.y, Math.sign(a.q), FD.qR, {glow:true});
+  chargeDot(b.x, b.y, Math.sign(b.q), FD.qR, {glow:true});
+  if(S.show.labels){
+    txt('Q₁ = ' + signStr(Math.sign(a.q)) + Math.abs(a.q) + ' µC', a.x, a.y - FD.qR - 20,
+        {size:13.5, weight:700, col:a.q > 0 ? PAL.pos : PAL.neg, plate:true});
+    txt('Q₂ = ' + signStr(Math.sign(b.q)) + Math.abs(b.q) + ' µC', b.x, b.y - FD.qR - 20,
+        {size:13.5, weight:700, col:b.q > 0 ? PAL.pos : PAL.neg, plate:true});
+  }
+
+  /* verdict banner, in the reserved caption band */
+  const by = FD_CAP;
+  CX.fillStyle = PAL.card; CX.globalAlpha = .88; rr(W/2 - 270, by - 26, 540, 52, 10); CX.fill();
+  CX.globalAlpha = 1; CX.strokeStyle = F.attract ? PAL.blue : PAL.pos; CX.lineWidth = 1.6;
+  rr(W/2 - 270, by - 26, 540, 52, 10); CX.stroke();
+  txt(F.attract ? 'UNLIKE charges → they ATTRACT' : 'LIKE charges → they REPEL', W/2, by - 8,
+      {size:15, weight:800, col:F.attract ? PAL.blue : PAL.pos});
+  txt('F ∝ Q₁Q₂ / r²   →   force is ' + fmtRatio(F.ratio) + ' the reference force',
+      W/2, by + 13, {size:12, weight:600, col:PAL.dim, mono:true});
+
+  setChips('🌐 Fields — force between charges',
+    (F.attract ? 'attract' : 'repel') + ' · ' + fmtRatio(F.ratio),
+    '<b>Drag either charge</b> to change the separation and watch the arrows.<br>' +
+    '<b>Change Q₁ and Q₂</b> in the Data panel — sign and size both matter.<br>' +
+    '<b>Test charge</b> — switch the overlay, then click anywhere to release one.', '');
+}
+function fmtRatio(r){
+  if(r >= 100) return '×' + Math.round(r);
+  if(r >= 10)  return '×' + r.toFixed(0);
+  if(r >= 1)   return '×' + r.toFixed(2);
+  return '×' + r.toFixed(3);
+}
+
+/* ---------- field patterns ---------- */
+function drawPattern(){
+  const cfg = PATTERNS[S.pattern];
+  paintLines(LINE_CACHE.lines);
+  drawTestCharge();
+
+  if(cfg.sphere){
+    const c = cfg.charges[0];
+    /* E = 0 inside a conductor — shown, not just stated */
+    const g = CX.createRadialGradient(c.x - 24, c.y - 26, 8, c.x, c.y, FD.sphereR);
+    g.addColorStop(0, PAL.metalHi); g.addColorStop(.6, PAL.metal); g.addColorStop(1, '#2b3138');
+    CX.fillStyle = g; CX.beginPath(); CX.arc(c.x, c.y, FD.sphereR, 0, TAU); CX.fill();
+    CX.strokeStyle = 'rgba(0,0,0,.45)'; CX.lineWidth = 1.8;
+    CX.beginPath(); CX.arc(c.x, c.y, FD.sphereR, 0, TAU); CX.stroke();
+    txt('E = 0', c.x, c.y - 8, {size:20, weight:800, col:PAL.text});
+    txt('inside', c.x, c.y + 14, {size:12, weight:600, col:PAL.dim});
+    if(S.show.particles) for(let i = 0; i < 12; i++){
+      const a = i*TAU/12;
+      chargeDot(c.x + Math.cos(a)*(FD.sphereR - 9), c.y + Math.sin(a)*(FD.sphereR - 9), 1, 7);
+    }
+    if(S.show.labels){
+      txt('charge sits on the OUTSIDE surface', c.x, c.y + FD.sphereR + 30,
+          {size:13, weight:700, col:PAL.accent, plate:true});
+      txt('field lines leave at 90° to the surface', c.x, c.y + FD.sphereR + 53,
+          {size:12, weight:600, col:PAL.dim, plate:true});
+    }
+  }else{
+    for(const c of cfg.charges) chargeDot(c.x, c.y, Math.sign(c.q), FD.qR, {glow:true});
+    if(S.show.labels) for(const c of cfg.charges)
+      txt(signStr(Math.sign(c.q)) + Math.abs(c.q) + ' µC', c.x, c.y - FD.qR - 20,
+          {size:13, weight:700, col:c.q > 0 ? PAL.pos : PAL.neg, plate:true});
+  }
+
+  /* the null point is worth naming when it exists */
+  if(S.pattern === 'like'){
+    const nx = (cfg.charges[0].x + cfg.charges[1].x)/2, ny = cfg.charges[0].y;
+    CX.strokeStyle = PAL.green; CX.lineWidth = 2; CX.setLineDash([3, 4]);
+    CX.beginPath(); CX.arc(nx, ny, 15, 0, TAU); CX.stroke(); CX.setLineDash([]);
+    txt('E = 0', nx, ny + 34, {size:12.5, weight:700, col:PAL.green, plate:true});
+    txt('neutral point', nx, ny + 52, {size:11, weight:600, col:PAL.dim, plate:true});
+  }
+
+  drawFieldKey();
+  setChips('🌐 Fields — ' + cfg.label,
+    lineCount(cfg.charges[0].q) + ' lines per charge',
+    '<b>Arrowheads</b> show the way a small POSITIVE charge would be pushed.<br>' +
+    '<b>Line spacing</b> is the field strength — the lines crowd where the field is strong.<br>' +
+    '<b>Test charge</b> — switch the overlay, then click to release one and watch it follow a line.', '');
+}
+
+function drawFieldKey(){
+  const x = 34, y = FD_FLOOR + 10, w = 268, h = 88;
+  CX.fillStyle = PAL.card; CX.globalAlpha = .86; rr(x, y, w, h, 9); CX.fill();
+  CX.globalAlpha = 1; CX.strokeStyle = PAL.border; CX.lineWidth = 1; rr(x, y, w, h, 9); CX.stroke();
+  txt('FIELD LINE RULES', x + 12, y + 15, {size:10, weight:800, col:PAL.muted, align:'left'});
+  const rules = ['start on +, end on −', 'never cross', 'closer lines = stronger field',
+                 'meet a conductor at 90°'];
+  rules.forEach((r, i) => txt('• ' + r, x + 12, y + 34 + i*15,
+                              {size:11, weight:600, col:PAL.dim, align:'left'}));
+}
+
+/* ---------- parallel plates ---------- */
+function drawPlates(){
+  const p = activePlate();
+  const yT = p.cy - p.sep/2, yB = p.cy + p.sep/2;
+  const half = plateUniformHalf(p);
+
+  /* the region the model can honestly call uniform */
+  CX.fillStyle = PAL.accent; CX.globalAlpha = .07;
+  CX.fillRect(p.cx - half, yT, half*2, p.sep); CX.globalAlpha = 1;
+
+  paintLines(LINE_CACHE.lines, PAL.line, 44);
+  drawTestCharge();
+
+  /* the plates themselves */
+  for(const [yy, sgn] of [[yT, +1], [yB, -1]]){
+    CX.fillStyle = metalFill(p.cx - p.hw, yy - 7, p.hw*2, 14);
+    rr(p.cx - p.hw, yy - 7, p.hw*2, 14, 4); CX.fill();
+    CX.strokeStyle = 'rgba(0,0,0,.4)'; CX.lineWidth = 1.2;
+    rr(p.cx - p.hw, yy - 7, p.hw*2, 14, 4); CX.stroke();
+    if(S.show.particles) for(let i = 0; i < 11; i++)
+      chargeDot(p.cx - p.hw + 26 + (p.hw*2 - 52)*i/10, yy + sgn*-16, sgn, 8);
+  }
+
+  /* battery, wired to the plates.  The + terminal goes to the + plate. */
+  const bx = p.cx - p.hw - 118, by = p.cy;
+  CX.strokeStyle = PAL.text; CX.lineWidth = 2.2; CX.lineCap = 'round';
+  CX.beginPath();
+  CX.moveTo(p.cx - p.hw, yT); CX.lineTo(bx, yT); CX.lineTo(bx, by - 26); CX.stroke();
+  CX.beginPath();
+  CX.moveTo(p.cx - p.hw, yB); CX.lineTo(bx, yB); CX.lineTo(bx, by + 26); CX.stroke();
+  cellSym(bx, by, 32, false);
+  txt(S.plateV.toFixed(1) + ' V', bx - 34, by, {size:14, weight:700, col:PAL.accent, mono:true, align:'right'});
+  txt('+', bx + 16, by - 34, {size:15, weight:800, col:PAL.pos});
+  txt('−', bx + 16, by + 34, {size:15, weight:800, col:PAL.neg});
+
+  /* separation dimension */
+  const dx = p.cx + p.hw + 46;
+  CX.strokeStyle = PAL.dim; CX.lineWidth = 1.3;
+  line(p.cx + p.hw, yT, dx + 12, yT); line(p.cx + p.hw, yB, dx + 12, yB);
+  arrow(dx, yT + 2, dx, yB - 2, {col:PAL.dim, lw:1.4, head:8});
+  arrow(dx, yB - 2, dx, yT + 2, {col:PAL.dim, lw:1.4, head:8});
+  txt('d = ' + (p.sep/10).toFixed(1) + ' cm', dx, yB + 30,
+      {size:13, weight:700, col:PAL.dim, mono:true, plate:true});
+
+  if(S.show.labels){
+    txt('+ plate', p.cx, yT - 34, {size:13.5, weight:700, col:PAL.pos});
+    txt('− plate', p.cx, yB + 34, {size:13.5, weight:700, col:PAL.neg});
+    txt('uniform field', p.cx, p.cy, {size:12, weight:700, col:PAL.accent, plate:true});
+    txt('near the ends the lines bend outwards — the fringe field',
+        p.cx, yT - 96, {size:12, weight:600, col:PAL.muted});
+  }
+
+  /* readout */
+  const E = S.plateV/(p.sep/1000);              // V/m, with 10 px = 1 cm
+  const yy = FD_CAP;
+  txt('E = V / d = ' + S.plateV.toFixed(1) + ' V ÷ ' + (p.sep/1000).toFixed(3) + ' m = ' +
+      Math.round(E) + ' V/m', W/2, yy, {size:13, weight:700, col:PAL.accent, mono:true});
+
+  setChips('🌐 Fields — parallel plates',
+    'uniform to |x| ≤ ' + Math.round(half/10) + ' cm of ' + Math.round(p.hw/10) + ' cm',
+    '<b>The shaded band</b> is where the field really is uniform — measured from the model, not assumed.<br>' +
+    '<b>Change d and V</b> in the Data panel; E = V/d.<br>' +
+    '<b>Test charge</b> — switch the overlay, then click between the plates.', '');
+}
+
+/* ---------- the test charge, shared by all three sub-modes ---------- */
+function drawTestCharge(){
+  if(S.testTrail.length > 1){
+    CX.strokeStyle = PAL.green; CX.lineWidth = 2; CX.globalAlpha = .55; CX.lineCap = 'round';
+    CX.beginPath(); CX.moveTo(S.testTrail[0].x, S.testTrail[0].y);
+    for(const q of S.testTrail) CX.lineTo(q.x, q.y);
+    CX.stroke(); CX.globalAlpha = 1;
+  }
+  if(!S.test) return;
+  const f = sectionField(S.test.x, S.test.y);
+  if(f.mag > 1e-13)
+    arrow(S.test.x, S.test.y, S.test.x + 44*f.ex/f.mag, S.test.y + 44*f.ey/f.mag,
+          {col:PAL.green, lw:2.6, head:10});
+  chargeDot(S.test.x, S.test.y, 1, 9, {glow:true});
+  txt('test charge', S.test.x, S.test.y - 22, {size:11, weight:700, col:PAL.green, plate:true});
+}
+
+/* ===== part_js_devices.js ===== */
+/* ============================================================
+   SECTION 3 — DEVICES
+   ============================================================ */
+/* 1.5× the original size — the apparatus is the thing being read, so it gets
+   the space.  Ratios are unchanged; every value is the old one × 1.5. */
+const ESK = 1.5;
+const ES = {cx:600, capY:112, capW:225, capH:24, stemW:17,
+            caseX:600, caseTop:157, caseW:375, caseH:369, leafTop:331, leafL:117,
+            rodL:250, rodH:34,
+            /* the rod is dragged, so it needs a travel range and a contact test */
+            rodXmin:20, touchGap:3, d0:45, contactQ:3};
+ES.discX  = ES.cx - ES.capW/2;              // left edge of the brass disc
+ES.rodXmax = ES.discX - ES.rodL;            // rod tip exactly on the disc
+ES.rodX0   = ES.rodXmax - 205;              // parked well clear of it
+/* Laid out from the reference diagram: metal shell on insulating pillars over
+   an earthed base, belt between two rollers, a comb at each end, and the
+   discharge tube down the right-hand side. */
+const VG = {cx:330, shellY:214, shellR:122,
+            pillarTop:300, pillarBot:522, pillarX:96, pillarW:26,
+            baseX:196, baseW:270, baseY:522, baseH:46,
+            beltHalf:23, rollTop:246, rollBot:486, rollR:25,
+            tubeX:392, tubeW:20, tubeTop:296, tubeBot:516,
+            gndX:846, gndR:56, gndY:214};
+VG.domeY = VG.shellY; VG.domeR = VG.shellR;      // names used by the spark code
+const SP = {ax:430, ay:296, bx:770, by:296, r:58, stalk:126, standH:44};
+const TC = {cx:600, baseY:566, secTop:262, secBot:520, secW:56,
+            toroidY:236, toroidRx:112, toroidRy:34, priY:492, gapX:300, gapY:452};
+
+/* Where the rod is, and how far its tip is from the brass disc.  Both the
+   drawing and the physics read this, so they can never disagree about
+   whether the rod is touching. */
+function esGeom(){
+  const x = Math.max(ES.rodXmin, Math.min(ES.rodXmax, S.esRodX));
+  const tip = x + ES.rodL;
+  const d = Math.max(0, ES.discX - tip);
+  return {x, tip, d, touching: d <= ES.touchGap};
+}
+/* How strongly a rod at distance d separates the charge in the electroscope.
+   Falls off like an inverse square but shifted by d0 so it stays finite at
+   contact: 1 when touching, ~0.06 with the rod parked at the far end. */
+/* Chosen so the exam picture falls OUT of the model instead of being drawn by
+   hand: with a rod within ~10 cm the induced separation exceeds the charge the
+   electroscope already carries, so the brass disc genuinely ends up with the
+   sign OPPOSITE the rod — which is the statement a mark scheme wants — while
+   a rod parked at the far end of the bench leaves the leaf completely shut. */
+const ROD_INDUCE = 16;
+const induceAt = d => Math.pow(ES.d0/(ES.d0 + d), 2);
+
+/* The disc and the leaf are ONE conductor, so whatever the rod does it only
+   MOVES charge between them — the two must always add up to the
+   electroscope's own charge.  Everything on screen comes from here. */
+function esCharges(){
+  const g = esGeom();
+  /* touching = one conductor at one potential, so nothing is separated */
+  const k = g.touching ? 0 : S.esRod*ROD_INDUCE*induceAt(g.d);
+  const half = S.esCharge/2;
+  return {disc: half - k, leaf: half + k, k, gap:g.d, touching:g.touching};
+}
+const leafCharge = () => esCharges().leaf;
+const LEAF_FULL = 3.2;
+
+function stepDevices(dt){
+  if(dt === 0) return;
+  /* Contact is an EVENT, not a state: charge is shared the moment the rod
+     first touches the disc, and the electroscope keeps it afterwards. */
+  const g = esGeom();
+  if(g.touching && !S.esWasTouching && !S.esEarthed){
+    S.esCharge = S.esRod*ES.contactQ;
+    S.esFlash = 0.5; clickSnd();
+  }
+  S.esWasTouching = g.touching;
+  if(S.esFlash > 0) S.esFlash -= dt*2;
+  /* leaf eases towards its target angle rather than snapping */
+  const target = leafAngle(leafCharge(), LEAF_FULL);
+  S.esLeaf += (target - S.esLeaf)*Math.min(1, dt*7);
+
+  if(S.dev === 'vandegraaff'){
+    if(S.vgOn){
+      S.vgBelt += dt*1.5;
+      /* tuned so the dome recharges in roughly a second — fast enough to
+         hold attention, slow enough that a class can watch it build */
+      S.vgQ = Math.min(4.2e-6, S.vgQ + dt*2.4e-7);
+    }
+    const V = domeVolts(S.vgQ, 0.15);
+    if(canSpark(V, S.vgGap/10) && S.vgFlash <= 0){
+      S.vgFlash = 0.42;
+      S.vgSparkPts = sparkPath({x:VG.cx + VG.shellR - 4, y:VG.shellY},
+                               {x:VG.gndX - VG.gndR + 4, y:VG.gndY}, S.t, 26);
+      S.vgQ *= 0.12; crackle();
+    }
+    if(S.vgFlash > 0) S.vgFlash -= dt*2.4;
+  }
+  if(S.dev === 'sparks'){
+    const armed = canSpark(S.spV, S.spGap);
+    if(armed && S.spFlash <= 0){
+      S.spFlash = 0.40;
+      S.spPts = sparkPath({x:SP.ax + SP.r, y:SP.ay}, {x:SP.bx - SP.r, y:SP.by}, S.t, 16);
+      crackle();
+    }
+    S.spArmed = armed;
+    if(S.spFlash > 0) S.spFlash -= dt*2.2;
+  }
+  if(S.dev === 'tesla' && S.teslaOn){
+    S.teslaT += dt;
+    if(S.teslaT > 0.16){
+      S.teslaT = 0;
+      S.teslaArcs = [];
+      const n = 2 + Math.floor(Math.random()*3);
+      for(let i = 0; i < n; i++){
+        const a = -0.35 + Math.random()*Math.PI*1.7;
+        const len = 90 + Math.random()*130;
+        S.teslaArcs.push(sparkPath(
+          {x:TC.cx + Math.cos(a)*TC.toroidRx*0.95, y:TC.toroidY + Math.sin(a)*TC.toroidRy*0.9},
+          {x:TC.cx + Math.cos(a)*(TC.toroidRx + len), y:TC.toroidY + Math.sin(a)*(TC.toroidRy + len*0.75)},
+          S.t + i, 22));
+      }
+      if(Math.random() < 0.45) beep(2200 + Math.random()*900, 0.05, 'sawtooth', 0.03);
+    }
+  }
+}
+
+function drawDevices(){
+  if(S.dev === 'electroscope')      drawElectroscope();
+  else if(S.dev === 'vandegraaff')  drawVanDeGraaff();
+  else if(S.dev === 'sparks')       drawSparks();
+  else                              drawTesla();
+}
+
+/* ---------- gold leaf electroscope ---------- */
+function drawElectroscope(){
+  const g = esGeom(), Q = esCharges(), qLeaf = Q.leaf, ang = S.esLeaf;
+  const capSign = Math.sign(Q.disc);
+
+  benchLine(ES.caseTop + ES.caseH + 30);
+
+  /* glass case, drawn first so the metal reads as being inside it */
+  CX.fillStyle = 'rgba(136,204,255,0.07)';
+  rr(ES.caseX - ES.caseW/2, ES.caseTop, ES.caseW, ES.caseH, 6); CX.fill();
+  CX.strokeStyle = PAL.glass; CX.lineWidth = 3; CX.globalAlpha = .55;
+  rr(ES.caseX - ES.caseW/2, ES.caseTop, ES.caseW, ES.caseH, 6); CX.stroke();
+  CX.globalAlpha = 1;
+
+  /* metal foil lining the inside of the glass, earthed through the base.
+     It is what shields the leaf from stray outside fields. */
+  const foilTop = ES.caseTop + ES.caseH*0.42, foilH = ES.caseH*0.58 - 4;
+  CX.fillStyle = PAL.metal;
+  for(const sgn of [-1, +1]){
+    const fx = ES.caseX + sgn*(ES.caseW/2 - 5) - (sgn < 0 ? 0 : 14);
+    CX.fillRect(fx, foilTop, 14, foilH);
+    CX.fillStyle = PAL.metalHi; CX.fillRect(fx, foilTop, 3, foilH);
+    CX.fillStyle = PAL.metal;
+  }
+  CX.fillStyle = PAL.metal;
+  rr(ES.caseX - ES.caseW/2 - 18, ES.caseTop + ES.caseH, ES.caseW + 36, 24, 6); CX.fill();
+  CX.strokeStyle = PAL.ground; CX.lineWidth = 2.6;
+  line(ES.caseX + ES.caseW/2 + 18, ES.caseTop + ES.caseH + 12,
+       ES.caseX + ES.caseW/2 + 111, ES.caseTop + ES.caseH + 12);
+  earthSym(ES.caseX + ES.caseW/2 + 111, ES.caseTop + ES.caseH + 22, 22);
+
+  /* insulating plug where the brass rod passes through the case */
+  CX.fillStyle = PAL.insul;
+  rr(ES.cx - 51, ES.caseTop - 12, 102, 33, 6); CX.fill();
+  CX.fillStyle = 'rgba(255,255,255,.10)';
+  rr(ES.cx - 51, ES.caseTop - 12, 102, 11, 6); CX.fill();
+
+  /* brass disc, brass rod */
+  CX.fillStyle = metalFill(ES.cx - ES.capW/2, ES.capY, ES.capW, ES.capH);
+  rr(ES.cx - ES.capW/2, ES.capY, ES.capW, ES.capH, 4); CX.fill();
+  CX.strokeStyle = 'rgba(0,0,0,.35)'; CX.lineWidth = 1.2;
+  rr(ES.cx - ES.capW/2, ES.capY, ES.capW, ES.capH, 4); CX.stroke();
+  CX.fillStyle = PAL.metal;
+  CX.fillRect(ES.cx - ES.stemW/2, ES.capY + ES.capH, ES.stemW, ES.leafTop - ES.capY - ES.capH);
+  CX.fillStyle = PAL.metalHi;
+  CX.fillRect(ES.cx - ES.stemW/2, ES.capY + ES.capH, 3, ES.leafTop - ES.capY - ES.capH);
+
+  /* ---- the gold leaf ----
+     A single strip of gold foil folded over the bottom of the rod, so both
+     halves hinge from exactly the same point.  Each half is drawn symmetric
+     about that pivot and no wider than the rod at the top, which is what
+     makes it look attached rather than stuck on beside the rod. */
+  const hw0 = ES.stemW*0.46, hw1 = ES.stemW*0.80;
+  for(const sgn of [-1, +1]){
+    CX.save();
+    CX.translate(ES.cx, ES.leafTop);
+    CX.rotate(sgn*ang*Math.PI/180);
+    const g = CX.createLinearGradient(-hw1, 0, hw1, ES.leafL);
+    g.addColorStop(0, '#ffe89a'); g.addColorStop(.45, '#ffd15e'); g.addColorStop(1, '#c08a1e');
+    CX.fillStyle = g;
+    CX.beginPath();
+    CX.moveTo(-hw0, 0); CX.lineTo(hw0, 0);
+    CX.lineTo(hw1, ES.leafL - 5);
+    CX.quadraticCurveTo(0, ES.leafL + 4, -hw1, ES.leafL - 5);
+    CX.closePath(); CX.fill();
+    CX.strokeStyle = 'rgba(90,60,0,.45)'; CX.lineWidth = 1; CX.stroke();
+    /* the crease down the middle of the foil */
+    CX.strokeStyle = 'rgba(255,255,255,.35)'; CX.lineWidth = 1;
+    line(0, 3, 0, ES.leafL - 8);
+    CX.restore();
+  }
+  /* the clamp that holds the foil onto the rod — this is the join the eye
+     looks for, so it is drawn ON the pivot, over both leaves */
+  CX.fillStyle = PAL.metalHi;
+  rr(ES.cx - ES.stemW*0.75, ES.leafTop - 7, ES.stemW*1.5, 12, 3); CX.fill();
+  CX.strokeStyle = 'rgba(0,0,0,.35)'; CX.lineWidth = 1;
+  rr(ES.cx - ES.stemW*0.75, ES.leafTop - 7, ES.stemW*1.5, 12, 3); CX.stroke();
+
+  /* Charge distribution.  The leaf's charge is drawn ON the leaf, rotated to
+     the leaf's own position, because that is where it physically sits — and
+     it is what makes the leaf lift.  The symbols themselves stay upright. */
+  if(S.show.particles){
+    const nCap = Math.min(7, Math.round(Math.abs(Q.disc)*1.6) + 2);
+    if(Math.abs(Q.disc) > LEAF_MIN_Q) for(let i = 0; i < nCap; i++)
+      chargeDot(ES.cx - ES.capW/2 + 33 + (ES.capW - 66)*i/(nCap-1 || 1),
+                ES.capY + ES.capH/2, capSign, 10);
+    if(Math.abs(qLeaf) > LEAF_MIN_Q) for(const sgn of [-1, +1]){
+      const a = sgn*ang*Math.PI/180;
+      for(const f of [0.40, 0.74]){
+        const L = ES.leafL*f;
+        chargeDot(ES.cx - L*Math.sin(a), ES.leafTop + L*Math.cos(a), Math.sign(qLeaf), 9);
+      }
+    }
+  }
+
+  /* ---- the charged rod: always on the bench, dragged by hand ---- */
+  {
+    const rx0 = g.x, rx1 = g.tip;
+    /* a hand-hold at the far end, so it reads as something you pick up */
+    const ry = ES.capY + ES.capH/2 - ES.rodH/2;   // centred on the disc's axis
+    CX.fillStyle = PAL.insul;
+    rr(rx0 - 30, ry + 3, 34, ES.rodH - 6, 7); CX.fill();
+    CX.fillStyle = S.esRod > 0 ? '#cfe6f5' : '#2f3136';
+    rr(rx0, ry, ES.rodL, ES.rodH, ES.rodH/2); CX.fill();
+    CX.strokeStyle = g.touching ? PAL.amber : 'rgba(0,0,0,.4)';
+    CX.lineWidth = g.touching ? 2.6 : 1.3;
+    rr(rx0, ry, ES.rodL, ES.rodH, ES.rodH/2); CX.stroke();
+    if(S.show.particles) for(let i = 0; i < 4; i++)
+      chargeDot(rx0 + 34 + (ES.rodL - 68)*i/3, ES.capY + ES.capH/2, S.esRod, 10);
+    /* the charge jumping across at the moment of contact */
+    if(S.esFlash > 0){
+      CX.globalAlpha = Math.min(1, S.esFlash*2);
+      drawSpark(sparkPath({x:rx1 - 4, y:ES.capY + ES.capH/2}, {x:ES.discX + 6, y:ES.capY + ES.capH/2}, 7, 5), 1, 4);
+      CX.globalAlpha = 1;
+    }
+    if(S.show.labels){
+      txt(g.touching ? 'TOUCHING — charge shared by contact'
+                     : 'drag me →   gap ' + (g.d/10).toFixed(1) + ' cm',
+          (rx0 + rx1)/2, ES.capY - 34,
+          {size:16, weight:700, col:g.touching ? PAL.amber : PAL.dim});
+      txt(S.esRod > 0 ? 'POSITIVE rod' : 'NEGATIVE rod', (rx0 + rx1)/2, ES.capY + ES.capH/2 + 36,
+          {size:14, weight:700, col:S.esRod > 0 ? PAL.pos : PAL.neg});
+    }
+    /* the gap being measured, so the cause of the divergence is explicit */
+    if(!g.touching){
+      CX.strokeStyle = PAL.muted; CX.lineWidth = 1; CX.setLineDash([4, 4]);
+      line(rx1 + 2, ES.capY + ES.capH/2, ES.discX - 2, ES.capY + ES.capH/2); CX.setLineDash([]);
+    }
+  }
+  /* earthing finger */
+  if(S.esEarthed){
+    CX.strokeStyle = PAL.ground; CX.lineWidth = 3.2; CX.lineCap = 'round';
+    CX.beginPath();
+    CX.moveTo(ES.cx + ES.capW/2 - 12, ES.capY + 6);
+    CX.quadraticCurveTo(ES.cx + 330, ES.capY - 50, ES.cx + 352, ES.capY + 225);
+    CX.stroke();
+    earthSym(ES.cx + 352, ES.capY + 234, 27);
+    txt('earthed by touch', ES.cx + 352, ES.capY + 292, {size:16, weight:700, col:PAL.ground});
+  }
+
+  if(S.show.labels) drawEsLabels();
+
+  /* readout */
+  const by = H - 42;
+  CX.fillStyle = PAL.card; CX.globalAlpha = .88; rr(W/2 - 330, by - 28, 660, 56, 10); CX.fill();
+  CX.globalAlpha = 1; CX.strokeStyle = PAL.border; CX.lineWidth = 1;
+  rr(W/2 - 330, by - 28, 660, 56, 10); CX.stroke();
+  txt('leaf divergence  ' + ang.toFixed(0) + '°', W/2, by - 8, {size:19, weight:800,
+      col:ang > 1 ? PAL.accent : PAL.muted, mono:true});
+  txt(esVerdict(), W/2, by + 15, {size:14, weight:600, col:PAL.dim});
+
+  setChips('⚡ Devices — gold leaf electroscope',
+    'net ' + (S.esCharge === 0 ? '0' : signStr(Math.sign(S.esCharge)) + Math.abs(S.esCharge)) +
+    ' · gap ' + (g.touching ? '0' : (g.d/10).toFixed(1)) + ' cm · leaf ' + ang.toFixed(0) + '°',
+    '<b>Drag the rod</b> towards the brass disc — the nearer it gets, the wider the leaf opens.<br>' +
+    '<b>Push it all the way</b> and the charge is shared by contact; the leaf then stays up.<br>' +
+    '<b>Earth wire</b> drains the charge away and the leaf falls.', '');
+}
+/* One leader line + caption, so every electroscope label is laid out the same
+   way and none of them is hand-placed twice. */
+const ES_LBL = 15;
+function leader(tx, ty, px, py, label, align){
+  /* Measure the caption and stop the line short of it.  Running the leader
+     all the way to the text anchor draws it straight through the words. */
+  CX.font = '600 ' + ES_LBL + "px 'Inter',sans-serif";
+  const w = CX.measureText(label).width;
+  const near = align === 'right' ? tx - w - 12 : tx + w + 12;
+  CX.strokeStyle = PAL.muted; CX.lineWidth = 1.2; CX.lineCap = 'round';
+  CX.beginPath();
+  CX.moveTo(px, py); CX.lineTo(near, py);
+  if(Math.abs(ty - py) > 1) CX.lineTo(near, ty);
+  CX.stroke();
+  CX.beginPath(); CX.arc(px, py, 2.6, 0, TAU); CX.fillStyle = PAL.muted; CX.fill();
+  txt(label, tx, ty, {size:ES_LBL, weight:600, col:PAL.dim, align});
+}
+
+/* The parts named the way a 0625 paper names them. */
+function drawEsLabels(){
+  const R = ES.caseX + ES.caseW/2, L = ES.caseX - ES.caseW/2;
+  const foilTop = ES.caseTop + ES.caseH*0.42;
+  /* right-hand column */
+  leader(R + 148, ES.capY + ES.capH/2, ES.cx + ES.capW/2 - 14, ES.capY + ES.capH/2,
+         'Brass disc', 'right');
+  leader(R + 148, ES.caseTop - 2, ES.cx + 44, ES.caseTop + 2, 'Insulating plug', 'right');
+  leader(R + 148, ES.caseTop + 78, R - 4, ES.caseTop + 78, 'Glass case', 'right');
+  leader(R + 148, ES.caseTop + 150, ES.cx + ES.stemW/2, ES.caseTop + 150, 'Brass rod', 'right');
+  /* left-hand column */
+  leader(L - 148, ES.leafTop + 70, ES.cx - ES.stemW*0.8, ES.leafTop + 70, 'Gold leaf', 'left');
+  leader(L - 148, foilTop + 60, L + 12, foilTop + 60, 'Metal foil', 'left');
+  txt('Earth', ES.caseX + ES.caseW/2 + 111, ES.caseTop + ES.caseH + 62,
+      {size:15, weight:700, col:PAL.ground});
+  txt('the foil and the case are earthed, which shields the leaf',
+      ES.caseX, ES.caseTop + ES.caseH + 62, {size:13, weight:600, col:PAL.muted});
+}
+
+function esVerdict(){
+  const Q = esCharges();
+  if(S.esEarthed) return 'Earthed — the charge flows to the ground and the leaf falls.';
+  if(Q.touching)
+    return 'Contact: the charge is shared, so the electroscope keeps the SAME sign as the rod.';
+  if(S.esCharge === 0)
+    return Math.abs(Q.leaf) > LEAF_MIN_Q
+      ? 'Induction: the nearer the rod, the more the charge separates — but the net charge is still ZERO.'
+      : 'Uncharged, and the rod is too far away to matter. Drag the rod towards the brass disc.';
+  const like = Math.sign(S.esCharge) === S.esRod;
+  if(Math.abs(Q.k) < 0.35) return 'Charged electroscope: the leaf and the stem repel each other.';
+  if(like) return 'The rod has the SAME sign as the electroscope, so bringing it nearer opens the leaf FURTHER.';
+  return Math.sign(Q.leaf) === S.esRod
+    ? 'Brought closer still, the unlike rod has OVER-corrected: the leaf collapsed and is opening again the other way.'
+    : 'The rod has the OPPOSITE sign, so bringing it nearer makes the leaf FALL. That is the test for sign.';
+}
+
+/* ---------- Van de Graaff ---------- */
+function drawVanDeGraaff(){
+  const V = domeVolts(S.vgQ, 0.15), needV = breakdownVolts(S.vgGap/10);
+  const inside = S.vgView === 'inside';
+  const chargeFrac = Math.min(1, S.vgQ/4.2e-6);
+  benchLine(VG.baseY + VG.baseH + 10);
+
+  /* ---- earthed metal base ---- */
+  CX.fillStyle = '#1b1e22';
+  rr(VG.baseX, VG.baseY, VG.baseW, VG.baseH, 5); CX.fill();
+  CX.strokeStyle = PAL.text; CX.lineWidth = 3.4;
+  rr(VG.baseX, VG.baseY, VG.baseW, VG.baseH, 5); CX.stroke();
+  CX.strokeStyle = PAL.ground; CX.lineWidth = 2.6;
+  line(VG.baseX + VG.baseW/2, VG.baseY + VG.baseH,
+       VG.baseX + VG.baseW/2, VG.baseY + VG.baseH + 26);
+  earthSym(VG.baseX + VG.baseW/2, VG.baseY + VG.baseH + 30, 20);
+
+  /* ---- insulating pillars ---- */
+  for(const sgn of [-1, +1]){
+    const px = VG.cx + sgn*VG.pillarX - VG.pillarW/2;
+    const pg = CX.createLinearGradient(px, 0, px + VG.pillarW, 0);
+    pg.addColorStop(0, '#3b2f6e'); pg.addColorStop(.4, '#5a49a8'); pg.addColorStop(1, '#332a5e');
+    CX.fillStyle = pg;
+    CX.fillRect(px, VG.pillarTop, VG.pillarW, VG.pillarBot - VG.pillarTop);
+  }
+
+  /* ---- belt, rollers and combs (only visible in the cutaway) ---- */
+  if(inside){
+    /* belt */
+    CX.strokeStyle = '#c9b48a'; CX.lineWidth = 5; CX.lineCap = 'butt';
+    line(VG.cx - VG.beltHalf, VG.rollTop, VG.cx - VG.beltHalf, VG.rollBot);
+    line(VG.cx + VG.beltHalf, VG.rollTop, VG.cx + VG.beltHalf, VG.rollBot);
+    for(const [yy, r] of [[VG.rollTop, VG.rollR], [VG.rollBot, VG.rollR]]){
+      CX.strokeStyle = '#c9b48a'; CX.lineWidth = 5;
+      CX.beginPath(); CX.arc(VG.cx, yy, VG.beltHalf, 0, TAU); CX.stroke();
+      CX.fillStyle = PAL.metal;
+      CX.beginPath(); CX.arc(VG.cx, yy, r - 8, 0, TAU); CX.fill();
+      CX.strokeStyle = PAL.green; CX.lineWidth = 3;
+      CX.beginPath(); CX.arc(VG.cx, yy, r - 8, 0, TAU); CX.stroke();
+      CX.strokeStyle = PAL.metalHi; CX.lineWidth = 2.6;
+      const a = S.vgBelt*4;
+      line(VG.cx + Math.cos(a)*(r-13), yy + Math.sin(a)*(r-13),
+           VG.cx - Math.cos(a)*(r-13), yy - Math.sin(a)*(r-13));
+    }
+    /* which way the belt runs */
+    if(S.show.labels){
+      arrow(VG.cx - VG.beltHalf - 13, VG.rollBot - 40, VG.cx - VG.beltHalf - 13, VG.rollTop + 40,
+            {col:PAL.dim, lw:1.6, head:8});
+      arrow(VG.cx + VG.beltHalf + 13, VG.rollTop + 40, VG.cx + VG.beltHalf + 13, VG.rollBot - 40,
+            {col:PAL.dim, lw:1.6, head:8});
+    }
+    /* charge riding up the belt */
+    if(S.show.particles && S.vgOn) for(let i = 0; i < 9; i++){
+      const u = ((S.vgBelt*0.55 + i/9) % 1);
+      chargeDot(VG.cx - VG.beltHalf, VG.rollBot - (VG.rollBot - VG.rollTop)*u, +1, 6.5);
+    }
+    /* combs: teeth pointing at the belt */
+    for(const [yy, sgn, nm] of [[VG.rollTop + 4, -1, 'collector'], [VG.rollBot - 4, -1, 'spray']]){
+      CX.strokeStyle = PAL.green; CX.lineWidth = 2.6; CX.lineCap = 'round';
+      const bx = VG.cx - VG.beltHalf - 8;
+      line(bx - 34, yy, bx - 6, yy);
+      for(let i = -2; i <= 2; i++) line(bx - 6, yy, bx - 20, yy + i*6);
+    }
+    /* the collector comb is wired to the shell; the spray comb to the H.T.B. */
+    CX.strokeStyle = PAL.text; CX.lineWidth = 2.2;
+    line(VG.cx - VG.beltHalf - 42, VG.rollTop + 4, VG.cx - VG.shellR + 16, VG.rollTop + 4);
+    line(VG.cx - VG.beltHalf - 42, VG.rollBot - 4, VG.cx - 108, VG.rollBot - 4);
+    line(VG.cx - 108, VG.rollBot - 4, VG.cx - 108, VG.baseY + 6);
+    cellSym(VG.cx - 108, VG.baseY + 22, 26, false);
+    txt('H.T.B.', VG.cx - 108, VG.baseY - 14,
+        {size:12, weight:700, col:PAL.green, plate:true});
+    CX.strokeStyle = PAL.ground; CX.lineWidth = 2.2;
+    line(VG.cx - 108, VG.baseY + 38, VG.cx - 108, VG.baseY + VG.baseH - 6);
+
+    /* discharge tube with its ion source and target */
+    CX.fillStyle = 'rgba(180,210,235,0.14)';
+    rr(VG.tubeX - VG.tubeW/2, VG.tubeTop, VG.tubeW, VG.tubeBot - VG.tubeTop, 5); CX.fill();
+    CX.strokeStyle = PAL.glass; CX.lineWidth = 2; CX.globalAlpha = .8;
+    rr(VG.tubeX - VG.tubeW/2, VG.tubeTop, VG.tubeW, VG.tubeBot - VG.tubeTop, 5); CX.stroke();
+    CX.globalAlpha = 1;
+    CX.fillStyle = PAL.metal;
+    rr(VG.tubeX - 9, VG.tubeTop - 4, 18, 12, 3); CX.fill();
+    rr(VG.tubeX - 9, VG.tubeBot - 8, 18, 12, 3); CX.fill();
+    if(S.show.particles && S.vgOn) for(let i = 0; i < 4; i++){
+      const u = ((S.vgBelt*0.9 + i/4) % 1);
+      chargeDot(VG.tubeX, VG.tubeTop + (VG.tubeBot - VG.tubeTop)*u, +1, 5);
+    }
+  }
+
+  /* ---- the metal shell ---- */
+  if(inside){
+    /* the shell drawn whole, with one notch at the bottom where the belt and
+       the pillars pass through — a cutaway, not a broken ring */
+    const notch = 0.085*Math.PI;
+    CX.strokeStyle = PAL.metal; CX.lineWidth = 10; CX.lineCap = 'butt';
+    CX.beginPath();
+    CX.arc(VG.cx, VG.shellY, VG.shellR, Math.PI/2 + notch, Math.PI/2 - notch + TAU, false);
+    CX.stroke();
+  }else{
+    const dg = CX.createRadialGradient(VG.cx - 42, VG.shellY - 44, 12, VG.cx, VG.shellY, VG.shellR*1.25);
+    dg.addColorStop(0, PAL.metalHi); dg.addColorStop(.6, PAL.metal); dg.addColorStop(1, '#2b3138');
+    CX.fillStyle = dg;
+    CX.beginPath(); CX.arc(VG.cx, VG.shellY, VG.shellR, 0, TAU); CX.fill();
+    CX.strokeStyle = 'rgba(0,0,0,.45)'; CX.lineWidth = 2;
+    CX.beginPath(); CX.arc(VG.cx, VG.shellY, VG.shellR, 0, TAU); CX.stroke();
+  }
+  /* charge always sits on the OUTSIDE surface, in both views */
+  if(S.show.particles){
+    const n = S.vgQ > 0 ? Math.max(3, Math.round(chargeFrac*16)) : 0;
+    for(let i = 0; i < n; i++){
+      const a = -Math.PI/2 + (i - (n-1)/2)*(TAU*0.82/Math.max(n, 8));
+      chargeDot(VG.cx + Math.cos(a)*(VG.shellR + 13), VG.shellY + Math.sin(a)*(VG.shellR + 13), +1, 8);
+    }
+  }
+  if(S.vgHair){
+    CX.strokeStyle = '#8a5a3a'; CX.lineWidth = 2.4; CX.lineCap = 'round';
+    for(let i = 0; i < 14; i++){
+      const a = -Math.PI*0.92 + i*Math.PI*0.84/13;
+      const x0 = VG.cx + Math.cos(a)*VG.shellR, y0 = VG.shellY + Math.sin(a)*VG.shellR;
+      const L = 16 + chargeFrac*40;
+      line(x0, y0, x0 + Math.cos(a)*L, y0 + Math.sin(a)*L);
+    }
+  }
+
+  /* ---- earthed sphere and the spark gap ---- */
+  const eg = CX.createRadialGradient(VG.gndX - 20, VG.gndY - 22, 6, VG.gndX, VG.gndY, VG.gndR*1.2);
+  eg.addColorStop(0, PAL.metalHi); eg.addColorStop(.6, PAL.metal); eg.addColorStop(1, '#2b3138');
+  CX.fillStyle = eg;
+  CX.beginPath(); CX.arc(VG.gndX, VG.gndY, VG.gndR, 0, TAU); CX.fill();
+  CX.strokeStyle = 'rgba(0,0,0,.4)'; CX.lineWidth = 1.6;
+  CX.beginPath(); CX.arc(VG.gndX, VG.gndY, VG.gndR, 0, TAU); CX.stroke();
+  CX.fillStyle = PAL.metal;
+  CX.fillRect(VG.gndX - 8, VG.gndY + VG.gndR, 16, VG.baseY + VG.baseH - VG.gndY - VG.gndR);
+  CX.strokeStyle = PAL.ground; CX.lineWidth = 2.6;
+  line(VG.gndX, VG.baseY + VG.baseH, VG.gndX + 62, VG.baseY + VG.baseH);
+  earthSym(VG.gndX + 62, VG.baseY + VG.baseH + 8, 18);
+
+  const gx0 = VG.cx + VG.shellR, gx1 = VG.gndX - VG.gndR;
+  CX.strokeStyle = PAL.muted; CX.lineWidth = 1; CX.setLineDash([4, 4]);
+  line(gx0, VG.shellY, gx1, VG.shellY); CX.setLineDash([]);
+  txt('gap ' + S.vgGap.toFixed(0) + ' mm', (gx0+gx1)/2, VG.shellY - 24,
+      {size:13, weight:700, col:PAL.dim, mono:true, plate:true});
+  if(S.vgFlash > 0) drawSpark(S.vgSparkPts, Math.min(1, S.vgFlash/0.32), 7);
+
+  /* ---- labels ---- */
+  if(S.show.labels){
+    const R = VG.cx + VG.shellR, VG_LBL_L = 44;
+    if(inside){
+      leader(R + 236, VG.shellY - 108, VG.cx + 66, VG.shellY - VG.shellR + 22, 'Metal shell', 'right');
+      leader(VG_LBL_L, VG.rollTop + 4, VG.cx - VG.beltHalf - 30, VG.rollTop + 4,
+             'Collector comb', 'left');
+      leader(VG_LBL_L, VG.rollBot - 4, VG.cx - VG.beltHalf - 30, VG.rollBot - 4,
+             'Spray comb', 'left');
+      leader(R + 236, VG.shellY + 96, VG.cx + VG.beltHalf, VG.shellY + 96, 'Insulating belt', 'right');
+      leader(R + 236, VG.pillarBot - 40, VG.cx + VG.pillarX, VG.pillarBot - 40,
+             'Insulating pillar', 'right');
+      leader(R + 236, VG.tubeTop + 46, VG.tubeX, VG.tubeTop + 46, 'Discharge tube', 'right');
+      txt('ion source', VG.tubeX + 16, VG.tubeTop + 26, {size:12, weight:600, col:PAL.muted, align:'left'});
+      txt('target', VG.tubeX + 16, VG.tubeBot - 16, {size:12, weight:600, col:PAL.muted, align:'left'});
+      leader(R + 236, VG.baseY + VG.baseH/2, VG.baseX + VG.baseW - 8, VG.baseY + VG.baseH/2,
+             'Earthed base', 'right');
+    }else{
+      txt('metal shell — charge sits on the OUTSIDE', VG.cx, VG.shellY - VG.shellR - 34,
+          {size:14, weight:700, col:PAL.accent});
+      leader(VG_LBL_L, VG.pillarBot - 60, VG.cx - VG.pillarX, VG.pillarBot - 60,
+             'Insulating pillar', 'left');
+      leader(VG_LBL_L, VG.baseY + VG.baseH/2, VG.baseX + 8, VG.baseY + VG.baseH/2,
+             'Earthed base', 'left');
+    }
+    txt('earthed sphere', VG.gndX, VG.gndY - VG.gndR - 22, {size:13, weight:700, col:PAL.dim});
+  }
+
+  /* ---- readout ---- */
+  const by = H - 44;
+  CX.fillStyle = PAL.card; CX.globalAlpha = .88; rr(W/2 - 300, by - 28, 600, 56, 10); CX.fill();
+  CX.globalAlpha = 1; CX.strokeStyle = PAL.border; CX.lineWidth = 1;
+  rr(W/2 - 300, by - 28, 600, 56, 10); CX.stroke();
+  txt('shell  ' + (V/1000).toFixed(0) + ' kV     needs ' + (needV/1000).toFixed(0) +
+      ' kV to jump ' + S.vgGap.toFixed(0) + ' mm', W/2, by - 9,
+      {size:14, weight:800, mono:true, col:V >= needV ? PAL.spark : PAL.text});
+  txt('air breaks down at 3 kV per mm  ·  spark could reach ' +
+      sparkLength_mm(V).toFixed(0) + ' mm', W/2, by + 13,
+      {size:12, weight:600, col:PAL.dim});
+
+  setChips('⚡ Devices — Van de Graaff generator' + (inside ? ' (cutaway)' : ''),
+    (S.vgOn ? 'running' : 'stopped') + ' · ' + (V/1000).toFixed(0) + ' kV',
+    '<b>Inside view</b> shows the belt, the two combs and the H.T. supply that drive it.<br>' +
+    '<b>Charge collects on the OUTSIDE</b> of the shell, so the voltage keeps climbing.<br>' +
+    '<b>Close the gap</b> in the Data panel to make it spark sooner.',
+    V >= needV*0.85 && V < needV ? 'Almost at breakdown — a spark is about to jump' : '');
+}
+
+/* ---------- sparks and discharge ---------- */
+function drawSparks(){
+  const need = breakdownVolts(S.spGap);
+  const ok = S.spV >= need;
+  const spBench = SP.ay + SP.r + SP.stalk + SP.standH;
+  benchLine(spBench);
+
+  for(const [x, sgn] of [[SP.ax, +1], [SP.bx, -1]]){
+    const g = CX.createRadialGradient(x - 18, SP.ay - 20, 6, x, SP.ay, SP.r*1.2);
+    g.addColorStop(0, PAL.metalHi); g.addColorStop(.6, PAL.metal); g.addColorStop(1, '#2b3138');
+    CX.fillStyle = g; CX.beginPath(); CX.arc(x, SP.ay, SP.r, 0, TAU); CX.fill();
+    CX.strokeStyle = 'rgba(0,0,0,.4)'; CX.lineWidth = 1.6;
+    CX.beginPath(); CX.arc(x, SP.ay, SP.r, 0, TAU); CX.stroke();
+    CX.fillStyle = PAL.metal; CX.fillRect(x - 7, SP.ay + SP.r, 14, SP.stalk);
+    standSym(x, SP.ay + SP.r + SP.stalk, SP.standH, 58);
+    if(S.show.particles) for(let i = 0; i < 5; i++){
+      const a = -Math.PI*0.75 + i*Math.PI*1.5/4;
+      chargeDot(x + Math.cos(a)*SP.r*0.74, SP.ay + Math.sin(a)*SP.r*0.74, sgn, 8);
+    }
+  }
+  /* gap */
+  const gx0 = SP.ax + SP.r, gx1 = SP.bx - SP.r;
+  CX.strokeStyle = PAL.muted; CX.lineWidth = 1; CX.setLineDash([4, 4]);
+  line(gx0, SP.ay, gx1, SP.ay); CX.setLineDash([]);
+  arrow(gx0 + 2, SP.ay - 42, gx1 - 2, SP.ay - 42, {col:PAL.dim, lw:1.4, head:8});
+  arrow(gx1 - 2, SP.ay - 42, gx0 + 2, SP.ay - 42, {col:PAL.dim, lw:1.4, head:8});
+  txt('d = ' + S.spGap.toFixed(1) + ' mm', (gx0+gx1)/2, SP.ay - 60,
+      {size:13, weight:700, col:PAL.dim, mono:true});
+
+  if(S.spFlash > 0){
+    drawSpark(S.spPts, Math.min(1, S.spFlash/0.30), 6);
+    /* the electrons that actually cross the gap */
+    if(S.show.particles) for(let i = 0; i < 6; i++){
+      const u = ((1 - S.spFlash/0.40) + i*0.09) % 1;
+      const k = Math.floor(u*(S.spPts.length-1));
+      electron(S.spPts[k].x, S.spPts[k].y, 5);
+    }
+    txt('light and heat', (gx0+gx1)/2, SP.ay + 54, {size:12.5, weight:700, col:PAL.spark});
+  }
+
+  if(S.show.labels){
+    txt('+ charged sphere', SP.ax, SP.ay - SP.r - 24, {size:13, weight:700, col:PAL.pos});
+    txt('− charged sphere', SP.bx, SP.ay - SP.r - 24, {size:13, weight:700, col:PAL.neg});
+  }
+
+  const by = H - 52;
+  CX.fillStyle = PAL.card; CX.globalAlpha = .88; rr(W/2 - 300, by - 32, 600, 64, 10); CX.fill();
+  CX.globalAlpha = 1; CX.strokeStyle = ok ? PAL.spark : PAL.border; CX.lineWidth = ok ? 1.8 : 1;
+  rr(W/2 - 300, by - 32, 600, 64, 10); CX.stroke();
+  txt('V = ' + (S.spV/1000).toFixed(1) + ' kV      needs 3 kV/mm × ' + S.spGap.toFixed(1) +
+      ' mm = ' + (need/1000).toFixed(1) + ' kV', W/2, by - 12,
+      {size:13.5, weight:800, mono:true, col:ok ? PAL.spark : PAL.text});
+  txt(ok ? 'The air breaks down — electrons jump across and a spark forms'
+         : 'Not enough p.d. — the air stays an insulator', W/2, by + 12,
+      {size:12.5, weight:700, col:ok ? PAL.spark : PAL.dim});
+
+  setChips('⚡ Devices — sparks and discharge',
+    (S.spV/1000).toFixed(1) + ' kV / ' + (need/1000).toFixed(1) + ' kV needed',
+    '<b>Raise the p.d.</b> or <b>close the gap</b> until the air breaks down.<br>' +
+    '<b>Lightning is the same thing</b>, on a scale of kilometres and megavolts.<br>' +
+    '<b>Earthing</b> stops the charge building up in the first place.', '');
+}
+
+/* ---------- Tesla coil (kept, but flagged as beyond 0625) ---------- */
+function drawTesla(){
+  benchLine(TC.baseY + 16);
+  /* base */
+  CX.fillStyle = PAL.insul; rr(TC.cx - 150, TC.baseY - 26, 300, 30, 6); CX.fill();
+
+  /* secondary: many fine turns */
+  CX.fillStyle = '#8a6134';
+  CX.fillRect(TC.cx - TC.secW/2, TC.secTop, TC.secW, TC.secBot - TC.secTop);
+  CX.strokeStyle = 'rgba(0,0,0,.35)'; CX.lineWidth = 1;
+  for(let y = TC.secTop + 3; y < TC.secBot; y += 4.5){
+    CX.beginPath(); CX.moveTo(TC.cx - TC.secW/2, y);
+    CX.quadraticCurveTo(TC.cx, y + 2.6, TC.cx + TC.secW/2, y); CX.stroke();
+  }
+  /* primary: a few thick turns at the bottom */
+  CX.strokeStyle = '#c98a3a'; CX.lineWidth = 7; CX.lineCap = 'round';
+  for(let i = 0; i < 4; i++){
+    const y = TC.priY + i*13, w = TC.secW/2 + 34 - i*3;
+    CX.beginPath(); CX.ellipse(TC.cx, y, w, 8, 0, 0, Math.PI); CX.stroke();
+  }
+  /* toroid */
+  const tg = CX.createLinearGradient(0, TC.toroidY - TC.toroidRy, 0, TC.toroidY + TC.toroidRy);
+  tg.addColorStop(0, PAL.metalHi); tg.addColorStop(.5, PAL.metal); tg.addColorStop(1, '#2b3138');
+  CX.fillStyle = tg;
+  CX.beginPath(); CX.ellipse(TC.cx, TC.toroidY, TC.toroidRx, TC.toroidRy, 0, 0, TAU); CX.fill();
+  CX.strokeStyle = 'rgba(0,0,0,.4)'; CX.lineWidth = 1.6;
+  CX.beginPath(); CX.ellipse(TC.cx, TC.toroidY, TC.toroidRx, TC.toroidRy, 0, 0, TAU); CX.stroke();
+  CX.fillStyle = 'rgba(0,0,0,.22)';
+  CX.beginPath(); CX.ellipse(TC.cx, TC.toroidY, TC.toroidRx*0.42, TC.toroidRy*0.42, 0, 0, TAU); CX.fill();
+
+  /* spark gap in the primary circuit */
+  CX.strokeStyle = PAL.text; CX.lineWidth = 2.4;
+  line(TC.gapX - 60, TC.gapY, TC.gapX - 12, TC.gapY);
+  line(TC.gapX + 12, TC.gapY, TC.gapX + 60, TC.gapY);
+  CX.fillStyle = PAL.metal;
+  CX.beginPath(); CX.arc(TC.gapX - 12, TC.gapY, 8, 0, TAU); CX.fill();
+  CX.beginPath(); CX.arc(TC.gapX + 12, TC.gapY, 8, 0, TAU); CX.fill();
+  line(TC.gapX + 60, TC.gapY, TC.gapX + 60, TC.priY + 20);
+  line(TC.gapX + 60, TC.priY + 20, TC.cx - TC.secW/2 - 34, TC.priY + 20);
+  cellSym(TC.gapX - 60, TC.gapY + 52, 30, false);
+  line(TC.gapX - 60, TC.gapY, TC.gapX - 60, TC.gapY + 32);
+  line(TC.gapX - 60, TC.gapY + 72, TC.gapX - 60, TC.priY + 46);
+  line(TC.gapX - 60, TC.priY + 46, TC.cx - TC.secW/2 - 34, TC.priY + 46);
+  if(S.teslaOn && Math.sin(S.t*40) > 0)
+    drawSpark(sparkPath({x:TC.gapX - 12, y:TC.gapY}, {x:TC.gapX + 12, y:TC.gapY}, 3, 5), .9, 3);
+
+  /* corona from the toroid */
+  if(S.teslaOn) for(const a of S.teslaArcs) drawSpark(a, .85, 4.5);
+
+  if(S.show.labels){
+    txt('toroid', TC.cx, TC.toroidY - TC.toroidRy - 20, {size:13, weight:700, col:PAL.text});
+    txt('secondary coil', TC.cx + TC.secW/2 + 16, (TC.secTop + TC.secBot)/2,
+        {size:12, weight:600, col:PAL.dim, align:'left'});
+    txt('primary coil', TC.cx + 130, TC.priY + 20, {size:12, weight:600, col:PAL.dim, align:'left'});
+    txt('spark gap', TC.gapX, TC.gapY - 24, {size:12, weight:600, col:PAL.dim});
+  }
+
+  /* the flag: this device is not on the syllabus */
+  const bw = 620, bx = W/2 - bw/2, by = H - 74;
+  CX.fillStyle = PAL.card; CX.globalAlpha = .9; rr(bx, by - 22, bw, 62, 10); CX.fill();
+  CX.globalAlpha = 1; CX.strokeStyle = PAL.amber; CX.lineWidth = 1.6;
+  rr(bx, by - 22, bw, 62, 10); CX.stroke();
+  txt('⚠  BEYOND IGCSE 0625 — for interest only', W/2, by - 2,
+      {size:13, weight:800, col:PAL.amber});
+  txt('A Tesla coil needs electromagnetic induction and resonance. Use it to SEE a discharge;',
+      W/2, by + 17, {size:11.5, weight:600, col:PAL.dim});
+  txt('the examinable physics is the air breaking down, which is the Sparks device.',
+      W/2, by + 32, {size:11.5, weight:600, col:PAL.dim});
+
+  setChips('⚡ Devices — Tesla coil (extension)',
+    S.teslaOn ? 'running' : 'stopped',
+    '<b>Switch it on</b> to see corona discharge stream off the toroid.<br>' +
+    '<b>Not examinable at IGCSE</b> — it is here so students can see what a big discharge looks like.<br>' +
+    '<b>The syllabus physics</b> is in the Sparks &amp; Discharge device.',
+    'Beyond 0625 — shown for interest, not for the exam');
+}
+
+/* ===== part_js_panels.js ===== */
+/* ============================================================
+   SIDE PANEL — Data and Info, per section
+   ============================================================ */
+
+/* KaTeX is loaded from a CDN and may simply not be there.  Every equation
+   therefore ships with a plain-text twin, and we only upgrade to typeset
+   maths once the library has actually arrived. */
+function mathLine(tex, plain){
+  if(typeof katex !== 'undefined'){
+    try{ return '<div class="mrow">' + katex.renderToString(tex, {throwOnError:false}) + '</div>'; }
+    catch(e){}
+  }
+  return '<div class="mrow plain">' + plain + '</div>';
+}
+
+/* ---------- DATA ---------- */
+function paneData(){
+  const el = $('pane-data');
+  if(S.sec === 'charging') el.innerHTML = dataCharging();
+  else if(S.sec === 'fields') el.innerHTML = dataFields();
+  else el.innerHTML = dataDevices();
+  bindDataControls();
+}
+
+function dataCharging(){
+  if(S.method === 'friction'){
+    const o = rubOutcome(S.pair), nE = S.rubs*FR.ePerRub;
+    let h = sectionTitle('🔬', 'CHARGING BY FRICTION');
+    h += '<div class="grid2">' +
+      cardHTML(o.rodName + ' rod', signStr(o.rodSign), nE ? 'charged' : 'neutral so far') +
+      cardHTML(o.clothName + ' cloth', signStr(o.clothSign), nE ? 'charged' : 'neutral so far') +
+      '</div>';
+    h += kvHTML('Rubs', S.rubs, '', 'kvRubs');
+    h += kvHTML('Electrons transferred', nE, '', 'kvNE');
+    h += kvHTML('Charge, Q = n e', sciQ(nE), 'v-amber', 'kvQ');
+    h += kvHTML('Electrons move to', o.electronsTo === 'rod' ? 'the rod' : 'the cloth',
+                o.electronsTo === 'rod' ? 'v-neg' : 'v-neg');
+    h += '<div class="rowbtns"><button class="mini" id="dRub">✋ Rub once</button>' +
+         '<button class="mini" id="dRub5">✋ Rub ×5</button>' +
+         '<button class="mini" id="dClear">↺ Start again</button></div>';
+    h += sectionTitle('📋', 'TRIBOELECTRIC SERIES');
+    h += '<table class="dt"><tr><th>#</th><th>material</th><th>this pair</th></tr>';
+    h += '<tr><td colspan="3" style="color:var(--charge-pos);text-align:center">' +
+         '▲ gives electrons up more easily → ends up +</td></tr>';
+    TRIBO.forEach((m, i) => {
+      /* a material has no sign of its own — only a position.  The sign is
+         shown for the two materials actually being rubbed together. */
+      const isRod = m.key === o.rod, isCloth = m.key === o.cloth;
+      const mark = isRod   ? (o.rodSign   > 0 ? 'rod  →  +' : 'rod  →  −')
+                 : isCloth ? (o.clothSign > 0 ? 'cloth →  +' : 'cloth →  −') : '';
+      const cls = isRod || isCloth ? (((isRod ? o.rodSign : o.clothSign) > 0) ? 'hi pos' : 'hi neg') : '';
+      h += '<tr class="' + cls + '"><td>' + (i+1) + '</td><td>' + m.name +
+           '</td><td>' + mark + '</td></tr>';
+    });
+    h += '<tr><td colspan="3" style="color:var(--charge-neg);text-align:center">' +
+         '▼ holds on to electrons more strongly → ends up −</td></tr>';
+    h += '</table>';
+    h += '<div class="note">Whichever material sits <b>higher</b> in this list gives up its ' +
+         'electrons and is left <b>positive</b>. Here <b>' + o.rodName + '</b> is #' +
+         (TRIBO_IDX[o.rod]+1) + ' and <b>' + o.clothName + '</b> is #' + (TRIBO_IDX[o.cloth]+1) +
+         ', so ' + (o.rodSign > 0 ? 'the rod' : 'the cloth') + ' ends up positive.</div>';
+    h += '<div class="note"><b>Fur</b> and <b>Acetate</b> are additions to the list in the ' +
+         'brief — three of the material pairs need them. They sit where UK school practice ' +
+         'puts them: acetate is the standard positive rod, polythene and ebonite the negative ones.</div>';
+    return h;
+  }
+  const st = inductionState(S.indStep, S.rodSign);
+  let h = sectionTitle('🔬', 'CHARGING BY INDUCTION');
+  h += '<div class="grid2">' +
+    cardHTML('Rod', signStr(S.rodSign), 'you choose this') +
+    cardHTML('Sphere, net', st.net === 0 ? '0' : signStr(Math.sign(st.net)) + Math.abs(st.net) + 'e',
+             st.net === 0 ? 'neutral' : 'charged') + '</div>';
+  h += kvHTML('Step', (st.i+1) + ' of 5 — ' + INDUCTION_STEPS[st.i]);
+  h += kvHTML('Near face (towards rod)', st.near === 0 ? '0' : signStr(Math.sign(st.near)) + Math.abs(st.near) + 'e',
+              st.near > 0 ? 'v-pos' : st.near < 0 ? 'v-neg' : '');
+  h += kvHTML('Far face', st.far === 0 ? '0' : signStr(Math.sign(st.far)) + Math.abs(st.far) + 'e',
+              st.far > 0 ? 'v-pos' : st.far < 0 ? 'v-neg' : '');
+  h += kvHTML('Earth connected', st.earthed ? 'yes' : 'no', st.earthed ? 'v-green' : '');
+  h += '<div class="rowbtns">' +
+       '<button class="mini" id="dPrev">‹ Back</button>' +
+       '<button class="mini" id="dNext">Next ›</button>' +
+       '<button class="mini' + (S.indPlay && S.anim ? ' on' : '') + '" id="dPlay">' +
+       (S.indPlay && S.anim ? '⏸ Pause' : '▶ Sequence') + '</button></div>';
+  h += sectionTitle('📋', 'THE FIVE STEPS');
+  h += '<table class="dt"><tr><th>#</th><th>step</th><th>net</th></tr>';
+  INDUCTION_STEPS.forEach((k, i) => {
+    const s2 = inductionState(k, S.rodSign);
+    h += '<tr class="' + (i === st.i ? 'hi' : '') + '"><td>' + (i+1) + '</td><td>' + k +
+         '</td><td>' + (s2.net === 0 ? '0' : signStr(Math.sign(s2.net)) + Math.abs(s2.net) + 'e') + '</td></tr>';
+  });
+  h += '</table>';
+  h += '<div class="note warn"><b>Order matters.</b> The earth must be removed <b>before</b> ' +
+       'the rod. Do it the other way round and the charge simply flows back to the ground ' +
+       'and the sphere ends up neutral.</div>';
+  h += '<div class="note">In this section the toolbar\'s <b>▶ Sequence</b> button is the ' +
+       'Animation button — one control for "is the demonstration running". Pausing freezes ' +
+       'the frame; stepping by hand with <b>Next ›</b> leaves the animation running.</div>';
+  return h;
+}
+
+function dataFields(){
+  let h = '';
+  if(S.fmode === 'force'){
+    const d = Math.hypot(S.qB.x - S.qA.x, S.qB.y - S.qA.y);
+    const F = forceBetween(S.qA.q, S.qB.q, d);
+    h += sectionTitle('🌐', 'FORCE BETWEEN TWO CHARGES');
+    h += '<div class="sl"><label><span>Charge Q₁</span></label>' + qPicker('qa', S.qA.q) + '</div>';
+    h += '<div class="sl"><label><span>Charge Q₂</span></label>' + qPicker('qb', S.qB.q) + '</div>';
+    h += '<div class="grid2">' +
+      cardHTML('Separation', (d/10).toFixed(1), 'cm', 'cdD') +
+      cardHTML('Force', fmtRatio(F.ratio), 'of reference', 'cdF') + '</div>';
+    h += kvHTML('Result', F.attract ? 'ATTRACT' : 'REPEL', F.attract ? 'v-neg' : 'v-pos', 'kvAtt');
+    h += '<div class="working">' +
+      mathLine('F \\propto \\dfrac{Q_1 Q_2}{r^2}', 'F ∝ Q₁Q₂ / r²') +
+      mathLine('\\dfrac{F}{F_{ref}} = \\dfrac{' + Math.abs(S.qA.q) + '\\times' + Math.abs(S.qB.q) +
+               '}{1\\times1}\\times\\left(\\dfrac{20}{' + (d/10).toFixed(1) + '}\\right)^{2} = ' +
+               F.ratio.toFixed(2),
+               'F/F_ref = (' + Math.abs(S.qA.q) + '×' + Math.abs(S.qB.q) + ') × (20/' +
+               (d/10).toFixed(1) + ')² = ' + F.ratio.toFixed(2)) + '</div>';
+    h += '<div class="note">The reference is two <b>+1 µC</b> charges <b>20 cm</b> apart. IGCSE ' +
+         'only asks for the <b>proportionality</b>, so the lab reports a ratio rather than a ' +
+         'value in newtons — the numbers stay honest and stay on the syllabus.</div>';
+    h += '<div class="rowbtns"><button class="mini" id="dSwapA">Flip Q₁ sign</button>' +
+         '<button class="mini" id="dSwapB">Flip Q₂ sign</button>' +
+         '<button class="mini" id="dTest">Release test charge</button></div>';
+  }else if(S.fmode === 'pattern'){
+    const cfg = PATTERNS[S.pattern];
+    h += sectionTitle('🌐', 'FIELD PATTERN');
+    h += kvHTML('Configuration', cfg.label);
+    h += kvHTML('Lines drawn per charge', lineCount(cfg.charges[0].q));
+    h += kvHTML('Line direction', 'positive → negative', 'v-amber');
+    h += '<div class="note"><b>Why the number of lines matters.</b> The lab draws ' +
+         LINES_PER_UNIT + ' lines for every unit of charge, so a bigger charge really does ' +
+         'get a denser bundle of lines. Line spacing is not decoration — it <b>is</b> the ' +
+         'field strength.</div>';
+    if(cfg.sphere)
+      h += '<div class="note warn"><b>Charged conducting sphere.</b> All the charge sits on the ' +
+           'outside surface, the field inside is <b>exactly zero</b>, and outside the sphere the ' +
+           'field is identical to that of a point charge at its centre. Lines leave the metal at ' +
+           '90°, because any sideways component would push the surface charge along until it ' +
+           'cancelled.</div>';
+    if(S.pattern === 'like')
+      h += '<div class="note warn"><b>Neutral point.</b> Half way between two equal like charges ' +
+           'the two fields cancel exactly, so E = 0 there and no field line can pass through it.</div>';
+    h += '<div class="rowbtns"><button class="mini" id="dTest">Release test charge</button>' +
+         '<button class="mini" id="dClearTest">Clear its trail</button></div>';
+  }else{
+    const p = activePlate();
+    const half = plateUniformHalf(p);
+    const E = S.plateV/(p.sep/1000);
+    h += sectionTitle('🌐', 'PARALLEL PLATES');
+    h += sliderHTML('plSep', 'Plate separation d', p.sep/10, {min:6, max:20, step:0.5, unit:'cm'});
+    h += sliderHTML('plV', 'Supply voltage V', S.plateV, {min:0, max:12, step:0.1, unit:'V'});
+    h += '<div class="grid2">' +
+      cardHTML('Field strength', Math.round(E), 'V/m', 'cdE') +
+      cardHTML('Uniform out to', (half/10).toFixed(1), 'cm each side', 'cdU') + '</div>';
+    h += '<div class="working">' +
+      mathLine('E = \\dfrac{V}{d}', 'E = V / d') +
+      mathLine('E = \\dfrac{' + S.plateV.toFixed(1) + '}{' + (p.sep/1000).toFixed(3) + '} = ' +
+               Math.round(E) + '\\ \\mathrm{V\\,m^{-1}}',
+               'E = ' + S.plateV.toFixed(1) + ' / ' + (p.sep/1000).toFixed(3) + ' = ' +
+               Math.round(E) + ' V/m') + '</div>';
+    h += '<div class="note">The shaded band is where this model\'s field really is uniform — ' +
+         '<b>measured</b> from the field itself, not assumed. Watch the outermost lines: near ' +
+         'the plate ends they bend outwards and weaken. That is the <b>fringe field</b>.</div>';
+    h += '<div class="rowbtns"><button class="mini" id="dTest">Release test charge</button>' +
+         '<button class="mini" id="dClearTest">Clear its trail</button></div>';
+  }
+  return h;
+}
+function qPicker(id, cur){
+  let h = '<div class="rowbtns" id="' + id + 'Row">';
+  for(const v of [3, 2, 1, -1, -2, -3])
+    h += '<button class="mini' + (v === cur ? ' on' : '') + '" data-q="' + v + '">' +
+         (v > 0 ? '+' : '−') + Math.abs(v) + '</button>';
+  return h + '</div>';
+}
+
+function dataDevices(){
+  let h = '';
+  if(S.dev === 'electroscope'){
+    h += sectionTitle('⚡', 'GOLD LEAF ELECTROSCOPE');
+    h += '<div class="grid2">' +
+      cardHTML('Leaf angle', S.esLeaf.toFixed(0), 'degrees', 'cdLeaf') +
+      cardHTML('Net charge', S.esCharge === 0 ? '0' : signStr(Math.sign(S.esCharge)) + Math.abs(S.esCharge),
+               'units', 'cdEsQ') + '</div>';
+    const gm = esGeom(), QQ = esCharges();
+    h += kvHTML('Rod sign', signStr(S.esRod), S.esRod > 0 ? 'v-pos' : 'v-neg');
+    h += kvHTML('Charge on the disc', QQ.disc.toFixed(1),
+                QQ.disc > 0 ? 'v-pos' : QQ.disc < 0 ? 'v-neg' : '', 'kvEsDisc');
+    h += kvHTML('Charge on the leaf', QQ.leaf.toFixed(1),
+                QQ.leaf > 0 ? 'v-pos' : QQ.leaf < 0 ? 'v-neg' : '', 'kvEsLeaf');
+    h += kvHTML('Gap to the disc', gm.touching ? 'TOUCHING' : (gm.d/10).toFixed(1) + ' cm',
+                gm.touching ? 'v-amber' : '', 'kvEsGap');
+    h += kvHTML('Induced separation', Math.round(100*(gm.touching ? 1 : induceAt(gm.d))) + '%',
+                '', 'kvEsInd');
+    h += '<div class="rowbtns">' +
+      '<button class="mini" id="dRodSign">Rod: ' + (S.esRod > 0 ? '+' : '−') + '</button>' +
+      '<button class="mini' + (S.esEarthed ? ' on' : '') + '" id="dEarth">Earth wire</button>' +
+      '<button class="mini" id="dEsReset">↺ Discharge &amp; park the rod</button></div>';
+    h += '<div class="note"><b>Drag the rod</b> on the canvas. The closer it gets to the ' +
+         'brass disc, the more the charge separates and the wider the leaf opens. Push it all ' +
+         'the way to the disc and the charge is shared by <b>contact</b> instead.</div>';
+    h += '<div class="note" id="kvEsSay"><b>' + esVerdict() + '</b></div>';
+    h += sectionTitle('📋', 'WHAT THE LEAF TELLS YOU');
+    h += '<table class="dt"><tr><th>action</th><th>leaf</th><th>net charge</th></tr>' +
+      '<tr><td>rod brought nearer</td><td>opens more</td><td>still 0</td></tr>' +
+      '<tr><td>rod removed</td><td>falls</td><td>0</td></tr>' +
+      '<tr><td>rod touches the disc</td><td>rises</td><td>same sign as rod</td></tr>' +
+      '<tr><td>like rod near a charged one</td><td>rises more</td><td>unchanged</td></tr>' +
+      '<tr><td>unlike rod near a charged one</td><td>falls</td><td>unchanged</td></tr>' +
+      '<tr><td>earthed</td><td>falls to 0</td><td>0</td></tr></table>';
+  }else if(S.dev === 'vandegraaff'){
+    const V = domeVolts(S.vgQ, 0.15), need = breakdownVolts(S.vgGap/10);
+    h += sectionTitle('⚡', 'VAN DE GRAAFF GENERATOR');
+    h += '<div class="grid2">' +
+      cardHTML('Shell potential', (V/1000).toFixed(0), 'kV', 'cdVgV') +
+      cardHTML('Needed to spark', (need/1000).toFixed(0), 'kV', 'cdVgN') + '</div>';
+    h += sliderHTML('vgGap', 'Gap to earthed sphere', S.vgGap, {min:10, max:120, step:1, unit:'mm'});
+    h += kvHTML('Charge on the shell', (S.vgQ*1e6).toFixed(2) + ' µC', 'v-amber', 'kvVgQ');
+    h += kvHTML('Spark could jump', sparkLength_mm(V).toFixed(0) + ' mm', '', 'kvVgL');
+    h += '<div class="rowbtns">' +
+      '<button class="mini' + (S.vgView === 'inside' ? ' on' : '') + '" id="dVgView">' +
+      (S.vgView === 'inside' ? '◉ Outside view' : '◎ Inside view') + '</button>' +
+      '<button class="mini' + (S.vgOn ? ' on' : '') + '" id="dVgRun">' + (S.vgOn ? '⏸ Stop belt' : '▶ Start belt') + '</button>' +
+      '<button class="mini' + (S.vgHair ? ' on' : '') + '" id="dVgHair">Hair on dome</button>' +
+      '<button class="mini" id="dVgDis">⚡ Discharge now</button></div>';
+    h += '<div class="working">' +
+      mathLine('V_{break} = 3\\ \\mathrm{kV\\,mm^{-1}} \\times d',
+               'V_break = 3 kV/mm × d') +
+      mathLine('V_{break} = 3 \\times ' + (S.vgGap/10).toFixed(1) + ' = ' + (need/1000).toFixed(1) + '\\ \\mathrm{kV}',
+               'V_break = 3 × ' + (S.vgGap/10).toFixed(1) + ' mm = ' + (need/1000).toFixed(1) + ' kV') + '</div>';
+    h += '<div class="note">The belt does <b>mechanical work</b> against the repulsion of the ' +
+         'charge already on the dome. That work becomes <b>electrical potential energy</b> — ' +
+         'which is why the motor gets harder to turn as the dome fills up.</div>';
+  }else if(S.dev === 'sparks'){
+    const need = breakdownVolts(S.spGap);
+    h += sectionTitle('⚡', 'SPARKS AND DISCHARGE');
+    h += sliderHTML('spGap', 'Air gap d', S.spGap, {min:0.5, max:12, step:0.1, unit:'mm'});
+    h += sliderHTML('spV', 'Potential difference', S.spV/1000, {min:0, max:40, step:0.1, unit:'kV'});
+    h += '<div class="grid2">' +
+      cardHTML('Needed', (need/1000).toFixed(1), 'kV', 'cdSpN') +
+      cardHTML('Applied', (S.spV/1000).toFixed(1), 'kV', 'cdSpV') + '</div>';
+    h += kvHTML('Air breaks down?', S.spV >= need ? 'YES — spark' : 'no',
+                S.spV >= need ? 'v-amber' : '', 'kvSpOk');
+    h += '<div class="working">' +
+      mathLine('E_{break} = 3.0 \\times 10^{6}\\ \\mathrm{V\\,m^{-1}}', 'E_break = 3.0 × 10⁶ V/m') +
+      mathLine('V = E_{break}\\,d = 3000 \\times ' + S.spGap.toFixed(1) + ' = ' +
+               Math.round(need) + '\\ \\mathrm{V}',
+               'V = 3000 × ' + S.spGap.toFixed(1) + ' mm = ' + Math.round(need) + ' V') + '</div>';
+    h += '<div class="note">Set the gap to <b>3.0 mm</b> and the answer is <b>9000 V</b> — the ' +
+         'standard exam question. <b>Lightning</b> is the same physics with kilometres of air ' +
+         'and megavolts of p.d.</div>';
+  }else{
+    h += sectionTitle('⚡', 'TESLA COIL');
+    h += '<div class="note warn"><b>Beyond IGCSE 0625.</b> This device needs electromagnetic ' +
+         'induction and resonance, neither of which is on the electrostatics syllabus. It is ' +
+         'here so a class can see what a large discharge actually looks like. The examinable ' +
+         'physics — air breaking down at 3 kV/mm — is in <b>Sparks &amp; Discharge</b>.</div>';
+    h += '<div class="rowbtns"><button class="mini' + (S.teslaOn ? ' on' : '') + '" id="dTcRun">' +
+         (S.teslaOn ? '⏸ Switch off' : '▶ Switch on') + '</button></div>';
+    h += sectionTitle('📋', 'WHAT THE PARTS DO');
+    h += '<table class="dt"><tr><th>part</th><th>job</th></tr>' +
+      '<tr><td>primary coil</td><td>few thick turns, big current</td></tr>' +
+      '<tr><td>spark gap</td><td>switches the primary on and off very fast</td></tr>' +
+      '<tr><td>secondary coil</td><td>many fine turns, very high voltage</td></tr>' +
+      '<tr><td>toroid</td><td>stores the charge and shapes the discharge</td></tr></table>';
+  }
+  return h;
+}
+
+/* ---------- INFO ---------- */
+function paneInfo(){
+  const el = $('pane-info');
+  let h = '';
+  if(S.sec === 'charging'){
+    h += sectionTitle('📐', 'CHARGE');
+    h += '<ul class="rule-list">' +
+      '<li>Charge is measured in <b>coulombs (C)</b>.</li>' +
+      '<li><b>Like charges repel, unlike charges attract.</b></li>' +
+      '<li>Charge is <b>quantised</b>: it always comes in whole electrons.</li></ul>';
+    h += '<div class="working">' + mathLine('Q = n e,\\quad e = 1.6\\times10^{-19}\\ \\mathrm{C}',
+                                            'Q = n e,  e = 1.6 × 10⁻¹⁹ C') + '</div>';
+    h += sectionTitle('📐', 'CHARGING BY FRICTION');
+    h += '<ul class="rule-list">' +
+      '<li>Rubbing transfers <b>electrons</b> from one material to the other.</li>' +
+      '<li>The material that <b>gains</b> electrons becomes <b>negative</b>.</li>' +
+      '<li>The material that <b>loses</b> electrons becomes <b>positive</b>.</li>' +
+      '<li><b>Protons never move</b> — they are locked in the nucleus.</li>' +
+      '<li>Both objects gain <b>equal and opposite</b> charge: none is created.</li></ul>';
+    h += sectionTitle('📐', 'CHARGING BY INDUCTION');
+    h += '<ul class="rule-list">' +
+      '<li>No contact is needed.</li>' +
+      '<li>The rod\'s field makes the free electrons in the conductor <b>move</b>, so the two ' +
+          'faces end up oppositely charged — but the total is still zero.</li>' +
+      '<li>Earthing lets electrons enter or leave, and now the total is <b>not</b> zero.</li>' +
+      '<li>Remove the <b>earth first</b>, then the rod.</li>' +
+      '<li>The conductor is left with the charge <b>opposite</b> to the rod.</li></ul>';
+    h += '<div class="note">Induction is why a charged rod picks up small pieces of paper even ' +
+         'though the paper is neutral: the near side of each piece is pulled, the far side ' +
+         'pushed, and the near side wins because it is closer.</div>';
+  }else if(S.sec === 'fields'){
+    h += sectionTitle('📐', 'ELECTRIC FIELDS');
+    h += '<ul class="rule-list">' +
+      '<li>An electric field is a region where a charge <b>feels a force</b>.</li>' +
+      '<li>The field direction at a point is the direction of the force on a <b>positive</b> charge there.</li>' +
+      '<li>Field lines run <b>from + to −</b>.</li>' +
+      '<li>Lines <b>never cross</b> — the force at a point has only one direction.</li>' +
+      '<li><b>Closer lines mean a stronger field.</b></li>' +
+      '<li>Lines meet a conductor at <b>90°</b>.</li></ul>';
+    h += sectionTitle('📐', 'FORCE BETWEEN CHARGES');
+    h += '<div class="working">' + mathLine('F \\propto \\dfrac{Q_1 Q_2}{r^2}', 'F ∝ Q₁ Q₂ / r²') + '</div>';
+    h += '<ul class="rule-list">' +
+      '<li>Bigger charges → <b>bigger force</b>.</li>' +
+      '<li>Bigger separation → <b>much smaller force</b>: double r and the force falls to a <b>quarter</b>.</li>' +
+      '<li>At IGCSE this is <b>qualitative only</b> — no value in newtons is required.</li></ul>';
+    h += sectionTitle('📐', 'UNIFORM FIELDS');
+    h += '<div class="working">' + mathLine('E = \\dfrac{V}{d}', 'E = V / d') + '</div>';
+    h += '<ul class="rule-list">' +
+      '<li>Between parallel plates the lines are <b>parallel and evenly spaced</b>.</li>' +
+      '<li>The field is the <b>same everywhere</b> in that region.</li>' +
+      '<li>At the ends the lines bulge out and weaken — the <b>fringe field</b>.</li></ul>';
+    h += '<div class="note">A charged conducting sphere carries all its charge on the ' +
+         '<b>outside</b>, has <b>zero field inside</b>, and outside behaves exactly like a ' +
+         'point charge sitting at its centre.</div>';
+  }else{
+    h += sectionTitle('📐', 'ELECTROSCOPE');
+    h += '<ul class="rule-list">' +
+      '<li>Detects the <b>presence</b> of charge, and can test its <b>sign</b>.</li>' +
+      '<li>The leaf lifts because it and the stem carry the <b>same</b> charge and repel.</li>' +
+      '<li>Bigger charge → <b>bigger divergence</b>.</li>' +
+      '<li>Bring a rod of the <b>same</b> sign near a charged electroscope and the leaf rises further; ' +
+          'an <b>opposite</b> sign makes it fall. That is the test.</li></ul>';
+    h += sectionTitle('📐', 'VAN DE GRAAFF');
+    h += '<ul class="rule-list">' +
+      '<li>The belt carries charge up to the dome mechanically.</li>' +
+      '<li>Charge collects on the <b>outside</b> of the dome, so it can keep adding more.</li>' +
+      '<li><b>Mechanical work → electrical potential energy.</b></li></ul>';
+    h += sectionTitle('📐', 'SPARKS, LIGHTNING AND EARTHING');
+    h += '<div class="working">' +
+      mathLine('E_{break} \\approx 3\\times10^{6}\\ \\mathrm{V\\,m^{-1}} = 3\\ \\mathrm{kV\\,mm^{-1}}',
+               'E_break ≈ 3 × 10⁶ V/m = 3 kV per mm') + '</div>';
+    h += '<ul class="rule-list">' +
+      '<li>Above that field, air stops insulating and <b>conducts</b>.</li>' +
+      '<li><b>Electrons jump</b> the gap — that is the spark.</li>' +
+      '<li>The spark gives out <b>light and heat</b>.</li>' +
+      '<li><b>Lightning</b> is the same process on a huge scale.</li>' +
+      '<li><b>Earthing</b> gives charge a path to the ground so it never builds up.</li></ul>';
+    h += '<div class="note warn"><b>The Tesla coil is not on the 0625 syllabus.</b> It is ' +
+         'included so students can see a large discharge; the examinable content is the air ' +
+         'breakdown rule above.</div>';
+  }
+  el.innerHTML = h;
+}
+
+/* ---------- live patching (no rebuild while a slider is being dragged) ---------- */
+function patchPanel(){
+  const set = (id, v) => { const e = $(id); if(e) e.textContent = v; };
+  if(S.sec === 'charging' && S.method === 'friction'){
+    const nE = S.rubs*FR.ePerRub;
+    set('kvRubs', S.rubs); set('kvNE', nE); set('kvQ', sciQ(nE));
+  }
+  if(S.sec === 'fields' && S.fmode === 'force'){
+    const d = Math.hypot(S.qB.x - S.qA.x, S.qB.y - S.qA.y), F = forceBetween(S.qA.q, S.qB.q, d);
+    set('cdD', (d/10).toFixed(1)); set('cdF', fmtRatio(F.ratio));
+    const a = $('kvAtt');
+    if(a){ a.textContent = F.attract ? 'ATTRACT' : 'REPEL';
+           a.className = F.attract ? 'v-neg' : 'v-pos'; }
+  }
+  if(S.sec === 'fields' && S.fmode === 'plates'){
+    const p = activePlate();
+    set('cdE', Math.round(S.plateV/(p.sep/1000)));
+    set('cdU', (plateUniformHalf(p)/10).toFixed(1));
+  }
+  if(S.sec === 'devices' && S.dev === 'electroscope'){
+    const gm = esGeom();
+    set('cdLeaf', S.esLeaf.toFixed(0));
+    set('cdEsQ', S.esCharge === 0 ? '0' : signStr(Math.sign(S.esCharge)) + Math.abs(S.esCharge));
+    const QQ = esCharges();
+    set('kvEsGap', gm.touching ? 'TOUCHING' : (gm.d/10).toFixed(1) + ' cm');
+    set('kvEsInd', Math.round(100*(gm.touching ? 1 : induceAt(gm.d))) + '%');
+    const say = $('kvEsSay');
+    if(say) say.innerHTML = '<b>' + esVerdict() + '</b>';
+    const dq = $('kvEsDisc'), lq = $('kvEsLeaf');
+    if(dq){ dq.textContent = QQ.disc.toFixed(1);
+            dq.className = QQ.disc > 0 ? 'v-pos' : QQ.disc < 0 ? 'v-neg' : ''; }
+    if(lq){ lq.textContent = QQ.leaf.toFixed(1);
+            lq.className = QQ.leaf > 0 ? 'v-pos' : QQ.leaf < 0 ? 'v-neg' : ''; }
+  }
+  if(S.sec === 'devices' && S.dev === 'vandegraaff'){
+    const V = domeVolts(S.vgQ, 0.15);
+    set('cdVgV', (V/1000).toFixed(0));
+    set('cdVgN', (breakdownVolts(S.vgGap/10)/1000).toFixed(0));
+    set('kvVgQ', (S.vgQ*1e6).toFixed(2) + ' µC');
+    set('kvVgL', sparkLength_mm(V).toFixed(0) + ' mm');
+  }
+  if(S.sec === 'devices' && S.dev === 'sparks'){
+    const need = breakdownVolts(S.spGap);
+    set('cdSpN', (need/1000).toFixed(1)); set('cdSpV', (S.spV/1000).toFixed(1));
+    const k = $('kvSpOk');
+    if(k){ k.textContent = S.spV >= need ? 'YES — spark' : 'no';
+           k.className = S.spV >= need ? 'v-amber' : ''; }
+  }
+}
+
+/* ===== part_js_boot.js ===== */
+/* ============================================================
+   BOOT — physics step dispatch, event wiring, start
+   ============================================================ */
+function stepSim(dt){
+  if(S.mode !== 'sim') return;
+  if(S.sec === 'charging') stepCharging(dt);
+  else if(S.sec === 'fields') stepFields(dt);
+  else stepDevices(dt);
+}
+
+function bindPills(sel, attr, cb){
+  document.querySelectorAll(sel).forEach(b => b.onclick = () => {
+    b.parentElement.querySelectorAll('.pill').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    cb(b.dataset[attr], b);
+    clickSnd();
+  });
+}
+const setActive = (sel, val, attr) =>
+  document.querySelectorAll(sel).forEach(b => b.classList.toggle('active', b.dataset[attr] === String(val)));
+
+/* ---------- mode + section ---------- */
+function setMode(m){
+  S.mode = m;
+  document.querySelectorAll('[data-mode]').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+  /* the section-tab row is LOCKED, never removed: hiding it would shrink the
+     chrome and move the canvas */
+  $('secTabs').classList.toggle('locked', m !== 'sim');
+  syncMediaBtn();
+  if(m !== 'sim') S.panelTab = 'answer';
+  else if(S.panelTab === 'answer') S.panelTab = 'data';
+  resetZoom(); updatePanel(); draw();
+}
+function setSection(sec){
+  S.sec = sec;
+  document.querySelectorAll('[data-sec]').forEach(b => b.classList.toggle('active', b.dataset.sec === sec));
+  ['charging','fields','devices'].forEach(k => $('slot-' + k).classList.toggle('on', k === sec));
+  S.test = null; S.testTrail = [];
+  resetZoom(); syncGroups(); rebuildDevActions(); syncMediaBtn(); updatePanel(); draw();
+}
+/* toolbar groups that only apply to one sub-mode stay in the row but go
+   invisible, so nothing to their right ever shifts */
+function syncGroups(){
+  $('grp-pair').classList.toggle('hid', S.method !== 'friction');
+  $('grp-ind').classList.toggle('hid', S.method !== 'induction');
+  $('grp-pat').classList.toggle('hid', S.fmode !== 'pattern');
+  $('grp-fshow').classList.toggle('hid', false);
+}
+
+/* device action buttons live in the toolbar rather than on the canvas: one
+   place, keyboard reachable, and the canvas stays clear for the physics */
+const DEV_ACTIONS = {
+  /* The rod is dragged on the canvas now, so "bring near" and "touch" are no
+     longer buttons — only its sign, and the earth wire, need a control. */
+  electroscope:[
+    ['esSign', () => 'Rod: ' + (S.esRod > 0 ? '+' : '−'), () => { S.esRod = -S.esRod; }],
+    ['esEarth', () => 'Earth wire', () => {
+      S.esEarthed = true; S.esCharge = 0;
+      setTimeout(() => { S.esEarthed = false; rebuildDevActions(); }, 1100);
+    }]],
+  vandegraaff:[
+    ['vgView', () => S.vgView === 'inside' ? '◉ Outside view' : '◎ Inside view',
+     () => { S.vgView = S.vgView === 'inside' ? 'outside' : 'inside'; }],
+    ['vgRun', () => S.vgOn ? '⏸ Stop belt' : '▶ Start belt', () => { S.vgOn = !S.vgOn; }],
+    ['vgHair', () => 'Hair on dome', () => { S.vgHair = !S.vgHair; }],
+    ['vgDis', () => '⚡ Discharge', () => {
+      S.vgFlash = 0.42;
+      S.vgSparkPts = sparkPath({x:VG.cx + VG.shellR - 4, y:VG.shellY},
+                               {x:VG.gndX - VG.gndR + 4, y:VG.gndY}, S.t, 26);
+      S.vgQ *= 0.12; crackle();
+    }]],
+  sparks:[
+    ['spBoost', () => '＋ 2 kV', () => { S.spV = Math.min(40000, S.spV + 2000); }],
+    ['spDrop',  () => '－ 2 kV', () => { S.spV = Math.max(0, S.spV - 2000); }]],
+  tesla:[
+    ['tcRun', () => S.teslaOn ? '⏸ Switch off' : '▶ Switch on', () => { S.teslaOn = !S.teslaOn; }]]
+};
+function rebuildDevActions(){
+  const box = $('grp-devact');
+  if(S.sec !== 'devices'){ box.innerHTML = ''; return; }
+  const acts = DEV_ACTIONS[S.dev] || [];
+  box.innerHTML = '<span class="tlabel">Actions</span>' +
+    acts.map(a => '<button class="tbtn" id="act-' + a[0] + '">' + a[1]() + '</button>').join('');
+  acts.forEach(a => {
+    const b = $('act-' + a[0]);
+    b.onclick = () => { a[2](); clickSnd(); rebuildDevActions(); updatePanel(); draw(); };
+  });
+  /* reflect on/off state */
+  if(S.dev === 'vandegraaff'){
+    $('act-vgRun').classList.toggle('on', S.vgOn);
+    $('act-vgView').classList.toggle('on', S.vgView === 'inside');
+    $('act-vgHair').classList.toggle('on', S.vgHair);
+  }
+  if(S.dev === 'electroscope') $('act-esEarth').classList.toggle('on', S.esEarthed);
+  if(S.dev === 'tesla') $('act-tcRun').classList.toggle('on', S.teslaOn);
+}
+
+/* ---------- section resets ---------- */
+function resetSection(){
+  if(S.sec === 'charging'){
+    S.rubs = 0; fricE = []; S.indStep = 'neutral'; S.indPlay = false; S.indT = 0;
+    S.anim = true; syncMediaBtn();
+  }else if(S.sec === 'fields'){
+    S.qA = {x:430, y:FD.cy, q:2}; S.qB = {x:770, y:FD.cy, q:-2};
+    S.plateSep = PLATE_SEP_DEF; S.plateV = 6;
+    S.test = null; S.testTrail = []; LINE_CACHE.sig = '';
+  }else{
+    S.esCharge = 0; S.esRod = -1; S.esRodX = ES.rodX0; S.esWasTouching = false;
+    S.esFlash = 0; S.esEarthed = false; S.esLeaf = 0;
+    S.vgOn = false; S.vgQ = 0; S.vgGap = 60; S.vgFlash = 0; S.vgHair = false;
+    S.vgView = 'outside';
+    S.spGap = 4; S.spV = 6000; S.spFlash = 0;
+    S.teslaOn = false; S.teslaArcs = [];
+  }
+  resetZoom(); rebuildDevActions(); updatePanel(); draw();
+}
+
+/* ---------- toolbar wiring ---------- */
+document.querySelectorAll('[data-mode]').forEach(b => b.onclick = () => setMode(b.dataset.mode));
+document.querySelectorAll('[data-sec]').forEach(b => b.onclick = () => setSection(b.dataset.sec));
+
+bindPills('[data-method]', 'method', v => {
+  S.method = v; S.indPlay = false; S.anim = true;
+  syncGroups(); syncMediaBtn(); resetZoom(); updatePanel(); draw();
+});
+bindPills('[data-rodsign]', 'rodsign', v => { S.rodSign = +v; updatePanel(); draw(); });
+bindPills('[data-fmode]', 'fmode', v => {
+  S.fmode = v; S.test = null; S.testTrail = []; LINE_CACHE.sig = '';
+  syncGroups(); resetZoom(); updatePanel(); draw();
+});
+bindPills('[data-fshow]', 'fshow', v => { S.fshow = v; draw(); });
+bindPills('[data-dev]', 'dev', v => {
+  S.dev = v; resetZoom(); rebuildDevActions(); updatePanel(); draw();
+});
+bindPills('[data-speed]', 'speed', v => { S.speed = +v; });
+
+/* material and pattern dropdowns */
+(function(){
+  const sel = $('pairSel');
+  for(const k of Object.keys(PAIRS)) sel.innerHTML += '<option value="' + k + '">' + PAIRS[k].label + '</option>';
+  sel.value = S.pair;
+  sel.onchange = () => { S.pair = sel.value; S.rubs = 0; fricE = []; updatePanel(); draw(); };
+  const ps = $('patSel');
+  for(const k of Object.keys(PATTERNS)) ps.innerHTML += '<option value="' + k + '">' + PATTERNS[k].label + '</option>';
+  ps.value = S.pattern;
+  ps.onchange = () => { S.pattern = ps.value; S.test = null; S.testTrail = [];
+                        LINE_CACHE.sig = ''; updatePanel(); draw(); };
+})();
+
+$('rubBtn').onclick = () => { doRub(); updatePanel(); draw(); };
+$('indPrev').onclick = () => stepInduction(-1);
+$('indNext').onclick = () => stepInduction(+1);
+
+/* Is this section driven by the merged Sequence control? */
+const isSequenceMode = () => S.mode === 'sim' && S.sec === 'charging' && S.method === 'induction';
+
+/* One control, two jobs.  Running = the sequence advances AND time flows;
+   paused = both stop, so the frame you are pointing at holds still. */
+function toggleSequence(){
+  const running = S.indPlay && S.anim;
+  if(running){ S.indPlay = false; S.anim = false; }
+  else{ S.indPlay = true; S.anim = true; S.indStep = 'neutral'; S.indT = 0; }
+  syncMediaBtn(); updatePanel(); draw();
+}
+function syncMediaBtn(){
+  const b = $('animBtn');
+  if(isSequenceMode()){
+    const running = S.indPlay && S.anim;
+    b.textContent = running ? '⏸ Pause' : '▶ Sequence';
+    b.title = 'Run the five-step induction sequence. Pausing also freezes the frame.';
+    b.classList.toggle('on', running);
+  }else{
+    b.textContent = S.anim ? '▶ Animation' : '⏸ Frozen';
+    b.title = 'Freeze or resume every animation. Frozen keeps the picture, it does not blank it.';
+    b.classList.toggle('on', S.anim);
+  }
+}
+function stepInduction(d){
+  const i = INDUCTION_STEPS.indexOf(S.indStep) + d;
+  if(i < 0 || i >= INDUCTION_STEPS.length) return;
+  /* stepping by hand leaves TIME running, so the earth-wire electrons keep
+     moving while the teacher talks — only the auto-advance stops */
+  S.indStep = INDUCTION_STEPS[i]; S.indPlay = false; S.anim = true;
+  syncMediaBtn(); clickSnd(); updatePanel(); draw();
+}
+
+/* show toggles */
+document.querySelectorAll('[data-show]').forEach(b => b.onclick = () => {
+  const k = b.dataset.show;
+  S.show[k] = !S.show[k];
+  b.classList.toggle('active', S.show[k]);
+  draw();
+});
+/* Animation freezes TIME (dt = 0), it does not stop drawing */
+$('animBtn').onclick = () => {
+  if(isSequenceMode()){ toggleSequence(); return; }   // merged control
+  S.anim = !S.anim;
+  syncMediaBtn();
+};
+/* Sound is one master gate inside beep(), so this silences everything */
+$('soundBtn').onclick = () => {
+  S.sound = !S.sound;
+  $('soundBtn').classList.toggle('on', S.sound);
+  $('soundBtn').textContent = S.sound ? '🔊 Sound' : '🔇 Muted';
+  if(S.sound) clickSnd();
+};
+$('resetBtn').onclick = resetSection;
+$('themeSel').onchange = e => setTheme(e.target.value);
+document.querySelectorAll('[data-ptab]').forEach(b => b.onclick = () => {
+  S.panelTab = b.dataset.ptab; updatePanel();
+});
+
+/* ---------- data-panel controls (rebuilt with the panel) ---------- */
+function bindDataControls(){
+  const on = (id, fn) => { const e = $(id); if(e) e.onclick = () => { fn(); clickSnd(); updatePanel(); draw(); }; };
+  on('dRub',  () => doRub());
+  on('dRub5', () => { for(let i = 0; i < 5; i++) doRub(); });
+  on('dClear', () => { S.rubs = 0; fricE = []; });
+  on('dPrev', () => stepInduction(-1));
+  on('dNext', () => stepInduction(+1));
+  on('dPlay', () => toggleSequence());
+  on('dSwapA', () => { S.qA.q = -S.qA.q; LINE_CACHE.sig = ''; });
+  on('dSwapB', () => { S.qB.q = -S.qB.q; LINE_CACHE.sig = ''; });
+  on('dTest',  () => releaseTest());
+  on('dClearTest', () => { S.test = null; S.testTrail = []; });
+  on('dRodSign', () => { S.esRod = -S.esRod; });
+  on('dEarth', () => { DEV_ACTIONS.electroscope[1][2](); });
+  on('dEsReset', () => { S.esCharge = 0; S.esRodX = ES.rodX0; S.esWasTouching = false; S.esEarthed = false; });
+  on('dVgRun', () => { S.vgOn = !S.vgOn; });
+  on('dVgHair', () => { S.vgHair = !S.vgHair; });
+  on('dVgView', () => { S.vgView = S.vgView === 'inside' ? 'outside' : 'inside'; });
+  on('dVgDis', () => { DEV_ACTIONS.vandegraaff[2][2](); });
+  on('dTcRun', () => { S.teslaOn = !S.teslaOn; });
+  ['qa','qb'].forEach(id => {
+    const row = $(id + 'Row'); if(!row) return;
+    row.querySelectorAll('[data-q]').forEach(b => b.onclick = () => {
+      (id === 'qa' ? S.qA : S.qB).q = +b.dataset.q;
+      LINE_CACHE.sig = ''; clickSnd(); updatePanel(); draw();
+    });
+  });
+  bindSlider('plSep', {min:6, max:20, step:0.5, unit:'cm'},
+             v => { S.plateSep = v*10; LINE_CACHE.sig = ''; });
+  bindSlider('plV',   {min:0, max:12, step:0.1, unit:'V'}, v => { S.plateV = v; });
+  bindSlider('vgGap', {min:10, max:120, step:1, unit:'mm'}, v => { S.vgGap = v; });
+  bindSlider('spGap', {min:0.5, max:12, step:0.1, unit:'mm'}, v => { S.spGap = v; });
+  bindSlider('spV',   {min:0, max:40, step:0.1, unit:'kV'}, v => { S.spV = v*1000; });
+  rebuildDevActions();
+}
+function releaseTest(){
+  const p = activePlate();
+  S.test = S.fmode === 'plates' ? {x:FD.cx - 120, y:p.cy - p.sep/2 + 12}
+         : S.fmode === 'pattern' ? {x:FD.cx + 190, y:FD.cy - 130}
+         : {x:(S.qA.x + S.qB.x)/2, y:FD.cy - 150};
+  S.testTrail = [];
+}
+
+/* ---------- canvas pointer: drag charges, zoom, pan, place test charge ---------- */
+let drag = null, esDrag = null;
+CV.addEventListener('pointerdown', e => {
+  if(S.mode !== 'sim') return;
+  try{ CV.setPointerCapture(e.pointerId); }catch(_){}
+  const L = toLogical(e);
+  if(S.zoom.k > 1){ S.zoom.panning = true; S.zoom.px = e.clientX; S.zoom.py = e.clientY; return; }
+  if(S.sec === 'fields'){
+    if(S.fshow === 'test' && e.button === 0){
+      const hit = S.fmode === 'force' &&
+        ([S.qA, S.qB].some(q => Math.hypot(L.x-q.x, L.y-q.y) < FD.qR + 6));
+      if(!hit){ S.test = {x:L.x, y:L.y}; S.testTrail = []; draw(); return; }
+    }
+    if(S.fmode === 'force'){
+      for(const q of [S.qA, S.qB])
+        if(Math.hypot(L.x-q.x, L.y-q.y) < FD.qR + 8){ drag = q; return; }
+    }
+  }
+  if(S.sec === 'devices' && S.dev === 'electroscope'){
+    const gg = esGeom();
+    if(L.x > gg.x - 34 && L.x < gg.tip + 6 &&
+       Math.abs(L.y - (ES.capY + ES.capH/2)) < ES.rodH){
+      esDrag = L.x - gg.x; return;
+    }
+  }
+  if(S.sec === 'charging' && S.method === 'friction'){
+    if(Math.abs(L.y - (FR.clothY + FR.clothH/2)) < 70 && Math.abs(L.x - FR.cx) < FR.rodL/2 + 90){
+      S.rubbing = true; S.rubX = L.x; S.rubAcc = 0; return;
+    }
+  }
+});
+CV.addEventListener('pointermove', e => {
+  if(S.zoom.panning){
+    S.zoom.ox += (e.clientX - S.zoom.px)/VT.s;
+    S.zoom.oy += (e.clientY - S.zoom.py)/VT.s;
+    S.zoom.px = e.clientX; S.zoom.py = e.clientY;
+    clampPan(); draw(); return;
+  }
+  const L = toLogical(e);
+  if(drag){
+    drag.x = Math.max(80, Math.min(W-80, L.x));
+    drag.y = Math.max(120, Math.min(FD_FLOOR - 60, L.y));
+    LINE_CACHE.sig = ''; patchPanel(); draw(); return;
+  }
+  if(esDrag !== null){
+    S.esRodX = Math.max(ES.rodXmin, Math.min(ES.rodXmax, L.x - esDrag));
+    patchPanel(); draw(); return;
+  }
+  if(S.rubbing){
+    const dx = L.x - S.rubX;
+    S.rubAcc = (S.rubAcc || 0) + Math.abs(dx);
+    S.rubX = Math.max(FR.cx - FR.rodL/2, Math.min(FR.cx + FR.rodL/2, L.x));
+    if(S.rubAcc >= FR.travelPerRub){ S.rubAcc = 0; doRub(); patchPanel(); }
+    draw();
+  }
+});
+function endPointer(){
+  drag = null; esDrag = null; S.rubbing = false; S.zoom.panning = false;
+  updatePanel(); draw();
+}
+CV.addEventListener('pointerup', endPointer);
+CV.addEventListener('pointercancel', endPointer);
+CV.addEventListener('dblclick', e => {
+  if(S.mode !== 'sim') return;
+  if(drag || S.rubbing) return;
+  const L = toLogical(e);
+  setZoom(S.zoom.k > 1 ? 1 : 2, L);
+});
+CV.addEventListener('contextmenu', e => { e.preventDefault(); resetSection(); });
+
+/* keyboard: Space plays/pauses, arrows change section */
+window.addEventListener('keydown', e => {
+  const t = (e.target.tagName || '').toUpperCase();
+  if(t === 'INPUT' || t === 'SELECT' || t === 'TEXTAREA' || t === 'BUTTON') return;
+  if(e.code === 'Space'){ e.preventDefault(); $('animBtn').click(); }
+  if(e.key === 'ArrowRight' || e.key === 'ArrowLeft'){
+    const order = ['charging','fields','devices'];
+    let i = order.indexOf(S.sec) + (e.key === 'ArrowRight' ? 1 : -1);
+    i = (i + order.length) % order.length;
+    setSection(order[i]);
+  }
+  if(e.key === 'Escape'){ S.test = null; S.testTrail = []; resetZoom(); }
+});
+
+/* ---------- start ---------- */
+readPalette();
+new ResizeObserver(() => resize()).observe(CV.parentElement);
+window.addEventListener('resize', resize);
+resize();
+S.esRodX = ES.rodX0;
+syncGroups();
+rebuildDevActions();
+syncMediaBtn();
+updatePanel();
+requestAnimationFrame(t => { last = t; tick(t); });
+/* KaTeX is deferred; once it lands, re-render so the plain-text twins are
+   replaced by typeset maths */
+window.addEventListener('load', () => { if(typeof katex !== 'undefined') updatePanel(); });
+
+</script>
+</body>
+</html>
