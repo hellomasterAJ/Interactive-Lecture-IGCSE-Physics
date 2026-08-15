@@ -278,7 +278,7 @@ table.dt tr.no  td:first-child{color:var(--text-muted)}
 
   <!-- ===== HEADER ZONE (45 px) ===== -->
   <div class="top-bar">
-    <h1>🧲 <span>Magnetic Fields Lab</span> <span class="badge-top" id="badgeTop">v1.3.0</span></h1>
+    <h1>🧲 <span>Magnetic Fields Lab</span> <span class="badge-top" id="badgeTop">v1.3.2</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="modeTabs">
         <button class="mode-tab active" data-mode="sim">Simulate</button>
@@ -628,6 +628,11 @@ function traceField(Fn, x0, y0, dir, box, opt){
     pts.push({x:x, y:y});
     if(x < box.x0 || x > box.x1 || y < box.y0 || y > box.y1) break;
     if(inSolid(x, y)){ pts.pop(); break; }
+    /* a closed loop must be detected and stopped, or it is drawn over
+       itself dozens of times until maxN runs out */
+    if(opt.close && i > 24 && Math.hypot(x - x0, y - y0) < step*1.1){
+      pts.push({x:x0, y:y0}); break;
+    }
     let done = false;
     for(const s of stops) if(Math.hypot(x-s.x, y-s.y) < stopR){ done = true; break; }
     if(done) break;
@@ -1819,9 +1824,7 @@ function drawStraightWire(){
     /* exact concentric circles, spaced so they crowd near the wire the way
        the real field does (B ∝ 1/r, so equal flux means r grows) */
     CX.strokeStyle = PAL.line; CX.lineWidth = 1.9;
-    for(let i = 1; i <= 6; i++){
-      const r = 30*Math.pow(1.45, i-1);
-      if(r > 214) break;
+    for(const r of wireRingRadii()){          // shared with the side view
       CX.beginPath(); CX.arc(cx, cy, r, 0, TAU); CX.stroke();
       /* arrowheads: anticlockwise for current out of the page */
       for(const a of [-Math.PI/2, 0, Math.PI/2, Math.PI]){
@@ -1891,67 +1894,92 @@ function drawGripWire(cx, cy, dir){
    is the right picture for reading the grip rule off.  What it cannot show is
    WHERE those circles are: a student who has only ever seen them face-on
    often thinks the field runs along the wire.  This view puts the wire in the
-   plane of the page and draws the same circles seen edge-on, so it is obvious
-   that they lie in the plane at RIGHT ANGLES to the wire and are stacked all
-   the way along it. */
-const SW = {x:600, yTop:112, yBot:548, ry:0.28};
+   plane of the page and draws the SAME circles seen edge-on.
+
+   Two things make it read as three-dimensional rather than as a pile of
+   ovals.
+
+   * ONE source of radii.  The rings here are the very same circles the
+     end-on view draws — same count, same distances from the wire — so a
+     student switching between the two views is looking at one object from
+     two directions, not at two different diagrams.
+   * DEPTH ORDER.  Each ring is cut in half: the half nearer the viewer is
+     drawn OVER the wire and the half behind it is drawn UNDER, so the wire
+     passes through every ring instead of sitting on top of all of them.
+     Without that the drawing is flat however good the perspective is.
+   ------------------------------------------------------------------ */
+const SW = {x:600, yTop:112, yBot:548, planeY:342, ry:0.30};
+
+/* the shared ring radii — read by BOTH views, so they cannot drift apart */
+function wireRingRadii(){
+  const out = [];
+  for(let i = 1; i <= 6; i++){
+    const r = 30*Math.pow(1.45, i - 1);
+    if(r > 214) break;
+    out.push(r);
+  }
+  return out;
+}
+
 function drawWireSide(){
   const dir = S.eDir;                       // +1 = current UP the page
-  const cx = SW.x;
-  const planes = [
-    {y:236, k:0.62}, {y:342, k:1.00}, {y:448, k:0.62}
-  ];
-  const radii = [58, 112, 172];
+  const cx = SW.x, cy = SW.planeY;
+  const rings = wireRingRadii();
 
-  /* the loops.  Drawn before the wire, so the wire correctly hides the half
-     of every loop that passes behind it. */
-  for(const p of planes){
-    for(const r0 of radii){
-      const rx = r0*p.k, ry = rx*SW.ry;
-      if(rx < 22) continue;
-      CX.strokeStyle = PAL.line;
-      CX.lineWidth = p.k > 0.9 ? 2.1 : 1.5;
-      CX.globalAlpha = p.k > 0.9 ? 1 : 0.55;
-      CX.beginPath(); CX.ellipse(cx, p.y, rx, ry, 0, 0, TAU); CX.stroke();
-      /* three arrowheads per loop.  For current UP the page the grip rule
-         makes the field run anticlockwise seen from above, which on this
-         drawing means the NEAR (lower) edge of every loop travels to the
-         right and the far edge to the left. */
-      for(const t of [Math.PI/2, Math.PI*7/6, Math.PI*11/6]){
-        const px = cx + rx*Math.cos(t), py = p.y + ry*Math.sin(t);
-        const tx = dir*rx*Math.sin(t), ty = -dir*ry*Math.cos(t);
-        const m = Math.hypot(tx, ty) || 1;
-        headAt({x:px - tx/m*10, y:py - ty/m*10}, {x:px, y:py}, PAL.line, 8.5);
-      }
-      CX.globalAlpha = 1;
-    }
-  }
+  /* one arrowhead, placed at a parametric angle on a ring.  For current UP
+     the page the grip rule makes the field run anticlockwise seen from
+     above, so the NEAR edge of every ring travels to the right. */
+  const headOn = (rx, ry, t, col, sz) => {
+    const px = cx + rx*Math.cos(t), py = cy + ry*Math.sin(t);
+    const tx = dir*rx*Math.sin(t), ty = -dir*ry*Math.cos(t);
+    const m = Math.hypot(tx, ty) || 1;
+    headAt({x:px - tx/m*11, y:py - ty/m*11}, {x:px, y:py}, col, sz || 9);
+  };
+  const halfRing = (rx, ry, far) => {
+    CX.strokeStyle = PAL.line;
+    CX.lineWidth = far ? 1.6 : 2.2;
+    CX.globalAlpha = far ? 0.55 : 1;
+    CX.beginPath();
+    CX.ellipse(cx, cy, rx, ry, 0, far ? Math.PI : 0, far ? TAU : Math.PI);
+    CX.stroke();
+    CX.globalAlpha = 1;
+  };
 
-  /* the wire itself: two parallel lines, as in every textbook drawing */
-  CX.strokeStyle = PAL.wire; CX.lineWidth = 3.4; CX.lineCap = 'butt';
-  line(cx - 3.5, SW.yTop, cx - 3.5, SW.yBot);
-  line(cx + 3.5, SW.yTop, cx + 3.5, SW.yBot);
-  CX.strokeStyle = 'rgba(0,0,0,.55)'; CX.lineWidth = 4.5;
+  /* --- 1. every FAR half, behind the wire --- */
+  rings.forEach((r, i) => {
+    halfRing(r, r*SW.ry, true);
+    if(i % 2 === 1){ CX.globalAlpha = 0.65; headOn(r, r*SW.ry, Math.PI*1.5, PAL.line); CX.globalAlpha = 1; }
+  });
+
+  /* --- 2. the wire --- */
+  CX.strokeStyle = 'rgba(0,0,0,.6)'; CX.lineWidth = 11; CX.lineCap = 'butt';
   line(cx, SW.yTop, cx, SW.yBot);
   CX.strokeStyle = PAL.wire; CX.lineWidth = 3.4;
   line(cx - 3.5, SW.yTop, cx - 3.5, SW.yBot);
   line(cx + 3.5, SW.yTop, cx + 3.5, SW.yBot);
 
+  /* --- 3. every NEAR half, in front of the wire --- */
+  rings.forEach((r, i) => {
+    halfRing(r, r*SW.ry, false);
+    if(i % 2 === 1) headOn(r, r*SW.ry, Math.PI*0.5, PAL.line);
+  });
+
   /* the current, drawn beside the wire and never on top of it */
-  const ax = cx + 54;
-  if(dir > 0) arrow(ax, SW.yTop + 96, ax, SW.yTop + 16, {col:PAL.cur, lw:4, head:15});
-  else        arrow(ax, SW.yTop + 16, ax, SW.yTop + 96, {col:PAL.cur, lw:4, head:15});
-  txt('I', ax + 22, SW.yTop + 52, {size:19, col:PAL.cur, weight:800});
+  const ax = cx + 62;
+  if(dir > 0) arrow(ax, SW.yTop + 116, ax, SW.yTop + 20, {col:PAL.cur, lw:4, head:15});
+  else        arrow(ax, SW.yTop + 20, ax, SW.yTop + 116, {col:PAL.cur, lw:4, head:15});
+  txt('I', ax + 24, SW.yTop + 62, {size:19, col:PAL.cur, weight:800});
   if(S.show.labels){
-    txt('current', ax + 22, SW.yTop + 74, {size:11, col:PAL.cur, weight:600});
-    txt('B', cx - 214, planes[1].y - 26, {size:19, col:PAL.line, weight:800});
-    txt('the field lines are circles in the plane at RIGHT ANGLES to the wire,',
-        cx, SW.yBot + 30, {size:12, col:PAL.dim, weight:600});
-    txt('stacked all the way along it', cx, SW.yBot + 48,
+    txt('current', ax + 24, SW.yTop + 84, {size:11, col:PAL.cur, weight:600});
+    txt('B', cx - rings[rings.length-1] - 34, cy - 26,
+        {size:19, col:PAL.line, weight:800});
+    txt('the same ' + rings.length + ' circles as the end-on view, seen edge-on —',
+        cx, SW.yBot + 26, {size:12, col:PAL.dim, weight:600});
+    txt('they lie in the plane at RIGHT ANGLES to the wire', cx, SW.yBot + 44,
         {size:12, col:PAL.dim, weight:600});
   }
 
-  if(S.grip) drawGripSide(cx, planes[1].y, dir);
+  if(S.grip) drawGripSide(cx, cy, dir);
 
   if(S.show.labels)
     keyStrip(40, EL.benchY + 20, [
@@ -1960,32 +1988,48 @@ function drawWireSide(){
       {t:'wire', c:PAL.wire}
     ]);
 
-  const B = wireB_SI(S.eI, 112);
+  const B = wireB_SI(S.eI, rings[rings.length-1]);
   setChips(
     '⚡ Straight wire · <b>side view</b> · I = ' + S.eI.toFixed(1) + ' A',
     'Current runs <b>' + (dir > 0 ? 'up' : 'down') + '</b> the wire',
     'Seen from the side, the circles are <b>edge-on</b> — so they look like flat ovals.<br>' +
-    'They lie in the plane <b>at right angles to the wire</b>, and there is one at ' +
-    '<b>every point along it</b>.<br>Switch to <b>⊙ End-on</b> to see the same circles face-on.',
+    'The near half of each one passes <b>in front of</b> the wire and the far half ' +
+    '<b>behind</b> it.<br>Switch to <b>⊙ End-on</b> to see the very same circles face-on.',
     S.eI === 0 ? 'No current → no magnetic field at all' : '');
 }
+
+/* ONE ring for the grip rule, with the same depth order as the field rings,
+   and the hand named in full: the LEFT hand would give the opposite
+   direction, so "grip rule" on its own is not enough to act on. */
 function drawGripSide(cx, cy, dir){
-  const rx = 210, ry = rx*SW.ry;
-  CX.strokeStyle = PAL.green; CX.lineWidth = 4.5; CX.lineCap = 'round';
-  CX.beginPath(); CX.ellipse(cx, cy, rx, ry, 0, 0.15, Math.PI - 0.15); CX.stroke();
-  const t = dir > 0 ? Math.PI - 0.15 : 0.15;
-  const px = cx + rx*Math.cos(t), py = cy + ry*Math.sin(t);
-  const tx = dir*rx*Math.sin(t), ty = -dir*ry*Math.cos(t), m = Math.hypot(tx, ty) || 1;
-  headAt({x:px - tx/m*16, y:py - ty/m*16}, {x:px, y:py}, PAL.green, 16);
-  txt('fingers curl → field', cx, cy + ry + 26,
-      {size:12, col:PAL.green, weight:700, plate:true});
-  const gy0 = dir > 0 ? cy - 150 : cy + 150;
-  arrow(cx - 96, gy0, cx - 16, gy0 + (dir > 0 ? -26 : 26),
-        {col:PAL.green, lw:2.6, head:11});
-  txt('thumb → current', cx - 104, gy0,
+  const rx = 248, ry = rx*SW.ry;
+  const head = (t, sz) => {
+    const px = cx + rx*Math.cos(t), py = cy + ry*Math.sin(t);
+    const tx = dir*rx*Math.sin(t), ty = -dir*ry*Math.cos(t);
+    const m = Math.hypot(tx, ty) || 1;
+    headAt({x:px - tx/m*18, y:py - ty/m*18}, {x:px, y:py}, PAL.green, sz);
+  };
+  CX.strokeStyle = PAL.green; CX.lineCap = 'round';
+  /* far half first, then the near half over the wire */
+  CX.globalAlpha = .55; CX.lineWidth = 3.6;
+  CX.beginPath(); CX.ellipse(cx, cy, rx, ry, 0, Math.PI, TAU); CX.stroke();
+  CX.globalAlpha = 1; head(Math.PI*1.5, 15);
+  CX.lineWidth = 5;
+  CX.beginPath(); CX.ellipse(cx, cy, rx, ry, 0, 0, Math.PI); CX.stroke();
+  head(Math.PI*0.5, 17);
+
+  txt('RIGHT-hand grip rule', cx, cy + ry + 30,
+      {size:14, col:PAL.green, weight:800, plate:true});
+  txt('your LEFT hand would give the opposite way round', cx, cy + ry + 50,
+      {size:10.5, col:PAL.muted, weight:600, plate:true});
+  txt('fingers curl → field', cx + rx + 16, cy,
+      {size:12, col:PAL.green, weight:700, align:'left', plate:true});
+  const gy = dir > 0 ? SW.yTop + 150 : SW.yBot - 150;
+  arrow(cx - 150, gy, cx - 18, gy + (dir > 0 ? -30 : 30),
+        {col:PAL.green, lw:3, head:12});
+  txt('thumb → current', cx - 158, gy,
       {size:12, col:PAL.green, weight:700, align:'right', plate:true});
 }
-
 
 /* ---------------- flat coil ---------------- */
 function drawFlatCoil(){
@@ -2666,6 +2710,73 @@ function drawFlemingHand(ox, oy, uB, uI, uF, sc){
       {size:10.5, col:PAL.muted, weight:600, plate:true});
 }
 
+/* ---------------- catapult field ----------------
+
+   EQUAL FLUX, NOT EQUAL SPACING.
+   "Where the lines are closer together the field is stronger" is only true
+   if every line carries the SAME amount of flux.  Seeding them at equal
+   spacing along a line through the wire — which is the obvious thing to do —
+   quietly breaks that: the picture then shows the same number of lines above
+   and below the wire however lopsided the real field is, so the one thing
+   the catapult diagram exists to show is exactly the thing it fails to show.
+
+   Along the vertical line through the wire the field is purely horizontal
+   (the wire's own contribution there is (k/dy, 0) and the magnets' is
+   (B, 0)), so the flux through that line is just the integral of |Bx| dy.
+   Walking down it and dropping a seed every time another equal slice of
+   flux has accumulated puts many lines where B is large and few where it is
+   small — which is the definition of field-line density, and makes the
+   crowded and empty sides come out on their own rather than being asserted
+   in a caption. */
+const CAT_N = 15;                 // total field lines across the gap
+function catapultSeeds(c, box){
+  const rMin = MO.wireR*1.55;     // the wire has a finite radius; B -> inf at 0
+  const y0 = box.y0 + 2, y1 = box.y1 - 2, M = 900;
+  const dy = (y1 - y0)/M;
+  const acc = [0];
+  let total = 0;
+  for(let i = 1; i <= M; i++){
+    const y = y0 + (i - 0.5)*dy;
+    const v = Math.abs(y - c.y) > rMin ? Math.abs(motorField(c.x, y).x) : 0;
+    total += v*dy;
+    acc.push(total);
+  }
+  if(!(total > 0)) return [];
+  const q = total/CAT_N, out = [];
+  let target = q*0.5;
+  for(let i = 1; i <= M && out.length < CAT_N; i++){
+    if(acc[i] >= target){
+      const y = y0 + i*dy;
+      if(Math.abs(y - c.y) > rMin) out.push(y);
+      target += q;
+    }
+  }
+  return out;
+}
+let CAT_CACHE = {sig:'', lines:[]};
+function catapultLines(c, box){
+  const sig = [S.oB, S.oI, S.oDirI, S.oDirB, (box.y1 - box.y0)|0].join('~');
+  if(sig === CAT_CACHE.sig) return CAT_CACHE.lines;
+  const tb = {x0:box.x0 - 2, y0:box.y0 - 2, x1:box.x1 + 2, y1:box.y1 + 2};
+  const Bu = Math.abs(uniformB().x);
+  const rNull = (Bu > 0 && S.oI > 0)
+    ? CATAPULT_VIS*MU0*S.oI/(2*Math.PI*Bu)/M_PER_PX : Infinity;
+  const out = [];
+  for(const y of catapultSeeds(c, box)){
+    /* inside the neutral radius the wire wins and the line closes on itself
+       right round the conductor — the loop that gives the catapult its name */
+    const closed = Math.abs(y - c.y) < rNull;
+    const TR = {step:4, maxN:900, close:closed};
+    const fwd  = traceField(motorField, c.x, y, +1, tb, TR);
+    if(closed){ out.push(fwd); continue; }
+    const back = traceField(motorField, c.x, y, -1, tb, TR);
+    back.reverse(); back.pop();
+    out.push(back.concat(fwd));
+  }
+  CAT_CACHE = {sig:sig, lines:out};
+  return out;
+}
+
 /* ---------------- catapult field ---------------- */
 function drawCatapult(){
   const c = wireCentre();
@@ -2676,25 +2787,7 @@ function drawCatapult(){
      lines really are the sum of the two fields rather than a sketch */
   const G = poleGeom();
   const box = {x0:G.gapL, y0:G.cy - G.slabH/2 + 4, x1:G.gapR, y1:G.cy + G.slabH/2 - 4};
-  /* Seed on the VERTICAL line through the wire and trace BOTH ways, rather
-     than launching everything from one edge of the gap.  Edge seeding looks
-     natural and comes out lopsided: the wire's field deflects the lines on
-     the way across, so they arrive at the far pole bunched and ragged while
-     the pole they started from gets a tidy even fan.  Seeding on the line
-     the student actually looks along spaces them evenly where it matters and
-     lets them fan out to both poles by themselves. */
-  const tb = {x0:box.x0 - 2, y0:box.y0 - 2, x1:box.x1 + 2, y1:box.y1 + 2};
-  const TR = {step:4, maxN:520};
-  const lines = [];
-  const n = 15;
-  for(let i = 0; i < n; i++){
-    const y = box.y0 + (i + 0.5)/n*(box.y1 - box.y0);
-    if(Math.abs(y - c.y) < MO.wireR*1.35) continue;      // not through the wire
-    const fwd  = traceField(motorField, c.x, y, +1, tb, TR);
-    const back = traceField(motorField, c.x, y, -1, tb, TR);
-    back.reverse(); back.pop();
-    lines.push(back.concat(fwd));
-  }
+  const lines = catapultLines(c, box);
   paintLines(lines, PAL.line, 4);
 
   /* where the wire's own field exactly cancels the uniform one — computed
