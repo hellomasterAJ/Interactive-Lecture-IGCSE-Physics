@@ -278,7 +278,7 @@ table.dt tr.no  td:first-child{color:var(--text-muted)}
 
   <!-- ===== HEADER ZONE (45 px) ===== -->
   <div class="top-bar">
-    <h1>🧲 <span>Magnetic Fields Lab</span> <span class="badge-top" id="badgeTop">v1.3.2</span></h1>
+    <h1>🧲 <span>Magnetic Fields Lab</span> <span class="badge-top" id="badgeTop">v1.4.4</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="modeTabs">
         <button class="mode-tab active" data-mode="sim">Simulate</button>
@@ -406,6 +406,7 @@ table.dt tr.no  td:first-child{color:var(--text-muted)}
       <div class="rule"></div>
       <div class="tgroup"><span class="tlabel">Speed</span>
         <div class="pills" id="speedPills">
+          <button class="pill" data-speed="0.2" title="Quarter speed, for stepping through the d.c. motor a bit at a time. Only available in the D.C. motor view.">0.2×</button>
           <button class="pill" data-speed="0.5">0.5×</button>
           <button class="pill active" data-speed="1">1×</button>
           <button class="pill" data-speed="2">2×</button>
@@ -707,13 +708,13 @@ const S = {
   wireView:'end',            // end | side — how the straight wire is drawn
   grip:false,
   eI:4, eDir:1, core:false, turns:9,
-  relayI:0.75, relaySw:false, relayArm:0, relayClick:0,
+  relayI:0.75, relaySw:false, relayArm:0, relayClick:0, relayHover:0,
 
   /* --- section 3: motor effect --- */
   omode:'force',              // force | catapult | motor
   oI:3, oB:60, oL:8,          // amp, millitesla, centimetre
   oDirI:-1, oDirB:1,          // current into the page, field left -> right
-  lhr:false, oKick:0,
+  lhr:false,
   motorRun:true, comm:true, coilTh:0.35, coilW:0, motorRev:0,
 
   /* --- global --- */
@@ -721,6 +722,7 @@ const S = {
   anim:true, sound:true, speed:1,
   theme:'dark', panelTab:'data',
   compass:{x:600, y:520, th:0, w:0},
+  pointer:{x:0, y:0, on:false},   // last known pointer position, in logical px
   zoom:{k:1, ox:0, oy:0, panning:false, px:0, py:0},
   t:0, warn:''
 };
@@ -1733,7 +1735,11 @@ function elWires(){
 const elSolenoid = () => ({x:EL.solX, y:EL.solY, len:EL.solLen, r:EL.solR,
                            turns:S.turns, I:S.eI, dir:S.eDir, core:S.core});
 const RL = {coilX:318, coilY:250, coilR:40, coilLen:132,
-            pivotX:432, pivotY:196, armLen:150, contactX:556, contactY:216};
+            pivotX:432, pivotY:196, armLen:150, contactX:556, contactY:216,
+            /* ONE box, read by both the drawing and the hover test, so the
+               hot area can never drift away from the switch it belongs to */
+            swBox:{x0:312, y0:H - 148, x1:404, y1:H - 68}};
+const RELAY_HOVER_PERIOD = 3;      // seconds of hovering per flip
 const relaySolenoid = () => ({x:RL.coilX, y:RL.coilY, len:RL.coilLen, r:RL.coilR,
                               turns:7, I:S.relaySw ? S.relayI*6 : 0, dir:1, core:true});
 
@@ -1753,23 +1759,57 @@ function elLines(){
        integration drift, and it is the picture the syllabus asks for */
     return [];
   }
-  /* Each sub-mode gets its OWN trace box.  Given a whole-canvas box the
-     outer return loops of a solenoid sprawl right across the picture and
-     read as stray scribble rather than as field; boxing them keeps the
-     loops around the apparatus they belong to. */
   const g = S.emode === 'relay' ? relaySolenoid()
           : S.emode === 'coil' ? {x:EL.coilX, y:EL.coilY, r:EL.coilR*0.72}
           : elSolenoid();
-  const pad = S.emode === 'relay' ? 165 : 215;
-  const box = {x0:Math.max(EL.box.x0, g.x - (g.len || 0)/2 - pad),
-               x1:Math.min(EL.box.x1, g.x + (g.len || 0)/2 + pad),
-               y0:Math.max(EL.box.y0, g.y - g.r - pad*0.80),
-               y1:Math.min(EL.box.y1, g.y + g.r + pad*0.80)};
-  const n = 7;
-  for(let i = 0; i < n; i++){
-    const y = g.y - g.r*0.80 + (i/(n-1))*g.r*1.60;
-    out.push(traceField(F, g.x, y, +1, box, {step:6, maxN:900}));
-  }
+  /* WHICH loops you get is set by WHERE on the coil's axis you start.  A line
+     that starts near the axis encloses little flux inside the coil, so it has
+     to come back a long way out; one that starts near the winding returns
+     just outside it.  So the seeds do two different jobs and are treated
+     differently.
+
+     * RHO — three radii per side, well clear of the windings, giving three
+       clean loops above the coil and three below.  Sitting them too close to
+       the wires makes them visibly lumpy: the field of a row of discrete
+       currents really is bumpy right at the winding radius, and a loop
+       threaded between the turns wobbles.
+     * AXIS — two more per side, close to the axis.  These are the long lines
+       that run out of both ends of the coil and away off the picture, and
+       they are what makes the diagram read as a bar magnet.  They are given
+       the WHOLE canvas to run in, so they leave through the edge of the
+       drawing instead of stopping dead in mid-air part way across, which is
+       what the earlier version did.
+
+     The relay keeps a tighter box: its coil shares the canvas with an
+     armature, contacts and a second circuit, and lines sprawling across all
+     of that read as scribble rather than as field. */
+  const RHO  = [0.40, 0.60, 0.80];
+  const AXIS = [0.14, 0.28];
+  const TR = {step:3, maxN:2600, close:true};
+  const pad = 210;
+  const box = S.emode === 'relay'
+    ? {x0:Math.max(EL.box.x0, g.x - (g.len || 0)/2 - pad),
+       x1:Math.min(EL.box.x1, g.x + (g.len || 0)/2 + pad),
+       y0:Math.max(EL.box.y0, g.y - g.r - pad*0.80),
+       y1:Math.min(EL.box.y1, g.y + g.r + pad*0.80)}
+    : EL.box;
+  /* Trace BOTH ways from every seed.  Tracing only forwards is fine for a
+     line that closes — it comes back round to its own start — but an open
+     line only ever gets the half that runs out of the NORTH end.  The half
+     that runs back through the coil and out of the south end is simply never
+     drawn, which is why one side of the picture came out bare while the
+     other was full.  The pattern is symmetric; the tracing has to be too. */
+  const shut = l => l.length > 8 &&
+    Math.hypot(l[0].x - l[l.length-1].x, l[0].y - l[l.length-1].y) < 8;
+  for(const f of RHO.concat(AXIS))
+    for(const side of [-1, 1]){
+      const y = g.y + side*f*g.r;
+      const fwd = traceField(F, g.x, y, +1, box, TR);
+      if(shut(fwd)){ out.push(fwd); continue; }
+      const back = traceField(F, g.x, y, -1, box, TR);
+      back.reverse(); back.pop();
+      out.push(back.concat(fwd));
+    }
   return out;
 }
 function rebuildEl(){
@@ -1782,6 +1822,21 @@ function rebuildEl(){
 function stepElectro(dt){
   rebuildEl();
   if(S.emode === 'relay'){
+    /* Hold the pointer over the switch and it flips every few seconds — the
+       hands-free way to watch the armature pull in and drop out repeatedly
+       without clicking.  Leaving the switch resets the count, so a pointer
+       that merely passes over it never trips anything. */
+    const p = S.pointer;
+    const over = p && p.on && p.x > RL.swBox.x0 && p.x < RL.swBox.x1 &&
+                             p.y > RL.swBox.y0 && p.y < RL.swBox.y1;
+    if(over){
+      S.relayHover += dt;
+      if(S.relayHover >= RELAY_HOVER_PERIOD){
+        S.relayHover -= RELAY_HOVER_PERIOD;
+        S.relaySw = !S.relaySw;
+        E_CACHE.sig = ''; clickSnd(); updatePanel();
+      }
+    }else S.relayHover = 0;
     const want = (S.relaySw && relayClosed(S.relayI)) ? 1 : 0;
     const before = S.relayArm;
     S.relayArm += (want - S.relayArm)*Math.min(1, 13*dt);
@@ -1945,10 +2000,15 @@ function drawWireSide(){
     CX.globalAlpha = 1;
   };
 
+  /* Arrowheads go on the 45-degree diagonals, not at the top and bottom of
+     each ring: those two points sit exactly on the wire, so every head
+     landed on the one part of the picture already busy with something else. */
+  const NEAR_T = Math.PI*0.25, FAR_T = Math.PI*1.25;
+
   /* --- 1. every FAR half, behind the wire --- */
   rings.forEach((r, i) => {
     halfRing(r, r*SW.ry, true);
-    if(i % 2 === 1){ CX.globalAlpha = 0.65; headOn(r, r*SW.ry, Math.PI*1.5, PAL.line); CX.globalAlpha = 1; }
+    if(i % 2 === 1){ CX.globalAlpha = 0.65; headOn(r, r*SW.ry, FAR_T, PAL.line); CX.globalAlpha = 1; }
   });
 
   /* --- 2. the wire --- */
@@ -1961,7 +2021,7 @@ function drawWireSide(){
   /* --- 3. every NEAR half, in front of the wire --- */
   rings.forEach((r, i) => {
     halfRing(r, r*SW.ry, false);
-    if(i % 2 === 1) headOn(r, r*SW.ry, Math.PI*0.5, PAL.line);
+    if(i % 2 === 1) headOn(r, r*SW.ry, NEAR_T, PAL.line);
   });
 
   /* the current, drawn beside the wire and never on top of it */
@@ -2013,10 +2073,10 @@ function drawGripSide(cx, cy, dir){
   /* far half first, then the near half over the wire */
   CX.globalAlpha = .55; CX.lineWidth = 3.6;
   CX.beginPath(); CX.ellipse(cx, cy, rx, ry, 0, Math.PI, TAU); CX.stroke();
-  CX.globalAlpha = 1; head(Math.PI*1.5, 15);
+  CX.globalAlpha = 1; head(Math.PI*1.25, 15);
   CX.lineWidth = 5;
   CX.beginPath(); CX.ellipse(cx, cy, rx, ry, 0, 0, Math.PI); CX.stroke();
-  head(Math.PI*0.5, 17);
+  head(Math.PI*0.25, 17);
 
   txt('RIGHT-hand grip rule', cx, cy + ry + 30,
       {size:14, col:PAL.green, weight:800, plate:true});
@@ -2151,9 +2211,12 @@ function drawSolenoid(){
 }
 function drawSupply(cx, y, len, x0, x1, yTop){
   CX.strokeStyle = PAL.wire; CX.lineWidth = 4; CX.lineCap = 'round';
+  /* the break in the rail is exactly the cell's own width — a wire that stops
+     30 px short draws an open circuit, which is not what is being shown */
+  const CELL_HALF = 8;
   CX.beginPath();
-  CX.moveTo(x0, yTop); CX.lineTo(x0, y); CX.lineTo(cx - 34, y);
-  CX.moveTo(cx + 34, y); CX.lineTo(x1, y); CX.lineTo(x1, yTop);
+  CX.moveTo(x0, yTop); CX.lineTo(x0, y); CX.lineTo(cx - CELL_HALF, y);
+  CX.moveTo(cx + CELL_HALF, y); CX.lineTo(x1, y); CX.lineTo(x1, yTop);
   CX.stroke();
   cellSym(cx, y, 26, S.eDir < 0);
   if(S.show.labels)
@@ -2233,9 +2296,29 @@ function drawRelay(){
   CX.beginPath(); CX.arc(386, cy2, 4, 0, TAU); CX.fill();
   const sa = S.relaySw ? 0 : -0.62;
   line(330, cy2, 330 + 56*Math.cos(sa), cy2 + 56*Math.sin(sa));
+  /* the hover hot-spot, and how far through the countdown it is */
+  {
+    const b = RL.swBox, over = S.relayHover > 0;
+    CX.strokeStyle = over ? PAL.accent : PAL.border;
+    CX.lineWidth = over ? 2 : 1.2;
+    CX.setLineDash(over ? [] : [5, 5]);
+    rr(b.x0, b.y0, b.x1 - b.x0, b.y1 - b.y0, 8); CX.stroke();
+    CX.setLineDash([]);
+    if(over){
+      const f = S.relayHover/RELAY_HOVER_PERIOD;
+      CX.strokeStyle = PAL.accent; CX.lineWidth = 4; CX.lineCap = 'round';
+      CX.beginPath();
+      CX.arc(b.x1 - 16, b.y0 + 16, 10, -Math.PI/2, -Math.PI/2 + f*TAU);
+      CX.stroke();
+    }
+  }
   if(S.show.labels){
     txt(S.relaySw ? 'switch closed' : 'switch open', 358, cy2 + 26,
         {size:11, col:S.relaySw ? PAL.green : PAL.muted, weight:700});
+    txt(S.relayHover > 0 ? 'flipping in ' + (RELAY_HOVER_PERIOD - S.relayHover).toFixed(1) + ' s'
+                         : 'hover here to flip it every ' + RELAY_HOVER_PERIOD + ' s',
+        358, RL.swBox.y0 - 12,
+        {size:10.5, col:S.relayHover > 0 ? PAL.accent : PAL.muted, weight:600});
     txt('control circuit — small current, safe voltage', 250, cy2 - 42,
         {size:11.5, col:PAL.dim, weight:600});
   }
@@ -2377,17 +2460,53 @@ function catapultWireB(x, y){
   const k = CATAPULT_VIS*MU0/(2*Math.PI)/M_PER_PX;
   return {x:w.x*k, y:w.y*k};
 }
-/* the field a compass on the bench would actually see */
+/* The field a compass ON THE BENCH would see: zero outside the pole gap,
+   because there is no apparatus there. */
 function motorField(x, y){
   const u = inGap(x, y) ? uniformB() : {x:0, y:0};
   if(S.omode !== 'catapult') return u;
   const w = catapultWireB(x, y);
   return {x:u.x + w.x, y:u.y + w.y};
 }
+/* The field used for TRACING, which must be continuous.  motorField switches
+   the uniform part off with a hard test the moment x leaves the gap, and a
+   tracer stepping towards the pole face hits that cliff mid-step: its
+   midpoint sample lands in the dead zone, the step veers off at random and
+   the line ends in a burst of zigzag hooks against the magnet.  The gap edge
+   is a boundary of the DRAWING, not of the field, so the tracer gets the
+   ungated field and is stopped by the box instead. */
+function catapultField(x, y){
+  const u = uniformB(), w = catapultWireB(x, y);
+  return {x:u.x + w.x, y:u.y + w.y};
+}
+/* keep every drawn point inside the gap, cutting the line exactly on the
+   boundary rather than a step or two past it */
+function clipToBox(pts, box){
+  const inside = p => p.x >= box.x0 && p.x <= box.x1 && p.y >= box.y0 && p.y <= box.y1;
+  const out = [];
+  for(let i = 0; i < pts.length; i++){
+    if(inside(pts[i])){ out.push(pts[i]); continue; }
+    if(out.length){
+      const a = out[out.length-1], b = pts[i];
+      let lo = 0, hi = 1;
+      for(let k = 0; k < 18; k++){
+        const t = (lo + hi)/2;
+        const q = {x:a.x + (b.x-a.x)*t, y:a.y + (b.y-a.y)*t};
+        if(inside(q)) lo = t; else hi = t;
+      }
+      out.push({x:a.x + (b.x-a.x)*lo, y:a.y + (b.y-a.y)*lo});
+    }
+    break;
+  }
+  return out;
+}
 const forceN = () => forceBIL(S.oB/1000, S.oI, S.oL/100);
 
 function stepMotor(dt){
-  S.oKick = Math.max(0, S.oKick - dt*1.6);
+  /* No "kick" animation.  A real conductor between magnadur magnets does not
+     hop sideways when you reverse the supply — it is held by its leads and
+     simply pushes the other way.  Animating a jump made the diagram
+     disagree with the experiment it is meant to represent. */
   if(S.omode === 'motor'){
     if(S.motorRun){
       /* The turning effect is proportional to B*I, so BOTH signs belong in
@@ -2501,15 +2620,15 @@ const P3 = (x, y, z) => ({x:x + D3.x*z, y:y + D3.y*z});
        cx + 0.62·wz1  <  bx0                 (clear of the right block)
    so the blocks are kept shallow and the gap wide.  Both are asserted. */
 const M3 = {
-  ax0:436, ax1:490,          // left block, front face
-  bx0:850, bx1:904,          // right block, front face
+  ax0:186, ax1:240,          // left block, front face
+  bx0:600, bx1:654,          // right block, front face
   yT:250, yB:398,            // front face, top and bottom
   dep:110,                   // how far the blocks run back
   wz0:-150, wz1:278,         // the wire, front end to back end
   wy:324,                    // the wire's height
   fz:55                      // the depth at which the field arrows are drawn
 };
-const M3cx = () => 670;   // inside the gap, and clear of both silhouettes
+const M3cx = () => 420;   // inside the gap, and clear of both silhouettes
 /* the current's direction ON SCREEN.  s = -1 means into the page, which in
    this view means running away from you, up and to the right. */
 function currentScreenDir(){
@@ -2553,7 +2672,6 @@ function drawForceOnWire(){
   const nLeft = S.oDirB > 0;                   // field runs left to right
   const F = motorForceDir(uniformB(), S.oDirI);
   const FN = forceN();
-  const kick = S.oKick*22;
   const cx = M3cx();
 
   /* --- the region the field fills, as two faint parallelograms --- */
@@ -2582,7 +2700,7 @@ function drawForceOnWire(){
 
   /* --- the wire: a straight conductor running through the gap, visible as
          a LINE, so the current has a direction you can point at --- */
-  const wy = M3.wy + F.y*kick;
+  const wy = M3.wy;
   const p0 = P3(cx, wy, M3.wz0), p1 = P3(cx, wy, M3.wz1);
   copperWire(p0.x, p0.y, p1.x, p1.y, 8);
   /* current arrowheads along it */
@@ -2615,7 +2733,8 @@ function drawForceOnWire(){
      leave the circuit visibly open when it is meant to be closed. */
   const railY = MO.benchY - 34;
   const lead0 = P3(cx, M3.wy, M3.wz0), lead1 = P3(cx, M3.wy, M3.wz1);
-  const cellX = 700, RH = {x0:846, x1:902};      // cell centre, rheostat body
+  const cellX = 470, RH = {x0:590, x1:646};      // cell centre, rheostat body
+  const RETX = 760;                               // the return lead's vertical
   const CELL_HALF = 8;                            // the cell symbol's own width
   CX.strokeStyle = PAL.wire; CX.lineWidth = 4; CX.lineCap = 'round';
   CX.beginPath();
@@ -2623,10 +2742,10 @@ function drawForceOnWire(){
   CX.moveTo(lead0.x, lead0.y + 5); CX.lineTo(lead0.x, railY);
   CX.lineTo(cellX - CELL_HALF, railY);
   CX.moveTo(cellX + CELL_HALF, railY); CX.lineTo(RH.x0, railY);
-  CX.moveTo(RH.x1, railY); CX.lineTo(1030, railY);
+  CX.moveTo(RH.x1, railY); CX.lineTo(RETX, railY);
   /* straight up, then straight across — a slanted return lead reads as part
      of the apparatus rather than as wiring */
-  CX.lineTo(1030, 118); CX.lineTo(lead1.x, 118); CX.lineTo(lead1.x, lead1.y - 3);
+  CX.lineTo(RETX, 118); CX.lineTo(lead1.x, 118); CX.lineTo(lead1.x, lead1.y - 3);
   CX.stroke();
   cellSym(cellX, railY, 26, S.oDirI > 0);
   CX.strokeStyle = PAL.text; CX.lineWidth = 2.4; CX.fillStyle = PAL.card;
@@ -2638,8 +2757,10 @@ function drawForceOnWire(){
   }
 
   /* --- the left hand, in the SAME orientation as the apparatus --- */
-  /* level with the force arrow in the apparatus, and well clear of it */
-  drawFlemingHand(196, P3(cx, M3.wy, M3.fz).y, {x:nLeft ? 1 : -1, y:0}, u, F, 1.0);
+  /* The rule diagram occupies the whole right-hand third of the canvas, level
+     with the force arrow on the apparatus.  The apparatus was moved left to
+     make that room rather than the diagram being squeezed in beside it. */
+  drawFlemingHand(958, P3(cx, M3.wy, M3.fz).y, {x:nLeft ? 1 : -1, y:0}, u, F, 1.0);
 
   if(S.show.labels)
     keyStrip(40, MO.benchY + 20, [
@@ -2674,9 +2795,11 @@ function drawFlemingHand(ox, oy, uB, uI, uF, sc){
   sc = sc || 1;
   const N = v => { const m = Math.hypot(v.x, v.y) || 1; return {x:v.x/m, y:v.y/m}; };
   const axes = [
-    {d:N(uB), len:132, col:PAL.line,  name:'Field',   sub:'F irst finger'},
-    {d:N(uI), len:118, col:PAL.cur,   name:'Current', sub:'se C ond finger'},
-    {d:N(uF), len:112, col:PAL.force, name:'Motion',  sub:'thu M b'}
+    /* the symbol goes in the label: what the thumb really gives is the
+       magnetic FORCE F, and the motion follows from it */
+    {d:N(uB), len:132, col:PAL.line,  name:'Field (B)',      sub:'F irst finger'},
+    {d:N(uI), len:118, col:PAL.cur,   name:'Current (I)',    sub:'se C ond finger'},
+    {d:N(uF), len:112, col:PAL.force, name:'Motion (F)',     sub:'thu M b'}
   ];
   let lowest = oy;
 
@@ -2730,14 +2853,16 @@ function drawFlemingHand(ox, oy, uB, uI, uF, sc){
    in a caption. */
 const CAT_N = 15;                 // total field lines across the gap
 function catapultSeeds(c, box){
-  const rMin = MO.wireR*1.55;     // the wire has a finite radius; B -> inf at 0
+  /* the wire has a finite radius and B -> infinity at its centre; with no
+     current there is nothing to avoid but the drawn glyph itself */
+  const rMin = S.oI > 0 ? MO.wireR*1.7 : MO.wireR*1.15;
   const y0 = box.y0 + 2, y1 = box.y1 - 2, M = 900;
   const dy = (y1 - y0)/M;
   const acc = [0];
   let total = 0;
   for(let i = 1; i <= M; i++){
     const y = y0 + (i - 0.5)*dy;
-    const v = Math.abs(y - c.y) > rMin ? Math.abs(motorField(c.x, y).x) : 0;
+    const v = Math.abs(y - c.y) > rMin ? Math.abs(catapultField(c.x, y).x) : 0;
     total += v*dy;
     acc.push(total);
   }
@@ -2753,25 +2878,34 @@ function catapultSeeds(c, box){
   }
   return out;
 }
+const CAT_MIN_LEN = 60;           // shorter than this is a scrap, not a line
 let CAT_CACHE = {sig:'', lines:[]};
 function catapultLines(c, box){
   const sig = [S.oB, S.oI, S.oDirI, S.oDirB, (box.y1 - box.y0)|0].join('~');
   if(sig === CAT_CACHE.sig) return CAT_CACHE.lines;
-  const tb = {x0:box.x0 - 2, y0:box.y0 - 2, x1:box.x1 + 2, y1:box.y1 + 2};
-  const Bu = Math.abs(uniformB().x);
-  const rNull = (Bu > 0 && S.oI > 0)
-    ? CATAPULT_VIS*MU0*S.oI/(2*Math.PI*Bu)/M_PER_PX : Infinity;
+  const tb = {x0:box.x0, y0:box.y0, x1:box.x1, y1:box.y1};
+  const TR = {step:4, maxN:900, close:true};
+  const shut = l => l.length > 8 &&
+    Math.hypot(l[0].x - l[l.length-1].x, l[0].y - l[l.length-1].y) < 6;
+  const len = l => { let t = 0;
+    for(let i = 1; i < l.length; i++) t += Math.hypot(l[i].x-l[i-1].x, l[i].y-l[i-1].y);
+    return t; };
   const out = [];
   for(const y of catapultSeeds(c, box)){
-    /* inside the neutral radius the wire wins and the line closes on itself
-       right round the conductor — the loop that gives the catapult its name */
-    const closed = Math.abs(y - c.y) < rNull;
-    const TR = {step:4, maxN:900, close:closed};
-    const fwd  = traceField(motorField, c.x, y, +1, tb, TR);
-    if(closed){ out.push(fwd); continue; }
-    const back = traceField(motorField, c.x, y, -1, tb, TR);
-    back.reverse(); back.pop();
-    out.push(back.concat(fwd));
+    /* ALWAYS trace both ways and let closure detection decide.  Guessing in
+       advance from the seed's distance to the neutral point looks equivalent
+       and is not: with no current at all that radius is infinite, so every
+       line got treated as a loop and only half of it was ever drawn — the
+       whole left side of the gap came out blank. */
+    const fwd = clipToBox(traceField(catapultField, c.x, y, +1, tb, TR), box);
+    let L;
+    if(shut(fwd)) L = fwd;
+    else{
+      const back = clipToBox(traceField(catapultField, c.x, y, -1, tb, TR), box);
+      back.reverse(); back.pop();
+      L = back.concat(fwd);
+    }
+    if(len(L) >= CAT_MIN_LEN) out.push(L);
   }
   CAT_CACHE = {sig:sig, lines:out};
   return out;
@@ -2817,18 +2951,23 @@ function drawCatapult(){
      they are describing. */
   if(S.show.labels && S.oI > 0){
     const g = gapBox();
+    const mid = (g.x0 + g.x1)/2;
     const sy = c.y - F.y*(G.slabH/2 + 44), wy = c.y + F.y*(G.slabH/2 + 44);
-    txt('lines crowd together — field is STRONGER', (g.x0 + g.x1)/2, sy,
+    txt('lines crowd together — field is STRONGER', mid, sy,
         {size:12, col:PAL.amber, weight:700, plate:true});
-    txt('lines cancel out — field is WEAKER', (g.x0 + g.x1)/2, wy,
+    txt('lines cancel out — field is WEAKER', mid, wy,
         {size:12, col:PAL.blue, weight:700, plate:true});
+    /* directly under the WEAKER caption, because that is the side the wire
+       moves towards — the two statements belong together */
+    txt('the wire is flung this way', mid, wy + F.y*24,
+        {size:12.5, col:PAL.force, weight:800, plate:true});
   }
   if(S.oI > 0){
     const L = 30 + Math.min(80, forceN()*4200);
+    /* the arrow only — its caption lives under the WEAKER label, where the
+       two statements belong together */
     arrow(c.x + F.x*30, c.y + F.y*30, c.x + F.x*(30+L), c.y + F.y*(30+L),
           {col:PAL.force, lw:4, head:15});
-    txt('the wire is flung this way', G.gapR + 74, c.y + F.y*84,
-        {size:12.5, col:PAL.force, weight:800, align:'left', plate:true});
   }
   /* say plainly that the wire's own field is drawn bigger than life */
   txt("the wire's own field is drawn far larger than life (×" + CATAPULT_VIS +
@@ -3154,8 +3293,6 @@ function dataMotor(){
   if(S.omode === 'motor')
     h += '<button class="mini' + (S.motorRun ? ' on' : '') + '" id="btnRun2">▶ Run</button>' +
          '<button class="mini' + (S.comm ? ' on' : '') + '" id="btnComm2">◗◖ Commutator</button>';
-  else
-    h += '<button class="mini" id="btnKick">⚡ Switch on and watch it kick</button>';
   h += '</div>';
 
   h += sectionTitle('📊', 'READINGS');
@@ -3452,6 +3589,21 @@ function syncGroups(){
   if(cp) cp.classList.toggle('locked', flat);
   document.querySelectorAll('[data-eshow]').forEach(b =>
     b.classList.toggle('locked', S.emode === 'wire' && S.wireView === 'side'));
+  /* 0.2x exists only for the d.c. motor, where the point is to follow the
+     coil round a step at a time.  It stays in the row and is dimmed
+     elsewhere rather than being removed, so the other speed pills never
+     shift sideways when you change sub-mode — and if it happens to be the
+     selected speed when you leave, the speed falls back to 0.5x rather than
+     leaving the whole lab crawling with an unusable pill lit up. */
+  const slow = document.querySelector('[data-speed="0.2"]');
+  const slowOK = (S.sec === 'motor' && S.omode === 'motor');
+  if(slow){
+    slow.classList.toggle('locked', !slowOK);
+    if(!slowOK && S.speed === 0.2){
+      S.speed = 0.5;
+      setActive('[data-speed]', 0.5, 'speed');
+    }
+  }
   g('grp-olhr',   S.omode !== 'motor');
   g('grp-omotor', S.omode === 'motor');
 }
@@ -3484,7 +3636,7 @@ function resetSection(){
     S.eI = 4; S.eDir = 1; S.turns = 9; S.core = false; S.grip = false;
     S.wireView = 'end';
     setActive('[data-wview]', 'end', 'wview');
-    S.relaySw = false; S.relayI = 0.75; S.relayArm = 0;
+    S.relaySw = false; S.relayI = 0.75; S.relayArm = 0; S.relayHover = 0;
     S.compass.x = 830; S.compass.y = 560;
     E_CACHE.sig = '';
   }else{
@@ -3508,7 +3660,7 @@ bindPills('[data-emode]', 'emode', v => { S.emode = v; E_CACHE.sig = ''; syncGro
 bindPills('[data-eshow]', 'eshow', v => { S.eshow = v; draw(); });
 bindPills('[data-wview]', 'wview', v => { S.wireView = v; syncGroups(); updatePanel(); draw(); });
 bindPills('[data-omode]', 'omode', v => {
-  S.omode = v; S.coilW = 0;
+  S.omode = v; S.coilW = 0; CAT_CACHE.sig = '';
   /* park the compass where it can actually read something and is not buried
      under the apparatus: inside the pole gap for the two static sub-modes,
      out on the bench for the motor, whose coil sweeps the whole gap */
@@ -3538,8 +3690,8 @@ tog('animBtn',  () => S.anim,  v => { S.anim = v; });
 tog('soundBtn', () => S.sound, v => { S.sound = v; });
 
 $('eRevBtn').onclick = () => { S.eDir = -S.eDir; E_CACHE.sig = ''; updatePanel(); draw(); clickSnd(); };
-$('oRevI').onclick  = () => { S.oDirI = -S.oDirI; S.oKick = 1; updatePanel(); draw(); clickSnd(); };
-$('oRevB').onclick  = () => { S.oDirB = -S.oDirB; S.oKick = 1; updatePanel(); draw(); clickSnd(); };
+$('oRevI').onclick  = () => { S.oDirI = -S.oDirI; CAT_CACHE.sig = ''; updatePanel(); draw(); clickSnd(); };
+$('oRevB').onclick  = () => { S.oDirB = -S.oDirB; CAT_CACHE.sig = ''; updatePanel(); draw(); clickSnd(); };
 $('resetBtn').onclick = resetSection;
 $('themeSel').onchange = e => setTheme(e.target.value);
 
@@ -3599,12 +3751,11 @@ function bindDataControls(){
   bindSlider('oB', {min:0, max:200, step:1, unit:'mT'}, v => { S.oB = Math.round(v); });
   bindSlider('oI', {min:0, max:8, step:0.1, unit:'A'},  v => { S.oI = v; });
   bindSlider('oL', {min:2, max:12, step:0.1, unit:'cm'},v => { S.oL = v; });
-  b('btnRevI2', () => { S.oDirI = -S.oDirI; S.oKick = 1; updatePanel(); draw(); });
-  b('btnRevB2', () => { S.oDirB = -S.oDirB; S.oKick = 1; updatePanel(); draw(); });
+  b('btnRevI2', () => { S.oDirI = -S.oDirI; CAT_CACHE.sig = ''; updatePanel(); draw(); });
+  b('btnRevB2', () => { S.oDirB = -S.oDirB; CAT_CACHE.sig = ''; updatePanel(); draw(); });
   b('btnLhr2',  () => { S.lhr = !S.lhr; syncToolbar(); updatePanel(); draw(); });
   b('btnRun2',  () => { S.motorRun = !S.motorRun; syncToolbar(); updatePanel(); draw(); });
   b('btnComm2', () => { S.comm = !S.comm; syncToolbar(); updatePanel(); draw(); });
-  b('btnKick',  () => { S.oKick = 1; });
 }
 
 /* ---------- panel tabs ---------- */
@@ -3644,6 +3795,10 @@ function inMagnet(L, m){
   return Math.abs(L.x - m.x) < m.len/2 + 8 && Math.abs(L.y - m.y) < m.h/2 + 8;
 }
 CV.addEventListener('pointermove', e => {
+  /* recorded on EVERY move, not just while dragging: the relay's hover
+     switch needs to know where the pointer is even when nothing is held */
+  const P = toLogical(e);
+  S.pointer.x = P.x; S.pointer.y = P.y; S.pointer.on = true;
   if(S.zoom.panning){
     S.zoom.ox += (e.clientX - S.zoom.px)/VT.s;
     S.zoom.oy += (e.clientY - S.zoom.py)/VT.s;
@@ -3680,6 +3835,7 @@ function endPointer(){
   drag = null; S.zoom.panning = false;
   draw();
 }
+CV.addEventListener('pointerleave', () => { S.pointer.on = false; S.relayHover = 0; });
 CV.addEventListener('pointerup', endPointer);
 CV.addEventListener('pointercancel', endPointer);
 CV.addEventListener('dblclick', e => {
