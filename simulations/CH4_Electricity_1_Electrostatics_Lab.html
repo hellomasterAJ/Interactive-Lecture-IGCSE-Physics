@@ -259,7 +259,7 @@ table.dt tr.neg td:first-child{color:var(--charge-neg)}
 
   <!-- ===== HEADER ZONE (45 px) ===== -->
   <div class="top-bar">
-    <h1>⚡ <span>Electrostatics Lab</span> <span class="badge-top" id="badgeTop">v1.5.0</span></h1>
+    <h1>⚡ <span>Electrostatics Lab</span> <span class="badge-top" id="badgeTop">v1.5.1</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="modeTabs">
         <button class="mode-tab active" data-mode="sim">Simulate</button>
@@ -1212,6 +1212,25 @@ function matColour(key){
   return PAL.metal;
 }
 
+/* Where the "electrons" arrow starts and ends.
+   The cloth sits ON the rod, so their drawn bands OVERLAP: the cloth's lower
+   edge is BELOW the rod's upper edge.  Naming the endpoints after edges is
+   what made this arrow point the wrong way — the "cloth end" was numerically
+   inside the rod.  Anchor each end to the object's CENTRE line instead, so
+   the direction cannot be got backwards, and return it from one function that
+   the drawing and the tests both read. */
+function frictionArrow(o){
+  const yCloth = FR.clothY + FR.clothH*0.30;     // clearly inside the cloth
+  const yRod   = FR.cy + FR.rodR*0.35;           // clearly inside the rod
+  const toRod  = o.electronsTo === 'rod';
+  return {
+    x: FR.cx - FR.clothW/2 - 34,                 // just left of the cloth
+    y0: toRod ? yCloth : yRod,                   // electrons leave here…
+    y1: toRod ? yRod   : yCloth,                 // …and arrive here
+    toRod, yCloth, yRod
+  };
+}
+
 /* ---------- friction ---------- */
 let fricE = [];                       // electrons in flight during a rub
 function doRub(){
@@ -1325,10 +1344,9 @@ function drawFriction(){
 
   /* ---- the transfer arrow: the whole teaching point ---- */
   if(nE > 0){
-    const toRod = o.electronsTo === 'rod';
-    const ax = x0 - 26, ya = FR.clothY + chh + 6, yb = FR.cy - FR.rodR - 6;
-    arrow(ax, toRod ? ya : yb, ax, toRod ? yb : ya, {col:PAL.electron, lw:2.6, head:11});
-    txt('electrons', ax - 10, (ya+yb)/2,
+    const A = frictionArrow(o);
+    arrow(A.x, A.y0, A.x, A.y1, {col:PAL.electron, lw:2.8, head:12});
+    txt('electrons', A.x - 10, (A.y0 + A.y1)/2,
         {size:11.5, col:PAL.electron, weight:700, align:'right', plate:true});
   }
 
