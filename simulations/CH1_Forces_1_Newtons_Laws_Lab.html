@@ -161,8 +161,12 @@ body{
 .ovcard.grabbing .ovbody{cursor:grabbing;}
 #formulaBody{font-size:13px;color:var(--text);line-height:1.9;}
 #formulaBody .katex{font-size:1em;}
-#legendBody .lgrow{display:flex;align-items:center;gap:7px;white-space:nowrap;
-                   font-size:11px;color:var(--text-dim);padding:1.5px 0;}
+#legendBody .lgrow{display:flex;align-items:baseline;gap:7px;
+                   font-size:11px;color:var(--text-dim);padding:2px 0;line-height:1.35;}
+#legendBody .lgrow .lgsw{flex:0 0 auto;position:relative;top:-3px;}
+#legendBody .lgsym{font-family:'JetBrains Mono',monospace;font-size:11.5px;
+                   color:var(--text);font-weight:700;min-width:26px;}
+#legendBody .lgsym sub{font-size:8px;}
 .lgrow{display:flex;align-items:center;gap:5px;white-space:nowrap;}
 .lgsw{width:14px;height:3px;border-radius:2px;display:inline-block;}
 
@@ -181,6 +185,14 @@ body{
 .sec-h{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.7px;
        text-transform:uppercase;color:var(--text-muted);margin:10px 0 5px;}
 .sec-h:first-child{margin-top:0;}
+button.sec-h{display:flex;align-items:center;gap:6px;width:100%;background:none;
+       border:0;padding:2px 0;cursor:pointer;text-align:left;line-height:1.2;}
+button.sec-h:hover{color:var(--text);}
+button.sec-h:focus-visible{outline:1px solid var(--accent);outline-offset:2px;border-radius:3px;}
+button.sec-h .chev{display:inline-block;font-size:9px;transition:transform .15s ease;}
+button.sec-h.closed .chev{transform:rotate(-90deg);}
+button.sec-h .cnt{margin-left:auto;opacity:.65;font-size:8.5px;letter-spacing:.4px;}
+.sec-b[hidden]{display:none;}
 .row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;
      padding:3px 0;border-bottom:1px dashed var(--border);}
 .row:last-child{border-bottom:none;}
@@ -242,7 +254,7 @@ input[type=text]:focus{border-color:var(--accent);}
 
   <!-- ============ HEADER ZONE ============ -->
   <div class="top-bar">
-    <h1>⚙️ Newton's Laws <span class="badge-top" id="badge">v1.4.0</span></h1>
+    <h1>⚙️ Newton's Laws <span class="badge-top" id="badge">v1.9.1</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="modeTabs">
         <button class="mode-tab active" data-mode="sim">Simulate</button>
@@ -268,19 +280,9 @@ input[type=text]:focus{border-color:var(--accent);}
     <button class="law-tab" data-law="3">③ Newton's 3rd Law</button>
   </div>
 
-  <!-- ============ TOOLBAR ROW 1 : examples + show toggles ============ -->
+  <!-- ============ TOOLBAR ROW 1 : what is being simulated ============ -->
   <div class="tb">
     <div class="tgroup"><span class="tglab">Example</span><div class="pills" id="exPills"></div></div>
-    <div class="tb-spring"></div>
-    <div class="tgroup"><span class="tglab">Show</span>
-      <button class="pill active" id="tFBD">⚖ FBD</button>
-      <button class="pill active" id="tLab">🏷 Labels</button>
-      <button class="pill" id="tForm">📐 Formula</button>
-    </div>
-  </div>
-
-  <!-- ============ TOOLBAR ROW 2 : context + transport ============ -->
-  <div class="tb">
     <div class="tgroup" id="gUnbal"><span class="tglab">Force</span>
       <button class="pill" id="tUnbal">Unbalance it</button>
     </div>
@@ -291,13 +293,36 @@ input[type=text]:focus{border-color:var(--accent);}
     <div class="tgroup" id="gChute"><span class="tglab">Canopy</span>
       <button class="pill" id="tChute">🪂 Parachute</button>
     </div>
+    <div class="tgroup" id="gDeep"><span class="tglab">Explain</span>
+      <button class="pill" id="tDeep"
+        title="Zoom in on the planted foot and show which way friction acts on the shoe and on the ground.">🔬 Step detail</button>
+    </div>
+    <div class="tb-spring"></div>
+    <div class="tgroup"><button class="pill" id="bReset"
+      title="Resets only the current example — other examples and modes keep their settings.">↺ Reset</button></div>
+  </div>
+
+  <!-- ============ TOOLBAR ROW 2 : how it is shown, and how it runs ============ -->
+  <div class="tb">
+    <div class="tgroup"><span class="tglab">Show</span>
+      <button class="pill active" id="tFBD">⚖ FBD</button>
+      <button class="pill active" id="tLab">🏷 Labels</button>
+      <button class="pill" id="tForm">📐 Formula</button>
+    </div>
+    <div class="tgroup"><span class="tglab">Names</span>
+      <button class="pill active" id="nShort">Short</button>
+      <button class="pill" id="nFull">Full</button>
+    </div>
+    <div class="tgroup"><span class="tglab">Symbols</span>
+      <button class="pill active" id="cUK">UK</button>
+      <button class="pill" id="cUS">US</button>
+    </div>
     <div class="tb-spring"></div>
     <div class="tgroup"><span class="tglab">Run</span>
       <button class="pill active" id="bPlay">Play</button>
       <button class="pill" data-spd="0.5">0.5×</button>
       <button class="pill active" data-spd="1">1×</button>
       <button class="pill" data-spd="2">2×</button>
-      <button class="pill" id="bReset" title="Resets only the current example — other examples and modes keep their settings.">↺ Reset</button>
     </div>
   </div>
 
@@ -390,6 +415,26 @@ var PHYS = (function () {
     var Fx = thrust - resist;
     return { W: W, N: N, thrust: thrust, resist: resist,
              Fnet: Math.abs(Fx), Fx: Fx, a: Fx / s.m, balanced: Fx === 0 };
+  }
+
+  // Block resting on an inclined plane. Resolve the weight along and perpendicular
+  // to the slope:  along = mg sin(theta),  N = mg cos(theta).
+  // It stays put while the along-slope pull is within the static friction limit
+  // mu_s N, i.e. while theta is below the critical angle atan(mu_s).
+  function incline(s) {
+    var th = s.thetaDeg * Math.PI / 180;
+    var W = weight(s.m);
+    var N = W * Math.cos(th);
+    var along = W * Math.sin(th);
+    var muS = s.smooth ? 0 : s.muS;
+    var muK = s.smooth ? 0 : (s.muK === undefined ? s.muS * 0.8 : s.muK);
+    var fsMax = muS * N;
+    var sliding = along > fsMax + 1e-12;
+    var f = sliding ? muK * N : along;      // static friction only matches what is needed
+    var Fnet = along - f;
+    return { W: W, N: N, along: along, f: f, fsMax: fsMax, sliding: sliding,
+             Fnet: Fnet, a: Fnet / s.m, theta: th,
+             critical: Math.atan(muS) * 180 / Math.PI };
   }
 
   // Astronaut in deep space: literally no forces act on the body.
@@ -523,7 +568,7 @@ var PHYS = (function () {
   return {
     G: G_EARTH, BIG_G: BIG_G,
     weight: weight, accelFromNet: accelFromNet, momentum: momentum, impulse: impulse,
-    puck: puck, book: book, cruise: cruise, space: space,
+    puck: puck, book: book, cruise: cruise, space: space, incline: incline,
     trolley: trolley, rocket: rocket, rocketMass: rocketMass, brake: brake,
     skydive: skydive, skydiveStep: skydiveStep, dragForce: dragForce, terminalV: terminalV,
     chuteScale: chuteScale,
@@ -561,17 +606,44 @@ var FC = {
   accel:    '#A6E22E',
   pair:     '#7FDBCA'
 };
+/* Two levels of wording for the force names, because a class that has been taught
+   "normal reaction force" needs to see exactly that phrase in an exam answer. */
 var FC_NAME = {
-  weight: 'Weight W', normal: 'Normal force N', applied: 'Applied / thrust F',
-  friction: 'Friction / drag f', tension: 'Tension T', net: 'Resultant force',
-  accel: 'Acceleration a'
+  short: { weight: 'Weight', normal: 'Normal force', applied: 'Applied force / thrust',
+           friction: 'Friction / drag', tension: 'Tension', net: 'Resultant force',
+           accel: 'Acceleration' },
+  full:  { weight: 'Gravitational force (the weight of the body)',
+           normal: 'Normal reaction force (contact force perpendicular to the surface)',
+           applied: 'Applied force — driving force or thrust',
+           friction: 'Frictional force — air resistance or drag',
+           tension: 'Tension force in the string',
+           net: 'Resultant force — the vector sum of every force on the body',
+           accel: 'Acceleration produced by the resultant force' }
 };
+/* Symbols differ between syllabuses: UK papers write the normal reaction as R,
+   US courses write it as F with a subscript.  Students must answer in whichever
+   notation their class was taught, so both are offered. */
+var SYMS = {
+  uk: { weight: 'W', normal: 'R', applied: 'F', friction: 'f', drag: 'D', tension: 'T',
+        thrust: 'T', brake: 'F_b', centripetal: 'F_c', net: 'F_net', accel: 'a' },
+  us: { weight: 'F_g', normal: 'F_N', applied: 'F_app', friction: 'F_f', drag: 'F_D',
+        tension: 'F_T', thrust: 'F_thr', brake: 'F_br', centripetal: 'F_c',
+        net: 'F_net', accel: 'a' }
+};
+function sym(slot) { return (SYMS[S.conv] || SYMS.uk)[slot] || slot; }
+function symHTML(str) {
+  var i = str.indexOf('_');
+  return i < 0 ? str : str.slice(0, i) + '<sub>' + str.slice(i + 1) + '</sub>';
+}
 
 var S = {
   mode: 'sim', law: 1, ex: 'puck',
   play: true, speed: 1, t: 0,
   fbd: true, labels: true, formula: false,
   unbalance: false, dragLaw: 'lin', chute: false,
+  secOpen: { controls: true, live: true, graph: true },
+  deep: false,
+  detail: 'short', conv: 'uk',
   ptab: 'data', theme: 'dark',
   graphPick: {},
   zoom: { k: 1, ox: 0, oy: 0, panning: false, px: 0, py: 0 },
@@ -680,22 +752,65 @@ function arrow(x, y, dx, dy, col, wid, dashed) {
   }
 }
 /* arrow label placed just past the tip, pushed clear of the shaft */
+/* "F_N" draws as F with a small N below the baseline */
+function splitSym(str) {
+  var i = str.indexOf('_');
+  return i < 0 ? [str, ''] : [str.slice(0, i), str.slice(i + 1)];
+}
+function symWidth(str) {
+  var p = splitSym(str), w;
+  CX.save(); CX.font = "700 14px 'JetBrains Mono', monospace";
+  w = CX.measureText(p[0]).width;
+  if (p[1]) { CX.font = "700 10px 'JetBrains Mono', monospace"; w += CX.measureText(p[1]).width; }
+  CX.restore();
+  return w;
+}
+function drawSym(str, cx, cy, col) {
+  var p = splitSym(str), w = symWidth(str);
+  CX.save();
+  CX.textBaseline = 'middle'; CX.textAlign = 'left'; CX.fillStyle = col;
+  CX.font = "700 14px 'JetBrains Mono', monospace";
+  var x0 = cx - w / 2;
+  CX.fillText(p[0], x0, cy);
+  if (p[1]) {
+    var bw = CX.measureText(p[0]).width;
+    CX.font = "700 10px 'JetBrains Mono', monospace";
+    CX.fillText(p[1], x0 + bw, cy + 4.5);
+  }
+  CX.restore();
+}
 function arrowLabel(str, x, y, dx, dy, col) {
   if (!S.labels) return;
   var L = Math.hypot(dx, dy) || 1;
   var ux = dx / L, uy = dy / L;
   CX.save();
-  CX.font = "700 14px 'JetBrains Mono', monospace";
-  var wpx = CX.measureText(str).width;
+  var wpx = symWidth(str);
   var off = 13 + Math.abs(ux) * wpx / 2;
   var lx = x + dx + ux * off, ly = y + dy + uy * (13 + Math.abs(uy) * 11);
   // a dark chip under every arrow label: the force colour code is fixed, so the
   // backing has to be the thing that guarantees contrast on light themes too
   CX.fillStyle = 'rgba(14,18,26,.82)';
   rr(lx - wpx / 2 - 5, ly - 10, wpx + 10, 20, 5); CX.fill();
-  CX.fillStyle = col; CX.textAlign = 'center'; CX.textBaseline = 'middle';
-  CX.fillText(str, lx, ly);
   CX.restore();
+  drawSym(str, lx, ly, col);
+}
+/* A label parked BESIDE the middle of an arrow instead of past its tip.
+   side = +1 / -1 picks which flank.  Used wherever two vectors have to share a
+   line — a label past the tip would then sit on top of the other vector. */
+function midLabel(str, x, y, dx, dy, col, side, at) {
+  if (!S.labels) return;
+  var L = Math.hypot(dx, dy) || 1;
+  var ux = dx / L, uy = dy / L;
+  var px = -uy, py = ux;                       // unit perpendicular
+  var wpx = symWidth(str);
+  var gap = 14 + Math.abs(px) * (wpx / 2 + 3) + Math.abs(py) * 14;
+  var f = at === undefined ? 0.5 : at;         // how far along the shaft to sit
+  var lx = x + dx * f + px * gap * side, ly = y + dy * f + py * gap * side;
+  CX.save();
+  CX.fillStyle = 'rgba(14,18,26,.82)';
+  rr(lx - wpx / 2 - 5, ly - 10, wpx + 10, 20, 5); CX.fill();
+  CX.restore();
+  drawSym(str, lx, ly, col);
 }
 function dashLine(x1, y1, x2, y2, col, wid, dash) {
   CX.save(); CX.strokeStyle = col; CX.lineWidth = wid || 1.5;
@@ -833,14 +948,22 @@ function cartoonFigure(x, yFeet, h, pose, o) {
     CX.save(); CX.globalAlpha = alpha;
     capsule(hx, hy, m.j[0], m.j[1], limbW * 1.1, limbC);
     capsule(m.j[0], m.j[1], m.e[0], m.e[1], limbW, limbC);
-    CX.save(); CX.translate(m.e[0], m.e[1]); CX.rotate(-ang * dir * 0.3);
+    CX.save(); CX.translate(m.e[0], m.e[1]); CX.rotate(-ang * dir * 0.42);
     blob(dir * limbW * 0.5, limbW * 0.12, limbW * 1.15, limbW * 0.62, shoe);
     CX.restore();
     CX.restore();
   }
-  // far side first and dimmed, so the near side reads as nearer
-  drawArm(shLx, shY, aL, 0.62);
-  drawLeg(hipLx, hipY, lL, pose.legL[0] + pose.legL[1], 0.62);
+  // far side first and dimmed, so the near side reads as nearer.  Which side is
+  // near depends on which way the figure faces, or a left-facing figure pushes
+  // with the arm behind its own back.
+  var farArm = dir < 0 ? aR : aL, nearArm = dir < 0 ? aL : aR;
+  var farArmX = dir < 0 ? shRx : shLx, nearArmX = dir < 0 ? shLx : shRx;
+  var farLeg = dir < 0 ? lR : lL, nearLeg = dir < 0 ? lL : lR;
+  var farLegX = dir < 0 ? hipRx : hipLx, nearLegX = dir < 0 ? hipLx : hipRx;
+  var farLegA = dir < 0 ? pose.legR[0] + pose.legR[1] : pose.legL[0] + pose.legL[1];
+  var nearLegA = dir < 0 ? pose.legL[0] + pose.legL[1] : pose.legR[0] + pose.legR[1];
+  drawArm(farArmX, shY, farArm, 0.62);
+  drawLeg(farLegX, hipY, farLeg, farLegA, 0.62);
 
   // body: a soft rounded torso, wider at the shoulders
   CX.save();
@@ -854,8 +977,8 @@ function cartoonFigure(x, yFeet, h, pose, o) {
   CX.closePath(); CX.fill(); CX.stroke();
   CX.restore();
 
-  drawArm(shRx, shY, aR, 1);
-  drawLeg(hipRx, hipY, lR, pose.legR[0] + pose.legR[1], 1);
+  drawArm(nearArmX, shY, nearArm, 1);
+  drawLeg(nearLegX, hipY, nearLeg, nearLegA, 1);
 
   // head, hair and face
   var hx2 = x + lean, hy2 = headCY;
@@ -863,17 +986,33 @@ function cartoonFigure(x, yFeet, h, pose, o) {
   CX.save();
   CX.beginPath(); CX.ellipse(hx2, hy2, headR, headR * 0.96, 0, 0, 7); CX.clip();
   if (o.helmet) {
+    // a skydiving helmet is a shell over the CROWN — the face stays visible,
+    // which is the whole point of drawing a person rather than a red blob
     CX.fillStyle = o.helmet;
-    CX.beginPath(); CX.ellipse(hx2, hy2 - headR * 0.10, headR * 1.05, headR * 0.92, 0, 0, 7); CX.fill();
-    CX.fillStyle = 'rgba(20,30,48,.85)';
-    CX.beginPath(); CX.ellipse(hx2 + dir * headR * 0.08, hy2 + headR * 0.10, headR * 0.95, headR * 0.30, 0, 0, 7);
+    CX.beginPath();
+    CX.ellipse(hx2, hy2 - headR * 0.26, headR * 1.06, headR * 1.00, 0, Math.PI, 0);
+    CX.rect(hx2 - headR * 1.1, hy2 - headR * 0.26, headR * 2.2, headR * 0.13);
     CX.fill();
+    CX.fillStyle = 'rgba(255,255,255,.22)';           // gloss along the crown
+    CX.beginPath();
+    CX.ellipse(hx2 - headR * 0.34, hy2 - headR * 0.70, headR * 0.34, headR * 0.16, -0.5, 0, 7);
+    CX.fill();
+    CX.fillStyle = 'rgba(0,0,0,.22)';                 // shadow the helmet casts on the brow
+    CX.fillRect(hx2 - headR * 1.1, hy2 - headR * 0.13, headR * 2.2, headR * 0.07);
+    CX.fillStyle = o.helmet;                          // ear cups down the sides
+    CX.beginPath(); CX.ellipse(hx2 - headR * 1.00, hy2 + headR * 0.06, headR * 0.30, headR * 0.40, 0, 0, 7); CX.fill();
+    CX.beginPath(); CX.ellipse(hx2 + headR * 1.00, hy2 + headR * 0.06, headR * 0.30, headR * 0.40, 0, 0, 7); CX.fill();
+    CX.strokeStyle = 'rgba(40,48,62,.55)'; CX.lineWidth = Math.max(1.1, headR * 0.05);
+    CX.beginPath();                                   // chin strap, well below the mouth
+    CX.moveTo(hx2 - headR * 0.80, hy2 + headR * 0.55);
+    CX.quadraticCurveTo(hx2, hy2 + headR * 1.28, hx2 + headR * 0.80, hy2 + headR * 0.55);
+    CX.stroke();
   } else {
     CX.fillStyle = hair;
     CX.beginPath(); CX.ellipse(hx2, hy2 - headR * 0.62, headR * 1.02, headR * 0.62, 0, 0, 7); CX.fill();
   }
   CX.restore();
-  if (!o.helmet) {
+  {
     var eo = headR * 0.34, ey2 = hy2 + headR * 0.02, ex2 = hx2 + dir * headR * 0.13;
     var er = headR * 0.125;
     CX.save();
@@ -886,30 +1025,195 @@ function cartoonFigure(x, yFeet, h, pose, o) {
     CX.fillStyle = 'rgba(255,255,255,.9)';           // catchlights
     CX.beginPath(); CX.arc(ex2 - eo + er * 0.35, ey2 - er * 0.35, er * 0.34, 0, 7); CX.fill();
     CX.beginPath(); CX.arc(ex2 + eo + er * 0.35, ey2 - er * 0.35, er * 0.34, 0, 7); CX.fill();
-    CX.strokeStyle = '#232a35'; CX.lineWidth = Math.max(1.3, headR * 0.07); CX.lineCap = 'round';
-    CX.beginPath(); CX.arc(ex2, ey2 + headR * 0.26, headR * 0.19, 0.45, Math.PI - 0.45); CX.stroke();
+    // the mouth: a small closed smile by default, an "o" when the wind is in your
+    // face, and a wide open grin for the moment the canopy blossoms
+    var my = ey2 + headR * 0.30, mth = o.mouth || 'smile';
+    CX.lineCap = 'round';
+    if (mth === 'grin') {
+      CX.fillStyle = '#7d2f38';
+      CX.beginPath(); CX.ellipse(ex2, my + headR * 0.02, headR * 0.24, headR * 0.19, 0, 0, Math.PI);
+      CX.closePath(); CX.fill();
+      CX.fillStyle = '#e2707d';                       // tongue
+      CX.beginPath(); CX.ellipse(ex2, my + headR * 0.17, headR * 0.13, headR * 0.07, 0, 0, Math.PI);
+      CX.closePath(); CX.fill();
+      CX.strokeStyle = '#232a35'; CX.lineWidth = Math.max(1.1, headR * 0.055);
+      CX.beginPath(); CX.ellipse(ex2, my + headR * 0.02, headR * 0.24, headR * 0.19, 0, 0, Math.PI);
+      CX.closePath(); CX.stroke();
+    } else if (mth === 'o') {
+      CX.fillStyle = '#7d2f38';
+      CX.beginPath(); CX.ellipse(ex2, my, headR * 0.075, headR * 0.105, 0, 0, 7); CX.fill();
+      CX.strokeStyle = '#232a35'; CX.lineWidth = Math.max(1, headR * 0.05);
+      CX.beginPath(); CX.ellipse(ex2, my, headR * 0.075, headR * 0.105, 0, 0, 7); CX.stroke();
+    } else {
+      CX.strokeStyle = '#232a35'; CX.lineWidth = Math.max(1.2, headR * 0.065);
+      CX.beginPath(); CX.arc(ex2, my - headR * 0.04, headR * 0.115, 0.55, Math.PI - 0.55); CX.stroke();
+    }
     CX.restore();
+    if (o.helmet) {
+      // goggles over the eyes: a strap round the head and two tinted lenses
+      CX.save();
+      CX.beginPath(); CX.ellipse(hx2, hy2, headR, headR * 0.96, 0, 0, 7); CX.clip();
+      CX.strokeStyle = 'rgba(38,46,60,.90)'; CX.lineWidth = Math.max(3, headR * 0.17);
+      CX.beginPath(); CX.moveTo(hx2 - headR * 1.1, ey2); CX.lineTo(hx2 + headR * 1.1, ey2); CX.stroke();
+      CX.restore();
+      var lr = headR * 0.30;
+      [-1, 1].forEach(function (sgn) {
+        var gx = ex2 + sgn * eo * 1.02;
+        CX.save();
+        CX.fillStyle = 'rgba(120,190,225,.42)';
+        CX.beginPath(); CX.ellipse(gx, ey2, lr, lr * 0.82, 0, 0, 7); CX.fill();
+        CX.strokeStyle = 'rgba(28,34,46,.95)'; CX.lineWidth = Math.max(1.6, headR * 0.075);
+        CX.beginPath(); CX.ellipse(gx, ey2, lr, lr * 0.82, 0, 0, 7); CX.stroke();
+        CX.fillStyle = 'rgba(255,255,255,.55)';
+        CX.beginPath(); CX.ellipse(gx - lr * 0.32, ey2 - lr * 0.30, lr * 0.30, lr * 0.18, -0.5, 0, 7); CX.fill();
+        CX.restore();
+      });
+    }
   }
-  return { shL: [shLx, shY], shR: [shRx, shY], hip: [x, hipY], head: [hx2, hy2], headR: headR };
+  return { shL: [shLx, shY], shR: [shRx, shY], hip: [x, hipY], head: [hx2, hy2], headR: headR,
+           handL: aL.e, handR: aR.e, footL: lL.e, footR: lR.e,
+           // the hand and foot on the side that faces the viewer
+           handNear: nearArm.e, footNear: nearLeg.e, footFar: farLeg.e };
 }
 
-/* a bouncy walk cycle: p advances with distance travelled */
+/* A periodic gaussian bump.  Wrapping the phase difference into (-pi, pi] with
+   atan2 keeps the curve perfectly smooth where the cycle joins up, which a
+   rectified sine (the previous knee curve) is not — that kink is exactly what
+   made the old gait look mechanical. */
+function gbump(p, c, w) {
+  var d = p - c;
+  d = Math.atan2(Math.sin(d), Math.cos(d));
+  return Math.exp(-(d * d) / (w * w));
+}
+/* One leg of a real human gait cycle; phase 0 = heel strike.
+   The thigh swings once per cycle, but the knee flexes TWICE: a small dip just
+   after the foot lands (loading response, ~15 deg) and a large one through the
+   swing (~65 deg), which is what lifts the foot clear of the ground instead of
+   dragging it.  The knee bends BACKWARDS, so the second angle is negative —
+   the old cycle had it positive, which hyperextended the knee the wrong way. */
+function gaitLeg(p) {
+  var thigh = 0.44 * Math.cos(p) - 0.02;
+  var knee  = 0.05 + 0.24 * gbump(p, 0.70, 0.75) + 1.06 * gbump(p, 4.15, 1.00);
+  return [thigh, -knee];
+}
+/* An arm swings in opposition to the leg on the same side, and the elbow closes
+   as the arm comes forward. */
+function gaitArm(p) {
+  var sw = -0.38 * Math.cos(p);
+  return [sw, 0.32 + 0.20 * (sw / 0.38)];
+}
+/* Distance the body travels in one full cycle (two steps) for a figure of
+   height h — the horizontal sweep of the planted foot, doubled.  Advancing the
+   phase by 2*PI over exactly this distance is what stops the feet skating. */
+function gaitStride(h) { return 4 * Math.sin(0.44) * 0.34 * h; }
 function cartoonWalk(p, dir) {
-  var sw = Math.sin(p), sw2 = Math.sin(p + Math.PI);
   return {
-    dir: dir, lean: 0.10, bobF: -0.018 * Math.abs(Math.sin(p)),
-    legL: [0.52 * sw,  Math.max(0, -0.85 * Math.sin(p - 0.75))],
-    legR: [0.52 * sw2, Math.max(0, -0.85 * Math.sin(p + Math.PI - 0.75))],
-    armL: [-0.46 * sw,  0.34],
-    armR: [-0.46 * sw2, 0.34]
+    dir: dir, lean: 0.09,
+    // the pelvis rises at each mid-stance, when the planted leg is straightest:
+    // sin^2 has period PI, so it lifts once per step, twice per cycle
+    bobF: -0.019 * Math.sin(p) * Math.sin(p),
+    legL: gaitLeg(p), legR: gaitLeg(p + Math.PI),
+    armL: gaitArm(p), armR: gaitArm(p + Math.PI)
   };
+}
+
+/* ---------------------------------------------------------------
+   A globe that actually looks like the Earth: the continents are
+   real (lon, lat) outlines put through an orthographic projection,
+   so they foreshorten towards the limb and wrap round as the planet
+   turns, instead of being loose blobs scattered on a disc.
+   --------------------------------------------------------------- */
+var LANDMASS = [
+  /* Africa */
+  [[-17,14],[-6,5],[9,4],[13,-5],[14,-22],[20,-34],[32,-28],[40,-15],[43,-2],[51,12],[43,12],[37,22],[34,31],[10,37],[-6,35],[-17,21]],
+  /* Europe */
+  [[-9,36],[3,43],[13,45],[20,40],[29,41],[40,48],[33,60],[28,71],[12,63],[5,58],[-5,50],[-9,43]],
+  /* Asia */
+  [[30,45],[45,40],[58,25],[70,20],[78,8],[90,22],[100,13],[110,20],[122,30],[135,45],[142,54],[128,70],[100,76],[70,73],[48,66],[33,55]],
+  /* North America */
+  [[-166,60],[-140,70],[-100,73],[-70,60],[-58,48],[-70,42],[-80,26],[-97,17],[-106,23],[-124,40],[-136,58]],
+  /* South America */
+  [[-80,9],[-60,10],[-35,-6],[-38,-22],[-54,-34],[-70,-52],[-76,-30],[-81,-4]],
+  /* Australia */
+  [[114,-22],[130,-12],[142,-11],[151,-26],[147,-38],[130,-32],[115,-34]],
+  /* Greenland */
+  [[-45,60],[-22,70],[-20,80],[-45,83],[-58,76],[-55,66]]
+];
+function drawGlobe(cx, cy, R, lon0) {
+  var D = Math.PI / 180, i, j;
+  CX.save();
+  // atmosphere
+  var atm = CX.createRadialGradient(cx, cy, R * 0.95, cx, cy, R * 1.14);
+  atm.addColorStop(0, 'rgba(150,205,255,.42)');
+  atm.addColorStop(1, 'rgba(150,205,255,0)');
+  CX.fillStyle = atm;
+  CX.beginPath(); CX.arc(cx, cy, R * 1.14, 0, 7); CX.fill();
+  // ocean, lit from the upper left
+  var oc = CX.createRadialGradient(cx - R * 0.34, cy - R * 0.38, R * 0.10, cx, cy, R * 1.02);
+  oc.addColorStop(0, '#8fd2f5'); oc.addColorStop(0.38, '#3d94d6');
+  oc.addColorStop(0.78, '#1c5fa4'); oc.addColorStop(1, '#0e3364');
+  CX.fillStyle = oc;
+  CX.beginPath(); CX.arc(cx, cy, R, 0, 7); CX.fill();
+
+  CX.save();
+  CX.beginPath(); CX.arc(cx, cy, R, 0, 7); CX.clip();
+  CX.fillStyle = '#8ed052'; CX.strokeStyle = 'rgba(60,110,45,.55)'; CX.lineWidth = 1.2;
+  for (i = 0; i < LANDMASS.length; i++) {
+    var poly = LANDMASS[i], any = false;
+    CX.beginPath();
+    for (j = 0; j < poly.length; j++) {
+      var la = poly[j][1] * D, lo = (poly[j][0] - lon0) * D;
+      var z = Math.cos(la) * Math.cos(lo);          // towards the viewer
+      var px = cx + R * Math.cos(la) * Math.sin(lo);
+      var py = cy - R * Math.sin(la);
+      if (z < 0) {                                   // round the back: pin to the limb
+        var dx = px - cx, dy = py - cy, m = Math.hypot(dx, dy) || 1;
+        px = cx + dx / m * R; py = cy + dy / m * R;
+      } else any = true;
+      if (j === 0) CX.moveTo(px, py); else CX.lineTo(px, py);
+    }
+    CX.closePath();
+    if (any) { CX.fill(); CX.stroke(); }
+  }
+  // limb darkening: the sphere falls into shadow towards the lower right
+  var sh = CX.createRadialGradient(cx - R * 0.30, cy - R * 0.34, R * 0.20, cx, cy, R * 1.05);
+  sh.addColorStop(0, 'rgba(0,0,0,0)'); sh.addColorStop(0.62, 'rgba(0,10,30,.10)');
+  sh.addColorStop(1, 'rgba(0,8,24,.62)');
+  CX.fillStyle = sh; CX.fillRect(cx - R, cy - R, 2 * R, 2 * R);
+  // specular sheen
+  var gl = CX.createRadialGradient(cx - R * 0.40, cy - R * 0.48, 1, cx - R * 0.40, cy - R * 0.48, R * 0.72);
+  gl.addColorStop(0, 'rgba(255,255,255,.40)'); gl.addColorStop(1, 'rgba(255,255,255,0)');
+  CX.fillStyle = gl;
+  CX.beginPath(); CX.ellipse(cx - R * 0.36, cy - R * 0.44, R * 0.60, R * 0.44, -0.5, 0, 7); CX.fill();
+  CX.restore();
+
+  CX.strokeStyle = 'rgba(190,230,255,.30)'; CX.lineWidth = 2;
+  CX.beginPath(); CX.arc(cx, cy, R, 0, 7); CX.stroke();
+  CX.restore();
+}
+
+/* Which leg is carrying the body, and how far through its stance it is.
+   Phase 0 of a leg is heel strike and PI is toe-off, so the leg whose phase is
+   in [0, PI] is the one on the ground.  Before mid-stance the foot is ahead of
+   the hip and tends to slide forwards, so friction on it points backwards; after
+   mid-stance it presses backwards and friction on it points forwards. */
+function stancePhase(p) {
+  var TWO = Math.PI * 2;
+  var q1 = ((p % TWO) + TWO) % TWO;
+  var left = q1 <= Math.PI;
+  var q = left ? q1 : q1 - Math.PI;
+  return { q: q, left: left, braking: q < Math.PI / 2, u: q / Math.PI };
 }
 
 /* a round parachute canopy: u = 0 packed, 1 fully inflated */
 function drawCanopy(cx, rimY, span, u, shL, shR) {
   var rx = span * (0.14 + 0.86 * u) / 2;
   var ry = span * 0.46 * (0.28 + 0.72 * u);
-  var n = 6, i, a0, a1;
+  // An ODD number of gores is what makes the stripes mirror-symmetric: with an
+  // even count the alternating colours always come out red on one side and
+  // white on the other.  Seven gores put a single red panel on the centre line
+  // and matching pairs either side of it.
+  var n = 7, i, a0, a1;
   CX.save();
   for (i = 0; i < n; i++) {
     a0 = Math.PI + i * Math.PI / n; a1 = Math.PI + (i + 1) * Math.PI / n;
@@ -920,6 +1224,15 @@ function drawCanopy(cx, rimY, span, u, shL, shR) {
     CX.fillStyle = i % 2 ? '#d94f4f' : '#f2f5fa';
     CX.fill();
   }
+  // seams between the gores, and the apex vent
+  CX.strokeStyle = 'rgba(0,0,0,.22)'; CX.lineWidth = 1.2;
+  for (i = 1; i < n; i++) {
+    a0 = Math.PI + i * Math.PI / n;
+    CX.beginPath(); CX.moveTo(cx, rimY);
+    CX.lineTo(cx + Math.cos(a0) * rx, rimY + Math.sin(a0) * ry); CX.stroke();
+  }
+  CX.fillStyle = 'rgba(40,50,66,.45)';
+  CX.beginPath(); CX.ellipse(cx, rimY - ry * 0.90, rx * 0.10, ry * 0.07, 0, 0, 7); CX.fill();
   CX.strokeStyle = 'rgba(0,0,0,.35)'; CX.lineWidth = 1.6;
   CX.beginPath(); CX.ellipse(cx, rimY, rx, ry, 0, Math.PI, 0); CX.stroke();
   // suspension lines from the canopy rim down to both shoulders
@@ -969,14 +1282,20 @@ function drawFBD(spec) {
     var col = f.col || FC[f.type];
     var clamped = false;
     if (L < MINLEN) { dx *= MINLEN / L; dy *= MINLEN / L; clamped = true; }
-    var lab = f.label;
+    var lab = f.sym ? sym(f.sym) : f.label;
     if (clamped && f.val !== undefined) lab += ' = ' + fmtN(f.val);
+    // a PUSH arrives at the body (head on the contact point, tail outside);
+    // a PULL leaves it (tail on the body, head pointing away)
+    var ox = spec.bx, oy = spec.by;
+    if (f.kind === 'push') { ox -= dx; oy -= dy; }
     CX.save();
     CX.globalAlpha = unbal ? 0.55 : 1;
-    arrow(spec.bx, spec.by, dx, dy, col, clamped ? 3 : 4);
+    arrow(ox, oy, dx, dy, col, clamped ? 3 : 4);
     CX.restore();
     CX.save(); CX.globalAlpha = unbal ? 0.85 : 1;
-    arrowLabel(lab, spec.bx, spec.by, dx, dy, col);
+    if (f.side) midLabel(lab, ox, oy, dx, dy, col, f.side, f.sideAt);
+    else if (f.kind === 'push') arrowLabel(lab, ox + dx, oy + dy, -dx, -dy, col);
+    else arrowLabel(lab, ox, oy, dx, dy, col);
     CX.restore();
   });
 }
@@ -1012,9 +1331,8 @@ function drawForceCard(spec, shift) {
   }
 
   var ux = ndx / NL, uy = ndy / NL;
-  var nLab = (spec.net.label || 'F net') + '  ' + fmtN(Math.hypot(spec.net.fx, spec.net.fy));
-  var aLab = (spec.accel && spec.accel.label ? spec.accel.label : 'a') +
-             (spec.accelVal === undefined ? '' : '  ' + spec.accelVal);
+  var nLab = sym(spec.netSym || 'net') + '  ' + fmtN(Math.hypot(spec.net.fx, spec.net.fy));
+  var aLab = sym('accel') + (spec.accelVal === undefined ? '' : '  ' + spec.accelVal);
   // the two arrows are offset perpendicular to themselves; when they run vertically
   // their labels end up side by side, so the offset has to clear both label widths
   CX.save(); CX.font = "700 14px 'JetBrains Mono', monospace";
@@ -1098,6 +1416,47 @@ function drawForceCard(spec, shift) {
     arrowLabel(aLab, ax0 + oA.x, ay0 + oA.y, adx, ady, FC.accel);
   }
 }
+/* ---------------------------------------------------------------
+   The same draggable chrome as the resultant-force card, but empty:
+   a scene hands in the size it needs and paints its own contents.
+   Registering it as LAST_CARD is what makes the existing pointer
+   handling pick it up, so it drags and clamps exactly like the other.
+   --------------------------------------------------------------- */
+function drawSceneCard(key, title, cw, chh, def, shift, body) {
+  var w = cw + 2 * CARD_PAD, h = chh + CARD_TITLE + 2 * CARD_PAD;
+  CX.save();
+  CX.font = "600 11px Inter, sans-serif";
+  var need = CX.measureText(title).width + 28 + 10;
+  CX.font = "600 9px Inter, sans-serif";
+  need += CX.measureText('drag').width + 12;
+  CX.restore();
+  w = Math.max(w, need);
+  var pos = S.cardPos[key] || def;
+  var cx0 = Math.min(Math.max(pos.x, 6), W - w - 6);
+  var cy0 = Math.min(Math.max(pos.y, shift + 6), shift + H - h - 6);
+  LAST_CARD = { x: cx0, y: cy0, w: w, h: h }; publishCard();
+
+  CX.save();
+  CX.fillStyle = 'rgba(0,0,0,.28)'; rr(cx0 + 3, cy0 + 4, w, h, 12); CX.fill();
+  CX.globalAlpha = 0.96; CX.fillStyle = TH.card; rr(cx0, cy0, w, h, 12); CX.fill();
+  CX.globalAlpha = 1;
+  CX.strokeStyle = S.cardDrag ? TH.accent : TH.border;
+  CX.lineWidth = S.cardDrag ? 2 : 1.4;
+  rr(cx0, cy0, w, h, 12); CX.stroke();
+  CX.globalAlpha = .5; CX.strokeStyle = TH.border; CX.lineWidth = 1;
+  CX.beginPath(); CX.moveTo(cx0 + 1, cy0 + CARD_TITLE);
+  CX.lineTo(cx0 + w - 1, cy0 + CARD_TITLE); CX.stroke();
+  CX.globalAlpha = 1; CX.restore();
+  txt('⠿', cx0 + 11, cy0 + 18, 13, TH['text-muted'], 'left', 700);
+  txt(title, cx0 + 28, cy0 + 18, 11, TH['text-dim'], 'left', 600);
+  txt('drag', cx0 + w - 10, cy0 + 18, 9, TH['text-muted'], 'right', 600);
+  body(cx0 + CARD_PAD, cy0 + CARD_TITLE + CARD_PAD, w - 2 * CARD_PAD, chh);
+}
+/* width of a run of Inter text at a given size and weight */
+function textW(str, size, weight) {
+  CX.save(); CX.font = (weight || 600) + ' ' + size + 'px Inter, sans-serif';
+  var w = CX.measureText(str).width; CX.restore(); return w;
+}
 function publishCard() { window.LAST_CARD = LAST_CARD; }
 function cardHit(x, y) {
   return !!LAST_CARD && x >= LAST_CARD.x && x <= LAST_CARD.x + LAST_CARD.w &&
@@ -1115,10 +1474,15 @@ function fmtN(v) {
 function fbdLegend(types) {
   var card = $('cardLegend');
   if (!S.fbd || !types || !types.length) { card.classList.add('empty'); return; }
+  var lvl = FC_NAME[S.detail] || FC_NAME.short;
   var html = types.map(function (t) {
-    var col = (typeof t === 'string') ? FC[t] : t[0];
-    var nm  = (typeof t === 'string') ? FC_NAME[t] : t[1];
-    return '<span class="lgrow"><i class="lgsw" style="background:' + col + '"></i>' + nm + '</span>';
+    var col, nm, sy = '';
+    if (typeof t === 'string') {
+      col = FC[t]; nm = lvl[t] || t;
+      var slot = (t === 'net' || t === 'accel') ? t : t;
+      sy = '<b class="lgsym">' + symHTML(sym(slot)) + '</b>';
+    } else { col = t[0]; nm = t[1]; }
+    return '<span class="lgrow"><i class="lgsw" style="background:' + col + '"></i>' + sy + nm + '</span>';
   }).join('');
   card.classList.remove('empty');
   var body = $('legendBody');
@@ -1195,12 +1559,12 @@ function drawGraph(cv, g) {
    "Unbalance it" adds ONE horizontal force so the boundary with the 2nd Law shows.
    ===================================================================== */
 var SCEN = {};
-var EXLIST = { 1: ['puck', 'book', 'cruise', 'space'], 2: [], 3: [] };
+var EXLIST = { 1: ['book', 'puck', 'cruise', 'space', 'incline'], 2: [], 3: [] };
 function cur() { return SCEN[S.ex]; }
 
 /* ---------- 1.1  Hockey puck on ice ---------- */
 SCEN.puck = {
-  law: 1, key: 'puck', label: '🏒 Puck', title: 'Hockey puck gliding on ice', yShift: 136,
+  law: 1, key: 'puck', label: '🏒 Puck', title: 'Hockey puck gliding on ice', yShift: 116,
   p: { m: 0.17, v0: 6, mu: 0.06 },
   sliders: [
     { k: 'v0', name: 'Speed of the puck', min: 1, max: 10, step: 0.5, unit: 'm/s', live: 'v' },
@@ -1217,19 +1581,50 @@ SCEN.puck = {
     if (this.st.x > W + 60) this.st.x = -60;
   },
   draw: function () {
-    skyBox();
-    // ice
+    // An ice-hockey rink rather than a dark slab: pale blue-white ice, white
+    // dasher boards behind it and the painted red / blue rink lines, so the
+    // scene reads as a rink at a glance.
     CX.save();
-    CX.fillStyle = grad(0, 430, 0, H, [[0, TH.light ? '#cfe6f5' : '#1d3a52'], [1, TH.light ? '#a8cfe8' : '#12283a']]);
+    CX.fillStyle = grad(0, 60, 0, 400, [[0, TH.light ? '#bcd2e4' : '#16334b'],
+                                        [1, TH.light ? '#9dbcd6' : '#20486a']]);
+    CX.fillRect(0, -OV, W, 400 + OV);
+    // dasher boards with their kick-plate stripe
+    CX.fillStyle = TH.light ? '#f0f5fa' : '#dbe8f4';
+    CX.fillRect(0, 352, W, 48);
+    CX.fillStyle = 'rgba(200,72,72,.75)'; CX.fillRect(0, 386, W, 6);
+    CX.strokeStyle = TH.light ? 'rgba(70,105,140,.22)' : 'rgba(70,105,140,.30)'; CX.lineWidth = 2;
+    for (var bd = 0; bd < 9; bd++) { CX.beginPath(); CX.moveTo(20 + bd * 145, 352); CX.lineTo(20 + bd * 145, 392); CX.stroke(); }
+    // the ice itself — pale, blue-white, brightest just past the boards
+    CX.fillStyle = grad(0, 400, 0, H + OV, [[0, TH.light ? '#fbfeff' : '#c9e4f5'],
+                                            [0.45, TH.light ? '#e3f2fc' : '#8fbfdd'],
+                                            [1, TH.light ? '#bcdcf0' : '#4a7fa3']]);
     CX.fillRect(0, 400, W, H + OV - 400);
+    // painted rink lines, laid over the ice in perspective
+    var band = function (px, wid, col) {
+      CX.fillStyle = col;
+      CX.beginPath(); CX.moveTo(px, 400); CX.lineTo(px + wid, 400);
+      CX.lineTo(px + wid + 26, H + OV); CX.lineTo(px + 26, H + OV);
+      CX.closePath(); CX.fill();
+    };
+    band(292, 9, 'rgba(60,110,190,.42)');
+    band(596, 13, 'rgba(206,64,64,.45)');
+    band(900, 9, 'rgba(60,110,190,.42)');
+    // faceoff circle and its spot, flattened into the same perspective
+    CX.strokeStyle = 'rgba(206,64,64,.38)'; CX.lineWidth = 4;
+    CX.beginPath(); CX.ellipse(772, 546, 104, 30, 0, 0, 7); CX.stroke();
+    CX.fillStyle = 'rgba(206,64,64,.42)';
+    CX.beginPath(); CX.ellipse(772, 546, 17, 5, 0, 0, 7); CX.fill();
+    // gloss streaks left by the skates
     CX.lineWidth = 2;
     for (var i = 0; 420 + i * 26 < H + OV; i++) {
       var yy = 420 + i * 26;
-      CX.strokeStyle = 'rgba(255,255,255,' + Math.max(0.04, 0.22 - i * 0.011).toFixed(3) + ')';
+      CX.strokeStyle = 'rgba(255,255,255,' + Math.max(0.05, 0.34 - i * 0.016).toFixed(3) + ')';
       CX.beginPath(); CX.moveTo(0, yy); CX.lineTo(W, yy + 3); CX.stroke();
     }
+    CX.strokeStyle = 'rgba(255,255,255,.75)'; CX.lineWidth = 2.5;
+    CX.beginPath(); CX.moveTo(0, 400); CX.lineTo(W, 400); CX.stroke();
     CX.restore();
-    txt('frictionless ice', 16, 408, 12, TH['text-muted'], 'left', 600);
+    txt('frictionless ice', 16, 380, 12, TH.light ? '#5a7183' : '#3f5f7c', 'left', 700);
     var x = this.st.x, y = 400;
     shadowEllipse(x, y + 9, 58, 12);
     // motion streaks
@@ -1255,10 +1650,10 @@ SCEN.puck = {
     var g = PHYS.G, W_ = this.p.m * g;
     var r = PHYS.puck({ m: this.p.m, v: this.st.v, mu: this.p.mu, unbalance: S.unbalance });
     var f = [
-      { fx: 0, fy: W_, type: 'weight', label: 'W', val: W_ },
-      { fx: 0, fy: -W_, type: 'normal', label: 'N', val: W_ }
+      { fx: 0, fy: W_, type: 'weight', sym: 'weight', label: 'W', val: W_ },
+      { fx: 0, fy: -W_, type: 'normal', sym: 'normal', label: 'N', val: W_ }
     ];
-    if (S.unbalance && this.st.v > 0.02) f.push({ fx: -r.f, fy: 0, type: 'friction', label: 'f', val: r.f });
+    if (S.unbalance && this.st.v > 0.02) f.push({ fx: -r.f, fy: 0, type: 'friction', sym: 'friction', label: 'f', val: r.f });
     return {
       forces: f, scale: 135 / Math.max(W_, 1e-6),
       cardAt: { x: 110, y: 430 }, accelVal: r.a.toFixed(3) + ' m/s²',
@@ -1298,7 +1693,7 @@ SCEN.puck = {
 
 /* ---------- 1.2  Book on a table ---------- */
 SCEN.book = {
-  law: 1, key: 'book', label: '⚖️ Book', title: 'Book resting on a table', yShift: 154,
+  law: 1, key: 'book', label: '⚖️ Book', title: 'Book resting on a table', yShift: 134,
   p: { m: 1.2, push: 4, muS: 0.5, muK: 0.4 },
   sliders: [
     { k: 'm', name: 'Mass of the book', min: 0.3, max: 3, step: 0.1, unit: 'kg' },
@@ -1343,12 +1738,12 @@ SCEN.book = {
   fbd: function () {
     var r = PHYS.book({ m: this.p.m, muS: this.p.muS, muK: this.p.muS * 0.8, push: this.p.push, unbalance: S.unbalance });
     var f = [
-      { fx: 0, fy: r.W, type: 'weight', label: 'W', val: r.W },
-      { fx: 0, fy: -r.N, type: 'normal', label: 'N', val: r.N }
+      { fx: 0, fy: r.W, type: 'weight', sym: 'weight', label: 'W', val: r.W },
+      { fx: 0, fy: -r.N, type: 'normal', sym: 'normal', label: 'N', val: r.N }
     ];
     if (S.unbalance && this.p.push > 0) {
-      f.push({ fx: r.push, fy: 0, type: 'applied', label: 'F', val: r.push });
-      if (r.f > 0.001) f.push({ fx: -r.f, fy: 0, type: 'friction', label: 'f', val: r.f });
+      f.push({ fx: r.push, fy: 0, type: 'applied', sym: 'applied', label: 'F', val: r.push });
+      if (r.f > 0.001) f.push({ fx: -r.f, fy: 0, type: 'friction', sym: 'friction', label: 'f', val: r.f });
     }
     var mx = Math.max(r.W, r.push, 1e-6);
     return {
@@ -1394,7 +1789,7 @@ SCEN.book = {
 
 /* ---------- 1.3  Car cruising at constant speed ---------- */
 SCEN.cruise = {
-  law: 1, key: 'cruise', label: '🚗 Cruise', title: 'Car cruising at a steady speed', yShift: 194,
+  law: 1, key: 'cruise', label: '🚗 Cruise', title: 'Car cruising at a steady speed', yShift: 174,
   p: { m: 1200, v0: 16.7, resist: 600, dF: 900 },
   sliders: [
     { k: 'v0', name: 'Cruising speed', min: 5, max: 33, step: 0.5, unit: 'm/s', live: 'v' },
@@ -1407,7 +1802,11 @@ SCEN.cruise = {
   step: function (dt) {
     var r = PHYS.cruise({ m: this.p.m, resist: this.p.resist, dF: this.p.dF, unbalance: S.unbalance });
     this.st.v = Math.max(0, this.st.v + r.a * dt);
-    this.st.road = (this.st.road + this.st.v * 9 * dt) % 120;
+    // 67680 = LCM(1440, 94): the pole spacing wraps every 1440 px and the lane
+    // dash pattern every 54 + 40 = 94 px, so wrapping the phase on their common
+    // multiple keeps BOTH continuous.  Wrapping on 120 (as before) left the dash
+    // pattern 26 px out of step every cycle, which is the stutter.
+    this.st.road = (this.st.road + this.st.v * 9 * dt) % 67680;
     this.st.wheel += this.st.v * dt * 3;
   },
   draw: function () {
@@ -1472,10 +1871,10 @@ SCEN.cruise = {
   fbd: function () {
     var r = PHYS.cruise({ m: this.p.m, resist: this.p.resist, dF: this.p.dF, unbalance: S.unbalance });
     var f = [
-      { fx: 0, fy: r.W, type: 'weight', label: 'W', val: r.W },
-      { fx: 0, fy: -r.N, type: 'normal', label: 'N', val: r.N },
-      { fx: r.thrust, fy: 0, type: 'applied', label: 'F', val: r.thrust },
-      { fx: -r.resist, fy: 0, type: 'friction', label: 'f', val: r.resist }
+      { fx: 0, fy: r.W, type: 'weight', sym: 'weight', label: 'W', val: r.W },
+      { fx: 0, fy: -r.N, type: 'normal', sym: 'normal', label: 'N', val: r.N },
+      { fx: r.thrust, fy: 0, type: 'applied', sym: 'applied', label: 'F', val: r.thrust },
+      { fx: -r.resist, fy: 0, type: 'friction', sym: 'friction', label: 'f', val: r.resist }
     ];
     var mx = Math.max(r.W, r.thrust, r.resist);
     return {
@@ -1520,7 +1919,7 @@ SCEN.cruise = {
 
 /* ---------- 1.4  Astronaut drifting in deep space ---------- */
 SCEN.space = {
-  law: 1, key: 'space', label: '🚀 Space', title: 'Astronaut drifting in deep space', yShift: 106,
+  law: 1, key: 'space', label: '🚀 Space', title: 'Astronaut drifting in deep space', yShift: 86,
   p: { m: 90, v0: 2, thrust: 30 },
   sliders: [
     { k: 'v0', name: 'Drift speed', min: 0, max: 6, step: 0.25, unit: 'm/s', live: 'v' },
@@ -1550,8 +1949,10 @@ SCEN.space = {
     });
     CX.globalAlpha = 1;
     CX.restore();
-    txt('deep space — far from any star or planet', 16, 650, 13, 'rgba(255,255,255,.55)', 'left', 600);
-    var x = this.st.x, y = 300, sp = this.st.spin;
+    txt('deep space — far from any star or planet', 16, 186, 13, 'rgba(255,255,255,.58)', 'left', 600);
+    // the astronaut sits on the vertical mid-line of the canvas: with nothing else
+    // in the frame there is no reason for him to hug the top edge
+    var x = this.st.x, y = 424, sp = this.st.spin;
     CX.save();
     CX.translate(x, y); CX.rotate(Math.sin(sp) * 0.12); CX.scale(1.35, 1.35);
     // backpack
@@ -1587,7 +1988,7 @@ SCEN.space = {
   fbd: function () {
     var r = PHYS.space({ m: this.p.m, thrust: this.p.thrust, unbalance: S.unbalance });
     var f = [];
-    if (S.unbalance) f.push({ fx: r.Fx, fy: 0, type: 'applied', label: 'F', val: Math.abs(r.Fx) });
+    if (S.unbalance) f.push({ fx: r.Fx, fy: 0, type: 'applied', sym: 'applied', label: 'F', val: Math.abs(r.Fx) });
     return {
       forces: f, scale: 110 / Math.max(Math.abs(r.Fx), 1e-6),
       cardAt: { x: 110, y: 480 }, accelVal: r.a.toFixed(3) + ' m/s²',
@@ -1625,6 +2026,134 @@ SCEN.space = {
   }
 };
 
+/* ---------- 1.5  Block on an inclined plane ---------- */
+SCEN.incline = {
+  law: 1, key: 'incline', label: '📐 Incline', title: 'Block resting on an inclined plane', yShift: 1,
+  p: { m: 2, thetaDeg: 20, muS: 0.6 },
+  sliders: [
+    { k: 'thetaDeg', name: 'Angle of the slope θ', min: 5, max: 40, step: 1, unit: '°' },
+    { k: 'muS', name: 'Static friction coefficient μs', min: 0.1, max: 0.9, step: 0.05, unit: '' },
+    { k: 'm', name: 'Mass of the block', min: 0.5, max: 10, step: 0.5, unit: 'kg' }
+  ],
+  BASE: 470, AX: 300,
+  cfg: function () {
+    return { m: this.p.m, thetaDeg: this.p.thetaDeg, muS: this.p.muS, smooth: S.unbalance };
+  },
+  /* run of the ramp, capped so a steep slope never runs off the top of the canvas */
+  run: function () {
+    var t = Math.tan(this.p.thetaDeg * Math.PI / 180);
+    return Math.min(640, 300 / Math.max(t, 1e-6));
+  },
+  slopeLen: function () { return this.run() / Math.cos(this.p.thetaDeg * Math.PI / 180); },
+  reset: function () { this.st = { d: 46, v: 0 }; },
+  onSlider: function () { this.reset(); },
+  PPM: 46,
+  step: function (dt) {
+    var r = PHYS.incline(this.cfg());
+    if (!r.sliding) { this.st.v = 0; return; }
+    this.st.v += r.a * dt;
+    this.st.d += this.st.v * this.PPM * dt;
+    if (this.st.d > this.slopeLen() - 44) this.reset();
+  },
+  draw: function () {
+    skyBox();
+    groundBand(this.BASE, 'ground', 760);
+    var th = this.p.thetaDeg * Math.PI / 180;
+    var L = this.run(), hgt = L * Math.tan(th);
+    var ax = this.AX, ay = this.BASE - hgt;          // apex, top left
+    var bx = ax + L, by = this.BASE;                 // foot of the slope, bottom right
+    // the wedge
+    CX.save();
+    CX.fillStyle = grad(ax, ay, bx, by,
+      [[0, TH.light ? '#b9a487' : '#4a4033'], [1, TH.light ? '#8e7c62' : '#2e2822']]);
+    CX.beginPath(); CX.moveTo(ax, ay); CX.lineTo(bx, by); CX.lineTo(ax, by); CX.closePath();
+    CX.fill();
+    CX.strokeStyle = TH.border; CX.lineWidth = 2; CX.stroke();
+    CX.restore();
+    // angle mark at the foot
+    CX.save();
+    CX.strokeStyle = TH.accent; CX.lineWidth = 2;
+    CX.beginPath(); CX.arc(bx, by, 54, Math.PI - th, Math.PI); CX.stroke();
+    CX.setLineDash([6, 5]); CX.globalAlpha = .7; CX.lineWidth = 1.5;
+    CX.beginPath(); CX.moveTo(bx, by); CX.lineTo(bx - 130, by); CX.stroke();
+    CX.restore();
+    mono('θ = ' + this.p.thetaDeg.toFixed(0) + '°', bx - 84, by - 22, 14, TH.accent, 'center');
+
+    // the block, sitting on the slope
+    var ux = Math.cos(th), uy = Math.sin(th);        // unit vector down the slope
+    var nx = Math.sin(th), ny = -Math.cos(th);       // outward normal
+    var d = Math.min(this.st.d, this.slopeLen() - 30);
+    var bw = 74, bh = 48;
+    var cx0 = ax + ux * d + nx * bh / 2, cy0 = ay + uy * d + ny * bh / 2;
+    CX.save();
+    CX.translate(cx0, cy0); CX.rotate(th);
+    CX.fillStyle = grad(-bw / 2, -bh / 2, bw / 2, bh / 2, [[0, '#4fa3c7'], [1, '#2b6f92']]);
+    rr(-bw / 2, -bh / 2, bw, bh, 7); CX.fill();
+    CX.strokeStyle = 'rgba(0,0,0,.35)'; CX.lineWidth = 1.6; CX.stroke();
+    CX.fillStyle = 'rgba(255,255,255,.35)';
+    rr(-bw / 2 + 6, -bh / 2 + 5, bw - 12, 7, 3); CX.fill();
+    mono(this.p.m.toFixed(1) + ' kg', 0, 6, 13, '#ffffff', 'center');
+    CX.restore();
+
+    var r = PHYS.incline(this.cfg());
+    txt(S.unbalance ? 'smooth slope — no friction' : 'rough slope · μs = ' + this.p.muS.toFixed(2),
+        ax, this.BASE + 34, 13, TH['text-muted'], 'left', 600);
+    mono('critical angle  atan(μs) = ' + r.critical.toFixed(1) + '°',
+         ax, this.BASE + 58, 12, r.sliding ? TH.rose : TH.green, 'left');
+    return { bx: cx0, by: cy0, ux: ux, uy: uy, nx: nx, ny: ny };
+  },
+  fbd: function (a) {
+    var r = PHYS.incline(this.cfg());
+    var f = [
+      { fx: 0, fy: r.W, type: 'weight', sym: 'weight', label: 'W', val: r.W },
+      { fx: r.N * a.nx, fy: r.N * a.ny, type: 'normal', sym: 'normal', label: 'N', val: r.N }
+    ];
+    if (r.f > 0.001) f.push({ fx: -r.f * a.ux, fy: -r.f * a.uy, type: 'friction', sym: 'friction', label: 'f', val: r.f });
+    return {
+      forces: f, scale: 110 / Math.max(r.W, 1e-6),
+      cardAt: { x: 830, y: 150 }, accelVal: r.a.toFixed(2) + ' m/s²',
+      net: r.sliding ? { fx: r.Fnet * a.ux, fy: r.Fnet * a.uy, label: 'F net' } : null,
+      accel: r.sliding ? { ax: a.ux * Math.min(120, 34 + r.a * 12), ay: a.uy * Math.min(120, 34 + r.a * 12), label: 'a' } : null,
+      legend: ['weight', 'normal'].concat(r.f > 0.001 ? ['friction'] : [])
+                                  .concat(r.sliding ? ['net', 'accel'] : [])
+    };
+  },
+  read: function () {
+    var r = PHYS.incline(this.cfg());
+    return [
+      ['Angle of the slope θ', this.p.thetaDeg.toFixed(0) + '°'],
+      ['Mass m', this.p.m.toFixed(1) + ' kg'],
+      ['Weight W = mg', r.W.toFixed(2) + ' N'],
+      ['Component along the slope mg sin θ', r.along.toFixed(2) + ' N'],
+      ['Normal force N = mg cos θ', r.N.toFixed(2) + ' N'],
+      ['Friction f', r.f.toFixed(2) + ' N'],
+      ['Maximum static friction μs N', r.fsMax.toFixed(2) + ' N'],
+      ['Critical angle atan(μs)', r.critical.toFixed(1) + '°'],
+      ['Resultant force along the slope', r.Fnet.toFixed(2) + ' N'],
+      ['Acceleration a', r.a.toFixed(2) + ' m/s²'],
+      ['State', r.sliding ? 'sliding down the slope' : 'at rest (equilibrium)']
+    ];
+  },
+  msg: function () {
+    var r = PHYS.incline(this.cfg());
+    if (!r.sliding) return ['Net force = 0 → a = 0 → the block stays exactly where it is',
+      'mg sin θ = ' + r.along.toFixed(1) + ' N is still inside the friction limit μsN = ' + r.fsMax.toFixed(1) + ' N.'];
+    return ['Resultant force = ' + r.Fnet.toFixed(1) + ' N down the slope → a = ' + r.a.toFixed(2) + ' m/s²',
+      S.unbalance ? 'With no friction nothing balances mg sin θ, so it accelerates.'
+                  : 'θ is past the critical angle, so friction can no longer hold it.'];
+  },
+  info: function () {
+    return '<ol>' +
+      '<li>Isolate the block. Three forces act on it: its <b>weight W = mg</b> straight down, the <b>normal contact force N</b> perpendicular to the slope, and <b>friction f</b> along the slope.</li>' +
+      '<li>Resolve the weight along and perpendicular to the slope: the component pulling it down the slope is <b>mg sin θ</b>, and the component pressing it into the slope is <b>mg cos θ</b>.</li>' +
+      '<li>Perpendicular to the slope there is no motion, so <b>N = mg cos θ</b>. Notice N is smaller than the weight, and gets smaller as the slope steepens.</li>' +
+      '<li>Along the slope, static friction grows to match mg sin θ, so the resultant is zero and the block does not move — this is the 1st Law on a slope.</li>' +
+      '<li>Friction can only grow to <b>μsN</b>. Once mg sin θ exceeds that — i.e. once <b>θ > atan(μs)</b>, the critical angle — the block breaks away and accelerates at <b>a = g(sin θ − μk cos θ)</b>.</li>' +
+      '</ol><p class="note">Take the friction away and nothing balances mg sin θ at any angle: on a perfectly smooth slope the block always slides, with a = g sin θ.</p>';
+  }
+};
+
+
 /* =====================================================================
    SCENARIOS — Mode 2 : Newton's 2nd Law
    Written in full as  resultant force = rate of change of momentum,
@@ -1634,13 +2163,13 @@ EXLIST[2] = ['trolley', 'rocket', 'brake', 'skydive', 'orbit'];
 
 /* ---------- 2.1  Trolley on a smooth track ---------- */
 SCEN.trolley = {
-  law: 2, key: 'trolley', label: '🛒 Trolley', title: 'Trolley pushed along a smooth track', yShift: 178,
+  law: 2, key: 'trolley', label: '🛒 Trolley', title: 'Trolley pushed along a smooth track', yShift: 158,
   p: { F: 30, m: 4 },
   sliders: [
     { k: 'F', name: 'Applied force F', min: 0, max: 100, step: 1, unit: 'N' },
     { k: 'm', name: 'Mass of the trolley m', min: 1, max: 10, step: 0.5, unit: 'kg' }
   ],
-  graphs: [['aF', 'a vs F'], ['am', 'a vs 1/m']],
+  graphs: [['aF', 'a vs F'], ['am', 'a vs m']],
   reset: function () { this.st = { x: 150, v: 0, t: 0 }; },
   PPM: 26,
   step: function (dt) {
@@ -1694,10 +2223,10 @@ SCEN.trolley = {
     var r = PHYS.trolley({ F: this.p.F, m: this.p.m, v: this.st.v });
     var Wt = this.p.m * PHYS.G;
     var f = [
-      { fx: 0, fy: Wt, type: 'weight', label: 'W', val: Wt },
-      { fx: 0, fy: -Wt, type: 'normal', label: 'N', val: Wt }
+      { fx: 0, fy: Wt, type: 'weight', sym: 'weight', label: 'W', val: Wt },
+      { fx: 0, fy: -Wt, type: 'normal', sym: 'normal', label: 'N', val: Wt }
     ];
-    if (this.p.F > 0) f.push({ fx: this.p.F, fy: 0, type: 'applied', label: 'F', val: this.p.F });
+    if (this.p.F > 0) f.push({ fx: this.p.F, fy: 0, type: 'applied', sym: 'applied', label: 'F', val: this.p.F });
     return {
       forces: f, scale: 95 / Math.max(Wt, this.p.F, 1e-6),
       cardAt: { x: 110, y: 545 }, accelVal: r.a.toFixed(2) + ' m/s²',
@@ -1721,13 +2250,14 @@ SCEN.trolley = {
   graph: function (which) {
     var self = this;
     if (which === 'am') {
+      // a against m itself: the inverse curve a = F/m, which is what makes the
+      // point of "double the mass, half the acceleration" visible directly
       var pts = [], mm;
-      for (mm = 1; mm <= 10.001; mm += 0.25) pts.push([1 / mm, this.p.F / mm]);
-      pts.sort(function (a, b) { return a[0] - b[0]; });
-      return { xlab: '1/m  (kg⁻¹)', ylab: 'a  (m/s²)', x0: 0, x1: 1.05, y0: 0,
+      for (mm = 1; mm <= 10.001; mm += 0.1) pts.push([mm, this.p.F / mm]);
+      return { xlab: 'm  (kg)', ylab: 'a  (m/s²)', x0: 0, x1: 10.4, y0: 0,
                y1: Math.max(1, this.p.F * 1.05),
                series: [{ pts: pts, col: TH.accent }],
-               marks: [[1 / this.p.m, this.p.F / this.p.m, TH.green]] };
+               marks: [[this.p.m, this.p.F / this.p.m, TH.green]] };
     }
     var p2 = [[0, 0], [100, 100 / this.p.m]];
     return { xlab: 'F  (N)', ylab: 'a  (m/s²)', x0: 0, x1: 100, y0: 0,
@@ -1746,14 +2276,14 @@ SCEN.trolley = {
       '<li>Newton\'s 2nd Law in full: <b>resultant force = rate of change of momentum</b>, F = Δp/Δt.</li>' +
       '<li>The mass of the trolley does not change, so Δp = mΔv and F = m(Δv/Δt) = <b>ma</b>.</li>' +
       '<li>Rearranging, <b>a = F/m</b>. Doubling F doubles a; doubling m halves a.</li>' +
-      '<li>Plotting a against F gives a <b>straight line through the origin</b> (a ∝ F). Plotting a against 1/m also gives a straight line through the origin (a ∝ 1/m).</li>' +
+      '<li>Plotting a against F gives a <b>straight line through the origin</b> (a ∝ F). Plotting a against <b>m</b> gives a curve, because a is inversely proportional to m — halving with every doubling of the mass.</li>' +
       '</ol>';
   }
 };
 
 /* ---------- 2.2  Rocket — mass changes ---------- */
 SCEN.rocket = {
-  law: 2, key: 'rocket', label: '🚀 Rocket', title: 'Rocket launch — the mass changes', yShift: 128,
+  law: 2, key: 'rocket', label: '🚀 Rocket', title: 'Rocket launch — the mass changes', yShift: 121,
   p: { mdot: 8, ve: 2500, mFuel: 800 },
   mDry: 200,
   sliders: [
@@ -1847,8 +2377,8 @@ SCEN.rocket = {
   },
   fbd: function () {
     var r = PHYS.rocket(this.cfg(), this.st.t);
-    var f = [{ fx: 0, fy: r.W, type: 'weight', label: 'W', val: r.W }];
-    if (r.thrust > 0) f.push({ fx: 0, fy: -r.thrust, type: 'applied', label: 'T', val: r.thrust });
+    var f = [{ fx: 0, fy: r.W, type: 'weight', sym: 'weight', label: 'W', val: r.W }];
+    if (r.thrust > 0) f.push({ fx: 0, fy: -r.thrust, type: 'applied', sym: 'thrust', label: 'T', val: r.thrust });
     var mx = Math.max(r.W, r.thrust, 1e-6);
     return {
       forces: f, scale: 130 / mx,
@@ -1906,7 +2436,7 @@ SCEN.rocket = {
 
 /* ---------- 2.3  Braking car — impulse ---------- */
 SCEN.brake = {
-  law: 2, key: 'brake', label: '🛑 Brake', title: 'Braking car — impulse and momentum', yShift: 207,
+  law: 2, key: 'brake', label: '🛑 Brake', title: 'Braking car — impulse and momentum', yShift: 187,
   p: { v0: 20, F: 4800, m: 1200 },
   sliders: [
     { k: 'v0', name: 'Initial velocity v₀', min: 5, max: 35, step: 1, unit: 'm/s' },
@@ -1984,10 +2514,10 @@ SCEN.brake = {
     var r = PHYS.brake(this.p, this.st.t);
     var Wt = this.p.m * PHYS.G, moving = r.v > 0.02;
     var f = [
-      { fx: 0, fy: Wt, type: 'weight', label: 'W', val: Wt },
-      { fx: 0, fy: -Wt, type: 'normal', label: 'N', val: Wt }
+      { fx: 0, fy: Wt, type: 'weight', sym: 'weight', label: 'W', val: Wt },
+      { fx: 0, fy: -Wt, type: 'normal', sym: 'normal', label: 'N', val: Wt }
     ];
-    if (moving) f.push({ fx: -this.p.F, fy: 0, type: 'friction', label: 'F brake', val: this.p.F });
+    if (moving) f.push({ fx: -this.p.F, fy: 0, type: 'friction', sym: 'brake', label: 'F brake', val: this.p.F });
     return {
       forces: f, scale: 105 / Math.max(Wt, this.p.F),
       cardAt: { x: 680, y: 290 }, accelVal: r.a.toFixed(2) + ' m/s²',
@@ -2044,7 +2574,7 @@ SCEN.brake = {
 /* ---------- 2.4  Skydiver — drag, parachute, terminal velocity ---------- */
 SCEN.skydive = {
   law: 2, key: 'skydive', label: '🪂 Skydive',
-  title: 'Skydiver — drag, parachute and terminal velocity', yShift: 62,
+  title: 'Skydiver — drag, parachute and terminal velocity', yShift: 0,
   p: { m: 80, b: 15, k: 0.30, A: 9, tOpen: 12 },
   INFLATE: 1.6,          // seconds the canopy needs to fill
   sliders: [
@@ -2095,7 +2625,9 @@ SCEN.skydive = {
     var r = PHYS.skydive(this.cfg(), this.st.v, this.st.t);
     var u = this.inflation();
     var lerp = function (a, b, t) { return a + (b - a) * t; };
-    var fx = 372, feet = 318 + 150 * u, hgt = 176;
+    // low enough that the drag arrow (up to 130 px, plus its label) and the open
+    // canopy both stay clear of the top edge and of the title chip
+    var fx = 372, feet = 400 + 150 * u, hgt = 176;
 
     // rushing-air streaks, shorter once the canopy has slowed the fall
     CX.save(); CX.strokeStyle = TH.light ? 'rgba(40,60,90,.32)' : 'rgba(255,255,255,.30)';
@@ -2116,7 +2648,10 @@ SCEN.skydive = {
       legR: [lerp(0.44, 0.10, u), lerp(0.34, -0.06, u)]
     };
     var fig = cartoonFigure(fx, feet, hgt, pose,
-      { suit: '#2f5d9e', limb: '#3c73bd', shoe: '#22283a', helmet: '#d94f4f' });
+      { suit: '#2f5d9e', limb: '#3c73bd', shoe: '#22283a', helmet: '#d94f4f',
+        skin: '#f6d3b0',
+        // wind in the face on the way down, then a grin the moment the canopy grabs
+        mouth: u > 0.35 ? 'grin' : (this.st.v > 12 ? 'o' : 'smile') });
     if (u > 0.001) drawCanopy(fx, feet - hgt - 66, 240, u, fig.shL, fig.shR);
 
     mono('fallen ' + this.st.y.toFixed(0) + ' m', 60, 200, 13, TH['text-dim'], 'left');
@@ -2142,12 +2677,15 @@ SCEN.skydive = {
   fbd: function () {
     var r = PHYS.skydive(this.cfg(), this.st.v, this.st.t);
     var f = [
-      { fx: 0, fy: r.W, type: 'weight', label: 'W', val: r.W },
-      { fx: 0, fy: -r.D, type: 'friction', label: 'D', val: r.D }
+      { fx: 0, fy: r.W, type: 'weight', sym: 'weight', label: 'W', val: r.W },
+      { fx: 0, fy: -r.D, type: 'friction', sym: 'drag', label: 'D', val: r.D }
     ];
     return {
-      forces: f, scale: 130 / Math.max(r.W, 1e-6),
-      cardAt: { x: 620, y: 150 }, accelVal: r.a.toFixed(2) + ' m/s²',
+      // scale on whichever of the two is bigger: while the canopy inflates the drag
+      // briefly runs to several times the weight, and a fixed W-based scale would
+      // fire that arrow clean off the top of the canvas
+      forces: f, scale: 130 / Math.max(r.W, r.D, 1e-6),
+      cardAt: { x: 620, y: 100 }, accelVal: r.a.toFixed(2) + ' m/s²',
       net: Math.abs(r.Fnet) > 0.5 ? { fx: 0, fy: r.Fnet, label: 'F net' } : null,
       accel: Math.abs(r.a) > 0.02
         ? { ax: 0, ay: Math.max(-150, Math.min(150, (r.a > 0 ? 40 : -40) + r.a * 11)), label: 'a' } : null,
@@ -2238,7 +2776,7 @@ SCEN.skydive = {
 
 /* ---------- 2.5  Ball on a string — circular motion ---------- */
 SCEN.orbit = {
-  law: 2, key: 'orbit', label: '🎾 Orbit', title: 'Ball whirled on a string (view from above)', yShift: -40,
+  law: 2, key: 'orbit', label: '🎾 Orbit', title: 'Ball whirled on a string (view from above)', yShift: -60,
   p: { v: 4, r: 0.8, m: 0.2 },
   sliders: [
     { k: 'v', name: 'Speed of the ball v', min: 1, max: 10, step: 0.25, unit: 'm/s' },
@@ -2296,11 +2834,12 @@ SCEN.orbit = {
     var px = -uy, py = ux;                        // perpendicular, so the three arrows never overlap
     var aLen = Math.min(120, 30 + r.a * 2.6);
     return {
-      forces: [{ fx: ux * r.T, fy: uy * r.T, type: 'tension', label: 'T', val: r.T }],
+      forces: [{ fx: ux * r.T, fy: uy * r.T, type: 'tension', sym: 'tension', label: 'T', val: r.T }],
       scale: 110 / Math.max(r.T, 1e-6),
       cardAt: { x: 34, y: 56 }, accelVal: r.a.toFixed(1) + ' m/s²',
       cardDir: { x: -1, y: 0 },
       cardNote: 'both vectors point towards the centre of the circle',
+      netSym: 'centripetal',
       net: { fx: ux * r.Fc, fy: uy * r.Fc, label: 'F c' },
       accel: { ax: ux * aLen, ay: uy * aLen, label: 'a' },
       legend: ['tension', 'net', 'accel']
@@ -2368,14 +2907,20 @@ EXLIST[3] = ['walk', 'bounce', 'balloon', 'gravity', 'pair'];
 
 var PAIR_A = '#7FDBCA';   // force ON the first body
 var PAIR_B = '#FFD866';   // force ON the second body
-function pairSpec(bx, by, fx, fy, label, col, scale) {
+/* kind: 'push' — the arrow ARRIVES at the body, head on the contact point;
+         'pull' — the arrow LEAVES the body, tail on it, head pointing away.
+   Getting this right is what makes a pair diagram readable: a contact force is
+   always drawn pushing into the surface, gravity is always drawn pulling away. */
+function pairSpec(bx, by, fx, fy, label, col, scale, kind, side, sideAt) {
   return { bx: bx, by: by, scale: scale,
-           forces: [{ fx: fx, fy: fy, type: '_pair', label: label, val: Math.hypot(fx, fy), col: col }] };
+           forces: [{ fx: fx, fy: fy, type: '_pair', label: label,
+                      val: Math.hypot(fx, fy), col: col, kind: kind || 'push',
+                      side: side || 0, sideAt: sideAt }] };
 }
 
 /* ---------- 3.1  Walking ---------- */
 SCEN.walk = {
-  law: 3, key: 'walk', label: '👣 Walk', title: 'Walking — you push the ground, the ground pushes you', yShift: 106,
+  law: 3, key: 'walk', label: '👣 Walk', title: 'Walking — you push the ground, the ground pushes you', yShift: 86,
   p: { F: 150, mPerson: 60 },
   sliders: [
     { k: 'F', name: 'Size of each force in the pair', min: 40, max: 400, step: 10, unit: 'N' },
@@ -2387,34 +2932,111 @@ SCEN.walk = {
     var r = PHYS.walk({ F: this.p.F, mPerson: this.p.mPerson, mEarth: 5.972e24 });
     this.st.v = Math.min(6, this.st.v + r.aPerson * dt * 0.25);
     this.st.x += this.st.v * this.PPM * dt;
-    this.st.stride += this.st.v * dt * 3.2 + dt * 1.6;
+    // advance the gait phase by exactly 2*PI per stride length, so the planted
+    // foot stays on the ground instead of sliding backwards under the figure
+    this.st.stride += (this.st.v * this.PPM * dt) * (2 * Math.PI / gaitStride(214)) + dt * 0.9;
     if (this.st.x > W - 150) { this.st.x = 420; this.st.v = 0; }
   },
   draw: function () {
     skyBox();
-    groundBand(452, 'ground (attached to the Earth)', 720);
+    groundBand(452, 'ground (attached to the Earth)', 900);
     var x = this.st.x, y = 452;
     shadowEllipse(x, y + 4, 40, 7);
-    cartoonFigure(x, y, 214, cartoonWalk(this.st.stride, 1),
+    var fig = cartoonFigure(x, y, 214, cartoonWalk(this.st.stride, 1),
       { suit: '#4a7fc1', limb: '#5d92d1', shoe: '#28303c', hair: '#33261f' });
     txt('body 1: the person', x, y - 258, 14, PAIR_A, 'center', 700);
-    txt('body 2: the ground / Earth', 60, y + 100, 14, PAIR_B, 'left', 700);
+    txt('body 2: the ground / Earth', 760, y + 78, 14, PAIR_B, 'left', 700);
+    if (S.deep) {
+      var ph = stancePhase(this.st.stride);
+      var ft = ph.left ? fig.footL : fig.footR;
+      // ring the foot the inset is talking about
+      CX.save();
+      CX.strokeStyle = TH.accent; CX.lineWidth = 2.4; CX.globalAlpha = 0.9;
+      CX.setLineDash([5, 4]);
+      CX.beginPath(); CX.ellipse(ft[0] + 4, y - 3, 30, 15, 0, 0, 7); CX.stroke();
+      CX.restore();
+      this.stepDetail(ph, this.yShift);
+    }
     return { bx: x, by: y - 108, gx: x + 30, gy: y + 34 };
+  },
+  /* A magnified look at the planted shoe: which way the shoe rubs the ground,
+     which way the ground rubs back, and why the two swap over halfway through
+     the step.  This is the bit exam answers get wrong.  The panel is a proper
+     draggable card and is sized from the text it is about to print, so nothing
+     can spill over the edge whichever half of the step we are in. */
+  DIAG_W: 214,
+  wording: function (braking) {
+    return braking
+      ? ['HEEL STRIKE — first half of the step',
+         'the shoe lands ahead of you and tends to',
+         'slide FORWARDS over the ground',
+         'so friction on the shoe acts BACKWARDS']
+      : ['PUSH-OFF — second half of the step',
+         'the shoe is behind you and presses',
+         'BACKWARDS on the ground',
+         'so friction on the shoe acts FORWARDS'];
+  },
+  stepDetail: function (ph, shift) {
+    var self = this, FOOT = 'the two are a 3rd-law pair: equal, opposite, different bodies';
+    // Measure BOTH halves of the step, not just the one showing: the card then
+    // keeps one size instead of breathing in and out as the gait cycles.
+    var wid = textW(FOOT, 11, 600);
+    [true, false].forEach(function (b) {
+      var L = self.wording(b);
+      wid = Math.max(wid, textW(L[0], 12.5, 800), textW(L[1], 12, 600),
+                          textW(L[2], 12, 700), textW(L[3], 12, 700));
+    });
+    var GAP = 24, DW = this.DIAG_W;
+    var cw = DW + GAP + Math.ceil(wid);
+    var chh = 132;
+    drawSceneCard('walk', 'Friction under the planted foot', cw, chh,
+                  { x: 56, y: shift + 400 }, shift, function (bx, by) {
+      var fwd = ph.braking ? -1 : 1;          // direction of friction ON THE SHOE
+      var L = self.wording(ph.braking);
+
+      // ---- the little diagram ----
+      var gx = bx + 4, gw = DW - 8, gy2 = by + 66;
+      CX.save();
+      CX.fillStyle = TH.light ? '#cbd3dd' : '#2a3342';
+      CX.fillRect(gx, gy2, gw, 18);
+      CX.strokeStyle = TH.light ? '#8d97a5' : '#59657a'; CX.lineWidth = 2;
+      CX.beginPath(); CX.moveTo(gx, gy2); CX.lineTo(gx + gw, gy2); CX.stroke();
+      CX.restore();
+      var sx = gx + gw / 2, tilt = ph.braking ? -0.30 : 0.34;
+      CX.save();
+      CX.translate(sx, gy2); CX.rotate(tilt);
+      CX.fillStyle = '#28303c'; CX.strokeStyle = 'rgba(0,0,0,.4)'; CX.lineWidth = 1.4;
+      rr(-36, -16, 74, 17, 8); CX.fill(); CX.stroke();
+      CX.fillStyle = '#4a7fc1'; rr(-30, -25, 44, 12, 6); CX.fill();
+      CX.restore();
+      arrow(sx - fwd * 34, gy2 - 38, fwd * 68, 0, PAIR_A, 3.4);
+      arrow(sx + fwd * 34, gy2 + 40, -fwd * 68, 0, PAIR_B, 3.4);
+      mono('on the shoe', sx, gy2 - 54, 10.5, PAIR_A, 'center');
+      mono('on the ground', sx, gy2 + 58, 10.5, PAIR_B, 'center');
+
+      // ---- the wording ----
+      var tx = bx + DW + GAP;
+      txt(L[0], tx, by + 16, 12.5, ph.braking ? TH['text-dim'] : TH.green, 'left', 800);
+      txt(L[1], tx, by + 42, 12, TH['text-muted'], 'left', 600);
+      txt(L[2], tx, by + 62, 12, PAIR_B, 'left', 700);
+      txt(L[3], tx, by + 86, 12, PAIR_A, 'left', 700);
+      txt(FOOT, tx, by + 112, 11, TH['text-muted'], 'left', 600);
+    });
   },
   fbd: function (a) {
     var sc = 150 / Math.max(this.p.F, 1e-6);
     return {
       multi: [
-        pairSpec(a.bx, a.by, this.p.F, 0, 'ground → person', PAIR_A, sc),
-        pairSpec(a.gx, a.gy, -this.p.F, 0, 'person → ground', PAIR_B, sc)
+        pairSpec(a.bx, a.by, this.p.F, 0, 'ground → person', PAIR_A, sc, 'push'),
+        pairSpec(a.gx, a.gy, -this.p.F, 0, 'person → ground', PAIR_B, sc, 'push')
       ],
-      legend: [[PAIR_A, 'Force of ground ON person (forwards)'],
-               [PAIR_B, 'Force of person ON ground (backwards)']]
+      legend: [[PAIR_A, 'PUSH · ground ON person, forwards'],
+               [PAIR_B, 'PUSH · person ON ground, backwards']]
     };
   },
   read: function () {
     var r = PHYS.walk({ F: this.p.F, mPerson: this.p.mPerson, mEarth: 5.972e24 });
-    return [
+    var rows = [
       ['Force on the person (from ground)', this.p.F.toFixed(0) + ' N forwards'],
       ['Force on the ground (from person)', this.p.F.toFixed(0) + ' N backwards'],
       ['Mass of the person', this.p.mPerson.toFixed(0) + ' kg'],
@@ -2423,6 +3045,14 @@ SCEN.walk = {
       ['Acceleration of the Earth', r.aEarth.toExponential(2) + ' m/s²'],
       ['Velocity of the person', this.st.v.toFixed(2) + ' m/s']
     ];
+    if (S.deep) {
+      var ph = stancePhase(this.st.stride);
+      rows.push(['Phase of this step', ph.braking ? 'heel strike (first half)' : 'push-off (second half)'],
+                ['Friction on the shoe', ph.braking ? 'backwards (it brakes)' : 'forwards (it drives you)'],
+                ['Friction on the ground', ph.braking ? 'forwards' : 'backwards'],
+                ['Planted foot', ph.left ? 'far leg' : 'near leg']);
+    }
+    return rows;
   },
   msg: function () {
     return ['Equal in size, opposite in direction, on two DIFFERENT bodies',
@@ -2435,13 +3065,23 @@ SCEN.walk = {
       '<li>The two forces act on <b>different bodies</b> — one on the Earth, one on you — so they can never cancel each other.</li>' +
       '<li>Looking only at you, the forward push from the ground is unbalanced, so by the 2nd Law you accelerate: a = F/m.</li>' +
       '<li>The Earth receives the same size of force, but its mass is about 6 × 10²⁴ kg, so its acceleration is far too small to notice.</li>' +
-      '</ol><p class="note">On very smooth ice you cannot push backwards on the ground, so the ground cannot push you forwards — and you cannot walk.</p>';
+      '</ol>' +
+      (S.deep
+        ? '<div class="sec-h">Step detail · which way does friction act?</div><ol>' +
+          '<li><b>Heel strike</b> (front half of the step). The shoe lands <i>ahead</i> of your body and is still moving forwards relative to the ground, so friction on the shoe acts <b>backwards</b> — it slows you very slightly. The shoe rubs the ground <b>forwards</b>.</li>' +
+          '<li><b>Mid-stance.</b> The foot is directly under you and barely rubs at all, so the friction force passes through zero and changes sign.</li>' +
+          '<li><b>Push-off</b> (back half of the step). Your calf drives the shoe <b>backwards</b> against the ground, so friction on the shoe acts <b>forwards</b> — this is the force that actually moves you.</li>' +
+          '<li>At every instant the two are one 3rd-law pair: <b>friction on the shoe from the ground</b> and <b>friction on the ground from the shoe</b> are equal in size and opposite in direction, and they act on different bodies.</li>' +
+          '<li>Over a whole step the forward push-off impulse is bigger than the backward heel-strike impulse, so the <b>net</b> effect is forwards — which is why walking speeds you up rather than slowing you down.</li>' +
+          '</ol>'
+        : '') +
+      '<p class="note">On very smooth ice you cannot push backwards on the ground, so the ground cannot push you forwards — and you cannot walk.</p>';
   }
 };
 
 /* ---------- 3.2  Ball bouncing off a wall ---------- */
 SCEN.bounce = {
-  law: 3, key: 'bounce', label: '🎾 Bounce', title: 'Ball bouncing off a wall', yShift: -34,
+  law: 3, key: 'bounce', label: '🎾 Bounce', title: 'Ball bouncing off a wall', yShift: -54,
   p: { m: 0.06, v: 12, e: 0.8, dt: 0.012 },
   sliders: [
     { k: 'm', name: 'Mass of the ball', min: 0.02, max: 0.5, step: 0.01, unit: 'kg' },
@@ -2451,6 +3091,8 @@ SCEN.bounce = {
   ],
   WALLX: 850,
   CONTACT_SHOW: 1.6,   // seconds of screen time given to the real contact time (slow motion)
+  R: 26,
+  MAXDENT: 0.36,       // deepest the centre sinks past the wall face, as a fraction of R
   reset: function () { this.st = { x: 160, v: this.p.v, phase: 'in', contact: 0, squash: 0, trail: [] }; },
   onSlider: function (k) { if (k === 'v') this.reset(); },
   PPM: 30,
@@ -2458,12 +3100,19 @@ SCEN.bounce = {
     var st = this.st;
     if (st.phase === 'in') {
       st.x += st.v * this.PPM * dt;
-      if (st.x >= this.WALLX - 26) { st.x = this.WALLX - 26; st.phase = 'hit'; st.contact = 0; }
+      if (st.x >= this.WALLX - this.R) { st.x = this.WALLX - this.R; st.phase = 'hit'; st.contact = 0; }
     } else if (st.phase === 'hit') {
-      // the real contact lasts only a few ms, so it is replayed over CONTACT_SHOW seconds
+      // the real contact lasts only a few ms, so it is replayed over CONTACT_SHOW seconds.
+      // While it lasts the ball does NOT hover at arm's length from the wall: its centre
+      // keeps moving in, the near face flattens against the brick, and it springs back.
       st.contact += dt / this.CONTACT_SHOW;
-      st.squash = Math.sin(Math.PI * Math.min(1, st.contact));
-      if (st.contact >= 1) { st.phase = 'out'; st.v = this.p.e * this.p.v; st.squash = 0; }
+      var u = Math.min(1, st.contact);
+      // compression is quicker than the spring-back, which is what a real bounce looks like
+      st.squash = u < 0.42 ? Math.sin(Math.PI / 2 * (u / 0.42))
+                           : Math.pow(Math.cos(Math.PI / 2 * ((u - 0.42) / 0.58)), 0.8);
+      st.x = this.WALLX - this.R + this.MAXDENT * this.R * st.squash;
+      if (st.contact >= 1) { st.phase = 'out'; st.v = this.p.e * this.p.v; st.squash = 0;
+                             st.x = this.WALLX - this.R; }
     } else {
       st.x -= st.v * this.PPM * dt;
       if (st.x < 130) { this.reset(); }
@@ -2485,7 +3134,7 @@ SCEN.bounce = {
       }
     CX.restore();
     txt('body 2: the wall', this.WALLX + 60, 54, 14, PAIR_B, 'center', 700);
-    var st = this.st, x = st.x, y = 300, sq = st.squash;
+    var st = this.st, x = st.x, y = 300, sq = st.squash, R = this.R;
     // trail
     CX.save();
     st.trail.forEach(function (p, i) {
@@ -2494,36 +3143,52 @@ SCEN.bounce = {
       CX.beginPath(); CX.arc(p[0], p[1], 20, 0, 7); CX.fill();
     });
     CX.restore();
+    // The ball keeps its own radius and bulges sideways; the part that would be
+    // inside the brick is clipped away, so the contact patch is genuinely flat
+    // against the wall instead of the ball shrinking away from it.
+    var ry = R * (1 + 0.28 * sq), rx = R * (1 + 0.03 * sq);
     CX.save();
-    CX.fillStyle = grad(x - 26, y - 26, x + 26, y + 26, [[0, '#e6f88a'], [1, '#93b423']]);
-    CX.beginPath(); CX.ellipse(x, y, 26 * (1 - 0.45 * sq), 26 * (1 + 0.22 * sq), 0, 0, 7); CX.fill();
+    CX.beginPath(); CX.rect(0, -OV, this.WALLX, H + 2 * OV); CX.clip();
+    CX.fillStyle = grad(x - R, y - R, x + R, y + R, [[0, '#e6f88a'], [1, '#93b423']]);
+    CX.beginPath(); CX.ellipse(x, y, rx, ry, 0, 0, 7); CX.fill();
     CX.strokeStyle = 'rgba(255,255,255,.75)'; CX.lineWidth = 2;
-    CX.beginPath(); CX.arc(x, y, 26 * (1 - 0.45 * sq), 3.6, 5.0); CX.stroke();
+    CX.beginPath(); CX.ellipse(x, y, rx * 0.99, ry * 0.99, 0, 3.6, 5.0); CX.stroke();
     CX.restore();
-    txt('body 1: the ball', x - 130, y - 68, 14, PAIR_A, 'center', 700);
+    if (sq > 0.02) {
+      // the squeezed rubber flares a little where it meets the brick
+      CX.save(); CX.strokeStyle = 'rgba(255,255,255,.30)'; CX.lineWidth = 2.5; CX.lineCap = 'round';
+      var half = ry * Math.sqrt(Math.max(0, 1 - Math.pow((this.WALLX - x) / rx, 2)));
+      CX.beginPath(); CX.moveTo(this.WALLX - 1, y - half); CX.lineTo(this.WALLX - 1, y + half);
+      CX.stroke(); CX.restore();
+    }
+    txt('body 1: the ball', x - 150, y - 78, 14, PAIR_A, 'center', 700);
     var vNow = st.phase === 'hit' ? 0 : st.v * (st.phase === 'out' ? -1 : 1);
     if (st.phase !== 'hit') {
       arrow(x, y + 62, vNow * 9, 0, TH.blue, 3);
       txt('v = ' + Math.abs(vNow).toFixed(1) + ' m/s ' + (vNow > 0 ? '→' : '←'), x, y + 96, 13, TH.blue, 'center', 700);
     } else {
-      txt('IN CONTACT — the pair of forces acts now', x - 170, y + 120, 15, TH.accent, 'center', 800);
+      // parked well to the left of both arrows so nothing is written over them
+      txt('IN CONTACT — the pair of forces acts now', 350, y + 122, 15, TH.accent, 'center', 800);
       txt('contact replayed in slow motion · real Δt = ' + this.p.dt.toFixed(3) + ' s',
-          x - 170, y + 146, 12, TH['text-muted'], 'center', 600);
+          350, y + 148, 12, TH['text-muted'], 'center', 600);
     }
-    return { bx: x, by: y, wx: this.WALLX + 8, wy: y, contact: st.phase === 'hit' };
+    return { bx: x, by: y, wx: this.WALLX + 6, wy: y + 74, contact: st.phase === 'hit' };
   },
   fbd: function (a) {
     var r = PHYS.bounce(this.p);
-    if (!a.contact) return { multi: [], legend: [[PAIR_A, 'Force of wall ON ball (only during contact)'],
-                                                [PAIR_B, 'Force of ball ON wall (only during contact)']] };
-    var sc = 118 / Math.max(r.F, 1e-6);
+    if (!a.contact) return { multi: [], legend: [[PAIR_A, 'PUSH · wall ON ball — only while touching'],
+                                                [PAIR_B, 'PUSH · ball ON wall — only while touching']] };
+    var sc = 112 / Math.max(r.F, 1e-6);
+    // Both pushes act at the same contact point, so they would lie on top of one
+    // another: the force on the wall is drawn one step lower (much closer to the
+    // contact than before) and each caption hangs off the far side of its arrow.
     return {
       multi: [
-        pairSpec(a.bx, a.by, -r.F, 0, 'wall → ball', PAIR_A, sc),
-        pairSpec(a.wx, a.wy + 110, r.F, 0, 'ball → wall', PAIR_B, sc)
+        pairSpec(a.bx, a.by, -r.F, 0, 'wall → ball', PAIR_A, sc, 'push', -1, 0.15),
+        pairSpec(a.wx, a.wy, r.F, 0, 'ball → wall', PAIR_B, sc, 'push', 1)
       ],
-      legend: [[PAIR_A, 'Force of wall ON ball (backwards)'],
-               [PAIR_B, 'Force of ball ON wall (forwards)']]
+      legend: [[PAIR_A, 'PUSH · wall ON ball, backwards'],
+               [PAIR_B, 'PUSH · ball ON wall, forwards']]
     };
   },
   read: function () {
@@ -2558,7 +3223,7 @@ SCEN.bounce = {
 
 /* ---------- 3.3  Balloon releasing air ---------- */
 SCEN.balloon = {
-  law: 3, key: 'balloon', label: '🎈 Balloon', title: 'Balloon expelling air — propulsion is an action–reaction pair', yShift: 16,
+  law: 3, key: 'balloon', label: '🎈 Balloon', title: 'Balloon expelling air — propulsion is an action–reaction pair', yShift: 59,
   p: { mdot: 0.004, ve: 30, m: 0.008 },
   sliders: [
     { k: 'mdot', name: 'Rate of air escaping ṁ', min: 0.001, max: 0.012, step: 0.001, unit: 'kg/s' },
@@ -2599,7 +3264,7 @@ SCEN.balloon = {
     this.st.puffs.forEach(function (p) {
       CX.globalAlpha = (1 - p.life / p.max) * 0.55;
       CX.fillStyle = TH.light ? '#7fa8cf' : '#9fd3ea';
-      CX.beginPath(); CX.arc(x + p.x, y + 74 + p.y, 5 + p.life * 16, 0, 7); CX.fill();
+      CX.beginPath(); CX.arc(x + p.x, y + 74 + p.y, Math.max(0.5, 5 + p.life * 16), 0, 7); CX.fill();
     });
     CX.restore();
     // balloon
@@ -2613,19 +3278,24 @@ SCEN.balloon = {
     CX.lineTo(x + 6, y + 76); CX.lineTo(x - 6, y + 76); CX.closePath(); CX.fill();
     CX.restore();
     txt('body 1: the balloon', x, y - 84, 14, PAIR_A, 'center', 700);
-    txt('body 2: the escaping air', x + 210, y + 150, 14, PAIR_B, 'center', 700);
-    return { bx: x, by: y, gx: x, gy: y + 150 };
+    txt('body 2: the escaping air', x + 196, y + 262, 14, PAIR_B, 'center', 700);
+    // the balloon is gripped at the bottom of its skin, the escaping air well
+    // below the neck, leaving a clear gap between the two arrows
+    return { bx: x, by: y + 58, gx: x, gy: y + 262 };
   },
   fbd: function (a) {
     var r = PHYS.balloon(this.p);
-    var sc = 120 / Math.max(r.F, 1e-9);
+    var sc = 92 / Math.max(r.F, 1e-9);
+    // Both forces are vertical and act on the same axis, so they are given
+    // separate stretches of that axis (58 -> 150 for the balloon, 170 -> 262 for
+    // the air) and their names are parked on opposite flanks: nothing overlaps.
     return {
       multi: [
-        pairSpec(a.bx, a.by, 0, -r.F, 'air → balloon', PAIR_A, sc),
-        pairSpec(a.gx, a.gy, 0, r.F, 'balloon → air', PAIR_B, sc)
+        pairSpec(a.bx, a.by, 0, -r.F, 'air → balloon', PAIR_A, sc, 'push', -1),
+        pairSpec(a.gx, a.gy, 0, r.F, 'balloon → air', PAIR_B, sc, 'push', -1)
       ],
-      legend: [[PAIR_A, 'Force of air ON balloon (upwards)'],
-               [PAIR_B, 'Force of balloon ON air (downwards)']]
+      legend: [[PAIR_A, 'PUSH · escaping air ON balloon, upwards'],
+               [PAIR_B, 'PUSH · balloon ON escaping air, downwards']]
     };
   },
   read: function () {
@@ -2661,7 +3331,7 @@ SCEN.balloon = {
 
 /* ---------- 3.4  Earth and apple — universal gravitation ---------- */
 SCEN.gravity = {
-  law: 3, key: 'gravity', label: '🍎 Gravity', title: 'Earth and apple — the gravitational pair', yShift: 86,
+  law: 3, key: 'gravity', label: '🍎 Gravity', title: 'Earth and apple — the gravitational pair', yShift: 39,
   p: { m1: 0.1, m2e: 5.97, r: 6.371 },     // m2e in 10^24 kg, r in 10^6 m
   sliders: [
     { k: 'm1', name: 'Mass of the apple m₁', min: 0.02, max: 5, step: 0.02, unit: 'kg' },
@@ -2680,26 +3350,13 @@ SCEN.gravity = {
       CX.fillStyle = '#fff'; CX.beginPath(); CX.arc(sx, sy, ((i * 7) % 3) * 0.5 + 0.6, 0, 7); CX.fill();
     }
     CX.globalAlpha = 1; CX.restore();
-    var ex = 300, ey = 330, ER = 158;
+    // The pair is centred on the canvas at the default separation, and the Earth is
+    // drawn large enough to read as a planet.  Both centres of mass stay on screen
+    // with a clear corridor between them, because both force arrows start there.
+    var ex = 500, ey = 350, ER = 170;
     var frac = (this.p.r - 6.371) / (42 - 6.371);
-    var ax = ex + ER + 90 + frac * 560, ay = ey;
-    // Earth
-    CX.save();
-    CX.fillStyle = grad(ex - ER, ey - ER, ex + ER, ey + ER, [[0, '#3f7fc4'], [.55, '#1f4f8f'], [1, '#0d2a52']]);
-    CX.beginPath(); CX.arc(ex, ey, ER, 0, 7); CX.fill();
-    CX.save(); CX.beginPath(); CX.arc(ex, ey, ER, 0, 7); CX.clip();
-    CX.fillStyle = '#3f8f5a';
-    for (var c = 0; c < 7; c++) {
-      var a0 = this.st.spin + c * 0.9;
-      CX.beginPath();
-      CX.ellipse(ex + Math.cos(a0) * ER * 0.55, ey + Math.sin(c * 1.7) * ER * 0.5,
-                 ER * (0.2 + (c % 3) * 0.07), ER * (0.12 + (c % 4) * 0.05), c, 0, 7);
-      CX.fill();
-    }
-    CX.restore();
-    CX.strokeStyle = 'rgba(180,220,255,.35)'; CX.lineWidth = 5;
-    CX.beginPath(); CX.arc(ex, ey, ER + 4, 0, 7); CX.stroke();
-    CX.restore();
+    var ax = ex + ER + 160 + frac * 300, ay = ey;
+    drawGlobe(ex, ey, ER, this.st.spin * 180 / Math.PI);
     txt('body 2: the Earth', ex, ey + ER + 34, 14, PAIR_B, 'center', 700);
     mono('m₂ = ' + this.p.m2e.toFixed(1) + ' × 10²⁴ kg', ex, ey + ER + 58, 12, TH['text-dim'], 'center');
     // apple
@@ -2711,25 +3368,29 @@ SCEN.gravity = {
     CX.fillStyle = '#4e8a3f';
     CX.beginPath(); CX.ellipse(ax + 20, ay - 37, 10, 5, -0.5, 0, 7); CX.fill();
     CX.restore();
-    txt('body 1: the apple', ax, ay - 74, 14, PAIR_A, 'center', 700);
+    txt('body 1: the apple', ax, ay - 84, 14, PAIR_A, 'center', 700);
     mono('m₁ = ' + this.p.m1.toFixed(2) + ' kg', ax, ay + 100, 12, TH['text-dim'], 'center');
     // separation annotation
     dashLine(ex, ey, ax, ay, 'rgba(255,255,255,.28)', 1.4, [6, 6]);
-    mono('r = ' + this.p.r.toFixed(2) + ' × 10⁶ m', (ex + ax) / 2, ey - 128, 13, TH['text-dim'], 'center');
+    mono('r = ' + this.p.r.toFixed(2) + ' × 10⁶ m', (ex + ax) / 2, ey - 208, 13, TH['text-dim'], 'center');
     return { bx: ax, by: ay, ex: ex, ey: ey };
   },
   fbd: function (a) {
     var r = PHYS.gravityPair(this.cfg());
-    var sc = 115 / Math.max(r.F, 1e-12);
+    var sc = 140 / Math.max(r.F, 1e-12);
     var dx = a.ex - a.bx, dy = a.ey - a.by, L = Math.hypot(dx, dy) || 1;
-    // the two arrows point at each other, so they are drawn on two separate
-    // horizontal lines (one above, one below the line of centres) to stay legible
+    // Both arrows now leave the CENTRE OF MASS of their own body and point at the
+    // other one, which is where a gravitational force really acts.  They share the
+    // line of centres, so the two names are parked to the side of each arrow —
+    // one above the line, one below — instead of past the tips, where they would
+    // land on top of the other vector.
     return {
       multi: [
-        pairSpec(a.bx, a.by - 52, r.F * dx / L, r.F * dy / L, 'Earth → apple', PAIR_A, sc),
-        pairSpec(a.ex, a.ey + 52, -r.F * dx / L, -r.F * dy / L, 'apple → Earth', PAIR_B, sc)
+        pairSpec(a.bx, a.by, r.F * dx / L, r.F * dy / L, 'Earth → apple', PAIR_A, sc, 'pull', 1),
+        pairSpec(a.ex, a.ey, -r.F * dx / L, -r.F * dy / L, 'apple → Earth', PAIR_B, sc, 'pull', -1, 0.86)
       ],
-      legend: [[PAIR_A, 'Force of Earth ON apple'], [PAIR_B, 'Force of apple ON Earth']]
+      legend: [[PAIR_A, 'PULL · Earth ON apple, towards the Earth'],
+               [PAIR_B, 'PULL · apple ON Earth, towards the apple']]
     };
   },
   read: function () {
@@ -2787,7 +3448,7 @@ SCEN.gravity = {
 
 /* ---------- 3.5  Two skaters pushing apart ---------- */
 SCEN.pair = {
-  law: 3, key: 'pair', label: '🛼 Pair', title: 'Two skaters pushing apart on ice (view from above)', yShift: 72,
+  law: 3, key: 'pair', label: '⛸️ Pair', title: 'Two skaters pushing apart on ice (side view)', yShift: 40,
   p: { F: 120, mA: 60, mB: 40, dt: 1.5 },
   sliders: [
     { k: 'F', name: 'Size of each force in the pair', min: 30, max: 400, step: 10, unit: 'N' },
@@ -2809,52 +3470,132 @@ SCEN.pair = {
     st.xb += st.vb * this.PPM * dt;
     if (st.xa > 180 || st.xb > 180) this.reset();
   },
+  /* Seen from the SIDE, the same push is much easier to read than the old
+     plan view: you can see whose hands are touching, which way each body is
+     leaning, and that both skaters stay upright on the ice. */
+  ICE: 442,
+  REACH: 0.2565,       // how far in front of the shoulder a pushing hand lands, per unit height
+  pose: function (dir, push) {
+    return {
+      dir: dir, lean: push ? -0.13 : 0.05, bobF: 0,
+      armL: push ? [1.52, -0.18] : [0.62, 0.30],
+      armR: push ? [1.52, -0.18] : [0.55, 0.26],
+      legL: [0.26, -0.20],
+      legR: [-0.20, -0.10]
+    };
+  },
   draw: function () {
-    skyBox();
+    var ICE = this.ICE;
+    // rink: boards and a wall behind, a slab of ice in front
     CX.save();
-    CX.fillStyle = grad(0, 0, 0, H, [[0, TH.light ? '#dcecf7' : '#16324a'], [1, TH.light ? '#b9d8ee' : '#0e2333']]);
-    CX.fillRect(0, -OV, W, H + 2 * OV);
-    CX.strokeStyle = 'rgba(255,255,255,.16)'; CX.lineWidth = 2;
-    for (var i = -3; i < 20; i++) { CX.beginPath(); CX.moveTo(0, 190 + i * 42); CX.lineTo(W, 195 + i * 42); CX.stroke(); }
-    CX.restore();
-    txt('view from above · frictionless ice', 16, 122, 12, TH['text-muted'], 'left', 600);
-    var st = this.st, cx = 600, y = 320;
-    var ax = cx - 78 - st.xa, bx = cx + 78 + st.xb;
-    var pushing = st.t <= this.p.dt;
-    // skater A
-    var ra = 28 + this.p.mA * 0.30, rb = 28 + this.p.mB * 0.30;
-    CX.save();
-    CX.fillStyle = grad(ax - ra, y - ra, ax + ra, y + ra, [[0, '#7FDBCA'], [1, '#2b8577']]);
-    CX.beginPath(); CX.arc(ax, y, ra, 0, 7); CX.fill();
-    CX.fillStyle = '#ffffff'; CX.font = "700 15px 'JetBrains Mono', monospace";
-    CX.textAlign = 'center'; CX.textBaseline = 'middle'; CX.fillText('A', ax, y);
-    CX.fillStyle = grad(bx - rb, y - rb, bx + rb, y + rb, [[0, '#FFD866'], [1, '#c19314']]);
-    CX.beginPath(); CX.arc(bx, y, rb, 0, 7); CX.fill();
-    CX.fillStyle = '#22262c'; CX.fillText('B', bx, y);
-    CX.restore();
-    mono(this.p.mA.toFixed(0) + ' kg', ax, y + ra + 20, 12, TH['text-dim'], 'center');
-    mono(this.p.mB.toFixed(0) + ' kg', bx, y + rb + 20, 12, TH['text-dim'], 'center');
-    if (pushing) {
-      CX.save(); CX.strokeStyle = TH.accent; CX.lineWidth = 5; CX.lineCap = 'round';
-      CX.beginPath(); CX.moveTo(ax + ra, y); CX.lineTo(bx - rb, y); CX.stroke(); CX.restore();
-      txt('hands in contact — the pair of forces acts NOW', cx, y - 168, 15, TH.accent, 'center', 800);
-    } else {
-      txt('contact over — each skater keeps the velocity the push gave it', cx, y - 168, 15, TH['text-muted'], 'center', 700);
+    CX.fillStyle = grad(0, ICE - 300, 0, ICE, [[0, TH.light ? '#bcd2e4' : '#16334b'],
+                                               [1, TH.light ? '#9dbcd6' : '#20486a']]);
+    CX.fillRect(0, -OV, W, ICE + OV);
+    // a low kick-board runs along the back of the rink, behind the skates only,
+    // so no line crosses the figures themselves
+    CX.fillStyle = TH.light ? '#f0f5fa' : '#dbe8f4';
+    CX.fillRect(0, ICE - 30, W, 30);
+    CX.fillStyle = 'rgba(200,72,72,.60)'; CX.fillRect(0, ICE - 9, W, 5);
+    CX.strokeStyle = TH.light ? 'rgba(60,90,120,.18)' : 'rgba(150,190,225,.14)'; CX.lineWidth = 2;
+    for (var b = 0; b < 9; b++) {
+      var bx0 = 30 + b * 145;
+      CX.beginPath(); CX.moveTo(bx0, ICE - 30); CX.lineTo(bx0, ICE); CX.stroke();
     }
-    arrow(ax, y + ra + 46, -Math.min(160, st.va * 26), 0, TH.blue, 3);
-    arrow(bx, y + rb + 46, Math.min(160, st.vb * 26), 0, TH.blue, 3);
-    mono('vA = ' + st.va.toFixed(2) + ' m/s', ax - 10, y + ra + 76, 12, TH.blue, 'center');
-    mono('vB = ' + st.vb.toFixed(2) + ' m/s', bx + 10, y + rb + 76, 12, TH.blue, 'center');
-    return { bx: ax, by: y, ax2: bx, ay2: y, pushing: pushing };
+    // the same pale blue-white rink ice as the hockey scene
+    CX.fillStyle = grad(0, ICE, 0, H + OV, [[0, TH.light ? '#fbfeff' : '#c9e4f5'],
+                                            [0.45, TH.light ? '#e3f2fc' : '#8fbfdd'],
+                                            [1, TH.light ? '#bcdcf0' : '#4a7fa3']]);
+    CX.fillRect(0, ICE, W, H + OV - ICE);
+    CX.strokeStyle = 'rgba(255,255,255,.60)'; CX.lineWidth = 2.5;
+    CX.beginPath(); CX.moveTo(0, ICE); CX.lineTo(W, ICE); CX.stroke();
+    CX.restore();
+    txt('side view · frictionless ice', 16, 148, 12, TH['text-muted'], 'left', 600);
+
+    var st = this.st, cx = 600;
+    var hA = 150 + this.p.mA * 0.75, hB = 150 + this.p.mB * 0.75;
+    // Start them exactly an arm's length apart, so at the moment the push begins
+    // the two palms really are touching — no rubbery link stretched between them.
+    var ax = cx - (0.115 + this.REACH) * hA - st.xa;
+    var bx = cx + (0.115 + this.REACH) * hB + st.xb;
+    var pushing = st.t <= this.p.dt;
+    var skinA = { suit: '#2f8d7e', limb: '#3fae9b', shoe: '#1d2b33', hair: '#26343d' };
+    var skinB = { suit: '#c8971d', limb: '#e0b13a', shoe: '#3a2f18', hair: '#4a3315' };
+    var poseA = this.pose(1, pushing), poseB = this.pose(-1, pushing);
+
+    // a soft mirror image in the ice — clipped to a shallow band so it reads as a
+    // sheen on the surface, not as legs carrying on below it
+    CX.save();
+    CX.beginPath(); CX.rect(0, ICE, W, 36); CX.clip();
+    CX.globalAlpha = 0.05; CX.translate(0, 2 * ICE); CX.scale(1, -1);
+    cartoonFigure(ax, ICE, hA, poseA, skinA);
+    cartoonFigure(bx, ICE, hB, poseB, skinB);
+    CX.restore();
+
+    shadowEllipse(ax, ICE + 3, hA * 0.20, 5);
+    shadowEllipse(bx, ICE + 3, hB * 0.20, 5);
+    var figA = cartoonFigure(ax, ICE, hA, poseA, skinA);
+    var figB = cartoonFigure(bx, ICE, hB, poseB, skinB);
+    // skate blades
+    CX.save(); CX.strokeStyle = TH.light ? '#42596b' : '#20415a'; CX.lineWidth = 2.6; CX.lineCap = 'round';
+    [figA.footL, figA.footR, figB.footL, figB.footR].forEach(function (ft) {
+      CX.beginPath(); CX.moveTo(ft[0] - 14, ICE + 1); CX.lineTo(ft[0] + 14, ICE + 1); CX.stroke();
+    });
+    CX.restore();
+
+    txt('A', ax, figA.head[1] - figA.headR - 18, 16, PAIR_A, 'center', 800);
+    txt('B', bx, figB.head[1] - figB.headR - 18, 16, PAIR_B, 'center', 800);
+    // everything printed on the ice takes a dark slate colour: the pale surface
+    // would swallow the panel's usual muted greys
+    var onIce = TH.light ? '#4a6577' : '#1f4257';
+    mono(this.p.mA.toFixed(0) + ' kg', ax, ICE + 82, 12, onIce, 'center');
+    mono(this.p.mB.toFixed(0) + ' kg', bx, ICE + 82, 12, onIce, 'center');
+
+    if (pushing) {
+      // palms pressed together: each half of the link is drawn in its owner's
+      // colour, so the bridge never reads as one skater's arm
+      var mx = (figA.handNear[0] + figB.handNear[0]) / 2, my = (figA.handNear[1] + figB.handNear[1]) / 2;
+      // Only a hint of a line: the skaters' arms are the real thing, and this is
+      // just a reminder that the palms are still pressed together.  Drawn thin and
+      // faint so nobody reads it as a rod or as part of either body.
+      CX.save(); CX.lineWidth = 2; CX.lineCap = 'round'; CX.globalAlpha = 0.30;
+      CX.setLineDash([5, 5]);
+      CX.strokeStyle = PAIR_A;
+      CX.beginPath(); CX.moveTo(figA.handNear[0], figA.handNear[1]); CX.lineTo(mx, my); CX.stroke();
+      CX.strokeStyle = PAIR_B;
+      CX.beginPath(); CX.moveTo(mx, my); CX.lineTo(figB.handNear[0], figB.handNear[1]); CX.stroke();
+      CX.restore();
+      CX.save();
+      CX.fillStyle = 'rgba(227,179,65,.20)';
+      CX.beginPath(); CX.arc(mx, my, 13, 0, 7); CX.fill();
+      CX.strokeStyle = 'rgba(227,179,65,.65)'; CX.lineWidth = 1.8;
+      CX.beginPath(); CX.arc(mx, my, 13, 0, 7); CX.stroke();
+      CX.restore();
+      txt('hands in contact — the pair of forces acts NOW', cx, 182, 15, TH.accent, 'center', 800);
+    } else {
+      txt('contact over — each skater keeps the velocity the push gave it', cx, 182, 15, TH['text-muted'], 'center', 700);
+    }
+    var vCol = TH.light ? '#15559e' : '#0d3f77';
+    arrow(ax, ICE + 110, -Math.min(150, st.va * 26), 0, vCol, 3);
+    arrow(bx, ICE + 110, Math.min(150, st.vb * 26), 0, vCol, 3);
+    mono('vA = ' + st.va.toFixed(2) + ' m/s', ax - 14, ICE + 138, 12, vCol, 'center');
+    mono('vB = ' + st.vb.toFixed(2) + ' m/s', bx + 14, ICE + 138, 12, vCol, 'center');
+    return {
+      bx: ax + hA * 0.14, by: (figA.shR[1] + figA.hip[1]) / 2,
+      ax2: bx - hB * 0.14, ay2: figB.hip[1] + 26,
+      pushing: pushing
+    };
   },
   fbd: function (a) {
-    var leg = [[PAIR_A, 'Force of B ON A (leftwards)'], [PAIR_B, 'Force of A ON B (rightwards)']];
+    var leg = [[PAIR_A, 'PUSH · B ON A, leftwards'], [PAIR_B, 'PUSH · A ON B, rightwards']];
     if (!a.pushing) return { multi: [], legend: leg };
-    var sc = 150 / Math.max(this.p.F, 1e-6);
+    var sc = 96 / Math.max(this.p.F, 1e-6);
+    // the two arrows run outwards from the hands along two different heights —
+    // chest for A, hip for B — and each name hangs below its own arrow, so
+    // neither vector nor caption can cover the other
     return {
       multi: [
-        pairSpec(a.bx, a.by - 86, -this.p.F, 0, 'B → A', PAIR_A, sc),
-        pairSpec(a.ax2, a.ay2 - 86, this.p.F, 0, 'A → B', PAIR_B, sc)
+        pairSpec(a.bx, a.by, -this.p.F, 0, 'B → A', PAIR_A, sc, 'push', -1),
+        pairSpec(a.ax2, a.ay2, this.p.F, 0, 'A → B', PAIR_B, sc, 'push', 1)
       ],
       legend: leg
     };
@@ -2901,8 +3642,14 @@ function kx(tex, display) {
   catch (e) {}
   return '<code>' + tex + '</code>';
 }
+/* rewrite the standalone N and W in an equation to match the chosen notation */
+function convTex(tex) {
+  if (S.conv !== 'us') return tex.replace(/(^|[^A-Za-z\\])N(?![A-Za-z])/g, '$1R');
+  return tex.replace(/(^|[^A-Za-z\\])N(?![A-Za-z])/g, '$1F_N')
+            .replace(/(^|[^A-Za-z\\])W(?![A-Za-z])/g, '$1F_g');
+}
 function eqBlock(tex, cap) {
-  return '<div class="eq">' + kx(tex, true) + (cap ? '<span class="eqcap">' + cap + '</span>' : '') + '</div>';
+  return '<div class="eq">' + kx(convTex(tex), true) + (cap ? '<span class="eqcap">' + cap + '</span>' : '') + '</div>';
 }
 
 /* equations shown in the 📐 Formula overlay and the Info tab */
@@ -2915,6 +3662,11 @@ var EQS = {
   cruise:  [['\\sum F = 0 \\;\\Rightarrow\\; a = 0 \\;\\Rightarrow\\; v = \\text{constant}', "Newton's 1st Law"],
             ['F_{\\text{drive}} = f_{\\text{air}} + f_{\\text{roll}}', 'equilibrium while moving']],
   space:   [['\\sum F = 0 \\;\\Rightarrow\\; a = 0 \\;\\Rightarrow\\; v = \\text{constant}', "Newton's 1st Law"]],
+  incline: [['\\sum F = 0 \\;\\Rightarrow\\; a = 0', 'while it stays at rest'],
+            ['N = mg\\cos\\theta', 'perpendicular to the slope'],
+            ['f = mg\\sin\\theta \\;\\le\\; \\mu_s N', 'along the slope'],
+            ['\\theta_c = \\arctan\\mu_s', 'critical angle'],
+            ['a = g(\\sin\\theta - \\mu_k\\cos\\theta)', 'once it slides']],
   trolley: [['F = \\dfrac{\\Delta p}{\\Delta t}', "Newton's 2nd Law, full form"],
             ['F = ma', 'constant mass'],
             ['a = \\dfrac{F}{m} \\quad\\Rightarrow\\quad a \\propto F,\\; a \\propto \\dfrac{1}{m}', '']],
@@ -3055,33 +3807,49 @@ var QUIZ = {
 /* ================= PANEL ================= */
 function pill(active) { return 'pill' + (active ? ' active' : ''); }
 
+/* A collapsible section: the heading is a button, the block below it carries a
+   matching data-secb so one click can hide it.  Which sections are open lives in
+   S, so re-rendering the panel (every slider move, every example change) does not
+   spring a section the user closed back open. */
+function secOpen(key) { return S.secOpen[key] !== false; }
+function secHead(key, title, count) {
+  var op = secOpen(key);
+  return '<button type="button" class="sec-h' + (op ? '' : ' closed') + '" data-sec="' + key +
+         '" aria-expanded="' + op + '"><span class="chev">▾</span>' + title +
+         (count ? '<span class="cnt">' + count + '</span>' : '') + '</button>';
+}
+function secOpenTag(key) { return '<div class="sec-b" data-secb="' + key + '"' + (secOpen(key) ? '' : ' hidden') + '>'; }
+
 function renderPanel() {
   var sc = cur(), body = $('pbody'), h = '';
   if (S.ptab === 'data') {
     if (S.mode === 'sim') {
-      h += '<div class="sec-h">Controls</div>';
+      h += secHead('controls', 'Controls', sc.sliders.length) + secOpenTag('controls');
       sc.sliders.forEach(function (s, i) {
         h += '<div class="ctrl"><label>' + s.name + ' <b id="sl' + i + 'v">' +
              fmtP(sc.p[s.k], s) + '</b></label>' +
              '<input type="range" id="sl' + i + '" min="' + s.min + '" max="' + s.max +
              '" step="' + s.step + '" value="' + sc.p[s.k] + '"></div>';
       });
+      h += '</div>';
     } else {
-      h += '<div class="note">Controls are locked in ' + (S.mode === 'quiz' ? 'Quiz' : 'Practice') +
-           ' mode. Switch to <b>Simulate</b> to explore freely.</div>';
+      h += secHead('controls', 'Controls') + secOpenTag('controls') +
+           '<div class="note">Controls are locked in ' + (S.mode === 'quiz' ? 'Quiz' : 'Practice') +
+           ' mode. Switch to <b>Simulate</b> to explore freely.</div></div>';
     }
-    h += '<div class="sec-h">Live values</div>';
     var rows = sc.read();
+    h += secHead('live', 'Live values', rows.length) + secOpenTag('live');
     rows.forEach(function (r, i) {
       h += '<div class="row"><span class="k">' + r[0] + '</span><span class="v" id="dv' + i + '">' + r[1] + '</span></div>';
     });
+    h += '</div>';
     if (sc.graphs) {
-      h += '<div class="sec-h">Graph</div><div class="gpick">';
+      h += secHead('graph', 'Graph') + secOpenTag('graph') + '<div class="gpick">';
       var pickNow = S.graphPick[sc.key] || sc.graphs[0][0];
       sc.graphs.forEach(function (g) {
         h += '<button class="' + pill(g[0] === pickNow) + '" data-g="' + g[0] + '">' + g[1] + '</button>';
       });
-      h += '</div><div class="gwrap"><canvas id="gcv"></canvas></div>';
+      h += '</div><div class="gwrap"><canvas id="gcv"></canvas></div></div>';
     }
   } else if (S.ptab === 'info') {
     h += '<div class="sec-h">' + sc.title + '</div><div class="info">' + sc.info() + '</div>';
@@ -3110,6 +3878,19 @@ function wirePanel() {
       });
     });
   }
+  Array.prototype.forEach.call(document.querySelectorAll('button.sec-h'), function (b) {
+    b.addEventListener('click', function () {
+      var k = b.getAttribute('data-sec'), open = !secOpen(k);
+      S.secOpen[k] = open;
+      b.classList.toggle('closed', !open);
+      b.setAttribute('aria-expanded', String(open));
+      var bd = document.querySelector('[data-secb="' + k + '"]');
+      if (bd) bd.hidden = !open;
+      // the graph canvas has no width while it is hidden, so it must be
+      // measured and redrawn the moment the section comes back
+      if (open && k === 'graph') patchLive(true);
+    });
+  });
   Array.prototype.forEach.call(document.querySelectorAll('.gpick .pill'), function (b) {
     b.addEventListener('click', function () {
       S.graphPick[cur().key] = b.getAttribute('data-g');
@@ -3258,6 +4039,7 @@ function patchLive(force) {
       var el = $('dv' + i); if (el && el.textContent !== rows[i][1]) el.textContent = rows[i][1];
     }
     var gc = $('gcv');
+    if (gc && !gc.offsetParent) gc = null;          // the Graph section is collapsed
     if (gc && sc.graph && (force || (gframe++ % 4 === 0))) {
       drawGraph(gc, sc.graph(S.graphPick[sc.key] || sc.graphs[0][0]));
     }
@@ -3347,7 +4129,13 @@ function updateChrome() {
   $('gUnbal').classList.toggle('slot-hidden', S.law !== 1 || S.mode !== 'sim');
   $('gDrag').classList.toggle('slot-hidden', S.ex !== 'skydive');
   $('gChute').classList.toggle('slot-hidden', S.ex !== 'skydive');
+  $('gDeep').classList.toggle('slot-hidden', S.ex !== 'walk');
+  $('tDeep').classList.toggle('active', S.deep);
   $('tChute').classList.toggle('active', S.chute);
+  $('nShort').classList.toggle('active', S.detail === 'short');
+  $('nFull').classList.toggle('active', S.detail === 'full');
+  $('cUK').classList.toggle('active', S.conv === 'uk');
+  $('cUS').classList.toggle('active', S.conv === 'us');
   $('dLin').classList.toggle('active', S.dragLaw === 'lin');
   $('dQuad').classList.toggle('active', S.dragLaw === 'quad');
   $('bPlay').textContent = S.play ? 'Pause' : 'Play';
@@ -3370,11 +4158,13 @@ function draw() {
   // three lines below the top edge of the canvas instead of floating in the lower half
   var sh = sc.yShift || 0;
   CX.translate(0, -sh);
+  // cleared before the scene runs, because a scene may publish a draggable card
+  // of its own (the walking step-detail panel does)
+  LAST_CARD = null; publishCard();
   var anchors = sc.draw() || {};
   var spec = sc.fbd(anchors) || {};
   if (spec.multi) {
     if (S.fbd) spec.multi.forEach(function (sp) { drawFBD(sp); });
-    LAST_CARD = null; publishCard();
   } else {
     if (spec.bx === undefined) { spec.bx = anchors.bx; spec.by = anchors.by; }
     drawFBD(spec);
@@ -3387,13 +4177,14 @@ function draw() {
   var fc = $('cardFormula');
   if (S.formula) {
     fc.classList.remove('empty');
-    var fhtml = (EQS[sc.key] || []).map(function (e) { return kx(e[0]); }).join('<br>');
+    var fhtml = (EQS[sc.key] || []).map(function (e) { return kx(convTex(e[0])); }).join('<br>');
     if ($('formulaBody').innerHTML !== fhtml) $('formulaBody').innerHTML = fhtml;
   } else {
     fc.classList.add('empty');
   }
   var hints = 'Double-click the canvas: zoom ×2<br>Drag while zoomed: pan';
   if (S.zoom.k > 1) hints = '🔍 ×2 — drag to pan<br>Double-click to zoom out';
+  if (S.law === 3) hints = 'Pair arrows: a PUSH arrives at the body, a PULL leaves it<br>' + hints;
   hints = 'Every ⠿ card can be dragged anywhere<br>' + hints;
   $('chipBR').className = 'chip'; $('chipBR').innerHTML = hints;
   // the force scale now lives on the canvas, top right
@@ -3468,6 +4259,13 @@ function init() {
   $('tUnbal').addEventListener('click', function () { S.unbalance = !S.unbalance; updateChrome(); });
   $('dLin').addEventListener('click', function () { S.dragLaw = 'lin'; SCEN.skydive.reset(); updateChrome(); renderPanel(); });
   $('dQuad').addEventListener('click', function () { S.dragLaw = 'quad'; SCEN.skydive.reset(); updateChrome(); renderPanel(); });
+  $('nShort').addEventListener('click', function () { S.detail = 'short'; updateChrome(); });
+  $('nFull').addEventListener('click', function () { S.detail = 'full'; updateChrome(); });
+  $('cUK').addEventListener('click', function () { S.conv = 'uk'; updateChrome(); renderPanel(); });
+  $('cUS').addEventListener('click', function () { S.conv = 'us'; updateChrome(); renderPanel(); });
+  $('tDeep').addEventListener('click', function () {
+    S.deep = !S.deep; updateChrome(); renderPanel(); draw();
+  });
   $('tChute').addEventListener('click', function () {
     S.chute = !S.chute; SCEN.skydive.reset(); updateChrome(); renderPanel();
   });
