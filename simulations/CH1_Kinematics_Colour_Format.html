@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kinematics Colour Format</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=JetBrains+Mono:wght@400;700&display=swap">
+<style>
+:root{
+  --paper:#FBFAF7; --panel:#F2F0EA; --ink:#14171C; --dim:#5C636E; --rule:#E2DFD7;
+  --mark:#C2601A; --shadow:0 1px 0 rgba(20,23,28,.04);
+}
+:root:not([data-theme="light"]){}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0E1116; --panel:#161B22; --ink:#E7EAF0; --dim:#98A0AD; --rule:#242B34;
+    --mark:#FB923C; --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0E1116; --panel:#161B22; --ink:#E7EAF0; --dim:#98A0AD; --rule:#242B34;
+  --mark:#FB923C; --shadow:none;
+}
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);margin:0;
+  font-family:'Newsreader',Georgia,'Times New Roman',serif;font-size:17px;line-height:1.62;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1080px;margin:0 auto;padding:0 28px 96px}
+.col{max-width:66ch}
+h1,h2,h3,.eyebrow,th,.hex,.chip+b{font-family:'Archivo','Helvetica Neue',Arial,sans-serif}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.15em;text-transform:uppercase;color:var(--mark);margin:0 0 10px}
+header{padding:72px 0 34px;border-bottom:2px solid var(--ink)}
+h1{font-size:clamp(34px,5.4vw,58px);font-weight:700;letter-spacing:-.025em;line-height:1.02;margin:0;text-wrap:balance}
+.lede{font-size:20px;color:var(--dim);margin:16px 0 0;max-width:60ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.tag{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:11px;padding:4px 10px;border:1px solid var(--rule);
+  border-radius:999px;color:var(--dim);background:var(--panel)}
+section{padding:52px 0 0;border-top:1px solid var(--rule);margin-top:52px}
+section:first-of-type{border-top:0}
+h2{font-size:13px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;margin:0 0 26px;color:var(--ink)}
+h2 span{color:var(--dim);font-weight:500}
+p{margin:0 0 18px}
+.fam{display:grid;grid-template-columns:132px 1fr;gap:26px;align-items:start;padding:18px 0;border-bottom:1px solid var(--rule)}
+.fam:last-child{border-bottom:0}
+.fam-sw{display:grid;grid-template-columns:repeat(6,1fr);gap:3px;border-radius:4px;overflow:hidden}
+.fam-sw i{display:block;height:34px}
+.fam-t h3{font-size:15px;margin:0 0 4px;letter-spacing:.01em}
+.fam-t p{margin:0;color:var(--dim);font-size:15.5px;line-height:1.5}
+.scroll{overflow-x:auto;margin:0 -28px;padding:0 28px 4px}
+table{border-collapse:collapse;width:100%;font-size:14.5px;min-width:660px}
+th,td{text-align:left;padding:11px 14px 11px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+thead th{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);font-weight:700;
+  border-bottom:1px solid var(--ink);white-space:nowrap}
+td.m,.m{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;color:var(--dim);white-space:nowrap}
+td .sym{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12px;color:var(--dim);margin-left:8px}
+td b{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:13px;font-weight:700}
+.use{color:var(--dim);font-size:15px;min-width:230px}
+.chip{display:inline-block;width:22px;height:10px;border-radius:2px;margin-right:9px;
+  border:1px solid rgba(127,127,127,.35);vertical-align:1px}
+.matrix{min-width:820px}
+.matrix th[scope="row"]{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;font-weight:700;
+  white-space:nowrap;padding-right:22px}
+.matrix th[scope="row"] em{display:block;font-family:'Newsreader',serif;font-style:normal;font-weight:400;
+  font-size:13px;color:var(--dim);margin-top:2px}
+.matrix td{padding:8px 8px 8px 0}
+.hex{display:block;font-size:11.5px;font-weight:700;letter-spacing:.02em;padding:9px 8px;border-radius:4px;
+  text-align:center;font-variant-numeric:tabular-nums;font-family:'JetBrains Mono',ui-monospace,monospace}
+pre{background:var(--panel);border:1px solid var(--rule);border-left:3px solid var(--mark);border-radius:5px;
+  padding:18px 20px;overflow-x:auto;font-family:'JetBrains Mono',ui-monospace,monospace;font-size:12.5px;
+  line-height:1.68;margin:0 0 20px;box-shadow:var(--shadow)}
+code{font-family:'JetBrains Mono',ui-monospace,monospace;font-size:.86em;background:var(--panel);
+  padding:1px 5px;border-radius:3px}
+pre code{background:none;padding:0;font-size:inherit}
+ol.rules{list-style:none;counter-reset:r;padding:0;margin:0;max-width:70ch}
+ol.rules li{counter-increment:r;position:relative;padding:0 0 18px 46px;margin:0}
+ol.rules li::before{content:counter(r);position:absolute;left:0;top:2px;width:28px;height:28px;border-radius:50%;
+  border:1px solid var(--rule);background:var(--panel);display:grid;place-items:center;
+  font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim)}
+ol.rules b{font-family:'Archivo',sans-serif;font-size:15px;display:block;margin-bottom:2px}
+ol.rules p{margin:0;color:var(--dim);font-size:15.5px;line-height:1.55}
+ul.bands{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+ul.bands li{background:var(--panel);border:1px solid var(--rule);border-radius:5px;padding:12px 14px}
+ul.bands b{font-family:'Archivo',sans-serif;font-size:13px;text-transform:uppercase;letter-spacing:.09em;display:block}
+ul.bands span{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--dim)}
+.note{color:var(--dim);font-size:15px;border-left:2px solid var(--rule);padding-left:18px;margin:24px 0 0;max-width:62ch}
+footer{margin-top:60px;padding-top:22px;border-top:1px solid var(--rule);color:var(--dim);font-size:14px}
+@media (max-width:640px){
+  .wrap{padding:0 18px 72px}.scroll{margin:0 -18px;padding:0 18px 4px}
+  .fam{grid-template-columns:1fr;gap:12px}.fam-sw{max-width:200px}
+}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+<header>
+  <p class="eyebrow">CIE IGCSE 0625 · CH1 Mechanics · drawing standard</p>
+  <h1>Kinematics Colour Format</h1>
+  <p class="lede">Eight tokens, six tone families. Every arrow, line, shaded area and number in a kinematics
+  simulation takes the colour of the <em>quantity</em> it represents — never the colour of the graph it happens
+  to sit on.</p>
+  <div class="meta"><span class="tag">v1.0</span><span class="tag">8 tokens</span><span class="tag">6 themes</span>
+  <span class="tag">in use: Motion &amp; Kinematics Lab v1.4.0</span></div>
+</header>
+
+<section>
+  <h2>The six families <span>— what a colour means before you read the label</span></h2>
+  <div class="fam"><div class="fam-sw"><i style="background:#34d399"></i><i style="background:#86efac"></i><i style="background:#8FBF6E"></i><i style="background:#C3E3A0"></i><i style="background:#00ff88"></i><i style="background:#a6ff5e"></i><i style="background:#065f46"></i><i style="background:#16a34a"></i><i style="background:#3E6B33"></i><i style="background:#6FA83F"></i><i style="background:#3A5C2E"></i><i style="background:#6A8F3A"></i></div><div class="fam-t"><h3>how far</h3><p>Distance and displacement. Metres. The green pair separates the scalar (deeper) from the vector (lighter).</p></div></div><div class="fam"><div class="fam-sw"><i style="background:#38bdf8"></i><i style="background:#22d3ee"></i><i style="background:#6BA8D8"></i><i style="background:#45C9DB"></i><i style="background:#4488ff"></i><i style="background:#00e5ff"></i><i style="background:#2563eb"></i><i style="background:#0891b2"></i><i style="background:#2E6FA8"></i><i style="background:#0F7480"></i><i style="background:#2F5A80"></i><i style="background:#1F6B73"></i></div><div class="fam-t"><h3>how fast</h3><p>Speed and velocity. Metres per second. Same scalar/vector split, same logic.</p></div></div><div class="fam"><div class="fam-sw"><i style="background:#fb7185"></i><i style="background:#E05A5A"></i><i style="background:#ff4499"></i><i style="background:#dc2626"></i><i style="background:#B5342E"></i><i style="background:#A03030"></i></div><div class="fam-t"><h3>rate of change</h3><p>Acceleration only. How fast the “how fast” is changing.</p></div></div><div class="fam"><div class="fam-sw"><i style="background:#fb923c"></i><i style="background:#E8963C"></i><i style="background:#ff8a33"></i><i style="background:#ea580c"></i><i style="background:#C2601A"></i><i style="background:#B0541F"></i></div><div class="fam-t"><h3>construction</h3><p>Not a quantity — a line you draw on a graph to extract one. Tangents, rise-over-run steps, and the labels that name them.</p></div></div><div class="fam"><div class="fam-sw"><i style="background:#94a3b8"></i><i style="background:#A8AAB2"></i><i style="background:#8888b8"></i><i style="background:#6b7280"></i><i style="background:#7A7263"></i><i style="background:#6A5F55"></i></div><div class="fam-t"><h3>the axis</h3><p>Time. Desaturated on purpose: time is the stage every other quantity is measured against, never the subject.</p></div></div><div class="fam"><div class="fam-sw"><i style="background:#fbbf24"></i><i style="background:#F4C01E"></i><i style="background:#ffcc00"></i><i style="background:#927500"></i><i style="background:#A9820F"></i><i style="background:#8A6A1A"></i></div><div class="fam-t"><h3>the apparatus</h3><p>A number read directly off the equipment before any physics is done with it.</p></div></div>
+  <p class="note">Within the green and blue pairs the <b>scalar is the deeper shade</b> and the <b>vector the lighter
+  one</b>. That is the whole distance/displacement and speed/velocity distinction, carried by tone rather than by a
+  legend a student has to memorise.</p>
+</section>
+
+<section>
+  <h2>The eight tokens</h2>
+  <div class="scroll"><table>
+    <thead><tr><th>CSS token</th><th>Quantity</th><th>JS alias</th><th>Panel class</th><th>Draws</th></tr></thead>
+    <tbody><tr><td><span class="chip" style="background:#34d399"></span><b>--q-dist</b></td><td>Distance travelled<span class="sym"></span></td><td class="m">C.dist</td><td class="m">.v.dist</td><td class="use">path length on the bench, the ruler run, “distance” chips</td></tr><tr><td><span class="chip" style="background:#86efac"></span><b>--q-disp</b></td><td>Displacement<span class="sym">  s / Δx</span></td><td class="m">C.s</td><td class="m">.v.disp</td><td class="use">displacement arrows, the s–t curve, area under v–t</td></tr><tr><td><span class="chip" style="background:#38bdf8"></span><b>--q-speed</b></td><td>Speed<span class="sym"></span></td><td class="m">C.spd</td><td class="m">.v.speed</td><td class="use">speedometer text, scalar speed chips</td></tr><tr><td><span class="chip" style="background:#22d3ee"></span><b>--q-vel</b></td><td>Velocity<span class="sym">  u, v</span></td><td class="m">C.v</td><td class="m">.v.vel</td><td class="use">velocity arrows, the v–t line, u and v dots</td></tr><tr><td><span class="chip" style="background:#fb7185"></span><b>--q-acc</b></td><td>Acceleration<span class="sym">  a</span></td><td class="m">C.a</td><td class="m">.v.acc</td><td class="use">acceleration arrows, the a–t line, Δv chips</td></tr><tr><td><span class="chip" style="background:#fb923c"></span><b>--q-tan</b></td><td>Tangent / gradient<span class="sym">  slope</span></td><td class="m">C.tan</td><td class="m">.v.tan</td><td class="use">the dashed tangent, the rise/run step, “gradient = …”</td></tr><tr><td><span class="chip" style="background:#94a3b8"></span><b>--q-time</b></td><td>Time / cursor<span class="sym">  t</span></td><td class="m">C.tim</td><td class="m">.v.time</td><td class="use">the time axis, the hover cursor, tick and Δt marks</td></tr><tr><td><span class="chip" style="background:#fbbf24"></span><b>--q-meas</b></td><td>Measured reading<span class="sym">  gap, card, angle</span></td><td class="m">C.meas</td><td class="m">.v.meas</td><td class="use">what the apparatus reads: tape gaps, card width, ramp angle</td></tr></tbody>
+  </table></div>
+  <p class="note">The JS aliases are assigned once, in <code>readTheme()</code>. Drawing code never reads a
+  <code>--q-*</code> variable directly and never hard-codes a hex — it asks for <code>C.a</code> or
+  <code>C.tan</code>, so a theme switch repaints everything for free.</p>
+</section>
+
+<section>
+  <h2>Palette <span>— every token, every theme</span></h2>
+  <div class="scroll"><table class="matrix">
+    <thead><tr><th>Token</th><th>Classic Dark</th><th>Haus Night</th><th>Neon Lab</th><th>Classic Light</th><th>Haus</th><th>Clay</th></tr></thead>
+    <tbody><tr><th scope="row">--q-dist<em>Distance travelled</em></th><td><span class="hex" style="background:#34d399;color:#0b0d10">#34d399</span></td><td><span class="hex" style="background:#8FBF6E;color:#0b0d10">#8FBF6E</span></td><td><span class="hex" style="background:#00ff88;color:#0b0d10">#00ff88</span></td><td><span class="hex" style="background:#065f46;color:#f6f7f9">#065f46</span></td><td><span class="hex" style="background:#3E6B33;color:#f6f7f9">#3E6B33</span></td><td><span class="hex" style="background:#3A5C2E;color:#f6f7f9">#3A5C2E</span></td></tr><tr><th scope="row">--q-disp<em>Displacement</em></th><td><span class="hex" style="background:#86efac;color:#0b0d10">#86efac</span></td><td><span class="hex" style="background:#C3E3A0;color:#0b0d10">#C3E3A0</span></td><td><span class="hex" style="background:#a6ff5e;color:#0b0d10">#a6ff5e</span></td><td><span class="hex" style="background:#16a34a;color:#f6f7f9">#16a34a</span></td><td><span class="hex" style="background:#6FA83F;color:#f6f7f9">#6FA83F</span></td><td><span class="hex" style="background:#6A8F3A;color:#f6f7f9">#6A8F3A</span></td></tr><tr><th scope="row">--q-speed<em>Speed</em></th><td><span class="hex" style="background:#38bdf8;color:#0b0d10">#38bdf8</span></td><td><span class="hex" style="background:#6BA8D8;color:#f6f7f9">#6BA8D8</span></td><td><span class="hex" style="background:#4488ff;color:#f6f7f9">#4488ff</span></td><td><span class="hex" style="background:#2563eb;color:#f6f7f9">#2563eb</span></td><td><span class="hex" style="background:#2E6FA8;color:#f6f7f9">#2E6FA8</span></td><td><span class="hex" style="background:#2F5A80;color:#f6f7f9">#2F5A80</span></td></tr><tr><th scope="row">--q-vel<em>Velocity</em></th><td><span class="hex" style="background:#22d3ee;color:#0b0d10">#22d3ee</span></td><td><span class="hex" style="background:#45C9DB;color:#0b0d10">#45C9DB</span></td><td><span class="hex" style="background:#00e5ff;color:#0b0d10">#00e5ff</span></td><td><span class="hex" style="background:#0891b2;color:#f6f7f9">#0891b2</span></td><td><span class="hex" style="background:#0F7480;color:#f6f7f9">#0F7480</span></td><td><span class="hex" style="background:#1F6B73;color:#f6f7f9">#1F6B73</span></td></tr><tr><th scope="row">--q-acc<em>Acceleration</em></th><td><span class="hex" style="background:#fb7185;color:#f6f7f9">#fb7185</span></td><td><span class="hex" style="background:#E05A5A;color:#f6f7f9">#E05A5A</span></td><td><span class="hex" style="background:#ff4499;color:#f6f7f9">#ff4499</span></td><td><span class="hex" style="background:#dc2626;color:#f6f7f9">#dc2626</span></td><td><span class="hex" style="background:#B5342E;color:#f6f7f9">#B5342E</span></td><td><span class="hex" style="background:#A03030;color:#f6f7f9">#A03030</span></td></tr><tr><th scope="row">--q-tan<em>Tangent / gradient</em></th><td><span class="hex" style="background:#fb923c;color:#f6f7f9">#fb923c</span></td><td><span class="hex" style="background:#E8963C;color:#f6f7f9">#E8963C</span></td><td><span class="hex" style="background:#ff8a33;color:#f6f7f9">#ff8a33</span></td><td><span class="hex" style="background:#ea580c;color:#f6f7f9">#ea580c</span></td><td><span class="hex" style="background:#C2601A;color:#f6f7f9">#C2601A</span></td><td><span class="hex" style="background:#B0541F;color:#f6f7f9">#B0541F</span></td></tr><tr><th scope="row">--q-time<em>Time / cursor</em></th><td><span class="hex" style="background:#94a3b8;color:#f6f7f9">#94a3b8</span></td><td><span class="hex" style="background:#A8AAB2;color:#f6f7f9">#A8AAB2</span></td><td><span class="hex" style="background:#8888b8;color:#f6f7f9">#8888b8</span></td><td><span class="hex" style="background:#6b7280;color:#f6f7f9">#6b7280</span></td><td><span class="hex" style="background:#7A7263;color:#f6f7f9">#7A7263</span></td><td><span class="hex" style="background:#6A5F55;color:#f6f7f9">#6A5F55</span></td></tr><tr><th scope="row">--q-meas<em>Measured reading</em></th><td><span class="hex" style="background:#fbbf24;color:#0b0d10">#fbbf24</span></td><td><span class="hex" style="background:#F4C01E;color:#0b0d10">#F4C01E</span></td><td><span class="hex" style="background:#ffcc00;color:#0b0d10">#ffcc00</span></td><td><span class="hex" style="background:#927500;color:#f6f7f9">#927500</span></td><td><span class="hex" style="background:#A9820F;color:#f6f7f9">#A9820F</span></td><td><span class="hex" style="background:#8A6A1A;color:#f6f7f9">#8A6A1A</span></td></tr></tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>Paste-ready</h2>
+  <pre><code>:root{                       /* Classic Dark */
+  --q-dist:#34d399; --q-disp:#86efac; --q-speed:#38bdf8; --q-vel:#22d3ee;
+  --q-acc:#fb7185; --q-tan:#fb923c; --q-time:#94a3b8; --q-meas:#fbbf24;
+}
+[data-theme="hausnight"]{                       /* Haus Night */
+  --q-dist:#8FBF6E; --q-disp:#C3E3A0; --q-speed:#6BA8D8; --q-vel:#45C9DB;
+  --q-acc:#E05A5A; --q-tan:#E8963C; --q-time:#A8AAB2; --q-meas:#F4C01E;
+}
+[data-theme="neon"]{                       /* Neon Lab */
+  --q-dist:#00ff88; --q-disp:#a6ff5e; --q-speed:#4488ff; --q-vel:#00e5ff;
+  --q-acc:#ff4499; --q-tan:#ff8a33; --q-time:#8888b8; --q-meas:#ffcc00;
+}
+[data-theme="light"]{                       /* Classic Light */
+  --q-dist:#065f46; --q-disp:#16a34a; --q-speed:#2563eb; --q-vel:#0891b2;
+  --q-acc:#dc2626; --q-tan:#ea580c; --q-time:#6b7280; --q-meas:#927500;
+}
+[data-theme="haus"]{                       /* Haus */
+  --q-dist:#3E6B33; --q-disp:#6FA83F; --q-speed:#2E6FA8; --q-vel:#0F7480;
+  --q-acc:#B5342E; --q-tan:#C2601A; --q-time:#7A7263; --q-meas:#A9820F;
+}
+[data-theme="clay"]{                       /* Clay */
+  --q-dist:#3A5C2E; --q-disp:#6A8F3A; --q-speed:#2F5A80; --q-vel:#1F6B73;
+  --q-acc:#A03030; --q-tan:#B0541F; --q-time:#6A5F55; --q-meas:#8A6A1A;
+}</code></pre>
+  <pre><code>/* one assignment point — drawing code uses the aliases, never the raw tokens */
+C.dist = C['q-dist'];   /* GREEN   distance travelled          */
+C.s    = C['q-disp'];   /* GREEN   displacement s / &#916;x         */
+C.spd  = C['q-speed'];  /* BLUE    speed                       */
+C.v    = C['q-vel'];    /* BLUE    velocity u, v, average       */
+C.a    = C['q-acc'];    /* RED     acceleration a               */
+C.tan  = C['q-tan'];    /* ORANGE  tangent / gradient method    */
+C.tim  = C['q-time'];   /* GREY    time, cursors, t marks       */
+C.meas = C['q-meas'];   /* GOLD    a reading off the apparatus  */</code></pre>
+</section>
+
+<section>
+  <h2>Shaded areas</h2>
+  <p>An area under a graph is not a new quantity — it <em>is</em> the quantity it evaluates to. So it keeps that
+  quantity's colour and only drops in opacity, far enough that the gridlines and any curve crossing it stay
+  readable. Two levels, shared by every mode:</p>
+  <pre><code>var AREA_A  = 0.11;   /* the standard fill: area under v&#8211;t, ut rectangles, tape bars */
+var AREA_A2 = 0.13;   /* the second component, when two areas are stacked or adjacent */
+
+fillArea(fr.v, mod.v, withA(C.s, AREA_A), 0, tc);        /* area under v&#8211;t &#8658; displacement */
+shadeRect(g, 0, q.t, 0, q.u, withA(C.v, AREA_A));        /* ut       &#8658; the u part of s     */
+shadeTri (g, [[0,q.u],[q.t,q.u],[q.t,q.v]], withA(C.a, AREA_A2)); /* &#189;at&#178; &#8658; the a part of s */</code></pre>
+  <p class="note">When a total area is built from several parts, each part keeps <em>its own</em> quantity colour —
+  that is what makes <code>s = ut + &#189;at&#178;</code> legible as a picture rather than a formula. Every fill is clipped
+  to its frame, so a shaded region can never bleed into the panel below.</p>
+</section>
+
+<section>
+  <h2>Rules</h2>
+  <ol class="rules">
+    <li><b>Colour by quantity, not by graph</b><p>Velocity is blue whether it is an arrow on the road, a line on
+    the v&#8211;t plot, a dot, or a number in the side panel. A student who learns one code reads all four modes.</p></li>
+    <li><b>The construction colour is never a quantity</b><p>Orange marks the act of measuring a gradient — the
+    dashed tangent, the rise/run step, the “gradient = …” caption, and the panel rows that report a gradient.
+    The <em>result</em> of that construction is reported in the quantity's own colour beside it.</p></li>
+    <li><b>Time stays desaturated</b><p>Grey for the time axis, the hover cursor, and &#916;t. Time is the stage, not
+    an actor; if time competes for attention the graph stops reading.</p></li>
+    <li><b>Gold means “straight off the apparatus”</b><p>A tape gap, a card width, a ramp angle — a number the
+    student physically reads before doing any physics with it. Once it becomes a velocity it turns blue.</p></li>
+    <li><b>u and v share one colour</b><p>They are the same quantity at two instants. The difference is carried by
+    the marker, not the hue: a <b>hollow</b> dot for the start, a <b>solid</b> dot for the end.</p></li>
+    <li><b>Structural greys are not tokens</b><p>The moving object, the bench, the ruler and the frame are drawn in
+    the theme's own text/border greys. Reserve the eight tokens for things that carry physics.</p></li>
+    <li><b>No token may collide inside a theme</b><p>Two quantities sharing a hex in any one theme is a bug, not a
+    style choice — it silently teaches that two different things are the same thing.</p></li>
+  </ol>
+</section>
+
+<section>
+  <h2>Conformance <span>— what a new theme has to satisfy</span></h2>
+  <p>A theme is only valid if each token lands in its family's band, measured as HSL on the hex:</p>
+  <ul class="bands"><li><b>green</b><span>hue 80–170</span></li><li><b>blue</b><span>hue 175–265</span></li><li><b>red</b><span>hue ≥325 or ≤15</span></li><li><b>orange</b><span>hue 16–36</span></li><li><b>gold</b><span>hue 40–60</span></li><li><b>grey</b><span>saturation < 0.28</span></li></ul>
+  <p class="note">Both checks run in the UI suite: <code>every quantity keeps its tone family in all 6 themes</code>
+  and <code>no two quantities ever share a colour, in any theme</code>. Add a theme, run the suite — a hue that
+  drifted out of its family fails by name, with the offending hex.</p>
+</section>
+
+<section>
+  <h2>Extending past kinematics</h2>
+  <p>Kinematics claims six families and leaves the rest of the wheel free. When CH1 continues into dynamics,
+  keep these eight fixed and take new tokens from unclaimed hue space — violet/magenta for force and its
+  components, teal for mass and inertia, and a second gold-adjacent tone only if the apparatus genuinely reads
+  something new. A quantity that appears in two chapters keeps the colour it was given here: momentum is built
+  from velocity, so it should live in the blue family rather than start a seventh one.</p>
+</section>
+
+<footer>Kinematics Colour Format v1.0 — extracted from Motion &amp; Kinematics Lab v1.4.0.
+Tokens verified across all six themes by the automated colour suite.</footer>
+</div>
+</body>
+</html>
