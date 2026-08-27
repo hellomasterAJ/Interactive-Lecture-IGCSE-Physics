@@ -205,7 +205,7 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
 .tgroup{display:flex;align-items:center;gap:6px}
 .tgroup+.tgroup{border-left:1px solid var(--border);padding-left:12px}
 .tgroup.nb,.spacer+.tgroup{border-left:0;padding-left:0}
-.tgroup.slot-hidden{visibility:hidden}
+.tgroup.slot-hidden,.ctrl-btn.slot-hidden{visibility:hidden}
 .ctrl-btn{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:0 12px;
   height:28px;line-height:26px;border-radius:8px;cursor:pointer;font-size:11.5px;font-weight:600;
   transition:all .16s;white-space:nowrap;box-sizing:border-box}
@@ -338,7 +338,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">➡️ Vector Addition Lab</span> <span class="badge-top" id="badge">v1.0.1</span></h1>
+    <h1><span class="t">➡️ Vector Addition Lab</span> <span class="badge-top" id="badge">v1.1.0</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -397,6 +397,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
       </div>
       <span class="spacer"></span>
       <div class="tgroup nb">
+        <button class="ctrl-btn" id="bClear" title="Removes every vector and leaves an empty grid — the example itself stays selected">🗑 Clear canvas</button>
         <button class="ctrl-btn" id="bReset" title="Clears every vector and restores the defaults for this example only">↺ Reset</button>
       </div>
     </div>
@@ -415,9 +416,9 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
       <div class="tgroup">
         <span class="tlabel">View</span>
         <button class="ctrl-btn on" id="tLabels">🏷 Labels</button>
+        <button class="ctrl-btn" id="tFit" title="choose the scale and re-centre the origin so every vector and every label sits inside the grid">⤢ Fit to grid</button>
         <button class="ctrl-btn on" id="tHints" title="show or hide the on-canvas usage hints">💡 Hints</button>
         <button class="ctrl-btn" id="tComps">⊥ Components</button>
-        <button class="ctrl-btn" id="tFit" title="choose the scale and re-centre the origin so every vector and every label sits inside the grid">⤢ Fit to grid</button>
         <button class="ctrl-btn" id="tSteps">🧮 Steps</button>
       </div>
     </div>
@@ -428,6 +429,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
         <input class="tin w4" id="inMag" placeholder="mag" title="magnitude in the chosen unit">
         <input class="tin w4" id="inAng" placeholder="angle°" title="direction in the chosen angle convention">
         <button class="ctrl-btn primary" id="bAdd">＋ Add</button>
+        <button class="ctrl-btn" id="tPoints" title="read a vector off two points on the grid — left click sets the initial point, middle click sets the final point; the new vector keeps that size and direction and joins the diagram tip-to-tail">📍 Two points</button>
       </div>
       <div class="tgroup">
         <button class="ctrl-btn" id="bRandom" title="add one random vector">🎲 Random</button>
@@ -435,6 +437,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
       </div>
       <div class="tgroup">
         <button class="ctrl-btn gold active" id="tRes" title="draw the resultant">⭐ Resultant</button>
+        <button class="ctrl-btn" id="tFbd" title="show the same forces as a free-body diagram — all acting at one point on the object; drag the card to move it">🧍 Free body</button>
       </div>
     </div>
   </div>
@@ -682,9 +685,12 @@ var S = {
   vecs: [],                            /* {mag, ang, key} — ang is a MATH angle */
   scale: 10, unit: 'N', grid: 10, conv: 'east',
   snapG: true, snapT: true,
-  labels: true, hints: true, comps: false, steps: false, res: true, fit: false,
-  tool: null,                          /* null | 'ruler' | 'prot' | 'eraser'  */
+  labels: true, hints: true, comps: false, steps: false, res: true, fit: false, fbd: false,
+  tool: null,                          /* null | 'ruler' | 'prot' | 'eraser' | 'points' */
   ruler: null, prot: null,
+  pts: null, ptsB: null,               /* two-point add: fixed initial point, live final */
+  fbdPos: null,                        /* where the user dragged the free-body card to */
+  fbdDragging: false,
   sel: -1, hover: -1,
   drag: null, undo: [], redo: [],
   zoom: { k: 1, ox: 0, oy: 0, panning: false, px: 0, py: 0 },
@@ -857,6 +863,38 @@ function angleArc(cx, cy, r, fromDeg, toDeg, col, label) {
       11, col, 'center', 700, 'middle');
   }
 }
+/* the arc that states a DIRECTION, drawn the way the chosen convention measures
+   it: anticlockwise from East, or — for a bearing — clockwise from North.   */
+function dirArc(cx, cy, r, mathAng, col, label) {
+  var north = S.conv === 'north';
+  var to = VM.norm360(mathAng);
+  var from = north ? 90 : 0;
+  var sweep = north ? VM.norm360(90 - to) : to;          /* degrees travelled */
+  CX.save();
+  CX.strokeStyle = col; CX.lineWidth = 1.6; CX.setLineDash([4, 3]);
+  CX.beginPath(); CX.arc(cx, cy, r, -from * VM.D, -to * VM.D, !north);
+  CX.stroke(); CX.restore();
+  /* a small head at the far end, so which way the angle was swept is visible */
+  if (sweep > 8) {
+    var e = to * VM.D, tang = north ? (e - Math.PI / 2) : (e + Math.PI / 2);
+    var ex = cx + Math.cos(e) * r, ey = cy - Math.sin(e) * r;
+    arrowTo(ex - Math.cos(tang) * 10, ey + Math.sin(tang) * 10, ex, ey, col, 1.8, { head: 9 });
+  }
+  if (label) {
+    var mid = (north ? 90 - sweep / 2 : sweep / 2) * VM.D;
+    var lx = cx + Math.cos(mid) * (r + 18), ly = cy - Math.sin(mid) * (r + 18);
+    /* a bearing is measured off the vertical axis, so a centred label would sit
+       on top of it — push it out to whichever side the sweep opened up      */
+    if (north) {
+      /* a bearing arc opens between the vertical axis and the vector, so the
+         label sits on a plate — it can land on either of them and still read */
+      plate(label, lx, ly + 4, 11, col, 'center', true);
+    } else {
+      mtxt(label, cx + Math.cos(mid) * (r + 26), cy - Math.sin(mid) * (r + 26),
+        11, col, 'center', 700, 'middle');
+    }
+  }
+}
 function dot(x, y, r, col, hollow) {
   CX.save();
   if (hollow) {
@@ -938,6 +976,13 @@ function vecList() { return S.vecs; }
 function vecName(i) { return String.fromCharCode(65 + i); }
 function dispAng(v) { return VM.toDisp(v.ang, S.conv); }
 function angSuffix() { return S.conv === 'east' ? '' : ' (bearing)'; }
+/* a direction, written the way its convention writes it: 36.9° from East,
+   but 036.9° as a bearing — three figures, the way a compass answer is quoted */
+function fmtDir(mathAng) {
+  var d = VM.toDisp(VM.norm360(mathAng), S.conv), s = fmt(d, 1);
+  if (S.conv === 'north') while (s.indexOf('.') < 3) s = '0' + s;
+  return s + '°';
+}
 
 /* draw one vector arrow between two physical points, with its label */
 function drawVec(v, tail, i, o) {
@@ -1050,8 +1095,7 @@ function m1Draw(sc) {
       /* two-thirds along, so it never lands on the angle arc near the origin */
       var mx = a.x + (b.x - a.x) * .66, my = a.y + (b.y - a.y) * .66;
       plate('R = ' + fmt(r.mag, 1) + ' ' + S.unit, mx, my - 16, 12, C.res, 'center', true);
-      angleArc(a.x, a.y, 58, 0, r.ang, C.res,
-        'θ = ' + fmt(VM.toDisp(r.ang, S.conv), 1) + '°');
+      dirArc(a.x, a.y, 58, r.ang, C.res, 'θ = ' + fmtDir(r.ang));
     }
     /* the resultant's own components, when asked for */
     if (S.comps) {
@@ -1065,12 +1109,134 @@ function m1Draw(sc) {
     }
   }
   if (n === 0) emptyHint();
+  if (S.fbd) drawFreeBody();
 
   /* the scale-diagram reminder, stated in the units actually chosen */
   var cm = VM.unitsToCm(r.mag, S.scale);
   sceneHeader(sc, (S.hints && n > 0 && !r.zero)
     ? 'the dashed gold arrow measures ' + fmt(cm, 2) + ' cm  →  ' + fmt(cm, 2) + ' × ' +
     fmt(S.scale, 0) + ' = ' + fmt(r.mag, 1) + ' ' + S.unit : null);
+}
+
+/* ---- the free-body link ------------------------------------------------
+   The polygon on the grid answers "what is the resultant?"; a free-body
+   diagram answers "what is actually pushing on the object?". Drawing both
+   from the SAME vectors is the connection students usually have to make in
+   their heads, so the card puts them side by side.                        */
+var FBD = { w: 268, h: 272 };
+
+/* park the card in whichever right-hand corner the drawing is furthest from.
+   The label plates hang off the middle of each arrow, so they have to count
+   as occupied space too — avoiding only the endpoints is not enough.      */
+function fbdClamp(x, y) {
+  return { x: clamp(x, 8, W - FBD.w - 8), y: clamp(y, 70, H - FBD.h - 8) };
+}
+function fbdBox() {
+  /* once the user has dragged the card, that is where it belongs */
+  if (S.fbdPos) {
+    var f = fbdClamp(S.fbdPos.x, S.fbdPos.y);
+    return { x: f.x, y: f.y, w: FBD.w, h: FBD.h };
+  }
+  var chain = VM.chain(S.vecs), pts = chain.map(function (q) { return P(q.x, q.y); });
+  var r = R(); pts.push(P(r.x, r.y));
+  S.vecs.forEach(function (v, i) {
+    var t = chain[i], c = VM.comp(v);
+    var p0 = P(t.x, t.y), p1 = P(t.x + c.x, t.y + c.y);
+    var nx = -(p1.y - p0.y), ny = (p1.x - p0.x), nL = Math.hypot(nx, ny) || 1;
+    /* the label plate, both sides of the arrow, ±half its typical width */
+    [-1, 1].forEach(function (sgn) {
+      var mx = (p0.x + p1.x) / 2 + sgn * nx / nL * 16;
+      var my = (p0.y + p1.y) / 2 + sgn * ny / nL * 16;
+      pts.push({ x: mx - 52, y: my }, { x: mx + 52, y: my });
+    });
+  });
+  /* the gold resultant carries a label too, two-thirds of the way along */
+  var a0 = P(0, 0), b1 = P(r.x, r.y);
+  pts.push({ x: a0.x + (b1.x - a0.x) * .66 - 52, y: a0.y + (b1.y - a0.y) * .66 },
+    { x: a0.x + (b1.x - a0.x) * .66 + 52, y: a0.y + (b1.y - a0.y) * .66 });
+  var cands = [{ x: W - 16 - FBD.w, y: 100 }, { x: W - 16 - FBD.w, y: H - 96 - FBD.h }];
+  var best = cands[0], bestD = -1;
+  cands.forEach(function (c) {
+    var d = Infinity;
+    pts.forEach(function (p) {
+      var dx = Math.max(c.x - p.x, 0, p.x - (c.x + FBD.w));
+      var dy = Math.max(c.y - p.y, 0, p.y - (c.y + FBD.h));
+      d = Math.min(d, Math.hypot(dx, dy));
+    });
+    if (d > bestD) { bestD = d; best = c; }
+  });
+  return { x: best.x, y: best.y, w: FBD.w, h: FBD.h };
+}
+
+var FBD_DRAWING = false;
+function drawFreeBody() {
+  var vs = S.vecs; if (!vs.length) return;
+  FBD_DRAWING = true;
+  /* the arrows live in their own band, clear of the two-line header above and
+     the two-line caption below, so a label can never land on either         */
+  var b = fbdBox(), ft = b.y + 52, fb = b.y + b.h - 48;
+  var cx = b.x + b.w / 2, cy = (ft + fb) / 2, i;
+
+  CX.save();
+  CX.fillStyle = withA(C.card, .95);
+  rr(b.x, b.y, b.w, b.h, 11); CX.fill();
+  CX.strokeStyle = C.border; CX.lineWidth = 1;
+  rr(b.x, b.y, b.w, b.h, 11); CX.stroke(); CX.restore();
+
+  /* the grip says the card can be picked up and moved */
+  CX.save();
+  CX.fillStyle = withA(C['text-muted'], S.fbdDragging ? .95 : .55);
+  for (var gx = 0; gx < 2; gx++) {
+    for (var gy = 0; gy < 3; gy++) {
+      CX.beginPath();
+      CX.arc(b.x + b.w - 22 + gx * 7, b.y + 16 + gy * 6, 1.6, 0, 7); CX.fill();
+    }
+  }
+  CX.restore();
+
+  txt('Free-body diagram', b.x + 14, b.y + 22, 12.5, C.text, 'left', 700);
+  txt('the same forces, acting on the object', b.x + 14, b.y + 39, 10.5,
+    C['text-muted'], 'left', 500);
+
+  /* one scale for the card, so the longest force just fits inside it */
+  var maxMag = 0;
+  for (i = 0; i < vs.length; i++) maxMag = Math.max(maxMag, vs[i].mag);
+  var r = R();
+  if (S.res && !r.zero) maxMag = Math.max(maxMag, r.mag);
+  var reachX = b.w / 2 - 46, reachY = (fb - ft) / 2 - 16;
+  var k = maxMag > 0 ? Math.min(reachX, reachY) / maxMag : 1;
+
+  /* the object the forces act on */
+  CX.save();
+  CX.fillStyle = withA(C['text-dim'], .30);
+  rr(cx - 17, cy - 13, 34, 26, 5); CX.fill();
+  CX.strokeStyle = C['text-dim']; CX.lineWidth = 1.6;
+  rr(cx - 17, cy - 13, 34, 26, 5); CX.stroke(); CX.restore();
+
+  /* every force drawn OUT from the body — that is the whole convention */
+  for (i = 0; i < vs.length; i++) {
+    var c = VM.comp(vs[i]), col = vcol(vs[i].key);
+    var ex = cx + c.x * k, ey = cy - c.y * k;
+    arrowTo(cx, cy, ex, ey, col, 3.2, { head: 12 });
+    if (S.labels) {
+      var ux = c.x / (vs[i].mag || 1), uy = -c.y / (vs[i].mag || 1);
+      mtxt(vecName(i) + ' ' + fmt(vs[i].mag, 0), ex + ux * 15, ey + uy * 15 + 4,
+        10.5, col, Math.abs(ux) < .3 ? 'center' : (ux > 0 ? 'left' : 'right'), 700);
+    }
+  }
+  if (S.res && showAnswer() && !r.zero) {
+    arrowTo(cx, cy, cx + r.x * k, cy - r.y * k, withA(C.res, .55), 2.4,
+      { dash: [6, 4], head: 11 });
+  }
+
+  txt(r.zero
+    ? 'balanced — the object stays as it is'
+    : 'not balanced — the object accelerates',
+    cx, b.y + b.h - 26, 10.5, r.zero ? C['v-b'] : C['text-dim'], 'center', 600);
+  txt(r.zero ? 'the closed polygon says the same thing'
+    : 'the dashed arrow is R, and R is not a force',
+    cx, b.y + b.h - 11, 9.5, C['text-muted'], 'center', 500);
+  FBD_DRAWING = false;
 }
 
 function emptyHint() {
@@ -1119,19 +1285,6 @@ m1Scene('three', '✕ Three vectors', 'Three forces — the polygon method',
       '<li>Re-order them and the closing arrow is identical — vector addition is commutative.</li>' +
       '<li>If the polygon closes on itself the resultant is zero and the forces are in ' +
       '<b>equilibrium</b>.</li></ol>';
-  });
-
-m1Scene('parallel', '✚ Parallel', 'Parallel and antiparallel forces',
-  'Along one line, vectors simply add or subtract — no triangle needed.',
-  [{ mag: 70, ang: 0 }, { mag: 40, ang: 0 }],
-  function () {
-    return '<div class="note">When two vectors point <b>the same way</b> their magnitudes add. ' +
-      'When they point <b>opposite ways</b> they subtract, and the resultant follows the larger ' +
-      'one. This is the only case where you can add magnitudes directly.</div>' +
-      '<ol class="steps">' +
-      '<li>Same direction: <b>R = A + B</b>, direction unchanged.</li>' +
-      '<li>Opposite directions: <b>R = |A − B|</b>, in the direction of the larger.</li>' +
-      '<li>Set the second angle to 180° to see the second case.</li></ol>';
   });
 
 m1Scene('cancel', '🔄 Cancelling', 'Balanced forces — a closed polygon',
@@ -1200,8 +1353,8 @@ function m2Draw(sc) {
     var pick = S.sel >= 0 && S.sel < n ? S.sel : (n === 1 ? 0 : -1);
     if (pick >= 0) {
       var pv = vs[pick];
-      angleArc(org.x, org.y, 56, 0, pv.ang, withA(vcol(pv.key), .95),
-        vecName(pick) + ' at ' + fmt(dispAng(pv), 1) + '°');
+      dirArc(org.x, org.y, 56, pv.ang, withA(vcol(pv.key), .95),
+        vecName(pick) + ' at ' + fmtDir(pv.ang));
     }
   }
 
@@ -1214,8 +1367,7 @@ function m2Draw(sc) {
       plate('R = ' + fmt(r.mag, 1) + ' ' + S.unit,
         org.x + (rp.x - org.x) * .68 + 14, org.y + (rp.y - org.y) * .68 - 10, 12,
         C.res, 'center', true);
-      angleArc(org.x, org.y, 92, 0, r.ang, C.res,
-        'θ_R = ' + fmt(VM.toDisp(r.ang, S.conv), 1) + '°');
+      dirArc(org.x, org.y, 92, r.ang, C.res, 'θ_R = ' + fmtDir(r.ang));
     }
   }
   if (n === 0)
@@ -1347,8 +1499,7 @@ function m3Draw(sc) {
       plate('R = ' + fmt(r.mag, 1) + ' ' + S.unit,
         org.x + (pf.x - org.x) * .70 + 16, org.y + (pf.y - org.y) * .70 - 12, 12,
         C.res, 'center', true);
-      angleArc(org.x, org.y, 106, 0, r.ang, C.res,
-        'θ_R = ' + fmt(VM.toDisp(r.ang, S.conv), 1) + '°');
+      dirArc(org.x, org.y, 106, r.ang, C.res, 'θ_R = ' + fmtDir(r.ang));
     }
   }
   dot(org.x, org.y, 4.5, C['text-dim']);
@@ -1623,10 +1774,37 @@ function drawTools() {
       CX.beginPath(); CX.moveTo(cx1, cy1); CX.lineTo(cx2, cy2); CX.stroke();
     }
     CX.restore();
-    dashLine(t.c.x, t.c.y, t.c.x + R0 + 16, t.c.y, withA(C.tool, .8), 1.4, [4, 4]);
+    if (S.conv === 'north')
+      dashLine(t.c.x, t.c.y, t.c.x, t.c.y - R0 - 16, withA(C.tool, .8), 1.4, [4, 4]);
+    else
+      dashLine(t.c.x, t.c.y, t.c.x + R0 + 16, t.c.y, withA(C.tool, .8), 1.4, [4, 4]);
     arrowTo(t.c.x, t.c.y, t.b.x, t.b.y, C.tool, 2.4, { head: 11 });
-    angleArc(t.c.x, t.c.y, 44, 0, ang, C.tool, null);
-    plate(fmt(VM.toDisp(ang, S.conv), 1) + '°', t.c.x + 8, t.c.y - R0 - 10, 12, C.tool, 'left', true);
+    dirArc(t.c.x, t.c.y, 44, ang, C.tool, null);
+    plate(fmtDir(ang) + angSuffix(), t.c.x + 8, t.c.y - R0 - 10, 12, C.tool, 'left', true);
+  }
+
+  /* two-point add — the fixed initial point plus a live preview to the cursor */
+  if (S.tool === 'points') {
+    var a0 = S.pts, b0 = S.ptsB;
+    if (a0) {
+      var pa = P(a0.x, a0.y), pb = b0 ? P(b0.x, b0.y) : pa;
+      dashLine(pa.x, pa.y, pb.x, pb.y, withA(C.tool, .9), 1.8, [5, 5]);
+      dot(pa.x, pa.y, 4.5, C.tool);
+      plate('initial (' + fmt(a0.x, 0) + ', ' + fmt(a0.y, 0) + ')',
+        pa.x + 9, pa.y + 17, 11, C.tool, 'left', true);
+      if (b0) {
+        var nv0 = VM.fromXY(b0.x - a0.x, b0.y - a0.y);
+        dot(pb.x, pb.y, 4.5, C.tool, true);
+        if (nv0.mag > 1e-6) {
+          plate(fmt(nv0.mag, 1) + ' ' + S.unit + '  @ ' +
+            fmt(VM.toDisp(nv0.ang, S.conv), 1) + '\u00b0',
+            pb.x + 9, pb.y - 13, 11, C.tool, 'left', true);
+        }
+      }
+    } else if (b0) {
+      var pb0 = P(b0.x, b0.y);
+      dot(pb0.x, pb0.y, 3.5, withA(C.tool, .55), true);
+    }
   }
 }
 
@@ -1687,7 +1865,12 @@ function updateChips() {
   $('chipHint').hidden = !S.hints || S.mode === 'quiz';
   var tool = S.tool === 'ruler' ? '📏 Ruler — drag across the canvas'
     : S.tool === 'prot' ? '📐 Protractor — drag out from the corner'
-      : S.tool === 'eraser' ? '🧽 Eraser — click a vector to delete it' : '';
+      : S.tool === 'eraser' ? '🧽 Eraser — click a vector to delete it'
+        : S.tool === 'points'
+          ? (S.pts
+            ? '📍 Two points — initial point set<br>middle click = final point<br>the new vector keeps that size and direction'
+            : '📍 Two points — left click = initial point<br>middle click = final point')
+          : '';
   $('chipTool').hidden = !tool;
   $('chipTool').innerHTML = tool;
   $('bbLeft').textContent = S.mode === 'quiz'
@@ -1718,7 +1901,7 @@ function badgeRow() {
     '<div class="bdg res">|R| <b>' + (hide ? q :
       (S.vecs.length ? fmt(r.mag, 2) + ' ' + S.unit : '—')) + '</b></div>' +
     '<div class="bdg res">θ_R <b>' + (hide ? q : (S.vecs.length && !r.zero ?
-      fmt(VM.toDisp(r.ang, S.conv), 1) + '°' : '—')) + '</b></div>' +
+      fmtDir(r.ang) : '—')) + '</b></div>' +
     '</div>';
 }
 
@@ -1732,7 +1915,7 @@ function vectorRows() {
       '<span class="sw" style="background:var(--v-' + v.key + ')"></span>' +
       '<span class="nm" style="color:var(--v-' + v.key + ')">' + vecName(i) + '</span>' +
       '<span class="cmp">' + fmt(c.x, 1) + ', ' + fmt(c.y, 1) + '</span>' +
-      '<span class="val">' + fmt(v.mag, 1) + ' ' + S.unit + ' @ ' + fmt(dispAng(v), 1) + '°</span>' +
+      '<span class="val">' + fmt(v.mag, 1) + ' ' + S.unit + ' @ ' + fmtDir(v.ang) + '</span>' +
       '<button class="del" data-del="' + i + '" title="delete this vector">✕</button>' +
       '</div>';
   }).join('');
@@ -1992,7 +2175,7 @@ function loadExample(keepTask) {
   S.vecs = sc.def.slice(0, modeMax()).map(function (v, i) {
     return { mag: v.mag, ang: VM.norm360(v.ang), key: VKEYS[i] };
   });
-  S.sel = -1; S.ruler = null; S.prot = null;
+  S.sel = -1; S.ruler = null; S.prot = null; S.pts = null; S.ptsB = null;
   S.zoom = { k: 1, ox: 0, oy: 0, panning: false, px: 0, py: 0 };
   if (!keepTask) { S.task = null; }
 }
@@ -2036,6 +2219,10 @@ function updateChrome() {
   $('tHints').classList.toggle('on', S.hints);
   $('tComps').classList.toggle('on', S.comps);
   $('tFit').classList.toggle('on', S.fit);
+  $('tFbd').classList.toggle('on', S.fbd);
+  /* the free-body link only means anything where the vectors are drawn
+     tip-to-tail; Modes 2 and 3 already draw them all from one point       */
+  $('tFbd').classList.toggle('slot-hidden', S.md !== 1);
   /* while Fit is on the scale is derived, so the input becomes a readout */
   $('inScale').disabled = S.fit;
   $('inScale').title = S.fit
@@ -2047,13 +2234,15 @@ function updateChrome() {
   $('tRuler').classList.toggle('on', S.tool === 'ruler');
   $('tProt').classList.toggle('on', S.tool === 'prot');
   $('tEraser').classList.toggle('on', S.tool === 'eraser');
+  $('tPoints').classList.toggle('on', S.tool === 'points');
   $('bUndo').disabled = !S.undo.length;
   $('bRedo').disabled = !S.redo.length;
   $('tSnapT').classList.toggle('slot-hidden', S.md !== 1);
   /* in Practice and Quiz the picture is set by the question, so lock the editors */
   var lock = S.mode !== 'sim';
   $('gEx').classList.toggle('locked', S.mode !== 'sim');
-  ['bAdd', 'bRandom', 'inMag', 'inAng'].forEach(function (id) {
+  $('bClear').disabled = lock || !S.vecs.length;
+  ['bAdd', 'bRandom', 'inMag', 'inAng', 'tPoints'].forEach(function (id) {
     $(id).disabled = lock;
   });
 }
@@ -2063,6 +2252,12 @@ function snapUnits(p) {
   if (!S.snapG) return p;
   var g = S.grid;
   return { x: VM.snapTo(p.x, g), y: VM.snapTo(p.y, g) };
+}
+/* the free-body card is an object on the canvas, not part of the diagram */
+function overFbd(L) {
+  if (!S.fbd || S.md !== 1 || !S.vecs.length) return false;
+  var b = fbdBox();
+  return L.x >= b.x && L.x <= b.x + b.w && L.y >= b.y && L.y <= b.y + b.h;
 }
 function hitVector(L) {
   for (var i = S.vecs.length - 1; i >= 0; i--) {
@@ -2085,6 +2280,36 @@ function bindCanvas() {
     if (S.mode === 'quiz') return;
     CV.setPointerCapture(e.pointerId);
     var L = toLogical(e.clientX, e.clientY);
+
+    /* the free-body card can be picked up and put anywhere on the canvas */
+    if (e.button === 0 && overFbd(L)) {
+      var fb0 = fbdBox();
+      S.drag = { kind: 'fbd', dx: L.x - fb0.x, dy: L.y - fb0.y };
+      S.fbdDragging = true;
+      CV.style.cursor = 'grabbing';
+      draw(); return;
+    }
+
+    /* two-point add owns both buttons while it is on, so it comes first */
+    if (S.tool === 'points') {
+      if (e.button !== 0 && e.button !== 1) return;
+      e.preventDefault();
+      if (S.mode !== 'sim') return;
+      var pu = snapUnits(U(L.x, L.y));
+      S.ptsB = pu;
+      if (e.button === 0) { S.pts = { x: pu.x, y: pu.y }; draw(); updateChips(); return; }
+      if (!S.pts) { draw(); return; }        /* a final point needs an initial one first */
+      if (S.vecs.length >= modeMax()) return;
+      var np = VM.fromXY(pu.x - S.pts.x, pu.y - S.pts.y);
+      if (np.mag > 1e-6) {
+        pushUndo();
+        S.vecs.push({ mag: np.mag, ang: np.ang, key: nextKey() });
+        S.sel = S.vecs.length - 1;
+        S.pts = null;
+        refresh();
+      }
+      return;
+    }
 
     if (e.button === 1) { S.sel = -1; S.ruler = null; S.prot = null; draw(); return; }
 
@@ -2114,6 +2339,15 @@ function bindCanvas() {
 
   CV.addEventListener('pointermove', function (e) {
     var L = toLogical(e.clientX, e.clientY);
+    if (S.drag && S.drag.kind === 'fbd') {
+      S.fbdPos = fbdClamp(L.x - S.drag.dx, L.y - S.drag.dy);
+      draw(); return;
+    }
+    if (S.tool === 'points') {
+      var pm = snapUnits(U(L.x, L.y));
+      if (!S.ptsB || pm.x !== S.ptsB.x || pm.y !== S.ptsB.y) { S.ptsB = pm; draw(); }
+      return;
+    }
     if (S.zoom.panning) {
       S.zoom.ox += (e.clientX - S.zoom.px) / VT.s;
       S.zoom.oy += (e.clientY - S.zoom.py) / VT.s;
@@ -2121,6 +2355,10 @@ function bindCanvas() {
       clampPan(); draw(); return;
     }
     if (!S.drag) {
+      if (overFbd(L)) {
+        if (S.hover !== -1) { S.hover = -1; draw(); }
+        CV.style.cursor = 'grab'; return;
+      }
       var hv = hitVector(L);
       if (hv !== S.hover) { S.hover = hv; CV.style.cursor = hv >= 0 ? 'pointer' : 'crosshair'; draw(); }
       return;
@@ -2136,6 +2374,9 @@ function bindCanvas() {
   });
 
   function endDrag() {
+    if (S.drag && S.drag.kind === 'fbd') {
+      S.drag = null; S.fbdDragging = false; CV.style.cursor = 'grab'; draw(); return;
+    }
     if (S.drag && (S.drag.kind === 'new') && S.vecs[S.drag.i] && S.vecs[S.drag.i].mag < 1e-6) {
       S.vecs.splice(S.drag.i, 1); rekey(); doUndoSilent();
     }
@@ -2159,6 +2400,9 @@ function bindCanvas() {
     draw();
   });
   CV.addEventListener('auxclick', function (e) { if (e.button === 1) e.preventDefault(); });
+  CV.addEventListener('pointerleave', function () {
+    if (S.tool === 'points' && S.ptsB) { S.ptsB = null; draw(); }
+  });
 }
 
 /* ---------- toolbar wiring ---------------------------------------------- */
@@ -2175,7 +2419,7 @@ function bindToolbar() {
   [].forEach.call($('gMode').children, function (b) {
     b.addEventListener('click', function () {
       S.mode = b.dataset.m;
-      S.tool = null; S.ruler = null; S.prot = null;
+      S.tool = null; S.ruler = null; S.prot = null; S.pts = null; S.ptsB = null;
       if (S.mode === 'prac') { newTask(1234 + S.md); S.ptab = 'data'; }
       else if (S.mode === 'quiz') { newQuiz(); S.ptab = 'data'; }
       else { S.task = null; loadExample(); }
@@ -2212,6 +2456,7 @@ function bindToolbar() {
   toggle('tSnapG', 'snapG'); toggle('tSnapT', 'snapT');
   toggle('tLabels', 'labels'); toggle('tHints', 'hints');
   toggle('tComps', 'comps'); toggle('tSteps', 'steps'); toggle('tRes', 'res');
+  toggle('tFbd', 'fbd');
   $('tFit').addEventListener('click', function () {
     if (S.fit) { S.fit = false; FITORG = null; S.scale = 10; }
     else { pushUndo(); S.fit = true; }
@@ -2221,15 +2466,24 @@ function bindToolbar() {
   function tool(id, name) {
     $(id).addEventListener('click', function () {
       S.tool = S.tool === name ? null : name;
+      if (S.tool !== 'points') { S.pts = null; S.ptsB = null; }
       if (S.tool !== 'ruler') S.ruler = S.ruler;   /* readings persist for the panel */
       refresh();
     });
   }
   tool('tRuler', 'ruler'); tool('tProt', 'prot'); tool('tEraser', 'eraser');
+  tool('tPoints', 'points');
 
   $('bUndo').addEventListener('click', function () { doUndo(); refresh(); });
   $('bRedo').addEventListener('click', function () { doRedo(); refresh(); });
+  $('bClear').addEventListener('click', function () {
+    if (S.mode !== 'sim' || !S.vecs.length) return;
+    pushUndo();
+    S.vecs = []; S.sel = -1; S.pts = null; S.ptsB = null;
+    refresh();
+  });
   $('bReset').addEventListener('click', function () {
+    S.fbdPos = null;
     pushUndo(); loadExample(true); S.tool = null; refresh();
   });
 
@@ -2261,7 +2515,7 @@ function bindToolbar() {
     if (/^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test((e.target.tagName || ''))) return;
     if (e.key === 'Escape') {
       S.zoom = { k: 1, ox: 0, oy: 0, panning: false, px: 0, py: 0 };
-      S.sel = -1; draw();
+      S.sel = -1; S.pts = null; S.ptsB = null; draw();
     }
     if ((e.ctrlKey || e.metaKey) && e.key === 'z') { doUndo(); refresh(); }
     if ((e.ctrlKey || e.metaKey) && e.key === 'y') { doRedo(); refresh(); }
