@@ -288,7 +288,7 @@ input[type=range]::-moz-range-thumb{ width:13px; height:13px; border-radius:50%;
 
   <!-- ======================= TOP BAR (45 px) ======================= -->
   <div class="top-bar">
-    <h1>🧲 <span>Motor Effect Lab</span> <span class="badge-top" id="badgeTop">v3.1.8</span></h1>
+    <h1>🧲 <span>Motor Effect Lab</span> <span class="badge-top" id="badgeTop">v3.1.9</span></h1>
     <div class="top-right">
       <div class="mode-tabs">
         <button class="mode-tab active" data-mode="sim">Simulate</button>
@@ -850,6 +850,14 @@ const CV = () => $('cv');
 const VT = { s: 1, ox: 0, oy: 0, dpr: 1, cw: 0, ch: 0 };
 function resize() {
   const r = $('cvwrap').getBoundingClientRect();
+  /* A hidden element measures ZERO. That happens for real and often — a
+     minimised or restored window, a tab switched away and back, Edge putting
+     the tab to sleep — and adopting it sets VT.s = 0. Every later
+     toLogical() then divides by zero, so one pointer move writes NaN into
+     whatever it was dragging, and the next frame hands NaN to
+     createRadialGradient(), which throws. Keep the last good scale instead:
+     the next resize with a real rect will correct it. */
+  if (!(r.width > 0 && r.height > 0)) return;
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const c = CV();
   c.width = Math.max(1, Math.round(r.width * dpr));
@@ -858,6 +866,7 @@ function resize() {
      (band + drawing) block leaves a strip of dead space above the apparatus
      whenever width is the limiting dimension, which it usually is. */
   const s = Math.min(r.width / W, Math.max(40, r.height - TOP_PAD) / H);
+  if (!(s > 0)) return;
   VT.s = s; VT.ox = (r.width - W * s) / 2; VT.oy = TOP_PAD;
   VT.dpr = dpr; VT.cw = r.width; VT.ch = r.height;
   draw();
@@ -866,10 +875,16 @@ function resize() {
    a zoomed canvas can never desynchronise a click from what is drawn. */
 function toLogical(clientX, clientY) {
   const r = CV().getBoundingClientRect();
-  const sx = (clientX - r.left - VT.ox) / VT.s;
-  const sy = (clientY - r.top - VT.oy) / VT.s;
+  /* Belt and braces to resize()'s: this is the ONE place a bad scale can turn
+     a pointer position into NaN, and a NaN written into state is permanent —
+     Math.max(a, Math.min(b, NaN)) is NaN, so every clamp downstream passes it
+     straight through. Refuse to produce one. */
+  const s = VT.s > 0 ? VT.s : 1, k = S.zoom.k > 0 ? S.zoom.k : 1;
+  const sx = (clientX - r.left - VT.ox) / s;
+  const sy = (clientY - r.top - VT.oy) / s;
   const z = S.zoom;
-  return { x: (sx - z.ox) / z.k, y: (sy - z.oy) / z.k };
+  const p = { x: (sx - z.ox) / k, y: (sy - z.oy) / k };
+  return { x: isFinite(p.x) ? p.x : W / 2, y: isFinite(p.y) ? p.y : H / 2 };
 }
 function clampPan() {
   const z = S.zoom;
@@ -1164,6 +1179,13 @@ function drawFlowAlong(ctx, pts, phase, opts) {
    rather than snapping, and greyed out when there is genuinely no field. */
 function stepCompass(c, target, hasField, dt) {
   if (!hasField || !(dt > 0)) return;
+  /* A needle integrated from its own previous angle has NO way back once a
+     single non-finite value gets in: c.ang becomes NaN, ctx.rotate(NaN) is
+     specified as a no-op, and from then on the needle is DRAWN, looks
+     perfectly normal, and simply never moves again. Reject a bad target, and
+     recover from a bad state by snapping straight to the field. */
+  if (!isFinite(target)) return;
+  if (!isFinite(c.ang) || !isFinite(c.w)) { c.ang = target; c.w = 0; return; }
   let err = target - c.ang;
   while (err > Math.PI) err -= TAU;
   while (err < -Math.PI) err += TAU;
@@ -1172,6 +1194,12 @@ function stepCompass(c, target, hasField, dt) {
   c.ang += c.w * dt;
 }
 function drawCompass(ctx, x, y, r, c, hasField) {
+  /* The last link in the chain. createRadialGradient() THROWS on a non-finite
+     coordinate, and this throw happens inside the frame — which is how a
+     single bad position ends up stopping every moving part on the page while
+     the last good frame sits there looking perfectly correct. A compass with
+     no defined position simply is not drawn. */
+  if (!isFinite(x) || !isFinite(y) || !(r > 0)) return;
   ctx.save();
   // body
   const g = ctx.createRadialGradient(x - r * .32, y - r * .32, r * .12, x, y, r);
@@ -1207,7 +1235,10 @@ function drawCompass(ctx, x, y, r, c, hasField) {
     return;
   }
   // lens-shaped two-tone needle
-  ctx.translate(x, y); ctx.rotate(c.ang);
+  /* ctx.rotate() IGNORES a non-finite angle rather than failing, so a needle
+     whose angle has gone bad draws itself pointing due east and looks like a
+     compass that simply refuses to respond. Make that state impossible. */
+  ctx.translate(x, y); ctx.rotate(isFinite(c.ang) ? c.ang : 0);
   const L = r * 0.74, w = r * 0.22;
   ctx.fillStyle = PAL.poleN;
   ctx.beginPath();
@@ -1277,9 +1308,15 @@ function setChip(id, html) {
   el.innerHTML = html || '';
   el.classList.toggle('hid', !html);       // empty chip hidden, not an empty box
 }
+/* A fault caught in the frame loop is STICKY. Every section rewrites all four
+   chips on every frame, so a message written straight into the warn chip is
+   gone one frame later — which is how a real fault ends up invisible. */
+let FRAME_FAULT = '';
+function setFrameFault(msg) { FRAME_FAULT = msg; }
 function setChips(info, status, warn, hint) {
   setChip('chipInfo', info); setChip('chipStatus', status);
-  setChip('chipWarn', warn); setChip('chipHint', S.show.hints ? hint : '');
+  setChip('chipWarn', FRAME_FAULT || warn);
+  setChip('chipHint', S.show.hints ? hint : '');
 }
 
 /* ---------------- side-panel builders ---------------- */
@@ -4311,6 +4348,9 @@ function bindGlobalToolbar() {
   });
 
   $('btnReset').onclick = () => {
+    /* Reset clears a reported fault too — a stale warning that can never go
+       away is its own bug */
+    FRAME_ERR = ''; setFrameFault('');
     /* reset() only touches the section's own model state. The toolbar's
        active-button highlighting and button LABELS are separate DOM state
        reset() has no reason to know about, so syncToolbar() must be called
@@ -4433,13 +4473,38 @@ function boot() {
   });
 
   /* ONE requestAnimationFrame loop for the whole app: tick() and
-     maybePatchPanel() share a single callback per frame, not two competing. */
+     maybePatchPanel() share a single callback per frame, not two competing.
+
+     The next frame is booked FIRST, and the work is wrapped. Rescheduling at
+     the END — which is the obvious way to write this — means any single
+     exception, on any one frame, on any one machine, silently ends the
+     animation for the rest of the session: the last frame stays on the canvas
+     looking completely correct, so the only visible symptom is that the
+     compass needles and every other moving part quietly stop. That is not a
+     failure a student can diagnose, and it is not one worth risking to save a
+     try/catch. */
   requestAnimationFrame(function loop(ts) {
-    tick(ts);
-    maybePatchPanel(ts);
     requestAnimationFrame(loop);
+    try {
+      tick(ts);
+      maybePatchPanel(ts);
+    } catch (err) {
+      reportFrameError(err);
+    }
   });
 }
+/* Anything thrown during a frame is shown ON the canvas, once, instead of
+   only in a console the student will never open. */
+let FRAME_ERR = '';
+function reportFrameError(err) {
+  const msg = (err && (err.message || err)) + '';
+  if (msg === FRAME_ERR) return;              // report each distinct fault once
+  FRAME_ERR = msg;
+  setFrameFault('⚠ drawing error: ' + msg.slice(0, 120));
+  if (window.console) console.error('[frame]', err);
+}
+window.addEventListener('error', e => reportFrameError(e.error || e.message));
+
 window.addEventListener('DOMContentLoaded', boot);
 
 /* ---------------- test hooks (spec rule 12) ----------------

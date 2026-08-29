@@ -223,7 +223,8 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
 .hintchip{font-size:10px;color:var(--text-muted);white-space:nowrap}
 
 /* ── main split 70/30 ── */
-.main{flex:1 1 auto;display:grid;grid-template-columns:minmax(0,7fr) minmax(320px,3fr);gap:8px;min-height:0}
+.main{flex:1 1 auto;display:grid;grid-template-columns:minmax(0,7fr) minmax(320px,3fr);
+  grid-template-rows:minmax(0,1fr);gap:8px;min-height:0}
 .cvwrap{position:relative;background:var(--graph-bg);border:1px solid var(--border);border-radius:12px;
   overflow:hidden;min-height:0}
 #cv{display:block;width:100%;height:100%;touch-action:none;cursor:crosshair}
@@ -234,6 +235,8 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
 #chipCount{top:8px;right:10px}
 #chipZoom{top:34px;right:10px;color:var(--accent);border-color:var(--accent)}
 #chipHint{bottom:8px;right:10px;line-height:1.5;text-align:right}
+.cchip.warn{color:var(--amber);border-color:var(--amber)}
+sub{font-size:.72em;vertical-align:-.28em;letter-spacing:0;margin-left:-.12em}
 #chipTool{bottom:36px;left:10px;color:var(--v-tool);border-color:var(--v-tool);line-height:1.5}
 
 /* ── side panel ── */
@@ -244,7 +247,9 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
   font-size:11px;font-weight:600;cursor:pointer;transition:all .16s}
 .ptab:hover{color:var(--text);background:var(--card2)}
 .ptab.active{background:var(--accent-glow);color:var(--accent)}
-.pbody{flex:1 1 auto;overflow-y:auto;padding:9px 11px;min-height:0}
+.pbody{position:relative;flex:1 1 auto;overflow-y:auto;padding:9px 11px;min-height:0}
+/* KaTeX hides a MathML copy with position:absolute; without a positioned
+   ancestor it escapes this box and stretches the page instead of scrolling */
 .pbody::-webkit-scrollbar{width:8px}
 .pbody::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
 .sec-h{width:100%;display:flex;align-items:center;gap:7px;background:transparent;border:none;cursor:pointer;
@@ -338,7 +343,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">➡️ Vector Addition Lab</span> <span class="badge-top" id="badge">v1.1.0</span></h1>
+    <h1><span class="t">➡️ Vector Addition Lab</span> <span class="badge-top" id="badge">v1.2.4</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -416,10 +421,11 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
       <div class="tgroup">
         <span class="tlabel">View</span>
         <button class="ctrl-btn on" id="tLabels">🏷 Labels</button>
-        <button class="ctrl-btn" id="tFit" title="choose the scale and re-centre the origin so every vector and every label sits inside the grid">⤢ Fit to grid</button>
         <button class="ctrl-btn on" id="tHints" title="show or hide the on-canvas usage hints">💡 Hints</button>
-        <button class="ctrl-btn" id="tComps">⊥ Components</button>
-        <button class="ctrl-btn" id="tSteps">🧮 Steps</button>
+        <button class="ctrl-btn" id="tFit" title="choose the scale and re-centre the origin so every vector and every label sits inside the grid">⤢ Fit to grid</button>
+        <button class="ctrl-btn" id="tVCard" title="write ONE vector out in full — components, i–j form, column vector — on a card you can drag anywhere">🔎 Vector card</button>
+        <button class="ctrl-btn" id="tComps" title="show every vector broken into its x and y parts">⊥ Components</button>
+        <button class="ctrl-btn" id="tSteps" title="number the construction in the order it is drawn">🧮 Steps</button>
       </div>
     </div>
 
@@ -691,6 +697,8 @@ var S = {
   pts: null, ptsB: null,               /* two-point add: fixed initial point, live final */
   fbdPos: null,                        /* where the user dragged the free-body card to */
   fbdDragging: false,
+  vcard: false, vcardPos: null,        /* the one-vector inspector card */
+  vsel: -1,                            /* what that card is reading: a vector, or R */
   sel: -1, hover: -1,
   drag: null, undo: [], redo: [],
   zoom: { k: 1, ox: 0, oy: 0, panning: false, px: 0, py: 0 },
@@ -760,6 +768,11 @@ function toLogical(cx, cy) {
   var x = (cx - r.left - VT.ox) / VT.s, y = (cy - r.top - VT.oy) / VT.s;
   return { x: (x - S.zoom.ox) / S.zoom.k, y: (y - S.zoom.oy) / S.zoom.k };
 }
+/* screen -> overlay space: letterboxed, but NOT zoomed — where floating cards live */
+function overlayXY(cx, cy) {
+  var r = CV.getBoundingClientRect();
+  return { x: (cx - r.left - VT.ox) / VT.s, y: (cy - r.top - VT.oy) / VT.s };
+}
 function clampPan() {
   var k = S.zoom.k;
   S.zoom.ox = clamp(S.zoom.ox, W * (1 - k), 0);
@@ -794,6 +807,40 @@ function mtxt(str, x, y, size, col, align, weight, base) {
   CX.textBaseline = base || 'alphabetic';
   CX.fillText(str, x, y); CX.restore();
 }
+/* "ΣF_y" -> the y set as a real subscript; "_{...}" groups more than one letter */
+function subRuns(str) {
+  var runs = [], i = 0, cur = '', j, sub;
+  while (i < str.length) {
+    if (str.charAt(i) === '_' && i + 1 < str.length) {
+      if (cur) { runs.push({ t: cur, s: false }); cur = ''; }
+      j = i + 1; sub = '';
+      if (str.charAt(j) === '{') {
+        j++; while (j < str.length && str.charAt(j) !== '}') sub += str.charAt(j++);
+        j++;
+      } else sub = str.charAt(j++);
+      runs.push({ t: sub, s: true });
+      i = j;
+    } else cur += str.charAt(i++);
+  }
+  if (cur) runs.push({ t: cur, s: false });
+  return runs;
+}
+function subW(str, size, weight, mono) {
+  return subRuns(str).reduce(function (w, r) {
+    return w + textW(r.t, r.s ? size * .72 : size, weight, mono);
+  }, 0);
+}
+/* the same as txt/mtxt, but subscripts are drawn as subscripts */
+function subText(str, x, y, size, col, align, weight, mono) {
+  var runs = subRuns(str), w = subW(str, size, weight, mono);
+  var cx0 = align === 'center' ? x - w / 2 : (align === 'right' ? x - w : x);
+  var f = mono ? mtxt : txt;
+  runs.forEach(function (r) {
+    var sz = r.s ? size * .72 : size;
+    f(r.t, cx0, y + (r.s ? size * .19 : 0), sz, col, 'left', weight);
+    cx0 += textW(r.t, sz, weight, mono);
+  });
+}
 function textW(str, size, weight, mono) {
   CX.save();
   CX.font = (weight || 500) + ' ' + (size || 12) + 'px ' +
@@ -803,13 +850,13 @@ function textW(str, size, weight, mono) {
 }
 /* a label with its own plate, so it stays readable over the grid */
 function plate(str, x, y, size, col, align, mono) {
-  var w = (mono ? textW(str, size, 700, true) : textW(str, size, 700, false)) + 12;
+  var w = subW(str, size, 700, !!mono) + 12;
   var px = align === 'center' ? x - w / 2 : (align === 'right' ? x - w : x);
   CX.save();
   CX.fillStyle = withA(C.card, 0.88);
   rr(px, y - size - 3, w, size + 8, 5); CX.fill();
   CX.restore();
-  (mono ? mtxt : txt)(str, px + 6, y, size, col, 'left', 700);
+  subText(str, px + 6, y, size, col, 'left', 700, !!mono);
 }
 function rr(x, y, w, h, r) {
   CX.beginPath();
@@ -890,8 +937,8 @@ function dirArc(cx, cy, r, mathAng, col, label) {
          label sits on a plate — it can land on either of them and still read */
       plate(label, lx, ly + 4, 11, col, 'center', true);
     } else {
-      mtxt(label, cx + Math.cos(mid) * (r + 26), cy - Math.sin(mid) * (r + 26),
-        11, col, 'center', 700, 'middle');
+      subText(label, cx + Math.cos(mid) * (r + 26), cy - Math.sin(mid) * (r + 26) + 4,
+        11, col, 'center', 700, false);
     }
   }
 }
@@ -945,6 +992,176 @@ function drawGrid() {
   mtxt(S.conv === 'east' ? '90°' : '0°', ORG.x + 5, ORG.y - 52, 9, C['text-muted'], 'left', 600);
 }
 
+/* ---------- floating cards --------------------------------------------- */
+/* a card is a panel OVER the workspace: it keeps its place while the drawing
+   underneath is zoomed and panned, so it is drawn without the magnifier   */
+function overlayBegin() {
+  CX.save();
+  CX.setTransform(VT.dpr, 0, 0, VT.dpr, 0, 0);
+  CX.translate(VT.ox, VT.oy); CX.scale(VT.s, VT.s);
+}
+function overlayEnd() { CX.restore(); }
+
+function cardFrame(b, held) {
+  CX.save();
+  CX.fillStyle = withA(C.card, .95);
+  rr(b.x, b.y, b.w, b.h, 11); CX.fill();
+  CX.strokeStyle = C.border; CX.lineWidth = 1;
+  rr(b.x, b.y, b.w, b.h, 11); CX.stroke(); CX.restore();
+  CX.save();
+  CX.fillStyle = withA(C['text-muted'], held ? .95 : .55);
+  for (var gx = 0; gx < 2; gx++) {
+    for (var gy = 0; gy < 3; gy++) {
+      CX.beginPath(); CX.arc(b.x + b.w - 22 + gx * 7, b.y + 16 + gy * 6, 1.6, 0, 7); CX.fill();
+    }
+  }
+  CX.restore();
+}
+
+var VCARD = { w: 286, h: 232 };
+/* everything the card can be asked about — every vector, and the resultant,
+   which is on the canvas too and deserves the same treatment              */
+function vcardEntries() {
+  var out = S.vecs.map(function (v, i) {
+    return {
+      nm: vecName(i), mag: v.mag, ang: v.ang, c: VM.comp(v), col: vcol(v.key),
+      tail: (typeof tailFor === 'function') ? tailFor(i) : { x: 0, y: 0 }, res: false
+    };
+  });
+  var r = R();
+  if (S.res && showAnswer() && S.vecs.length && !r.zero)
+    out.push({
+      nm: 'R', mag: r.mag, ang: r.ang, c: { x: r.x, y: r.y }, col: C.res,
+      tail: { x: 0, y: 0 }, res: true
+    });
+  return out;
+}
+/* which of them the card is talking about */
+function vcardIndex() {
+  var n = vcardEntries().length;
+  if (!n) return -1;
+  if (S.vsel >= 0 && S.vsel < n) return S.vsel;
+  return (S.sel >= 0 && S.sel < n) ? S.sel : 0;
+}
+function vcardClamp(x, y) {
+  return { x: clamp(x, 8, W - VCARD.w - 8), y: clamp(y, 70, H - VCARD.h - 8) };
+}
+function vcardBox() {
+  var d = S.vcardPos ? vcardClamp(S.vcardPos.x, S.vcardPos.y) : vcardClamp(14, 96);
+  return { x: d.x, y: d.y, w: VCARD.w, h: VCARD.h };
+}
+/* the two arrows that step through the vectors, as hit boxes and as pictures */
+function vcardArrows(b) {
+  return [{ x: b.x + b.w - 80, y: b.y + 9, w: 22, h: 20, d: -1 },
+    { x: b.x + b.w - 56, y: b.y + 9, w: 22, h: 20, d: 1 }];
+}
+/* the arrows walk the vectors and then the resultant, and the canvas selection
+   follows along — except on R, which is not one of the vectors            */
+function vcardStep(d) {
+  var list = vcardEntries(), n = list.length;
+  if (!n) return;
+  var i = ((vcardIndex() + d) % n + n) % n;
+  S.vsel = i;
+  S.sel = list[i].res ? -1 : i;
+}
+var VCARD_DRAWING = false;
+function drawVectorCard() {
+  var i = vcardIndex(), b = vcardBox();
+  overlayBegin();
+  cardFrame(b, S.vcardDragging);
+  VCARD_DRAWING = true;
+  var x0 = b.x + 14, L = b.x + 86;
+  if (i < 0) {
+    txt('Vector card', x0, b.y + 22, 12.5, C.text, 'left', 700);
+    mtxt('no vectors yet — add one and it is', x0, b.y + 46, 10, C['text-muted'], 'left', 500);
+    mtxt('written out here in every form', x0, b.y + 62, 10, C['text-muted'], 'left', 500);
+    VCARD_DRAWING = false; overlayEnd(); return;
+  }
+  var e = vcardEntries()[i], c = e.c, col = e.col, nm = e.nm, v = { mag: e.mag, ang: e.ang };
+
+  txt(e.res ? 'Resultant R' : 'Vector ' + nm, x0, b.y + 23, 12.5, col, 'left', 700);
+  mtxt(fmt(v.mag, 1) + ' ' + S.unit + '  @  ' + fmtDir(v.ang) +
+    (e.res ? '   (the sum)' : ''), x0, b.y + 40, 10, C['text-muted'], 'left', 500);
+  if (vcardEntries().length > 1) {
+    vcardArrows(b).forEach(function (a) {
+      CX.save();
+      CX.strokeStyle = withA(C['text-muted'], .8); CX.lineWidth = 1;
+      rr(a.x, a.y, a.w, a.h, 5); CX.stroke(); CX.restore();
+      mtxt(a.d < 0 ? '\u2039' : '\u203a', a.x + a.w / 2, a.y + a.h / 2 + 4, 12,
+        C['text-muted'], 'center', 700);
+    });
+  }
+  CX.save();
+  CX.strokeStyle = withA(C.border, .9); CX.lineWidth = 1;
+  CX.beginPath(); CX.moveTo(b.x + 12, b.y + 52.5); CX.lineTo(b.x + b.w - 12, b.y + 52.5);
+  CX.stroke(); CX.restore();
+
+  var y = b.y + 72;
+  mtxt('components', x0, y, 9.5, C['text-muted'], 'left', 600);
+  subText(nm + '_x = ' + fmt(c.x, 2) + ' ' + S.unit, L, y, 10.5, col, 'left', 600, true);
+  subText(nm + '_y = ' + fmt(c.y, 2) + ' ' + S.unit, L, y + 16, 10.5, col, 'left', 600, true);
+
+  y += 40;
+  mtxt('i–j form', x0, y, 9.5, C['text-muted'], 'left', 600);
+  mtxt(nm + ' = ' + fmt(c.x, 2) + ' î ' + (c.y < 0 ? '\u2212' : '+') + ' ' +
+    fmt(Math.abs(c.y), 2) + ' ĵ  ' + S.unit, L, y, 10, col, 'left', 600);
+
+  y += 22;
+  mtxt('column', x0, y + 20, 9.5, C['text-muted'], 'left', 600);
+  var bx = L, by = y, bh = 40, bw = 80;
+  CX.save();
+  CX.strokeStyle = col; CX.lineWidth = 1.6;
+  CX.beginPath();
+  CX.moveTo(bx + 7, by); CX.lineTo(bx, by); CX.lineTo(bx, by + bh); CX.lineTo(bx + 7, by + bh);
+  CX.moveTo(bx + bw - 7, by); CX.lineTo(bx + bw, by); CX.lineTo(bx + bw, by + bh);
+  CX.lineTo(bx + bw - 7, by + bh);
+  CX.stroke(); CX.restore();
+  mtxt(fmt(c.x, 2), bx + bw / 2, by + 16, 10.5, col, 'center', 600);
+  mtxt(fmt(c.y, 2), bx + bw / 2, by + 33, 10.5, col, 'center', 600);
+  mtxt(S.unit, bx + bw + 8, by + 25, 10, C['text-muted'], 'left', 500);
+
+  y += bh + 18;
+  mtxt('magnitude', x0, y, 9.5, C['text-muted'], 'left', 600);
+  mtxt('|' + nm + '| = ' + fmt(v.mag, 2) + ' ' + S.unit, L, y, 10.5, col, 'left', 600);
+  mtxt('direction', x0, y + 17, 9.5, C['text-muted'], 'left', 600);
+  mtxt(fmtDir(v.ang) + (S.conv === 'east' ? ' from East' : ' bearing'), L, y + 17, 10.5,
+    col, 'left', 600);
+  VCARD_DRAWING = false;
+  overlayEnd();
+}
+/* say on the drawing itself which vector the card is reading — drawn BEFORE the
+   card, so the highlight never runs across the card that explains it        */
+function drawVectorCardMark() {
+  var i = vcardIndex(); if (i < 0) return;
+  var e = vcardEntries()[i], c = e.c, col = e.col, t = e.tail;
+  var p0 = P(t.x, t.y), p1 = P(t.x + c.x, t.y + c.y), pc = P(t.x + c.x, t.y);
+  dashLine(p0.x, p0.y, pc.x, pc.y, withA(col, .75), 2, [6, 4]);
+  dashLine(pc.x, pc.y, p1.x, p1.y, withA(col, .75), 2, [6, 4]);
+  dot(p1.x, p1.y, 5.5, col, true);
+}
+
+/* ---------- the numbered construction steps ----------------------------- */
+function stepBadge(x, y, n, col) {
+  CX.save();
+  CX.fillStyle = withA(C['graph-bg'], .95);
+  CX.beginPath(); CX.arc(x, y, 9.5, 0, 7); CX.fill();
+  CX.strokeStyle = col; CX.lineWidth = 1.6;
+  CX.beginPath(); CX.arc(x, y, 9.5, 0, 7); CX.stroke(); CX.restore();
+  mtxt(String(n), x, y + 4, 10.5, col, 'center', 700);
+}
+/* a badge ON a vector, kept off the vector's own label: a third of the way
+   along, and on the opposite side of the line from the label plate        */
+function stepAlong(p0, p1, n, col) {
+  var nx = -(p1.y - p0.y), ny = (p1.x - p0.x), nL = Math.hypot(nx, ny) || 1;
+  stepBadge(p0.x + (p1.x - p0.x) * .32 - nx / nL * 15,
+    p0.y + (p1.y - p0.y) * .32 - ny / nL * 15, n, col);
+}
+/* the strip sits above the corner chips, where nothing else is drawn */
+function stepStrip(list) {
+  /* on a plate, because it has to read over the grid and the axis numbers */
+  plate(list.join('    '), W / 2, H - 86, 10.5, C['text-muted'], 'center', true);
+}
+
 /* In Practice the answer must not be visible anywhere until the student has
    committed to one — this single gate is what every readout checks.        */
 function showAnswer() {
@@ -978,6 +1195,11 @@ function dispAng(v) { return VM.toDisp(v.ang, S.conv); }
 function angSuffix() { return S.conv === 'east' ? '' : ' (bearing)'; }
 /* a direction, written the way its convention writes it: 36.9° from East,
    but 036.9° as a bearing — three figures, the way a compass answer is quoted */
+function fmtDirDisp(dispAng) {
+  var s = fmt(VM.norm360(dispAng), 1);
+  if (S.conv === 'north') while (s.indexOf('.') < 3) s = '0' + s;
+  return s + '°';
+}
 function fmtDir(mathAng) {
   var d = VM.toDisp(VM.norm360(mathAng), S.conv), s = fmt(d, 1);
   if (S.conv === 'north') while (s.indexOf('.') < 3) s = '0' + s;
@@ -1037,7 +1259,7 @@ function doRedo() {
 /* ---------- adding vectors ---------------------------------------------- */
 function nextKey() { return VKEYS[S.vecs.length % VKEYS.length]; }
 function addVector(mag, dispAngle, quiet) {
-  if (S.vecs.length >= MAXV) return false;
+  if (S.vecs.length >= modeMax()) return false;
   if (!(mag > 0)) return false;
   if (!quiet) pushUndo();
   S.vecs.push({ mag: mag, ang: VM.toMath(dispAngle, S.conv), key: nextKey() });
@@ -1103,11 +1325,27 @@ function m1Draw(sc) {
       dashLine(a.x, a.y, xo.x, xo.y, withA(C.res, .8), 2, [6, 4]);
       dashLine(xo.x, xo.y, b.x, b.y, withA(C.res, .8), 2, [6, 4]);
       if (S.labels) {
-        plate('R' + 'ₓ = ' + fmt(r.x, 1), (a.x + xo.x) / 2, a.y + 20, 10.5, C.res, 'center', true);
+        plate('R_x = ' + fmt(r.x, 1), (a.x + xo.x) / 2, a.y + 20, 10.5, C.res, 'center', true);
         plate('R_y = ' + fmt(r.y, 1), xo.x + 8, (xo.y + b.y) / 2, 10.5, C.res, 'left', true);
       }
     }
   }
+  /* the construction, numbered in the order it is drawn */
+  if (S.steps && n > 0) {
+    for (i = 0; i < n; i++) {
+      var cc = VM.comp(vs[i]);
+      stepAlong(P(pts[i].x, pts[i].y), P(pts[i].x + cc.x, pts[i].y + cc.y),
+        i + 1, vcol(vs[i].key));
+    }
+    if (S.res && showAnswer() && !r.zero) {
+      var hp = P(r.x, r.y);
+      stepBadge(hp.x + 16, hp.y + 4, n + 1, C.res);
+    }
+    stepStrip(['① draw each vector tip to tail',
+      '② close the polygon',
+      '③ measure × scale']);
+  }
+
   if (n === 0) emptyHint();
   if (S.fbd) drawFreeBody();
 
@@ -1177,22 +1415,10 @@ function drawFreeBody() {
   var b = fbdBox(), ft = b.y + 52, fb = b.y + b.h - 48;
   var cx = b.x + b.w / 2, cy = (ft + fb) / 2, i;
 
-  CX.save();
-  CX.fillStyle = withA(C.card, .95);
-  rr(b.x, b.y, b.w, b.h, 11); CX.fill();
-  CX.strokeStyle = C.border; CX.lineWidth = 1;
-  rr(b.x, b.y, b.w, b.h, 11); CX.stroke(); CX.restore();
-
-  /* the grip says the card can be picked up and moved */
-  CX.save();
-  CX.fillStyle = withA(C['text-muted'], S.fbdDragging ? .95 : .55);
-  for (var gx = 0; gx < 2; gx++) {
-    for (var gy = 0; gy < 3; gy++) {
-      CX.beginPath();
-      CX.arc(b.x + b.w - 22 + gx * 7, b.y + 16 + gy * 6, 1.6, 0, 7); CX.fill();
-    }
-  }
-  CX.restore();
+  /* the card is a panel over the workspace, not part of the drawing — drop the
+     magnifier for it so zooming and panning never carry it off the screen   */
+  overlayBegin();
+  cardFrame(b, S.fbdDragging);
 
   txt('Free-body diagram', b.x + 14, b.y + 22, 12.5, C.text, 'left', 700);
   txt('the same forces, acting on the object', b.x + 14, b.y + 39, 10.5,
@@ -1236,6 +1462,7 @@ function drawFreeBody() {
   txt(r.zero ? 'the closed polygon says the same thing'
     : 'the dashed arrow is R, and R is not a force',
     cx, b.y + b.h - 11, 9.5, C['text-muted'], 'center', 500);
+  overlayEnd();
   FBD_DRAWING = false;
 }
 
@@ -1244,6 +1471,8 @@ function emptyHint() {
     W / 2, H / 2 - 8, 13, C['text-muted'], 'center', 600);
   txt('Every vector starts where the last one ended — that is what "tip to tail" means.',
     W / 2, H / 2 + 14, 12, C['text-muted'], 'center', 500);
+  txt('📍 Two points reads one off the grid instead: left click the start, middle click the end.',
+    W / 2, H / 2 + 36, 12, C['text-muted'], 'center', 500);
 }
 
 /* ---- the four worked examples ---- */
@@ -1269,7 +1498,9 @@ m1Scene('two', '↘ Two vectors', 'Two forces, drawn to scale',
       '<li>Start the second vector <b>at the head of the first</b>, not at the origin.</li>' +
       '<li>Join first tail → last head. That closing arrow is the resultant.</li>' +
       '<li>Measure it with the 📏 <b>Ruler</b> and multiply by the scale; measure its direction ' +
-      'with the 📐 <b>Protractor</b>.</li></ol>';
+      'with the 📐 <b>Protractor</b>.</li>' +
+      '<li>To take a vector straight off the grid, switch on 📍 <b>Two points</b>: left click the ' +
+      'initial point, middle click the final point.</li></ol>';
   });
 
 m1Scene('three', '✕ Three vectors', 'Three forces — the polygon method',
@@ -1322,12 +1553,14 @@ function m2Draw(sc) {
     CX.restore();
     if (S.labels) {
       /* the Σ labels sit at the TIP of each bar, clear of the crowded origin */
+      /* the tips can run off the top or the sides, so keep both labels on the
+         workspace and clear of the header band                              */
       if (Math.abs(r.x) > 1e-6)
-        plate('ΣFₓ = ' + fmt(r.x, 1), sx.x + (r.x >= 0 ? 10 : -10), org.y + 30, 11, C.res,
-          r.x >= 0 ? 'left' : 'right', true);
+        plate('ΣF_x = ' + fmt(r.x, 1), clamp(sx.x + (r.x >= 0 ? 10 : -10), 70, W - 70),
+          clamp(org.y + 30, 98, H - 14), 11, C.res, r.x >= 0 ? 'left' : 'right', true);
       if (Math.abs(r.y) > 1e-6)
-        plate('ΣF_y = ' + fmt(r.y, 1), org.x - 16, sy.y + (r.y >= 0 ? -6 : 16), 11, C.res,
-          'right', true);
+        plate('ΣF_y = ' + fmt(r.y, 1), org.x - 16,
+          clamp(sy.y + (r.y >= 0 ? -14 : 24), 98, H - 14), 11, C.res, 'right', true);
     }
   }
 
@@ -1335,11 +1568,14 @@ function m2Draw(sc) {
   for (i = 0; i < n; i++) {
     var v = vs[i], c = VM.comp(v), col = vcol(v.key);
     var head = P(c.x, c.y), foot = P(c.x, 0);
-    if (Math.abs(c.x) > 1e-6 && Math.abs(c.y) > 1e-6) {
+    if (S.comps && Math.abs(c.x) > 1e-6 && Math.abs(c.y) > 1e-6) {
       dashLine(org.x, org.y, foot.x, foot.y, withA(col, .85), 2, [6, 4]);
       dashLine(foot.x, foot.y, head.x, head.y, withA(col, .85), 2, [6, 4]);
-      if (S.labels && (S.comps || n <= 2)) {
-        plate(fmt(c.x, 1), (org.x + foot.x) / 2, org.y + (c.y >= 0 ? 19 : -8),
+      if (S.labels) {
+        /* every x-component label wants the same strip of axis, so give each
+           vector its own row — three forces used to print on top of each other */
+        var row = (n > 2 ? i * 15 : 0);
+        plate(fmt(c.x, 1), (org.x + foot.x) / 2, org.y + (c.y >= 0 ? 19 + row : -8 - row),
           10, col, 'center', true);
         plate(fmt(c.y, 1), foot.x + (c.x >= 0 ? 7 : -7), (foot.y + head.y) / 2 + 4,
           10, col, c.x >= 0 ? 'left' : 'right', true);
@@ -1370,9 +1606,24 @@ function m2Draw(sc) {
       dirArc(org.x, org.y, 92, r.ang, C.res, 'θ_R = ' + fmtDir(r.ang));
     }
   }
+  /* the method, numbered where it happens */
+  if (S.steps && n > 0) {
+    var v0 = vs[0], c0 = VM.comp(v0);
+    stepBadge(P(c0.x, 0).x, org.y - 16, 1, vcol(v0.key));
+    if (S.res && showAnswer()) {
+      /* the Σ labels take the inside of each bar, so the badges take the outside */
+      if (Math.abs(r.x) > 1e-6) stepBadge(P(r.x, 0).x, org.y - 18, 2, C.res);
+      if (Math.abs(r.y) > 1e-6) stepBadge(org.x + 18, P(0, r.y).y, 2, C.res);
+      if (!r.zero) { var rp2 = P(r.x, r.y); stepBadge(rp2.x + 16, rp2.y + 4, 3, C.res); }
+    }
+    stepStrip(['① resolve into F_x and F_y',
+      '② add each column',
+      '③ combine with Pythagoras']);
+  }
+
   if (n === 0)
-    txt('Add a force, then read Fₓ = F cos θ and F_y = F sin θ straight off the dashed lines.',
-      W / 2, H / 2, 13, C['text-muted'], 'center', 600);
+    subText('Add a force, then read F_x = F cos θ and F_y = F sin θ straight off the dashed lines.',
+      W / 2, H / 2, 13, C['text-muted'], 'center', 600, false);
 
   sceneHeader(sc, (S.hints && n > 0 && !r.zero)
     ? '|R| = √(' + fmt(r.x, 1) + '² + ' + fmt(r.y, 1) + '²) = ' + fmt(r.mag, 1) + ' ' + S.unit
@@ -1397,7 +1648,7 @@ m2Scene('single', '↘ Single force', 'Resolving one force into components',
       '<ol class="steps">' +
       '<li>The side <b>along</b> the reference direction is F cos θ.</li>' +
       '<li>The side <b>across</b> it is F sin θ.</li>' +
-      '<li>Check: F cos²θ + F sin²θ recovers the original — √(Fₓ² + F_y²) = F.</li>' +
+      '<li>Check: F cos²θ + F sin²θ recovers the original — √(F<sub>x</sub>² + F<sub>y</sub>²) = F.</li>' +
       '<li>Change the angle and watch the two components trade size while the arrow stays the ' +
       'same length.</li></ol>';
   });
@@ -1410,10 +1661,10 @@ m2Scene('two', '✕ Two forces', 'Two forces — resolve, then add the columns',
       'Because perpendicular directions are independent, the x parts only ever affect the x ' +
       'total and the y parts only the y total.</div>' +
       '<ol class="steps">' +
-      '<li>Resolve every force: Fₓ = F cos θ, F_y = F sin θ.</li>' +
-      '<li>Add the columns to get ΣFₓ and ΣF_y (watch the signs).</li>' +
-      '<li>|R| = √(ΣFₓ² + ΣF_y²) — Pythagoras on the gold bars.</li>' +
-      '<li>θ_R = tan⁻¹(ΣF_y ÷ ΣFₓ), then check which quadrant it belongs in.</li></ol>';
+      '<li>Resolve every force: F<sub>x</sub> = F cos θ, F<sub>y</sub> = F sin θ.</li>' +
+      '<li>Add the columns to get ΣF<sub>x</sub> and ΣF<sub>y</sub> (watch the signs).</li>' +
+      '<li>|R| = √(ΣF<sub>x</sub>² + ΣF<sub>y</sub>²) — Pythagoras on the gold bars.</li>' +
+      '<li>θ<sub>R</sub> = tan⁻¹(ΣF<sub>y</sub> ÷ ΣF<sub>x</sub>), then check which quadrant it belongs in.</li></ol>';
   });
 
 m2Scene('three', '✚ Three forces', 'Three forces at a point',
@@ -1424,7 +1675,7 @@ m2Scene('three', '✚ Three forces', 'Three forces at a point',
       'inaccurate — the component method stays exactly as quick, which is why it is the ' +
       'standard approach beyond two vectors.</div>' +
       '<ol class="steps">' +
-      '<li>Make a table: one row per force, columns Fₓ and F_y.</li>' +
+      '<li>Make a table: one row per force, columns F<sub>x</sub> and F<sub>y</sub>.</li>' +
       '<li>A component pointing left or down is <b>negative</b>. Most lost marks live here.</li>' +
       '<li>Sum each column, then combine with Pythagoras.</li>' +
       '<li>If both sums come out zero, the forces are in equilibrium.</li></ol>';
@@ -1438,9 +1689,9 @@ m2Scene('special', '🔄 0° / ±90°', 'The easy angles — 0°, 90°, 180°, 2
       'cos 0° = 1 and sin 0° = 0, so the force is entirely one component. These are worth ' +
       'recognising because they turn a long question into a one-line one.</div>' +
       '<ol class="steps">' +
-      '<li>0°  → Fₓ = F, F_y = 0.</li>' +
-      '<li>90° → Fₓ = 0, F_y = F.</li>' +
-      '<li>180° → Fₓ = −F. The minus sign is the direction.</li>' +
+      '<li>0°  → F<sub>x</sub> = F, F<sub>y</sub> = 0.</li>' +
+      '<li>90° → F<sub>x</sub> = 0, F<sub>y</sub> = F.</li>' +
+      '<li>180° → F<sub>x</sub> = −F. The minus sign is the direction.</li>' +
       '<li>Mixed axes: add the along-axis forces first, then use Pythagoras once.</li></ol>';
   });
 
@@ -1477,9 +1728,15 @@ function m3Draw(sc) {
 
   /* the tip-to-tail triangle lives inside the same picture: B moved to A's head */
   arrowTo(pa.x, pa.y, pf.x, pf.y, withA(colB, .55), 2.6, { dash: [4, 4], head: 11 });
-  if (S.labels)
-    plate('B moved to A\'s head', (pa.x + pf.x) / 2, (pa.y + pf.y) / 2 - 12, 10,
-      withA(colB, .95), 'center', false);
+  if (S.labels) {
+    /* offset the construction label sideways, AWAY from the origin — straight up
+       lands it on the resultant's own label whenever the two run close        */
+    var mxc = (pa.x + pf.x) / 2, myc = (pa.y + pf.y) / 2;
+    var nxc = -(pf.y - pa.y), nyc = (pf.x - pa.x), nLc = Math.hypot(nxc, nyc) || 1;
+    var sgn = ((mxc - org.x) * nxc + (myc - org.y) * nyc) >= 0 ? 1 : -1;
+    plate('B moved to A\'s head', mxc + sgn * nxc / nLc * 20, myc + sgn * nyc / nLc * 20 + 4,
+      10, withA(colB, .95), 'center', false);
+  }
 
   drawVec(a, o, 0);
   drawVec(b, o, 1);
@@ -1499,9 +1756,19 @@ function m3Draw(sc) {
       plate('R = ' + fmt(r.mag, 1) + ' ' + S.unit,
         org.x + (pf.x - org.x) * .70 + 16, org.y + (pf.y - org.y) * .70 - 12, 12,
         C.res, 'center', true);
-      dirArc(org.x, org.y, 106, r.ang, C.res, 'θ_R = ' + fmtDir(r.ang));
+      dirArc(org.x, org.y, 128, r.ang, C.res, 'θ_R = ' + fmtDir(r.ang));
     }
   }
+  if (S.steps) {
+    stepAlong(org, pa, 1, colA);
+    stepAlong(org, pb, 2, colB);
+    stepBadge(pf.x + 14, pf.y - 12, 3, C.guide);
+    if (S.res && showAnswer() && !r.zero) stepAlong(org, pf, 4, C.res);
+    stepStrip(['① draw A and ② B from one tail',
+      '③ complete the parallelogram',
+      '④ the diagonal is R']);
+  }
+
   dot(org.x, org.y, 4.5, C['text-dim']);
 
   /* the special case, named in the wording a mark scheme would use */
@@ -1589,10 +1856,13 @@ var PRAC = {
       var A = 10 * (3 + Math.floor(rnd() * 4));
       var th = 10 * (2 + Math.floor(rnd() * 5));       /* 20..60 */
       var B = 10 * (2 + Math.floor(rnd() * 4));
+      /* the question quotes the angles the way the panel will show them */
+      var d1 = S.conv === 'east' ? th : VM.norm360(th + 90), d2 = 180;
       return {
-        vecs: [{ mag: A, ang: th }, { mag: B, ang: 180 }],
-        ask: 'Resolve <b>' + A + ' ' + S.unit + ' at ' + th + '°</b> and add it to <b>' + B +
-          ' ' + S.unit + ' at 180°</b>. Work out ΣFₓ and ΣF_y, then the resultant.'
+        vecs: [{ mag: A, ang: VM.toMath(d1, S.conv) }, { mag: B, ang: VM.toMath(d2, S.conv) }],
+        ask: 'Resolve <b>' + A + ' ' + S.unit + ' at ' + fmtDirDisp(d1) + '</b> and add it to <b>' +
+          B + ' ' + S.unit + ' at ' + fmtDirDisp(d2) + '</b>. Work out ΣF<sub>x</sub> and ΣF<sub>y</sub>, then the ' +
+          'resultant.' + (S.conv === 'east' ? '' : ' Angles are bearings from North.')
       };
     }
   },
@@ -1677,13 +1947,13 @@ var QUIZ = {
       'The adjacent side of the right-angled triangle is F cos θ.'),
     qq('A 50 N force acts at 30° above the horizontal. Its vertical component is',
       ['25 N', '43 N', '50 N', '87 N'], 0,
-      'F_y = 50 sin 30° = 50 × 0.5 = 25 N.'),
-    qq('ΣFₓ = 12 N and ΣF_y = 5 N. The magnitude of the resultant is',
+      'F<sub>y</sub> = 50 sin 30° = 50 × 0.5 = 25 N.'),
+    qq('ΣF<sub>x</sub> = 12 N and ΣF<sub>y</sub> = 5 N. The magnitude of the resultant is',
       ['7 N', '13 N', '17 N', '60 N'], 1,
       '|R| = √(12² + 5²) = √169 = 13 N.'),
     qq('For the same sums, the direction of the resultant is tan⁻¹ of',
       ['12 ÷ 5', '5 ÷ 12', '5 × 12', '12 − 5'], 1,
-      'θ_R = tan⁻¹(ΣF_y ÷ ΣFₓ) = tan⁻¹(5/12) ≈ 22.6°.'),
+      'θ<sub>R</sub> = tan⁻¹(ΣF<sub>y</sub> ÷ ΣF<sub>x</sub>) = tan⁻¹(5/12) ≈ 22.6°.'),
     qq('A force points down the page. Its y-component is',
       ['positive', 'negative', 'zero', 'undefined'], 1,
       'Down is the negative y direction. Losing this sign is the most common component error.')
@@ -1818,6 +2088,7 @@ function draw() {
   } else {
     sc.draw();
     drawTools();
+    if (S.vcard) { drawVectorCardMark(); drawVectorCard(); }
   }
   updateChips();
 }
@@ -1854,13 +2125,18 @@ var MODENAME = { 1: 'Drawing Diagram', 2: 'Vector Components', 3: 'Triangle Rule
 
 function updateChips() {
   $('chipScale').textContent = '1 cm = ' + fmt(S.scale, 0) + ' ' + S.unit;
-  $('chipCount').textContent = 'Vectors ' + S.vecs.length + '/' + modeMax();
+  var full = S.vecs.length >= modeMax();
+  $('chipCount').textContent = 'Vectors ' + S.vecs.length + '/' + modeMax() +
+    (full ? ' · full' : '');
+  $('chipCount').classList.toggle('warn', full);
+  $('chipCount').hidden = S.mode === 'quiz';
+  $('chipScale').hidden = S.mode === 'quiz';
   $('chipZoom').hidden = S.zoom.k === 1;
-  var tips = {
+  var tips = S.mode === 'sim' ? {
     1: 'drag on the grid = draw a vector<br>drag a head = reshape it',
     2: 'drag on the grid = add a force<br>every force starts at the origin',
     3: 'two vectors only — drag a head to change one'
-  }[S.md];
+  }[S.md] : 'the question fixes this picture<br>measure it with 📏 Ruler and 📐 Protractor';
   $('chipHint').innerHTML = tips + '<br>double-click canvas = ×2 zoom · drag to pan';
   $('chipHint').hidden = !S.hints || S.mode === 'quiz';
   var tool = S.tool === 'ruler' ? '📏 Ruler — drag across the canvas'
@@ -1896,11 +2172,11 @@ function badgeRow() {
   var r = R(), hide = !showAnswer(), q = '?';
   return '<div class="badges">' +
     '<div class="bdg">Vectors <b>' + S.vecs.length + '</b></div>' +
-    '<div class="bdg">ΣFₓ <b>' + (hide ? q : (S.vecs.length ? fmt(r.x, 2) : '—')) + '</b></div>' +
-    '<div class="bdg">ΣF_y <b>' + (hide ? q : (S.vecs.length ? fmt(r.y, 2) : '—')) + '</b></div>' +
+    '<div class="bdg"><span>ΣF<sub>x</sub></span> <b>' + (hide ? q : (S.vecs.length ? fmt(r.x, 2) : '—')) + '</b></div>' +
+    '<div class="bdg"><span>ΣF<sub>y</sub></span> <b>' + (hide ? q : (S.vecs.length ? fmt(r.y, 2) : '—')) + '</b></div>' +
     '<div class="bdg res">|R| <b>' + (hide ? q :
       (S.vecs.length ? fmt(r.mag, 2) + ' ' + S.unit : '—')) + '</b></div>' +
-    '<div class="bdg res">θ_R <b>' + (hide ? q : (S.vecs.length && !r.zero ?
+    '<div class="bdg res"><span>θ<sub>R</sub></span> <b>' + (hide ? q : (S.vecs.length && !r.zero ?
       fmtDir(r.ang) : '—')) + '</b></div>' +
     '</div>';
 }
@@ -1928,7 +2204,7 @@ function readingBoxes() {
   return '<div class="rd">' +
     '<div class="rdbox"><div class="v">' + (cm == null ? '—' : fmt(cm, 2) + ' cm') + '</div>' +
     '<div class="k">📏 Ruler</div></div>' +
-    '<div class="rdbox"><div class="v">' + (ang == null ? '—' : fmt(ang, 1) + '°') + '</div>' +
+    '<div class="rdbox"><div class="v">' + (ang == null ? '—' : fmtDirDisp(ang)) + '</div>' +
     '<div class="k">📐 Protractor</div></div></div>' +
     '<div class="note" style="margin-top:4px">' + (cm == null
       ? 'Pick up the 📏 Ruler and drag along the gold arrow, then multiply by the scale.'
@@ -1942,31 +2218,38 @@ function calcRows() {
   if (!vs.length) return out;
   if (S.md === 2 || S.md === 1) {
     if (S.md === 2) {
-      out.push(['resolving each force', vs.map(function (v, i) {
+      /* one line per component, aligned on the = so nothing runs off the panel */
+      out.push(['resolving each force', '\\begin{aligned}' + vs.map(function (v, i) {
         var c = VM.comp(v);
-        return vecName(i) + ':\\ F_x = ' + fmt(v.mag, 1) + '\\cos ' + fmt(v.ang, 1) +
-          '^\\circ = ' + fmt(c.x, 2) + ',\\quad F_y = ' + fmt(v.mag, 1) + '\\sin ' +
+        return vecName(i) + ':\\quad F_x &= ' + fmt(v.mag, 1) + '\\cos ' + fmt(v.ang, 1) +
+          '^\\circ = ' + fmt(c.x, 2) + ' \\\\[2pt] F_y &= ' + fmt(v.mag, 1) + '\\sin ' +
           fmt(v.ang, 1) + '^\\circ = ' + fmt(c.y, 2);
-      }).join(' \\\\ '), 'Angles are measured from the reference direction, anticlockwise.']);
+      }).join(' \\\\[6pt] ') + '\\end{aligned}', S.conv === 'east'
+          ? 'Angles are measured from the reference direction, anticlockwise.'
+          : 'A bearing has to be turned into an anticlockwise-from-East angle before ' +
+          'cos and sin are used — that is the angle shown here.']);
     }
     out.push(['adding the columns',
-      '\\Sigma F_x = ' + fmt(r.x, 2) + '\\ \\text{' + S.unit + '} \\qquad \\Sigma F_y = ' +
-      fmt(r.y, 2) + '\\ \\text{' + S.unit + '}',
+      '\\begin{aligned}\\Sigma F_x &= ' + fmt(r.x, 2) + '\\ \\text{' + S.unit +
+      '} \\\\[2pt] \\Sigma F_y &= ' + fmt(r.y, 2) + '\\ \\text{' + S.unit +
+      '}\\end{aligned}',
       'A component pointing left or down carries a minus sign.']);
     out.push(['magnitude of the resultant',
-      '|R| = \\sqrt{\\Sigma F_x^{\\,2} + \\Sigma F_y^{\\,2}} = \\sqrt{' + fmt(r.x, 2) + '^2 + ' +
-      fmt(r.y, 2) + '^2} = ' + fmt(r.mag, 2) + '\\ \\text{' + S.unit + '}',
+      '\\begin{aligned}|R| &= \\sqrt{\\Sigma F_x^{\\,2} + \\Sigma F_y^{\\,2}} \\\\[3pt]' +
+      '&= \\sqrt{' + fmt(r.x, 2) + '^2 + ' + fmt(r.y, 2) + '^2} \\\\[3pt]' +
+      '&= ' + fmt(r.mag, 2) + '\\ \\text{' + S.unit + '}\\end{aligned}',
       'Pythagoras on the two gold bars.']);
     if (!r.zero) out.push(['direction of the resultant',
-      '\\theta_R = \\tan^{-1}\\!\\left(\\dfrac{\\Sigma F_y}{\\Sigma F_x}\\right) = \\tan^{-1}\\!' +
-      '\\left(\\dfrac{' + fmt(r.y, 2) + '}{' + fmt(r.x, 2) + '}\\right) = ' +
-      fmt(VM.toDisp(r.ang, S.conv), 1) + '^\\circ',
+      '\\begin{aligned}\\theta_R &= \\tan^{-1}\\!\\left(\\dfrac{\\Sigma F_y}{\\Sigma F_x}\\right)' +
+      ' \\\\[3pt] &= \\tan^{-1}\\!\\left(\\dfrac{' + fmt(r.y, 2) + '}{' + fmt(r.x, 2) +
+      '}\\right) \\\\[3pt] &= ' + fmt(VM.toDisp(r.ang, S.conv), 1) +
+      '^\\circ\\end{aligned}',
       'Quoted ' + (S.conv === 'east' ? 'anticlockwise from East' : 'as a bearing from North') +
       '. Check the quadrant against the picture — a calculator cannot.']);
     if (S.md === 1 && !r.zero) out.push(['reading it off the scale diagram',
-      '|R| = ' + fmt(VM.unitsToCm(r.mag, S.scale), 2) + '\\ \\text{cm} \\times ' +
-      fmt(S.scale, 0) + '\\ \\text{' + S.unit + '/cm} = ' + fmt(r.mag, 2) + '\\ \\text{' +
-      S.unit + '}',
+      '\\begin{aligned}|R| &= ' + fmt(VM.unitsToCm(r.mag, S.scale), 2) + '\\ \\text{cm} \\times ' +
+      fmt(S.scale, 0) + '\\ \\text{' + S.unit + '/cm} \\\\[3pt] &= ' + fmt(r.mag, 2) +
+      '\\ \\text{' + S.unit + '}\\end{aligned}',
       'The measured length and the calculated value must agree — that is the check.']);
   } else if (S.md === 3 && vs.length >= 2) {
     var a = vs[0], b = vs[1], th = VM.between(a, b), cs = VM.pairCase(a, b);
@@ -1976,14 +2259,17 @@ function calcRows() {
         : cs === 'same' ? 'They point the same way.'
           : cs === 'opposite' ? 'They point opposite ways.' : 'A general parallelogram.']);
     out.push(['cosine rule on the parallelogram',
-      '|R|^2 = A^2 + B^2 + 2AB\\cos\\theta = ' + fmt(a.mag, 1) + '^2 + ' + fmt(b.mag, 1) +
-      '^2 + 2(' + fmt(a.mag, 1) + ')(' + fmt(b.mag, 1) + ')\\cos ' + fmt(th, 1) + '^\\circ',
+      '\\begin{aligned}|R|^2 &= A^2 + B^2 + 2AB\\cos\\theta \\\\[3pt] &= ' +
+      fmt(a.mag, 1) + '^2 + ' + fmt(b.mag, 1) + '^2 \\\\[2pt] &\\quad + 2(' +
+      fmt(a.mag, 1) + ')(' + fmt(b.mag, 1) + ')\\cos ' + fmt(th, 1) +
+      '^\\circ \\\\[3pt] &= ' + fmt(r.mag * r.mag, 2) + '\\end{aligned}',
       cs === 'perpendicular'
         ? 'cos 90° = 0, so this collapses to Pythagoras.'
         : 'The + sign is right because θ is the angle between the vectors, not inside the triangle.']);
     out.push(['so the diagonal is',
-      '|R| = ' + fmt(r.mag, 2) + '\\ \\text{' + S.unit + '} \\qquad \\theta_R = ' +
-      fmt(VM.toDisp(r.ang, S.conv), 1) + '^\\circ',
+      '\\begin{aligned}|R| &= ' + fmt(r.mag, 2) + '\\ \\text{' + S.unit +
+      '} \\\\[2pt] \\theta_R &= ' + fmt(VM.toDisp(r.ang, S.conv), 1) +
+      '^\\circ\\end{aligned}',
       'Identical to the component method — the two routes must agree.']);
   }
   return out;
@@ -2010,7 +2296,9 @@ function taskPanel() {
     '<div class="note">Type your answers, then press Check. A scale-diagram answer is ' +
     'accepted within <b>5%</b> on the magnitude and <b>3°</b> on the angle.</div>' +
     '<input class="ansin" id="ansMag" placeholder="|R| in ' + S.unit + '" value="' + t.magIn + '">' +
-    '<input class="ansin" id="ansAng" placeholder="θ_R in degrees" value="' + t.angIn + '">' +
+    '<input class="ansin" id="ansAng" placeholder="θ_R in degrees' +
+    (S.conv === 'east' ? ' (anticlockwise from East)' : ' (bearing from North)') +
+    '" value="' + t.angIn + '">' +
     '<button class="ctrl-btn primary" id="bCheck" style="width:100%;margin-top:4px">✓ Check</button>' +
     (t.done ? '<div class="note" style="margin-top:8px;color:var(--' + (t.ok ? 'green' : 'red') +
       ')"><b>' + (t.ok ? 'Correct.' : 'Not yet.') + '</b> Magnitude out by ' +
@@ -2069,7 +2357,7 @@ function answerPanel() {
       'working appears here.</div>';
     var rows = calcRows();
     return '<div class="note"><b>Worked solution.</b> The answer is <b>' + fmt(t.want.mag, 2) +
-      ' ' + S.unit + '</b> at <b>' + fmt(t.want.ang, 1) + '°</b>' +
+      ' ' + S.unit + '</b> at <b>' + fmtDirDisp(t.want.ang) + '</b>' +
       (S.conv === 'east' ? ' from East' : ' as a bearing') + '.</div>' +
       rows.map(function (c) {
         return '<div class="calc"><div class="ct">' + c[0] + '</div><div class="eqbox">' +
@@ -2142,7 +2430,7 @@ function bindPanel() {
     b.addEventListener('click', function () {
       pushUndo();
       S.vecs.splice(+b.dataset.del, 1);
-      rekey(); renderPanel(); draw();
+      rekey(); refresh();
     });
   });
   [].forEach.call($('pbody').querySelectorAll('[data-opt]'), function (b) {
@@ -2175,7 +2463,7 @@ function loadExample(keepTask) {
   S.vecs = sc.def.slice(0, modeMax()).map(function (v, i) {
     return { mag: v.mag, ang: VM.norm360(v.ang), key: VKEYS[i] };
   });
-  S.sel = -1; S.ruler = null; S.prot = null; S.pts = null; S.ptsB = null;
+  S.sel = -1; S.vsel = -1; S.ruler = null; S.prot = null; S.pts = null; S.ptsB = null;
   S.zoom = { k: 1, ox: 0, oy: 0, panning: false, px: 0, py: 0 };
   if (!keepTask) { S.task = null; }
 }
@@ -2218,6 +2506,7 @@ function updateChrome() {
   $('tLabels').classList.toggle('on', S.labels);
   $('tHints').classList.toggle('on', S.hints);
   $('tComps').classList.toggle('on', S.comps);
+  $('tVCard').classList.toggle('on', S.vcard);
   $('tFit').classList.toggle('on', S.fit);
   $('tFbd').classList.toggle('on', S.fbd);
   /* the free-body link only means anything where the vectors are drawn
@@ -2242,9 +2531,21 @@ function updateChrome() {
   var lock = S.mode !== 'sim';
   $('gEx').classList.toggle('locked', S.mode !== 'sim');
   $('bClear').disabled = lock || !S.vecs.length;
+  /* nothing more will fit, so the ways of adding go quiet rather than failing silently */
+  var full = S.vecs.length >= modeMax();
   ['bAdd', 'bRandom', 'inMag', 'inAng', 'tPoints'].forEach(function (id) {
-    $(id).disabled = lock;
+    $(id).disabled = lock || full;
   });
+  $('tEraser').disabled = lock;
+  /* nothing on the canvas to measure or annotate during the quiz */
+  $('tRuler').parentElement.classList.toggle('locked', S.mode === 'quiz');
+  $('tLabels').parentElement.classList.toggle('locked', S.mode === 'quiz');
+  if (lock && (S.tool === 'eraser' || S.tool === 'points')) S.tool = null;
+  $('bAdd').title = full
+    ? (S.md === 3 ? 'Mode 3 works with two vectors — delete one first'
+      : 'the picture already holds ' + modeMax() + ' vectors — delete one first')
+    : 'add a vector with the magnitude and angle typed on the left';
+  if (full && S.tool === 'points') { S.tool = null; S.pts = null; S.ptsB = null; }
 }
 
 /* ---------- pointer ----------------------------------------------------- */
@@ -2254,10 +2555,13 @@ function snapUnits(p) {
   return { x: VM.snapTo(p.x, g), y: VM.snapTo(p.y, g) };
 }
 /* the free-body card is an object on the canvas, not part of the diagram */
-function overFbd(L) {
+function inBox(O, b) {
+  return O.x >= b.x && O.x <= b.x + b.w && O.y >= b.y && O.y <= b.y + b.h;
+}
+function overFbd(O) {
   if (!S.fbd || S.md !== 1 || !S.vecs.length) return false;
   var b = fbdBox();
-  return L.x >= b.x && L.x <= b.x + b.w && L.y >= b.y && L.y <= b.y + b.h;
+  return O.x >= b.x && O.x <= b.x + b.w && O.y >= b.y && O.y <= b.y + b.h;
 }
 function hitVector(L) {
   for (var i = S.vecs.length - 1; i >= 0; i--) {
@@ -2282,9 +2586,19 @@ function bindCanvas() {
     var L = toLogical(e.clientX, e.clientY);
 
     /* the free-body card can be picked up and put anywhere on the canvas */
-    if (e.button === 0 && overFbd(L)) {
+    var OV = overlayXY(e.clientX, e.clientY);
+    if (e.button === 0 && S.vcard && inBox(OV, vcardBox())) {
+      var vb = vcardBox(), hit = null;
+      if (vcardEntries().length > 1)
+        vcardArrows(vb).forEach(function (a) { if (inBox(OV, a)) hit = a; });
+      if (hit) { vcardStep(hit.d); refresh(); return; }
+      S.drag = { kind: 'vcard', dx: OV.x - vb.x, dy: OV.y - vb.y };
+      S.vcardDragging = true; CV.style.cursor = 'grabbing';
+      draw(); return;
+    }
+    if (e.button === 0 && overFbd(OV)) {
       var fb0 = fbdBox();
-      S.drag = { kind: 'fbd', dx: L.x - fb0.x, dy: L.y - fb0.y };
+      S.drag = { kind: 'fbd', dx: OV.x - fb0.x, dy: OV.y - fb0.y };
       S.fbdDragging = true;
       CV.style.cursor = 'grabbing';
       draw(); return;
@@ -2304,7 +2618,7 @@ function bindCanvas() {
       if (np.mag > 1e-6) {
         pushUndo();
         S.vecs.push({ mag: np.mag, ang: np.ang, key: nextKey() });
-        S.sel = S.vecs.length - 1;
+        S.sel = S.vecs.length - 1; S.vsel = S.sel;
         S.pts = null;
         refresh();
       }
@@ -2316,6 +2630,7 @@ function bindCanvas() {
     if (S.tool === 'ruler') { S.ruler = { a: L, b: L }; S.drag = { kind: 'ruler' }; draw(); return; }
     if (S.tool === 'prot') { S.prot = { c: L, b: { x: L.x + 1, y: L.y } }; S.drag = { kind: 'prot' }; draw(); return; }
     if (S.tool === 'eraser') {
+      if (S.mode !== 'sim') return;      /* the question sets the picture in Practice */
       var k = hitVector(L);
       if (k >= 0) { pushUndo(); S.vecs.splice(k, 1); rekey(); refresh(); }
       return;
@@ -2324,23 +2639,27 @@ function bindCanvas() {
     if (S.mode !== 'sim') return;
 
     var h = hitHead(L);
-    if (h >= 0) { pushUndo(); S.sel = h; S.drag = { kind: 'head', i: h }; draw(); return; }
+    if (h >= 0) {
+      pushUndo(); S.sel = h; S.vsel = h; S.drag = { kind: 'head', i: h }; draw(); return;
+    }
     var v = hitVector(L);
-    if (v >= 0) { S.sel = v; draw(); renderPanel(); return; }
+    if (v >= 0) { S.sel = v; S.vsel = v; draw(); renderPanel(); return; }
 
     if (S.vecs.length >= modeMax()) return;
     pushUndo();
     var tail = (S.md === 1 && S.snapT) ? tailFor(S.vecs.length) : { x: 0, y: 0 };
     S.vecs.push({ mag: 0, ang: 0, key: nextKey(), _tail: tail });
-    S.sel = S.vecs.length - 1;
+    S.sel = S.vecs.length - 1; S.vsel = S.sel;
     S.drag = { kind: 'new', i: S.sel, tail: tail };
     draw();
   });
 
   CV.addEventListener('pointermove', function (e) {
     var L = toLogical(e.clientX, e.clientY);
-    if (S.drag && S.drag.kind === 'fbd') {
-      S.fbdPos = fbdClamp(L.x - S.drag.dx, L.y - S.drag.dy);
+    if (S.drag && (S.drag.kind === 'fbd' || S.drag.kind === 'vcard')) {
+      var OVm = overlayXY(e.clientX, e.clientY);
+      if (S.drag.kind === 'fbd') S.fbdPos = fbdClamp(OVm.x - S.drag.dx, OVm.y - S.drag.dy);
+      else S.vcardPos = vcardClamp(OVm.x - S.drag.dx, OVm.y - S.drag.dy);
       draw(); return;
     }
     if (S.tool === 'points') {
@@ -2355,7 +2674,8 @@ function bindCanvas() {
       clampPan(); draw(); return;
     }
     if (!S.drag) {
-      if (overFbd(L)) {
+      if ((S.vcard && inBox(overlayXY(e.clientX, e.clientY), vcardBox())) ||
+        overFbd(overlayXY(e.clientX, e.clientY))) {
         if (S.hover !== -1) { S.hover = -1; draw(); }
         CV.style.cursor = 'grab'; return;
       }
@@ -2374,8 +2694,9 @@ function bindCanvas() {
   });
 
   function endDrag() {
-    if (S.drag && S.drag.kind === 'fbd') {
-      S.drag = null; S.fbdDragging = false; CV.style.cursor = 'grab'; draw(); return;
+    if (S.drag && (S.drag.kind === 'fbd' || S.drag.kind === 'vcard')) {
+      S.drag = null; S.fbdDragging = false; S.vcardDragging = false;
+      CV.style.cursor = 'grab'; draw(); return;
     }
     if (S.drag && (S.drag.kind === 'new') && S.vecs[S.drag.i] && S.vecs[S.drag.i].mag < 1e-6) {
       S.vecs.splice(S.drag.i, 1); rekey(); doUndoSilent();
@@ -2410,6 +2731,8 @@ function bindToolbar() {
   [].forEach.call($('gTabs').children, function (b) {
     b.addEventListener('click', function () {
       S.md = +b.dataset.md;
+      /* each method has its own natural default for the component overlay */
+      S.comps = (S.md === 2);
       buildPills(); loadExample();
       if (S.mode === 'prac') newTask(1234 + S.md);
       if (S.mode === 'quiz') newQuiz();
@@ -2456,6 +2779,7 @@ function bindToolbar() {
   toggle('tSnapG', 'snapG'); toggle('tSnapT', 'snapT');
   toggle('tLabels', 'labels'); toggle('tHints', 'hints');
   toggle('tComps', 'comps'); toggle('tSteps', 'steps'); toggle('tRes', 'res');
+  toggle('tVCard', 'vcard');
   toggle('tFbd', 'fbd');
   $('tFit').addEventListener('click', function () {
     if (S.fit) { S.fit = false; FITORG = null; S.scale = 10; }
@@ -2483,7 +2807,7 @@ function bindToolbar() {
     refresh();
   });
   $('bReset').addEventListener('click', function () {
-    S.fbdPos = null;
+    S.fbdPos = null; S.vcardPos = null;
     pushUndo(); loadExample(true); S.tool = null; refresh();
   });
 
@@ -2516,6 +2840,11 @@ function bindToolbar() {
     if (e.key === 'Escape') {
       S.zoom = { k: 1, ox: 0, oy: 0, panning: false, px: 0, py: 0 };
       S.sel = -1; S.pts = null; S.ptsB = null; draw();
+    }
+    if ((e.key === 'Delete' || e.key === 'Backspace') && S.mode === 'sim' &&
+      S.sel >= 0 && S.sel < S.vecs.length) {
+      e.preventDefault();
+      pushUndo(); S.vecs.splice(S.sel, 1); S.sel = -1; rekey(); refresh();
     }
     if ((e.ctrlKey || e.metaKey) && e.key === 'z') { doUndo(); refresh(); }
     if ((e.ctrlKey || e.metaKey) && e.key === 'y') { doRedo(); refresh(); }

@@ -278,7 +278,7 @@ table.dt tr.no  td:first-child{color:var(--text-muted)}
 
   <!-- ===== HEADER ZONE (45 px) ===== -->
   <div class="top-bar">
-    <h1>🧲 <span>Magnetic Fields Lab</span> <span class="badge-top" id="badgeTop">v1.4.4</span></h1>
+    <h1>🧲 <span>Magnetic Fields Lab</span> <span class="badge-top" id="badgeTop">v1.5.0</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="modeTabs">
         <button class="mode-tab active" data-mode="sim">Simulate</button>
@@ -717,6 +717,14 @@ const S = {
   lhr:false,
   motorRun:true, comm:true, coilTh:0.35, coilW:0, motorRev:0,
 
+  /* Cards the student can drag out of the way. Each is a CENTRE plus a size,
+     so the hit test and the drawing share one number and cannot disagree. */
+  cards:{
+    grip:{x:172,  y:500, w:268, h:172},   // right-hand grip rule (solenoid)
+    fh:  {x:1002, y:430, w:306, h:322},   // Fleming triad (force on a wire)
+    lh:  {x:190,  y:486, w:300, h:156}    // Fleming table (catapult field)
+  },
+
   /* --- global --- */
   show:{compass:true, labels:true, hints:true},
   anim:true, sound:true, speed:1,
@@ -812,6 +820,11 @@ function rr(x, y, w, h, r){
 }
 function txt(s, x, y, opt){
   opt = opt || {};
+  if(opt.alpha != null && opt.alpha < 1){
+    CX.save(); CX.globalAlpha = opt.alpha;
+    const o2 = Object.assign({}, opt); delete o2.alpha;
+    txt(s, x, y, o2); CX.restore(); return;
+  }
   CX.font = (opt.weight || 600) + ' ' + (opt.size || 13) + 'px ' + (opt.mono ? "'JetBrains Mono',monospace" : "'Inter',sans-serif");
   CX.fillStyle = opt.col || PAL.text;
   CX.textAlign = opt.align || 'center';
@@ -1663,8 +1676,15 @@ function drawMaterials(){
   /* induced poles on the faces, when there is any magnetism to show */
   if(mat.magnetic && S.matMag > 0.08 && S.show.labels){
     const nearIsS = !MAT_MAG.flip;
-    txt(nearIsS ? 'S' : 'N', sx - 13, g.y, {size:19, weight:800, col:nearIsS ? PAL.Sp : PAL.N});
-    txt(nearIsS ? 'N' : 'S', sx + g.w + 13, g.y, {size:19, weight:800, col:nearIsS ? PAL.N : PAL.Sp});
+    /* The LETTERS carry the strength. Induced magnetism is a matter of degree
+       — a sample far from the magnet is barely magnetised at all — and drawn
+       at one fixed size the N and S announced "fully magnetised" whatever the
+       reading beside them said. Size and opacity both track S.matMag, so the
+       poles fade in as the sample is brought closer and swell as it saturates. */
+    const ps = 11 + 18*S.matMag, off = 9 + ps*0.45;
+    const opt = c => ({size:ps, weight:800, col:c, alpha:0.45 + 0.55*S.matMag});
+    txt(nearIsS ? 'S' : 'N', sx - off, g.y, opt(nearIsS ? PAL.Sp : PAL.N));
+    txt(nearIsS ? 'N' : 'S', sx + g.w + off, g.y, opt(nearIsS ? PAL.N : PAL.Sp));
   }
 
   /* the test magnet, and the gap between them */
@@ -2099,14 +2119,25 @@ function drawFlatCoil(){
   if(S.eshow === 'filings') drawFilings(EL.box, elField, 780, 12);
   else paintLines(E_CACHE.lines, PAL.line, 4);
 
-  /* the loop, seen edge-on: one wire cross-section at the top, one below */
+  /* The loop gets the SAME depth treatment as one turn of the solenoid: the
+     half running round the back dim and translucent, the half nearest the
+     viewer at full strength over a dark halo. Drawn as one flat dashed
+     ellipse the loop had no near and no far — the very thing the ⊙ and ⊗ at
+     its two ends are there to establish. */
+  CX.save(); CX.globalAlpha = .30;
+  CX.strokeStyle = PAL.wire; CX.lineWidth = 6.5; CX.lineCap = 'round';
+  CX.beginPath(); CX.ellipse(cx, cy, 34, R, 0, -Math.PI/2, Math.PI/2, true); CX.stroke();
+  CX.restore();
+  CX.save();
+  CX.strokeStyle = 'rgba(0,0,0,.30)'; CX.lineWidth = 9.5; CX.lineCap = 'round';
+  CX.beginPath(); CX.ellipse(cx, cy, 34, R, 0, -Math.PI/2, Math.PI/2, false); CX.stroke();
+  CX.strokeStyle = PAL.wire; CX.lineWidth = 7.5;
+  CX.beginPath(); CX.ellipse(cx, cy, 34, R, 0, -Math.PI/2, Math.PI/2, false); CX.stroke();
+  CX.restore();
+  /* the loop seen edge-on: one wire cross-section at the top, one below —
+     drawn AFTER the winding, or the near half is painted across them */
   currentDot(cx, cy - R, 15, S.eDir);
   currentDot(cx, cy + R, 15, -S.eDir);
-  /* the returning half of the loop, drawn faintly behind */
-  CX.save(); CX.globalAlpha = .34;
-  CX.strokeStyle = PAL.wire; CX.lineWidth = 7; CX.setLineDash([7, 6]);
-  CX.beginPath(); CX.ellipse(cx, cy, 34, R, 0, 0, TAU); CX.stroke();
-  CX.setLineDash([]); CX.restore();
 
   /* the field down the axis: the two halves ADD in the middle */
   const b = elField(cx, cy);
@@ -2226,7 +2257,8 @@ function drawSupply(cx, y, len, x0, x1, yTop){
    floating beside the coil: it can never land on a field line, and it says
    in words which end of the solenoid it is describing. */
 function drawGripSolenoid(so, nRight){
-  const cx = 172, cy = 500, w = 268, h = 172, r = 40;
+  const C = S.cards.grip;
+  const cx = C.x, cy = C.y, w = C.w, h = C.h, r = 40;
   CX.fillStyle = PAL.card; CX.strokeStyle = PAL.green; CX.lineWidth = 2;
   rr(cx - w/2, cy - h/2, w, h, 12); CX.fill(); CX.stroke();
   txt('Right-hand grip rule', cx, cy - h/2 + 18, {size:12.5, col:PAL.green, weight:800});
@@ -2760,7 +2792,7 @@ function drawForceOnWire(){
   /* The rule diagram occupies the whole right-hand third of the canvas, level
      with the force arrow on the apparatus.  The apparatus was moved left to
      make that room rather than the diagram being squeezed in beside it. */
-  drawFlemingHand(958, P3(cx, M3.wy, M3.fz).y, {x:nLeft ? 1 : -1, y:0}, u, F, 1.0);
+  drawFlemingHand({x:nLeft ? 1 : -1, y:0}, u, F);
 
   if(S.show.labels)
     keyStrip(40, MO.benchY + 20, [
@@ -2791,46 +2823,47 @@ function drawForceOnWire(){
    off the same functions the apparatus uses, so the figure can never
    disagree with the diagram beside it.  Reverse anything on the toolbar and
    the whole triad turns with it. */
-function drawFlemingHand(ox, oy, uB, uI, uF, sc){
-  sc = sc || 1;
+function drawFlemingHand(uB, uI, uF){
+  const C = S.cards.fh;
+  const px = C.x, py = C.y, w = C.w, h = C.h;
+  CX.fillStyle = PAL.card; CX.strokeStyle = PAL.green; CX.lineWidth = 2;
+  rr(px - w/2, py - h/2, w, h, 12); CX.fill(); CX.stroke();
+  txt("Fleming's LEFT-hand rule", px, py - h/2 + 18,
+      {size:13, col:PAL.green, weight:800});
+
   const N = v => { const m = Math.hypot(v.x, v.y) || 1; return {x:v.x/m, y:v.y/m}; };
   const axes = [
     /* the symbol goes in the label: what the thumb really gives is the
        magnetic FORCE F, and the motion follows from it */
-    {d:N(uB), len:132, col:PAL.line,  name:'Field (B)',      sub:'F irst finger'},
-    {d:N(uI), len:118, col:PAL.cur,   name:'Current (I)',    sub:'se C ond finger'},
-    {d:N(uF), len:112, col:PAL.force, name:'Motion (F)',     sub:'thu M b'}
+    {d:N(uB), len:78, col:PAL.line,  name:'Field (B)'},
+    {d:N(uI), len:70, col:PAL.cur,   name:'Current (I)'},
+    {d:N(uF), len:66, col:PAL.force, name:'Force (F)'}
   ];
-  let lowest = oy;
+  const ox = px, oy = py + 6;
 
   for(const a of axes){
-    const L = a.len*sc, tip = {x:ox + a.d.x*L, y:oy + a.d.y*L};
+    const tip = {x:ox + a.d.x*a.len, y:oy + a.d.y*a.len};
     /* the short stub on the far side, as on a drawn axis */
+    CX.save();
     CX.strokeStyle = a.col; CX.lineWidth = 2; CX.lineCap = 'round';
     CX.globalAlpha = .55;
-    line(ox - a.d.x*26*sc, oy - a.d.y*26*sc, ox, oy);
-    CX.globalAlpha = 1;
-    arrow(ox, oy, tip.x, tip.y, {col:a.col, lw:2.6, head:13});
-    /* the name at the tip, and the finger it belongs to just under it */
-    const lx = tip.x + a.d.x*20*sc, ly = tip.y + a.d.y*20*sc;
-    txt(a.name, lx, ly, {size:14, col:a.col, weight:800, plate:true});
-    txt(a.sub, lx, ly + 17, {size:10.5, col:PAL.muted, weight:600, plate:true});
-    lowest = Math.max(lowest, ly + 17);
+    line(ox - a.d.x*18, oy - a.d.y*18, ox, oy);
+    CX.restore();
+    arrow(ox, oy, tip.x, tip.y, {col:a.col, lw:2.6, head:12});
+    /* The label offset is SHORTENED along a vertical axis. At one flat offset
+       the force label, whenever the force pointed down, landed on the footer
+       line — the one direction in which the card has something else at that
+       height. */
+    const off = 34 - 9*Math.abs(a.d.y);
+    txt(a.name, tip.x + a.d.x*off, tip.y + a.d.y*off,
+        {size:12.5, col:a.col, weight:800, plate:true});
   }
   /* the origin */
   CX.fillStyle = PAL.text;
-  CX.beginPath(); CX.arc(ox, oy, 4.2*sc, 0, TAU); CX.fill();
-  txt('O', ox - 14*sc, oy + 14*sc, {size:12, col:PAL.dim, weight:700});
+  CX.beginPath(); CX.arc(ox, oy, 4.2, 0, TAU); CX.fill();
 
-  /* The caption goes below whatever the LOWEST arrow and label turned out to
-     be, not at a fixed offset: the force arrow points up in half the
-     combinations and down in the other half, and a fixed offset lands the
-     caption straight on top of it. */
-  const capY = lowest + 34;
-  txt("Fleming's LEFT-hand rule", ox, capY,
-      {size:13.5, col:PAL.green, weight:800, plate:true});
-  txt('Hold all three at right angles on your LEFT hand', ox, capY + 19,
-      {size:10.5, col:PAL.muted, weight:600, plate:true});
+  txt('all three at right angles, on your LEFT hand', px, py + h/2 - 15,
+      {size:10.5, col:PAL.muted, weight:600});
 }
 
 /* ---------------- catapult field ----------------
@@ -3087,7 +3120,8 @@ function drawDCMotor(){
 
 /* ---------------- Fleming's left-hand rule overlay ---------------- */
 function drawLeftHand(B, s, F){
-  const x = 156, y = 486, w = 250, h = 150;
+  const C = S.cards.lh;
+  const x = C.x, y = C.y, w = C.w, h = C.h;
   CX.fillStyle = PAL.card; CX.strokeStyle = PAL.green; CX.lineWidth = 2;
   rr(x - w/2, y - h/2, w, h, 11); CX.fill(); CX.stroke();
   txt("Fleming's LEFT hand", x, y - h/2 + 17, {size:12.5, col:PAL.green, weight:800});
@@ -3098,15 +3132,19 @@ function drawLeftHand(B, s, F){
     ['s', 'eCond finger', 'Current', PAL.cur, null,             s],
     ['t', 'huMb', 'Motion / force', PAL.force, Math.atan2(F.y, F.x), null]
   ];
-  let yy = y - 22;
+  /* Three columns with room between them. At w = 250 the name column started
+     at x + 24 and the glyph column at x + 99, so "Motion / force" — the
+     longest of the three — ran straight underneath its own arrow. The card is
+     wider now and each column has its own x. */
+  let yy = y - 24;
   for(const [a, b2, name, col, ang, cur] of rows){
     txt(a + b2, x - w/2 + 12, yy, {size:11.5, col:PAL.dim, align:'left', weight:600});
-    txt(name, x + 24, yy, {size:11.5, col:col, align:'left', weight:700});
-    const gx = x + w/2 - 26;
+    txt(name, x - 32, yy, {size:11.5, col:col, align:'left', weight:700});
+    const gx = x + w/2 - 34;
     if(cur !== null) currentDot(gx, yy, 9, cur, {col:col});
     else arrow(gx - 14*Math.cos(ang), yy - 14*Math.sin(ang),
                gx + 14*Math.cos(ang), yy + 14*Math.sin(ang), {col:col, lw:2.6, head:9});
-    yy += 26;
+    yy += 27;
   }
   txt('all three are at right angles', x, y + h/2 - 14,
       {size:10.5, col:PAL.muted, weight:600});
@@ -3639,9 +3677,12 @@ function resetSection(){
     S.relaySw = false; S.relayI = 0.75; S.relayArm = 0; S.relayHover = 0;
     S.compass.x = 830; S.compass.y = 560;
     E_CACHE.sig = '';
+    S.cards.grip.x = 172;  S.cards.grip.y = 500;
   }else{
     S.oB = 60; S.oI = 3; S.oL = 8; S.oDirI = -1; S.oDirB = 1;
     S.lhr = false; S.coilTh = 0.35; S.coilW = 0; S.motorRun = true; S.comm = true;
+    S.cards.fh.x = 1002; S.cards.fh.y = 430;
+    S.cards.lh.x = 190;  S.cards.lh.y = 486;
     S.compass.x = S.omode === 'motor' ? 210 : 440;
     S.compass.y = S.omode === 'motor' ? 470 : 232;
   }
@@ -3765,6 +3806,8 @@ document.querySelectorAll('[data-ptab]').forEach(t => t.onclick = () => {
 
 /* ---------- canvas pointer: drag the apparatus, the compass, zoom and pan ---------- */
 let drag = null;
+/* exposed for the test suite: what, if anything, the pointer has hold of */
+window.__dragProbe = () => drag && drag.kind;
 const near = (L, x, y, r) => Math.hypot(L.x - x, L.y - y) < r;
 
 CV.addEventListener('pointerdown', e => {
@@ -3773,7 +3816,22 @@ CV.addEventListener('pointerdown', e => {
   const L = toLogical(e);
   if(S.zoom.k > 1){ S.zoom.panning = true; S.zoom.px = e.clientX; S.zoom.py = e.clientY; return; }
 
-  /* the compass is small and sits on top of everything, so it is tested first */
+  /* The explanation cards are drawn LAST, so they are on top of everything —
+     including the compass — and must therefore be hit-tested first. Which one
+     is live depends on the view, so the list is built from the same conditions
+     that decide whether it is drawn at all. */
+  const liveCard =
+    (S.sec === 'electro' && S.emode === 'solenoid' && S.grip) ? S.cards.grip :
+    (S.sec === 'motor'   && S.omode === 'force')             ? S.cards.fh   :
+    (S.sec === 'motor'   && S.omode === 'catapult' && S.lhr) ? S.cards.lh   : null;
+  if(liveCard &&
+     Math.abs(L.x - liveCard.x) < liveCard.w/2 &&
+     Math.abs(L.y - liveCard.y) < liveCard.h/2){
+    drag = {kind:'card', o:liveCard, dx:L.x - liveCard.x, dy:L.y - liveCard.y};
+    return;
+  }
+
+  /* the compass is small and sits on top of everything else, so it is next */
   if(S.show.compass && near(L, S.compass.x, S.compass.y, 32)){
     drag = {kind:'compass', dx:L.x - S.compass.x, dy:L.y - S.compass.y};
     return;
@@ -3807,7 +3865,11 @@ CV.addEventListener('pointermove', e => {
   }
   if(!drag) return;
   const L = toLogical(e);
-  if(drag.kind === 'compass'){
+  if(drag.kind === 'card'){
+    const c = drag.o;
+    c.x = Math.max(c.w/2 + 6, Math.min(W - c.w/2 - 6, L.x - drag.dx));
+    c.y = Math.max(c.h/2 + 6, Math.min(H - c.h/2 - 6, L.y - drag.dy));
+  }else if(drag.kind === 'compass'){
     S.compass.x = Math.max(40, Math.min(W-40, L.x - drag.dx));
     S.compass.y = Math.max(90, Math.min(H-40, L.y - drag.dy));
   }else if(drag.kind === 'mag'){
