@@ -737,6 +737,14 @@ function coin(x, y, r, col) {
   CX.restore();
 }
 
+/* one line of text that shrinks until it fits the width it is given */
+function fitTxt(str, x, y, maxW, size, col, align, weight) {
+  var sz = size;
+  while (sz > 8 && textW(str, sz, weight || 500) > maxW) sz -= 0.5;
+  txt(str, x, y, sz, col, align || 'left', weight || 500);
+  return sz;
+}
+
 /* ---------- a one-line chain in the stores' own colours -------------------
    parts: [{t:'chemical', k:'chem'}, {t:' → '}, {t:'thermal', k:'therm'}, …]
    It shrinks to fit maxW, so a caption can never run off its card.       */
@@ -1955,6 +1963,37 @@ scene('1', 'mag', {
   }
 });
 
+/* ---------- ball-and-stick molecules (for the burning scene) --------------
+   CPK colours, the ones every chemistry textbook uses: carbon dark grey,
+   hydrogen white, oxygen red.                                           */
+var ATOM = { C: '#64748b', H: '#e2e8f0', O: '#ef4444' };
+function atomBall(x, y, r, el) {
+  CX.save();
+  CX.fillStyle = ATOM[el] || '#94a3b8';
+  CX.beginPath(); CX.arc(x, y, r, 0, 7); CX.fill();
+  CX.strokeStyle = withA('#000000', .35); CX.lineWidth = 1.1;
+  CX.beginPath(); CX.arc(x, y, r, 0, 7); CX.stroke();
+  CX.fillStyle = withA('#ffffff', .40);
+  CX.beginPath(); CX.arc(x - r * .32, y - r * .34, r * .30, 0, 7); CX.fill();
+  CX.restore();
+  txt(el, x, y + r * .40, Math.max(r * 1.05, 8), el === 'O' ? '#fff' : '#0f172a',
+    'center', 800);
+}
+function stick(x1, y1, x2, y2, dbl, a) {
+  CX.save();
+  CX.strokeStyle = withA(C['text-dim'], .9 * (a == null ? 1 : a)); CX.lineCap = 'round';
+  if (dbl) {
+    var dx = x2 - x1, dy = y2 - y1, L = Math.sqrt(dx * dx + dy * dy) || 1;
+    var ox = -dy / L * 3.4, oy = dx / L * 3.4;
+    CX.lineWidth = 2.8;
+    CX.beginPath(); CX.moveTo(x1 + ox, y1 + oy); CX.lineTo(x2 + ox, y2 + oy); CX.stroke();
+    CX.beginPath(); CX.moveTo(x1 - ox, y1 - oy); CX.lineTo(x2 - ox, y2 - oy); CX.stroke();
+  } else {
+    CX.lineWidth = 4.6;
+    CX.beginPath(); CX.moveTo(x1, y1); CX.lineTo(x2, y2); CX.stroke();
+  }
+  CX.restore();
+}
 /* 1.9 CHEMICAL ------------------------------------------------------------ */
 scene('1', 'chem', {
   label: '🍎 Chemical',
@@ -1965,69 +2004,103 @@ scene('1', 'chem', {
   draw: function () {
     var f = V('fuel'), E = f * 46000;      /* petrol ≈ 46 MJ/kg */
 
-    /* a real reaction in three beats: the molecules meet, the bonds swap,
-       the energy comes straight out and the products fly apart          */
-    var cyc = prog(6), st, q, p;
-    if (cyc < 0.42) { st = 'in'; q = cyc / 0.42; p = 0; }
-    else if (cyc < 0.56) { st = 'bang'; q = (cyc - 0.42) / 0.14; p = q; }
-    else { st = 'out'; q = (cyc - 0.56) / 0.44; p = 1; }
+    /* CH₄ + 2O₂ → CO₂ + 2H₂O, told honestly: the molecules meet, then every
+       atom SLIDES to its new partner. Nothing explodes at random — the
+       hydrogens go to the oxygens and the carbon takes two oxygens.     */
+    var cyc = prog(7), st, q, u, p;
+    if (cyc < 0.34) { st = 'in'; q = cyc / 0.34; u = 0; p = 0; }
+    else if (cyc < 0.62) { st = 'react'; q = (cyc - 0.34) / 0.28; u = q * q * (3 - 2 * q); p = u; }
+    else { st = 'out'; q = (cyc - 0.62) / 0.38; u = 1; p = 1; }
 
-    withCard('zoom', 110, 110, 380, 300, function () {
-      card(110, 110, 380, 300, 'burning the fuel');
-      var cx = 300, cy = 244;
-      /* one molecule: a pill with a label */
-      var mol = function (mx, my, w, lab, col, alpha) {
-        CX.save();
-        CX.globalAlpha = alpha == null ? 1 : alpha;
-        CX.fillStyle = withA(col, .85);
-        rr(mx - w / 2, my - 17, w, 34, 17); CX.fill();
-        CX.strokeStyle = col; CX.lineWidth = 1.6;
-        rr(mx - w / 2, my - 17, w, 34, 17); CX.stroke();
-        CX.restore();
-        txt(lab, mx, my + 5, 12, LIGHT ? '#fff' : C['graph-bg'], 'center', 800);
-      };
+    withCard('zoom', 110, 110, 420, 322, function () {
+      card(110, 110, 420, 322, 'burning the fuel  ·  CH₄ + 2O₂ → CO₂ + 2H₂O');
+      var cx = 320, cy = 238;
+      var apart = st === 'in' ? (1 - q) * 62 : 0;      /* still coming in    */
+      var split = st === 'out' ? q * 66 : 0;           /* products drifting  */
 
-      if (st === 'in') {
-        mol(cx - 108 + q * 62, cy, 76, 'fuel', scol('chem'));
-        mol(cx + 108 - q * 62, cy, 60, 'O₂', scol('chem'), .75);
-        arrow(cx - 34, cy - 36, cx - 10, cy - 36, C['text-muted'], 1.8, { head: 8 });
-        arrow(cx + 34, cy - 36, cx + 10, cy - 36, C['text-muted'], 1.8, { head: 8 });
-        txt('the molecules meet', cx, cy + 92, 12, C['text-dim'], 'center', 600);
-      } else if (st === 'bang') {
+      /* ---- where every atom starts, and where it ends up --------------- */
+      var Cx = cx - 84, dH = 31, HA = [-90, 15, 90, 165];
+      var o1x = cx + 54 - 0, o1y = cy - 52, o2x = cx + 54, o2y = cy + 52;
+      var A = [];                                      /* one entry per atom */
+      A.push({ el: 'C', r: 13, ax: Cx, ay: cy, bx: cx + 26, by: cy });
+      HA.forEach(function (ang, i) {
+        A.push({ el: 'H', r: 8, ax: Cx + cosd(ang) * dH, ay: cy + sind(ang) * dH,
+          bx: 0, by: 0, water: i < 2 ? 0 : 1, slot: i % 2 });
+      });
+      /* the four oxygens: the two nearest the carbon become CO₂ */
+      A.push({ el: 'O', r: 11, ax: o1x - 16, ay: o1y - 3, bx: cx + 26, by: cy - 32 });   /* 5 */
+      A.push({ el: 'O', r: 11, ax: o1x + 16, ay: o1y + 3, bx: cx + 96, by: cy - 56 });   /* 6 */
+      A.push({ el: 'O', r: 11, ax: o2x - 16, ay: o2y + 2, bx: cx + 26, by: cy + 32 });   /* 7 */
+      A.push({ el: 'O', r: 11, ax: o2x + 16, ay: o2y - 2, bx: cx + 96, by: cy + 56 });   /* 8 */
+      /* the hydrogens land on their own water molecule, bent at ~104° */
+      A.forEach(function (a) {
+        if (a.el !== 'H') return;
+        var O = A[a.water === 0 ? 6 : 8], ang = a.slot === 0 ? -142 : -38;
+        a.bx = O.bx + cosd(ang) * 22; a.by = O.by + sind(ang) * 22;
+      });
+
+      /* the reactants slide in from the sides; the products slide apart */
+      A.forEach(function (a) {
+        var inOff = a.el === 'O' ? apart : -apart;
+        var outOff = (a.bx > cx + 60) ? split : -split;
+        a.x = (a.ax + inOff) + ((a.bx + outOff) - (a.ax + inOff)) * u;
+        a.y = a.ay + (a.by - a.ay) * u;
+      });
+
+      /* ---- bonds: the old ones fade as they stretch, the new ones grow -- */
+      var OLD = [[0, 1], [0, 2], [0, 3], [0, 4], [5, 6, 1], [7, 8, 1]];
+      var NEW = [[0, 5, 1], [0, 7, 1], [6, 1], [6, 2], [8, 3], [8, 4]];
+      OLD.forEach(function (b) {
+        if (u < 1) stick(A[b[0]].x, A[b[0]].y, A[b[1]].x, A[b[1]].y, b[2], 1 - u);
+      });
+      NEW.forEach(function (b) {
+        if (u > 0) stick(A[b[0]].x, A[b[0]].y, A[b[1]].x, A[b[1]].y, b[2], u);
+      });
+
+      /* ---- the flash, only while the bonds are actually swapping -------- */
+      if (st === 'react') {
+        var fade = Math.sin(u * 3.1416);
         CX.save();
-        CX.globalAlpha = 1 - q * 0.55;
-        CX.fillStyle = withA('#fde047', .9);
-        CX.beginPath(); CX.arc(cx, cy, 20 + q * 54, 0, 7); CX.fill();
+        var fr = 30 + u * 46;
+        var fg = CX.createRadialGradient(cx, cy, 2, cx, cy, fr);
+        fg.addColorStop(0, withA('#fff7cc', .55 * fade));
+        fg.addColorStop(0.5, withA('#fde047', .26 * fade));
+        fg.addColorStop(1, withA('#fde047', 0));
+        CX.fillStyle = fg;
+        CX.beginPath(); CX.arc(cx, cy, fr, 0, 7); CX.fill();
         CX.restore();
-        for (var bi = 0; bi < 14; bi++) {
-          var ba = bi / 14 * 6.2832, br = 26 + q * 84;
-          dot(cx + Math.cos(ba) * br, cy + Math.sin(ba) * br, 5 * (1 - q * .5),
-            withA(bi % 2 ? scol('therm') : scol('rad'), 1 - q * .5));
-        }
-        txt('BONDS BREAK, NEW BONDS FORM', cx, cy + 92, 12, scol('therm'), 'center', 800);
-      } else {
-        mol(cx - 46 - q * 74, cy - 10, 66, 'CO₂', C['text-muted'], .9);
-        mol(cx + 46 + q * 74, cy - 10, 62, 'H₂O', C['text-muted'], .9);
-        for (var oi = 0; oi < 8; oi++) {
-          var oq = (q + oi / 8) % 1;
-          dot(cx - 60 + oi * 17, cy + 46 - oq * 40, 4.5,
-            withA(oi % 2 ? scol('therm') : scol('rad'), 1 - oq));
-        }
-        txt('new bonds are stronger — the spare energy leaves',
-          cx, cy + 92, 12, scol('therm'), 'center', 600);
       }
+
+      A.forEach(function (a) { atomBall(a.x, a.y, a.r, a.el); });
+
+      /* ---- energy leaving, once the new bonds have formed --------------- */
+      if (st !== 'in') {
+        for (var oi = 0; oi < 9; oi++) {
+          var oq = ((st === 'react' ? u : q) + oi / 9) % 1;
+          dot(cx - 130 + oi * 17, cy + 96 - oq * 46, 4.5,
+            withA(oi % 2 ? scol('therm') : scol('rad'), (1 - oq) * (st === 'react' ? u : 1)));
+        }
+      }
+
+      var CAPC = {
+        in: ['the molecules meet — the fuel is methane, CH₄', C['text-dim'], 600],
+        react: ['the atoms swap partners: H goes to O, C takes two O', scol('therm'), 800],
+        out: ['CO₂ and 2 H₂O — the new bonds are stronger, so energy is left over',
+          scol('therm'), 600]
+      }[st];
+      fitTxt(CAPC[0], cx, cy + 122, 384, 12.5, CAPC[1], 'center', CAPC[2]);
       runLine([{ t: 'chemical', k: 'chem' }, { t: '  →  ' }, { t: 'thermal', k: 'therm' },
-      { t: '  +  ' }, { t: 'radiant', k: 'rad' }, { t: '   ·  the products carry the rest away' }],
-        130, 384, 350, 11.5, 'left');
+      { t: '  +  ' }, { t: 'radiant', k: 'rad' }, { t: '   ·  CO₂ and H₂O carry the rest away' }],
+        130, 410, 390, 11.5, 'left');
     });
 
-    formulaCard(560, 130, 400, fmt(f, 0) + ' g of petrol ≈ ' + fmtJ(E),
+    formulaCard(580, 130, 400, fmt(f, 0) + ' g of petrol ≈ ' + fmtJ(E),
       'about 46 000 J in every gram', scol('chem'));
-withCard('note', 560, 250, 400, 150, function () {
-      card(560, 250, 400, 150, 'rough energy densities');
+    withCard('note', 580, 250, 400, 150, function () {
+      card(580, 250, 400, 150, 'rough energy densities');
       ['petrol      46 000 J per gram', 'chocolate   20 000 J per gram',
         'AA battery  about 10 000 J in total'].forEach(function (r, i) {
-          mtxt(r, 578, 286 + i * 26, 12, C['text-dim'], 'left', 600);
+          mtxt(r, 598, 286 + i * 26, 12, C['text-dim'], 'left', 600);
         });
     });
     moneyLine('A full tank is a wallet: the tokens are real, but locked until you spend them.');
