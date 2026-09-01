@@ -313,16 +313,16 @@ input[type=text]:focus{border-color:var(--accent);}
       <button class="pill active" id="nShort">Short</button>
       <button class="pill" id="nFull">Full</button>
     </div>
-    <div class="tgroup"><span class="tglab">Symbols</span>
-      <button class="pill active" id="cUK">UK</button>
-      <button class="pill" id="cUS">US</button>
-    </div>
-    <div class="tb-spring"></div>
     <div class="tgroup"><span class="tglab">Run</span>
       <button class="pill active" id="bPlay">Play</button>
       <button class="pill" data-spd="0.5">0.5×</button>
       <button class="pill active" data-spd="1">1×</button>
       <button class="pill" data-spd="2">2×</button>
+    </div>
+    <div class="tb-spring"></div>
+    <div class="tgroup"><span class="tglab">Symbols</span>
+      <button class="pill active" id="cUK">UK</button>
+      <button class="pill" id="cUS">US</button>
     </div>
   </div>
 
@@ -1280,10 +1280,14 @@ function drawFBD(spec) {
     var L = Math.hypot(dx, dy);
     if (L < 0.6) return;
     var col = f.col || FC[f.type];
-    var clamped = false;
+    var clamped = false, capped = false;
     if (L < MINLEN) { dx *= MINLEN / L; dy *= MINLEN / L; clamped = true; }
+    // a transient spike (the moment a parachute fills) would otherwise fire the
+    // arrow clean off the canvas, so spec.cap limits how long any one arrow may
+    // be drawn; the true value is printed on the label instead
+    else if (spec.cap && L > spec.cap) { dx *= spec.cap / L; dy *= spec.cap / L; capped = true; }
     var lab = f.sym ? sym(f.sym) : f.label;
-    if (clamped && f.val !== undefined) lab += ' = ' + fmtN(f.val);
+    if ((clamped || capped) && f.val !== undefined) lab += ' = ' + fmtN(f.val);
     // a PUSH arrives at the body (head on the contact point, tail outside);
     // a PULL leaves it (tail on the body, head pointing away)
     var ox = spec.bx, oy = spec.by;
@@ -2681,10 +2685,12 @@ SCEN.skydive = {
       { fx: 0, fy: -r.D, type: 'friction', sym: 'drag', label: 'D', val: r.D }
     ];
     return {
-      // scale on whichever of the two is bigger: while the canopy inflates the drag
-      // briefly runs to several times the weight, and a fixed W-based scale would
-      // fire that arrow clean off the top of the canvas
-      forces: f, scale: 130 / Math.max(r.W, r.D, 1e-6),
+      // the weight of the skydiver never changes, so the force scale is fixed on W:
+      // the W arrow then keeps exactly the same length for the whole fall, before
+      // and after the canopy opens. While the canopy inflates the drag briefly runs
+      // to several times the weight, so the D arrow is capped instead and drawFBD
+      // prints its true value on the label.
+      forces: f, scale: 130 / Math.max(r.W, 1e-6), cap: 200,
       cardAt: { x: 620, y: 100 }, accelVal: r.a.toFixed(2) + ' m/s²',
       net: Math.abs(r.Fnet) > 0.5 ? { fx: 0, fy: r.Fnet, label: 'F net' } : null,
       accel: Math.abs(r.a) > 0.02
@@ -4195,7 +4201,9 @@ function draw() {
     sch.className = 'chip';
     sch.innerHTML = '<b>Force scale</b>&nbsp; 1 px = ' +
       (perPx >= 1000 ? (perPx / 1000).toPrecision(3) + ' kN' : perPx.toPrecision(3) + ' N') +
-      '<br>very short arrows drawn at a minimum length';
+      '<br>very short arrows drawn at a minimum length' +
+      // a capped arrow (a parachute opening) carries its true value on its label
+      (sp0.cap ? '<br>over-long arrows capped — value shown on the label' : '');
   } else {
     sch.className = 'chip empty';
   }
