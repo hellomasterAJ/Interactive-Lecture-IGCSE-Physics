@@ -760,7 +760,8 @@ function runLine(parts, x, y, maxW, size, align, weight) {
   var cx = align === 'center' ? x - total / 2 : (align === 'right' ? x - total : x);
   for (i = 0; i < parts.length; i++) {
     var pt = parts[i];
-    txt(pt.t, cx, y, w, pt.k ? scol(pt.k) : C['text-muted'], 'left', pt.k ? 700 : (weight || 500));
+    txt(pt.t, cx, y, w, pt.c || (pt.k ? scol(pt.k) : C['text-muted']), 'left',
+      pt.k ? 700 : (weight || 500));
     cx += textW(pt.t, w, pt.k ? 700 : (weight || 500));
   }
   return w;
@@ -2657,6 +2658,14 @@ var PROC = {
   brake: 'a braking car'
 };
 
+/* "friction" is the wrong word for a falling ball, so each process names the
+   resistive force that actually dissipates its tokens.                      */
+var LOSS = {
+  drop: 'air resistance',
+  pendulum: 'air resistance',
+  brake: 'braking friction'
+};
+
 scene('3', 'law', {
   label: '⚖️ Conservation',
   hero: 'E_{total} = \\text{constant}',
@@ -2674,15 +2683,17 @@ scene('3', 'law', {
       gpe = m * g * Math.max(y, 0);
       th = fric ? E0 * 0.25 * p : 0;
       ke = Math.max(E0 - gpe - th, 0);
-      var floorY = 420, topY = 130, sc = (floorY - topY) / h;
+      var floorY = 424, topY = 158, sc = (floorY - topY) / h;
+      var yc = floorY - Math.max(y, 0) * sc - 18;      /* ball centre          */
       ground(floorY + 4, 110, 470);
-      dot(280, floorY - Math.max(y, 0) * sc - 16, 18, scol('ke'));
+      dot(280, yc, 18, scol('ke'));
       line(360, floorY, 360, topY, withA(C['text-muted'], .5), 1, [5, 5]);
       arrow(360, floorY, 360, floorY - Math.max(y, 0) * sc, scol('gpe'), 2, { head: 9 });
       plate('h = ' + fmt(Math.max(y, 0), 2) + ' m', 372, floorY - Math.max(y, 0) * sc / 2, 11.5,
         scol('gpe'), 'left', true);
-      plate('v = ' + fmt(Math.sqrt(2 * ke / m), 2) + ' m/s', 280, floorY - Math.max(y, 0) * sc - 44,
-        11.5, scol('ke'), 'center', true);
+      /* keep the speed plate off the top edge: flip it under the ball up high */
+      plate('v = ' + fmt(Math.sqrt(2 * ke / m), 2) + ' m/s', 280,
+        yc - 46 < 140 ? yc + 46 : yc - 46, 11.5, scol('ke'), 'center', true);
       capt = fric ? 'with air resistance: a quarter of the tokens leak away as warm air'
         : 'no air resistance: every token moves from the height account to the movement account';
     } else if (S.proc === 'pendulum') {
@@ -2722,12 +2733,14 @@ scene('3', 'law', {
       plate('v = ' + fmt(Math.sqrt(2 * ke / m), 2) + ' m/s', px2, floor2 - 40, 11.5, scol('ke'),
         'center', true);
       capt = fric ? 'the brakes get hot: every joule of movement ends up in the thermal account'
-        : 'no brakes, no friction — the car keeps every token it had';
+        : 'brakes off and nothing rubbing — the car keeps every token it had';
     }
-    txt(PROC[S.proc] + (fric ? '  ·  friction ON' : '  ·  friction OFF'), 110, 110, 13,
-      fric ? scol('therm') : C.green, 'left', 700);
+    /* the caption lives under the stage so it never sits on top of the action */
+    runLine([{ t: PROC[S.proc], c: C['text-dim'] }, { t: '   ·   ' },
+    { t: LOSS[S.proc] + (fric ? ' ON' : ' OFF'), c: fric ? scol('therm') : C.green }],
+      110, 534, 460, 13.5, 'left', 700);
     withCard('note', 610, 120, 360, 246, function () {
-      wrap(capt, 620, 140, 340, 13, C['text-dim'], 21, 500);
+      wrap(capt, 620, 140, 312, 13, C['text-dim'], 21, 500);
       card(620, 210, 340, 150, 'the balance sheet');
       mtxt('started with   ' + fmtJ(E0), 640, 246, 12.5, C.accent, 'left', 700);
       mtxt('movement       ' + fmtJ(ke), 640, 274, 12.5, scol('ke'), 'left', 700);
@@ -2745,14 +2758,15 @@ scene('3', 'law', {
     var m = V('m'), h = V('h'), E0 = m * 10 * h;
     return [{ l: 'started with  mgh', v: fmtJ(E0), k: 'gpe' },
     { l: 'process', v: PROC[S.proc] },
-    { l: 'friction', v: S.fric ? 'on — tokens leak to thermal' : 'off — nothing leaks' },
+    { l: LOSS[S.proc], v: S.fric ? 'on — tokens leak to thermal' : 'off — nothing leaks',
+      k: S.fric ? 'therm' : null },
     { l: 'fastest speed possible', v: fmt(Math.sqrt(2 * 10 * h), 2) + ' m/s', k: 'ke' }];
   },
   eq: function () {
     var m = V('m'), h = V('h');
-    return [['with no friction', 'mgh = \\tfrac12 mv^2 \\Rightarrow v = \\sqrt{2gh} = ' +
+    return [['with nothing resisting', 'mgh = \\tfrac12 mv^2 \\Rightarrow v = \\sqrt{2gh} = ' +
       fmt(Math.sqrt(2 * 10 * h), 2) + '\\ \\text{m/s}', 'The mass cancels out completely.'],
-    ['with friction', 'mgh = \\tfrac12 mv^2 + E_{thermal}',
+    ['with air resistance or braking', 'mgh = \\tfrac12 mv^2 + E_{thermal}',
       'Nothing is lost: the missing joules are in the thermal account.']];
   },
   info: function () {
@@ -3939,8 +3953,9 @@ function renderCtrls() {
     if (key === 'nuke') { html += selHTML('cNuke', 'reaction', NUKES, S.nuke); return; }
     if (key === 'fric') {
       html += '<div class="sl"><button class="ctrl-btn' + (S.fric ? ' on' : '') +
-        '" id="cFric" title="turn friction on and watch tokens leak into the thermal account">' +
-        '🔥 Friction ' + (S.fric ? 'ON' : 'OFF') + '</button></div>';
+        '" id="cFric" title="turn the resistive force on — air resistance for the ball and the ' +
+        'pendulum, brake friction for the car — and watch tokens leak into the thermal account">' +
+        '🔥 Dissipation ' + (S.fric ? 'ON' : 'OFF') + '</button></div>';
       return;
     }
     var c = CTL[key]; if (!c) return;
