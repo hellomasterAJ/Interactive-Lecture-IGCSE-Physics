@@ -1343,7 +1343,14 @@ function drawForceCard(spec, shift) {
   var wN = CX.measureText(nLab).width, wA = CX.measureText(aLab).width;
   CX.restore();
   var gap = (Math.abs(uy) > Math.abs(ux)) ? Math.max(74, (wN + wA) / 2 + 18) : CARD_GAP;
-  var oA = { x: -uy * gap, y: ux * gap };
+  // the second arrow sits perpendicular to the first, but the raw perpendicular
+  // flips sides the moment the resultant reverses (a parachute opening turns the
+  // net force from down to up), which would swap "F net" and "a" inside the card.
+  // Pinning the offset to one half-plane — to the right, or below when the
+  // resultant is horizontal — keeps F net and a in the same places all the time.
+  var px = -uy, py = ux;
+  if (px < -1e-6 || (Math.abs(px) <= 1e-6 && py < 0)) { px = -px; py = -py; }
+  var oA = { x: px * gap, y: py * gap };
 
   // bounding box of both arrows and both labels, in card-local coordinates
   var x0 = 0, x1 = 0, y0 = 0, y1 = 0;
@@ -2674,8 +2681,13 @@ SCEN.skydive = {
     var frac = Math.min(1, this.st.v / Math.max(vt, 1e-6));
     CX.save(); CX.fillStyle = TH.grid; rr(700, 490, 430, 16, 5); CX.fill();
     CX.fillStyle = TH.accent; rr(700, 490, 430 * frac, 16, 5); CX.fill(); CX.restore();
-    mono('v = ' + this.st.v.toFixed(1) + ' m/s  (' + (frac * 100).toFixed(0) + '% of vt)',
-         700, 524, 12, TH['text-dim'], 'left');
+    // the speed is the headline number here, so it is drawn larger and in the
+    // accent colour that already fills the bar; the % of vt stays a quiet aside
+    var vLab = 'v = ' + this.st.v.toFixed(1) + ' m/s';
+    mono(vLab, 700, 526, 16, TH.accent, 'left');
+    CX.save(); CX.font = "600 16px 'JetBrains Mono', monospace";
+    var vLabW = CX.measureText(vLab).width; CX.restore();
+    mono('  (' + (frac * 100).toFixed(0) + '% of vt)', 700 + vLabW, 527, 12, TH['text-dim'], 'left');
     return { bx: fx, by: feet - hgt * 0.55 };
   },
   fbd: function () {
