@@ -211,6 +211,8 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
 .ctrl-btn{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:0 12px;
   height:28px;line-height:26px;border-radius:8px;cursor:pointer;font-size:11.5px;font-weight:600;
   transition:all .16s;white-space:nowrap;box-sizing:border-box}
+/* Play / Pause / Replay all sit in the same box, so the row never jumps */
+#bPlay{min-width:104px;text-align:center;justify-content:center}
 .ctrl-btn:hover{border-color:var(--accent);color:var(--accent)}
 .ctrl-btn:disabled{opacity:.4;cursor:default;border-color:var(--border);color:var(--text-muted)}
 .ctrl-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
@@ -235,8 +237,9 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
   pointer-events:none}
 .cchip.warn{color:var(--amber);border-color:var(--amber)}
 
-#chipEq{bottom:8px;left:10px;color:var(--accent);border-color:var(--accent);padding:4px 10px}
-#chipState{top:8px;right:10px}
+/* the equation sits top-right; the joules-in/out reminder sits bottom-left */
+#chipEq{top:8px;right:10px;color:var(--accent);border-color:var(--accent);padding:4px 10px}
+#chipState{bottom:8px;left:10px}
 #chipHint{bottom:8px;right:10px;line-height:1.5;text-align:right;max-width:60%}
 sub{font-size:.72em;vertical-align:-.28em;letter-spacing:0;margin-left:-.12em}
 
@@ -541,6 +544,9 @@ function fmt(v, d) {
 }
 function fmtJ(j) {
   var a = Math.abs(j);
+  /* a millionth of a joule is not a number anyone needs to read: at the very
+     start of a run it is simply zero.                                    */
+  if (a < 5e-3) return '0.0 J';
   if (a >= 1e9) return fmt(j / 1e9, 2) + ' GJ';
   if (a >= 1e6) return fmt(j / 1e6, 2) + ' MJ';
   if (a >= 1e3) return fmt(j / 1e3, 2) + ' kJ';
@@ -1152,15 +1158,20 @@ function jiggle(x, y, w, h, ps, amp, col) {
 }
 /* a travelling wave — sound, and anything else "in transit" */
 function wave(x, y, w, amp, col, k, sp) {
+  var K = (k || 6) * Math.PI, SP = sp || 3;
+  var yAt = function (u) {                      /* u = 0 at the source       */
+    return y + Math.sin(u * K - S.t * SP) * amp * (1 - u * 120 / 160);
+  };
   CX.save();
   CX.strokeStyle = col; CX.lineWidth = 2.2; CX.beginPath();
   for (var i = 0; i <= 120; i++) {
-    var px = x + (i / 120) * w;
-    var py = y + Math.sin(i / 120 * (k || 6) * Math.PI - S.t * (sp || 3)) * amp *
-      (1 - i / 160);
+    var px = x + (i / 120) * w, py = yAt(i / 120);
     if (i === 0) CX.moveTo(px, py); else CX.lineTo(px, py);
   }
   CX.stroke(); CX.restore();
+  /* No marker rides the curve: a blob travelling along a wave reads as a
+     particle being carried, which is exactly the wrong idea. The wave is
+     y = sin(kx - wt), so the shape itself already travels towards +x.    */
 }
 /* rays leaving a source */
 function rays(cx, cy, r0, n, len, col, phase) {
@@ -1239,7 +1250,17 @@ function resetVals() {
 function rows() { var sc = cur(); return sc.data ? sc.data() : []; }
 function eqs() { var sc = cur(); return sc.eq ? sc.eq() : []; }
 /* the animation phase most scenes ride on: one slow pass, 0 → 1 */
-function prog(period) { return ((S.t % (period || 6)) / (period || 6)); }
+/* Every scene that tells a STORY (lift it, push it, burn it) measures itself
+   with prog(). We remember the longest cycle asked for while the frame was
+   drawn, so the player knows when one complete run has finished and can stop
+   there instead of looping — you need to read the final numbers.        */
+var CYC = 0;
+function prog(period) {
+  period = period || 6;
+  if (period > CYC) CYC = period;
+  return (S.t % period) / period;
+}
+function cycleDone() { return CYC > 0 && S.t >= CYC - 1e-3; }
 
 /* ============ MODE 1 — Energy: the ten accounts ==========================
    Every scene here answers one question: what does this store look like, and
@@ -1253,8 +1274,20 @@ var SCENE_Y = 86, SCENE_H = 360;
 function moneyLine(str) {
   txt('💰 ' + str, 32, BANK.y - 18, 12.5, C['text-dim'], 'left', 500);
 }
-function formulaCard(x, y, w, big, small, col) {
-  var h = small ? 92 : 66;
+/* Every Mode-1 scene says, in words, what is happening this second. The strip
+   is parked at the TOP-LEFT of the stage — above the action, never on it —
+   and wears the colour of the store the scene is about.                  */
+function capStrip(head, body, k, w) {
+  txt(head, 32, 104, 13, k ? scol(k) : C.accent, 'left', 800);
+  if (body) wrap(body, 32, 126, w || 520, 12.5, C['text-dim'], 19, 500);
+}
+/* The formula and the note that explains it live in ONE card, so a scene
+   never carries two stacked boxes saying related things.
+   note = { t: heading, h: how tall the part below the rule is,
+            body: function (ny) { ...draw from ny... } }                   */
+function formulaCard(x, y, w, big, small, col, note) {
+  var headH = small ? 96 : 70;
+  var h = headH + (note ? note.h : 0);
   /* long headings shrink to fit rather than running off the card */
   var bs = 19; while (bs > 11 && textW(big, bs, 700, true) > w - 32) bs -= 0.5;
   var ss = 13; while (small && ss > 9 && textW(small, ss, 600, true) > w - 32) ss -= 0.5;
@@ -1262,6 +1295,11 @@ function formulaCard(x, y, w, big, small, col) {
     card(x, y, w, h, 'the formula');
     mtxt(big, x + 16, y + 46, bs, col || C.accent, 'left', 700);
     if (small) mtxt(small, x + 16, y + 74, ss, C['text-dim'], 'left', 600);
+    if (note) {
+      line(x + 13, y + headH, x + w - 13, y + headH, withA(C.border, .9), 1);
+      txt(note.t, x + 13, y + headH + 22, 11.5, C['text-muted'], 'left', 700);
+      note.body(y + headH + 44);
+    }
   });
 }
 
@@ -1277,26 +1315,28 @@ scene('1', 'grav', {
     var p = prog(9);                       /* one slow lift-and-lower cycle  */
 
     /* --- where are we in the story, and how high is the box right now? --- */
+    /* the box STARTS on the floor, gets lifted, is held, comes back down —
+       and the run ends with it on the floor again, where it began.       */
     var phase, f = 0, u;                   /* u = 0 on the floor, 1 up top   */
-    if (p < 0.10) { phase = 'hold'; u = 1; }
-    else if (p < 0.45) { phase = 'lower'; f = (p - 0.10) / 0.35; u = 1 - f; }
-    else if (p < 0.55) { phase = 'floor'; u = 0; }
-    else if (p < 0.90) { phase = 'lift'; f = (p - 0.55) / 0.35; u = f; }
-    else { phase = 'hold'; u = 1; }
+    if (p < 0.06) { phase = 'floor'; u = 0; }
+    else if (p < 0.42) { phase = 'lift'; f = (p - 0.06) / 0.36; u = f; }
+    else if (p < 0.56) { phase = 'hold'; u = 1; }
+    else if (p < 0.94) { phase = 'lower'; f = (p - 0.56) / 0.38; u = 1 - f; }
+    else { phase = 'floor'; u = 0; }
 
-    var floorY = 452, Hpx = clamp(h * 34, 60, 300);
-    var bx = 372, bw = 58, bh = 46;
+    var floorY = 496, Hpx = clamp(h * 32, 60, 286);
+    var bx = 330, bw = 58, bh = 46;
     var by = floorY - u * Hpx - bh;        /* the top of the box             */
 
     /* --- floor, and the shelf marking the full height -------------------- */
-    line(110, floorY, 520, floorY, C['text-muted'], 3);
+    line(80, floorY, 500, floorY, C['text-muted'], 3);
     CX.save(); CX.setLineDash([7, 6]);
-    line(300, floorY - Hpx, 520, floorY - Hpx, C['text-dim'], 2);
+    line(258, floorY - Hpx, 478, floorY - Hpx, C['text-dim'], 2);
     CX.setLineDash([]); CX.restore();
-    txt('the shelf', 470, floorY - Hpx - 9, 11, C['text-muted'], 'left', 600);
+    txt('the shelf', 428, floorY - Hpx - 9, 11, C['text-muted'], 'left', 600);
 
     /* --- the person doing the work --------------------------------------- */
-    var px = 214, ph = 120;
+    var px = 172, ph = 120;
     var hipY = floorY - ph * 0.46;
     /* hands only go where a real arm can go: nothing to hold on the floor,
        so there the figure simply stands rather than pointing at nothing.  */
@@ -1324,8 +1364,8 @@ scene('1', 'grav', {
     }
 
     /* --- the height, both the full one and the one right now ------------- */
-    arrow(330, floorY, 330, floorY - Hpx, scol('gpe'), 2.2, { head: 11 });
-    plate('h = ' + fmt(h, 1) + ' m', 322, floorY - Hpx / 2, 11.5, scol('gpe'), 'right', true);
+    arrow(288, floorY, 288, floorY - Hpx, scol('gpe'), 2.2, { head: 11 });
+    plate('h = ' + fmt(h, 1) + ' m', 280, floorY - Hpx / 2, 11.5, scol('gpe'), 'right', true);
     if (phase === 'lift' || phase === 'lower') {
       line(bx - 10, by + bh, bx + bw + 10, by + bh, withA(scol('gpe'), .5), 1.4);
       plate('now ' + fmt(h * u, 1) + ' m  ·  ' + fmtJ(E * u), bx + bw + 16, by + bh, 11.5,
@@ -1343,18 +1383,34 @@ scene('1', 'grav', {
       floor: ['BACK ON THE FLOOR', 'The gravitational account is empty. h = 0, so E\u209a = 0 — ' +
         'and the purse is full again.']
     }[phase];
-    txt(CAP[0], 110, floorY + 36, 13, scol('gpe'), 'left', 800);
-    wrap(CAP[1], 110, floorY + 58, 560, 12.5, C['text-dim'], 19, 500);
+    capStrip(CAP[0], CAP[1], 'gpe');
 
     formulaCard(560, 120, 380, 'Eₚ = m g h',
-      fmt(m, 1) + ' × 10 × ' + fmt(h, 1) + ' = ' + fmtJ(E), scol('gpe'));
-withCard('note', 560, 240, 380, 150, function () {
-      card(560, 240, 380, 150, 'what changes it');
-      txt('· twice the height → twice the tokens', 578, 274, 12, C['text-dim'], 'left', 500);
-      txt('· twice the mass → twice the tokens', 578, 300, 12, C['text-dim'], 'left', 500);
-      txt('· only the CHANGE in height matters', 578, 326, 12, C['text-dim'], 'left', 500);
-      txt('· on the Moon g is smaller, so fewer tokens', 578, 352, 12, C['text-dim'], 'left', 500);
-    });
+      fmt(m, 1) + ' × 10 × ' + fmt(h, 1) + ' = ' + fmtJ(E), scol('gpe'),
+      { t: 'tokens against height', h: 222, body: function (ny) {
+        /* Eₚ = mgh is a STRAIGHT line — the contrast with the ½mv² and ½kx²
+           curves next door is the whole lesson, so it is drawn the same way. */
+        var gx = 582, gy = ny, gw = 326, gh = 128;
+        var hmax = 10, Emax = m * 10 * hmax;
+        line(gx, gy + gh, gx + gw, gy + gh, C['text-muted'], 1.2);
+        line(gx, gy, gx, gy + gh, C['text-muted'], 1.2);
+        /* the same mass on the Moon, where g is only 1.6 N/kg */
+        line(gx, gy + gh, gx + gw, gy + gh - (m * 1.6 * hmax / Emax) * gh,
+          withA(scol('gpe'), .38), 1.8, [5, 4]);
+        txt('on the Moon', gx + gw - 4, gy + gh - (m * 1.6 * hmax / Emax) * gh - 8, 10,
+          withA(scol('gpe'), .7), 'right', 600);
+        /* here on Earth */
+        line(gx, gy + gh, gx + gw, gy + gh - gh, scol('gpe'), 2.4);
+        /* where this box is right now, dropped onto both axes */
+        var cxp = gx + (h / hmax) * gw, cyp = gy + gh - (m * 10 * h / Emax) * gh;
+        line(gx, cyp, cxp, cyp, withA(scol('gpe'), .45), 1, [4, 4]);
+        line(cxp, cyp, cxp, gy + gh, withA(scol('gpe'), .45), 1, [4, 4]);
+        dot(cxp, cyp, 5, scol('gpe'));
+        mtxt(fmtJ(E), gx + 6, cyp - 8, 11, scol('gpe'), 'left', 700);
+        txt('height →', gx + gw, gy + gh + 18, 10, C['text-muted'], 'right', 600);
+        txt('a straight line: double h → double the tokens', gx, gy + gh + 38, 11,
+          C['text-muted'], 'left', 600);
+      } });
     moneyLine('The tokens did not appear: they moved out of the chemical account in your muscles.');
     var PR = purse(E);
     energyBank([{ k: 'chem', v: Math.max(PR - E * u, 0), keep: true,
@@ -1392,7 +1448,7 @@ scene('1', 'kin', {
   ctrl: ['m', 'v'],
   draw: function () {
     var m = V('m'), v = V('v'), E = 0.5 * m * v * v;
-    var floorY = 380, fY = floorY + 26;
+    var floorY = 442, fY = floorY + 26;
     line(60, fY, 560, fY, C['text-muted'], 2.5);
 
     /* One shove with the arm, and the trolley goes on alone. The pusher is
@@ -1435,31 +1491,30 @@ scene('1', 'kin', {
     }
     /* the mark showing where the hands came off */
     line(relX, fY - 6, relX, fY + 10, withA(C['text-muted'], .8), 1.6, [4, 4]);
-    txt(pushing ? 'PUSHING — the pusher’s chemical store is emptying into the trolley'
-      : 'LET GO — the trolley keeps every joule it was given, and travels on alone',
-      60, fY + 34, 12.5, pushing ? scol('chem') : scol('ke'), 'left', 700);
+    capStrip(pushing ? 'PUSHING' : 'LET GO',
+      pushing ? 'The pusher’s chemical store is emptying into the trolley. Nothing starts moving ' +
+        'on its own — someone always has to pay for that speed.'
+        : 'The hands are off. The trolley keeps every joule it was given and travels on alone.',
+      pushing ? 'chem' : 'ke');
 
     formulaCard(560, 120, 380, 'Eₖ = ½ m v²',
-      '½ × ' + fmt(m, 1) + ' × ' + fmt(v, 1) + '² = ' + fmtJ(E), scol('ke'));
-    /* the parabola that makes the point */
-    var gx = 580, gy = 250, gw = 330, gh = 140;
-    withCard('note', gx - 20, gy - 26, gw + 44, gh + 56, function () {
-    card(gx - 20, gy - 26, gw + 44, gh + 56, 'tokens against speed');
-    line(gx, gy + gh, gx + gw, gy + gh, C['text-muted'], 1.2);
-    line(gx, gy, gx, gy + gh, C['text-muted'], 1.2);
-    var vmax = 20, Emax = .5 * m * vmax * vmax;
-    CX.save(); CX.strokeStyle = scol('ke'); CX.lineWidth = 2.4; CX.beginPath();
-    for (var i = 0; i <= 60; i++) {
-      var vv = vmax * i / 60, ee = .5 * m * vv * vv;
-      var qx = gx + (vv / vmax) * gw, qy = gy + gh - (ee / Emax) * gh;
-      if (i === 0) CX.moveTo(qx, qy); else CX.lineTo(qx, qy);
-    }
-    CX.stroke(); CX.restore();
-    dot(gx + (v / vmax) * gw, gy + gh - (E / Emax) * gh, 5, scol('ke'));
-    txt('speed →', gx + gw, gy + gh + 18, 10, C['text-muted'], 'right', 600);
-    });
-    txt('nothing starts moving on its own — someone had to pay for that speed',
-      60, fY + 58, 12.5, C['text-muted'], 'left', 500);
+      '½ × ' + fmt(m, 1) + ' × ' + fmt(v, 1) + '² = ' + fmtJ(E), scol('ke'),
+      { t: 'tokens against speed', h: 204, body: function (ny) {
+        /* the parabola that makes the point */
+        var gx = 582, gy = ny, gw = 326, gh = 128;
+        line(gx, gy + gh, gx + gw, gy + gh, C['text-muted'], 1.2);
+        line(gx, gy, gx, gy + gh, C['text-muted'], 1.2);
+        var vmax = 20, Emax = .5 * m * vmax * vmax;
+        CX.save(); CX.strokeStyle = scol('ke'); CX.lineWidth = 2.4; CX.beginPath();
+        for (var i = 0; i <= 60; i++) {
+          var vv = vmax * i / 60, ee = .5 * m * vv * vv;
+          var qx = gx + (vv / vmax) * gw, qy = gy + gh - (ee / Emax) * gh;
+          if (i === 0) CX.moveTo(qx, qy); else CX.lineTo(qx, qy);
+        }
+        CX.stroke(); CX.restore();
+        dot(gx + (v / vmax) * gw, gy + gh - (E / Emax) * gh, 5, scol('ke'));
+        txt('speed →', gx + gw, gy + gh + 18, 10, C['text-muted'], 'right', 600);
+      } });
     moneyLine('Double the speed and the bill is four times bigger — that is the v².');
     var PR = purse(E);
     energyBank([{ k: 'chem', v: Math.max(PR - E * keFrac, 0), keep: true,
@@ -1509,7 +1564,7 @@ scene('1', 'elas', {
     else { phase = 'rest'; u = 0; }
     var uE = u * u;                         /* energy goes as x²             */
 
-    var y0 = 300, x0 = 120, L0 = 290;       /* wall at x0, natural length L0  */
+    var y0 = 348, x0 = 120, L0 = 290;       /* wall at x0, natural length L0  */
     var cPix = (x / 0.5) * 150 * u;         /* how far it is pushed in, in px */
     var end = x0 + L0 - cPix;               /* the block's left face          */
 
@@ -1560,34 +1615,34 @@ scene('1', 'elas', {
         'backwards.'],
       rest: ['RELAXED', 'x = 0, so the elastic store is empty and the purse is full again.']
     }[phase];
-    txt(CAPE[0], 120, y0 + 132, 13, scol('elas'), 'left', 800);
-    wrap(CAPE[1], 120, y0 + 154, 480, 12.5, C['text-dim'], 19, 500);
+    capStrip(CAPE[0], CAPE[1], 'elas');
 
-    formulaCard(620, 120, 340, 'Eₑ = ½ k x²',
-      '½ × ' + fmt(k, 0) + ' × ' + fmt(x, 2) + '² = ' + fmtJ(E), scol('elas'));
-    /* the same parabola as the kinetic scene, so the x² lands twice */
-    var gx = 640, gy = 268, gw = 300, gh = 130;
-    withCard('note', gx - 20, gy - 26, gw + 44, gh + 80, function () {
-      card(gx - 20, gy - 26, gw + 44, gh + 80, 'tokens against how far you push it');
-      line(gx, gy + gh, gx + gw, gy + gh, C['text-muted'], 1.2);
-      line(gx, gy, gx, gy + gh, C['text-muted'], 1.2);
-      var xmax = 0.5, Emax = .5 * k * xmax * xmax;
-      CX.save(); CX.strokeStyle = scol('elas'); CX.lineWidth = 2.4; CX.beginPath();
-      for (var i = 0; i <= 60; i++) {
-        var xx = xmax * i / 60, ee = .5 * k * xx * xx;
-        var qx = gx + (xx / xmax) * gw, qy = gy + gh - (ee / Emax) * gh;
-        if (i === 0) CX.moveTo(qx, qy); else CX.lineTo(qx, qy);
-      }
-      CX.stroke(); CX.restore();
-      /* where this spring is right now, dropped onto both axes */
-      var cxp = gx + (x / xmax) * gw, cyp = gy + gh - (E / Emax) * gh;
-      line(gx, cyp, cxp, cyp, withA(scol('elas'), .45), 1, [4, 4]);
-      line(cxp, cyp, cxp, gy + gh, withA(scol('elas'), .45), 1, [4, 4]);
-      dot(cxp, cyp, 5, scol('elas'));
-      mtxt(fmtJ(E), gx + 6, gy + 14, 11.5, scol('elas'), 'left', 700);
-      txt('x  (stretched or squashed) →', gx + gw, gy + gh + 18, 10, C['text-muted'], 'right', 600);
-      txt('double x → four times the tokens', gx, gy + gh + 38, 11, C['text-muted'], 'left', 600);
-    });
+    formulaCard(600, 120, 360, 'Eₑ = ½ k x²',
+      '½ × ' + fmt(k, 0) + ' × ' + fmt(x, 2) + '² = ' + fmtJ(E), scol('elas'),
+      { t: 'tokens against how far you push it', h: 224, body: function (ny) {
+        /* the same parabola as the kinetic scene, so the x² lands twice */
+        var gx = 622, gy = ny, gw = 306, gh = 126;
+        line(gx, gy + gh, gx + gw, gy + gh, C['text-muted'], 1.2);
+        line(gx, gy, gx, gy + gh, C['text-muted'], 1.2);
+        var xmax = 0.5, Emax = .5 * k * xmax * xmax;
+        CX.save(); CX.strokeStyle = scol('elas'); CX.lineWidth = 2.4; CX.beginPath();
+        for (var i = 0; i <= 60; i++) {
+          var xx = xmax * i / 60, ee = .5 * k * xx * xx;
+          var qx = gx + (xx / xmax) * gw, qy = gy + gh - (ee / Emax) * gh;
+          if (i === 0) CX.moveTo(qx, qy); else CX.lineTo(qx, qy);
+        }
+        CX.stroke(); CX.restore();
+        /* where this spring is right now, dropped onto both axes */
+        var cxp = gx + (x / xmax) * gw, cyp = gy + gh - (E / Emax) * gh;
+        line(gx, cyp, cxp, cyp, withA(scol('elas'), .45), 1, [4, 4]);
+        line(cxp, cyp, cxp, gy + gh, withA(scol('elas'), .45), 1, [4, 4]);
+        dot(cxp, cyp, 5, scol('elas'));
+        mtxt(fmtJ(E), gx + 6, cyp - 8, 11, scol('elas'), 'left', 700);
+        txt('x  (stretched or squashed) →', gx + gw, gy + gh + 18, 10,
+          C['text-muted'], 'right', 600);
+        txt('double x → four times the tokens', gx, gy + gh + 38, 11,
+          C['text-muted'], 'left', 600);
+      } });
     moneyLine('Let go and the tokens pour straight back out as movement.');
     var PR = purse(E);
     energyBank([{ k: 'chem', v: Math.max(PR - E * uE, 0), keep: true, n: 'Chemical · your arm' },
@@ -1629,28 +1684,91 @@ scene('1', 'therm', {
   draw: function () {
     var T = V('temp'), m = V('m'), c = 4200, E = m * c * (T - 20);
     var amp = clamp(T / 25, .4, 5);
-    withCard('zoom', 110, 110, 380, 300, function () {
-      card(110, 110, 380, 300, 'the same water at ' + fmt(T, 0) + ' °C  ·  zoomed in');
-      jiggle(130, 145, 340, 200, PS1, amp, scol('therm'));
+    capStrip('THE HEATER IS ON',
+      'Electrical tokens run down the wire into the element at the bottom of the beaker. Every ' +
+      'one of them ends up in the water as faster jiggling — that is the thermal account filling.',
+      'therm');
+    withCard('zoom', 110, 166, 380, 342, function () {
+      card(110, 166, 380, 342, 'the same water at ' + fmt(T, 0) + ' °C  ·  zoomed in');
+      jiggle(130, 200, 340, 170, PS1, amp, scol('therm'));
       txt('faster jiggle = hotter = more tokens in the thermal account',
-        130, 380, 12, C['text-muted'], 'left', 500);
+        130, 392, 11.5, C['text-muted'], 'left', 500);
+
+      /* the immersion heater: this is WHY the electrical account is on the
+         books at all — the tokens come down this wire. It is drawn as one
+         smooth coiled tube, the way a real element looks.                */
+      var hy = 428, hx0 = 186, hx1 = 438, loops = 9;
+      var pitch = (hx1 - hx0) / loops, rx = pitch * 0.92, ry = 21;
+      var glow = clamp(T / 100, 0, 1);
+      CX.save();
+      CX.lineCap = 'round';
+      /* the heat haze the whole coil sits in */
+      var hz = CX.createRadialGradient((hx0 + hx1) / 2, hy, 6, (hx0 + hx1) / 2, hy, 150);
+      hz.addColorStop(0, withA('#f87171', .10 + glow * .16));
+      hz.addColorStop(1, withA('#f87171', 0));
+      CX.fillStyle = hz;
+      CX.fillRect(hx0 - 60, hy - 60, hx1 - hx0 + 120, 120);
+      /* the two straight legs the coil is wound on */
+      CX.strokeStyle = withA(C['text-muted'], .8); CX.lineWidth = 4;
+      CX.beginPath(); CX.moveTo(hx0 - 16, hy - ry); CX.lineTo(hx0, hy - ry); CX.stroke();
+      CX.beginPath(); CX.moveTo(hx1, hy + ry); CX.lineTo(hx1 + 14, hy + ry); CX.stroke();
+
+      /* A real element is a HELIX. Every turn is drawn twice: the half that
+         goes round the back first, dim, then the half that comes towards
+         you, bright — which is what makes it read as a coil and not a
+         wavy line.                                                       */
+      var turn = function (i, back) {
+        var cxk = hx0 + (i + 0.5) * pitch;
+        CX.beginPath();
+        CX.ellipse(cxk, hy, rx, ry, 0, back ? Math.PI / 2 : -Math.PI / 2,
+          back ? Math.PI * 1.5 : Math.PI / 2);
+        CX.stroke();
+      };
+      var lit = CX.createLinearGradient(0, hy - ry, 0, hy + ry);
+      lit.addColorStop(0, '#fecaca');
+      lit.addColorStop(0.42, '#fb7185');
+      lit.addColorStop(1, '#991b1b');
+      for (var i = 0; i < loops; i++) {
+        /* behind the axis: darker and thinner, as if further away */
+        CX.strokeStyle = withA('#7f1d1d', .75 + glow * .2); CX.lineWidth = 4.5;
+        turn(i, true);
+        /* the near half, glowing */
+        CX.strokeStyle = withA(scol('therm'), .35 + glow * .35);
+        CX.lineWidth = 11; turn(i, false);          /* its own halo        */
+        CX.strokeStyle = lit; CX.lineWidth = 6; turn(i, false);
+        CX.strokeStyle = withA('#fff1f2', .20 + glow * .45);
+        CX.lineWidth = 1.6; turn(i, false);
+      }
+      CX.restore();
+      /* the lead, and the tokens crawling along it into the element */
+      var ly = hy - ry;
+      line(150, 470, 150, ly, scol('elec'), 2.6);
+      line(150, ly, hx0 - 14, ly, scol('elec'), 2.6);
+      dot(150, 472, 5, scol('elec'));
+      for (var ci = 0; ci < 4; ci++) {
+        var cq = (S.t * 0.5 + ci / 4) % 1, cyp, cxp;
+        if (cq < 0.55) { cxp = 150; cyp = 470 - (cq / 0.55) * (470 - ly); }
+        else { cxp = 150 + ((cq - 0.55) / 0.45) * (hx0 - 14 - 150); cyp = ly; }
+        coin(cxp, cyp, 5.5, scol('elec'));
+      }
+      txt('electrical in', 158, 484, 11, scol('elec'), 'left', 600);
+      txt('the heating element', hx1, 484, 11, scol('therm'), 'right', 600);
     });
     /* the thermometer */
     var tx = 520;
-    line(tx, 150, tx, 380, C['text-dim'], 4);
+    line(tx, 206, tx, 436, C['text-dim'], 4);
     CX.save(); CX.fillStyle = scol('therm');
-    CX.fillRect(tx - 4, 380 - 20 - (T / 100) * 200, 8, 20 + (T / 100) * 200); CX.restore();
-    dot(tx, 384, 11, scol('therm'));
-    plate(fmt(T, 0) + ' °C', tx + 14, 250, 12, scol('therm'), 'left', true);
+    CX.fillRect(tx - 4, 436 - 20 - (T / 100) * 200, 8, 20 + (T / 100) * 200); CX.restore();
+    dot(tx, 440, 11, scol('therm'));
+    plate(fmt(T, 0) + ' °C', tx + 14, 306, 12, scol('therm'), 'left', true);
 
     formulaCard(600, 120, 360, 'Q = m c ΔT',
-      fmt(m, 1) + ' × 4200 × ' + fmt(T - 20, 0) + ' = ' + fmtJ(Math.max(E, 0)), scol('therm'));
-withCard('note', 600, 240, 360, 150, function () {
-      card(600, 240, 360, 150, 'heat and temperature are not the same thing');
-      wrap('Temperature says how fast one particle jiggles on average. The thermal store is the ' +
-        'whole pile added up — a warm bath holds far more tokens than a hot cup.',
-        618, 274, 326, 12, C['text-dim'], 19, 500);
-    });
+      fmt(m, 1) + ' × 4200 × ' + fmt(T - 20, 0) + ' = ' + fmtJ(Math.max(E, 0)), scol('therm'),
+      { t: 'heat and temperature are not the same thing', h: 112, body: function (ny) {
+        wrap('Temperature says how fast one particle jiggles on average. The thermal store is ' +
+          'the whole pile added up — a warm bath holds far more tokens than a hot cup.',
+          618, ny, 326, 12, C['text-dim'], 19, 500);
+      } });
     moneyLine('Every other account leaks a few tokens into this one. That is what "wasted" means.');
     var PR = purse(Math.max(E, 1));
     energyBank([{ k: 'elec', v: Math.max(PR - Math.max(E, 0), 0), keep: true },
@@ -1688,30 +1806,63 @@ scene('1', 'snd', {
   ctrl: ['loud'],
   draw: function () {
     var L = V('loud'), E = L * 0.02;
-    var fx = 220, fy = 260;
-    /* the tuning fork */
+    /* The tuning fork is ONE piece of steel: the two tines and the U they
+       grow out of are a single stroked path, so there is no notch where
+       they meet, and the stem is welded on underneath. The TIPS are the
+       part that vibrates, so they sit exactly on the wave axis.        */
+    var fx = 210, fy = 402;
     var wob = Math.sin(S.t * 12) * L * 0.5;
-    CX.save();
-    CX.strokeStyle = C['text-dim']; CX.lineWidth = 7; CX.lineCap = 'round';
-    CX.beginPath(); CX.moveTo(fx, fy + 90); CX.lineTo(fx, fy + 20); CX.stroke();
-    CX.beginPath(); CX.moveTo(fx - 16 - wob, fy - 70); CX.lineTo(fx - 8, fy + 20); CX.stroke();
-    CX.beginPath(); CX.moveTo(fx + 16 + wob, fy - 70); CX.lineTo(fx + 8, fy + 20); CX.stroke();
-    CX.restore();
-    /* the wave leaving it */
+    var tw = 15, tl = 96, by = fy + 24;         /* half-gap, tine length, bend */
+    /* the wavefronts leave from the tips of the tines — that is the part
+       that is actually vibrating — so they are centred on the wave axis. */
+    var sx0 = fx + tw, sy0 = by - tl;
     for (var i = 0; i < 4; i++) {
-      var r0 = ((S.t * 60 + i * 45) % 180) + 30;
+      var r0 = ((S.t * 60 + i * 38) % 152) + 26;
       CX.save();
-      CX.strokeStyle = withA(scol('snd'), clamp(1 - r0 / 220, 0, 1) * .9);
+      CX.strokeStyle = withA(scol('snd'), clamp(1 - r0 / 190, 0, 1) * .9);
       CX.lineWidth = 2 + L * .2;
-      CX.beginPath(); CX.arc(fx, fy, r0, -1.1, 1.1); CX.stroke(); CX.restore();
+      CX.beginPath(); CX.arc(sx0, sy0, r0, -1, 1); CX.stroke(); CX.restore();
     }
-    wave(330, 160, 320, 8 + L * 2, scol('snd'), 7, 4);
-    txt('the air is pushed and pulled — the tokens ride the wave outward',
-      330, 200, 12, C['text-muted'], 'left', 500);
-    dot(700, 260, 22, withA(C['text-dim'], .5));
-    txt('👂', 700, 268, 22, C.text, 'center', 700);
+    var forkPath = function () {
+      CX.beginPath();
+      CX.moveTo(fx - tw - wob, by - tl);
+      CX.quadraticCurveTo(fx - tw - wob * .35, by - tl * .34, fx - tw, by - 16);
+      CX.quadraticCurveTo(fx - tw, by, fx, by);
+      CX.quadraticCurveTo(fx + tw, by, fx + tw, by - 16);
+      CX.quadraticCurveTo(fx + tw + wob * .35, by - tl * .34, fx + tw + wob, by - tl);
+    };
+    CX.save();
+    CX.lineCap = 'round'; CX.lineJoin = 'round';
+    /* the stem first, so the weld disappears under the U */
+    CX.strokeStyle = C['text-dim']; CX.lineWidth = 9;
+    CX.beginPath(); CX.moveTo(fx, by + 3); CX.lineTo(fx, by + 76); CX.stroke();
+    /* the fork body */
+    var fg = CX.createLinearGradient(fx - tw - 10, 0, fx + tw + 10, 0);
+    fg.addColorStop(0, C['text-muted']);
+    fg.addColorStop(0.35, LIGHT ? '#94a3b8' : '#e2e8f0');
+    fg.addColorStop(1, C['text-dim']);
+    CX.strokeStyle = fg; CX.lineWidth = 9; forkPath(); CX.stroke();
+    /* a thin polish line down the steel */
+    CX.strokeStyle = withA(LIGHT ? '#ffffff' : '#f8fafc', .35);
+    CX.lineWidth = 2; forkPath(); CX.stroke();
+    /* the little knob at the bottom of the handle */
+    CX.restore();
+    dot(fx, fy + 100, 7, C['text-dim']);
+    /* the wave leaving it */
+    wave(420, 330, 300, 8 + L * 2, scol('snd'), 7, 4);
+    arrow(420, 264, 720, 264, withA(scol('snd'), .85), 2.2, { head: 11 });
+    txt('the wave — and the tokens — travel outward this way', 420, 256, 11.5,
+      scol('snd'), 'left', 600);
+    txt('the air is pushed and pulled, over and over', 420, 402, 12,
+      C['text-muted'], 'left', 500);
+    dot(770, 330, 22, withA(C['text-dim'], .5));
+    txt('👂', 770, 338, 22, C.text, 'center', 700);
+    capStrip('SOUND — ENERGY ON THE MOVE',
+      'The struck fork shakes the air next to it, and that push travels outward as a wave. ' +
+      'Nothing is holding these tokens: they are in transit until an ear or a wall absorbs them.',
+      'snd');
 
-    formulaCard(620, 320, 340, 'no simple formula here',
+    formulaCard(620, 120, 340, 'no simple formula here',
       'louder = more tokens per second', scol('snd'));
     moneyLine('Sound is a courier, not a bank: the tokens are in transit until something absorbs them.');
     var PR = purse(E + 0.3, 2.2);
@@ -1748,7 +1899,10 @@ scene('1', 'rad', {
   ctrl: ['inten'],
   draw: function () {
     var I = V('inten'), E = I * 30;
-    var sx = 250, sy = 240, sr = 44 + I * 2;
+    var sx = 260, sy = 288, sr = 44 + I * 2;
+    capStrip('LIGHT LEAVING THE SUN',
+      'Fusion in the core pays the bill; the light itself carries the tokens across 150 million ' +
+      'km of empty space and the panel collects what lands on it.', 'rad');
     /* hottest at the centre and cooling outwards, the way a star really is */
     CX.save();
     var sg = CX.createRadialGradient(sx, sy, 1, sx, sy, sr);
@@ -1775,7 +1929,7 @@ scene('1', 'rad', {
     txt('leaves as light — E = mc²', sx, sy + 192, 11, C['text-muted'], 'center', 500);
 
     /* the panel that receives it: dark glass with a cell grid */
-    var gxp = 640, gyp = 200, gwp = 150, ghp = 110;
+    var gxp = 640, gyp = 226, gwp = 150, ghp = 110;
     CX.save();
     CX.fillStyle = LIGHT ? '#4b5563' : '#1f2937';
     rr(gxp, gyp, gwp, ghp, 6); CX.fill();
@@ -1796,14 +1950,14 @@ scene('1', 'rad', {
     CX.beginPath(); CX.moveTo(gxp, gyp + ghp); CX.lineTo(gxp + gwp * .55, gyp);
     CX.lineTo(gxp + gwp, gyp); CX.lineTo(gxp + gwp * .45, gyp + ghp); CX.closePath(); CX.fill();
     CX.restore();
-    txt('solar panel', 715, 330, 12, C['text-muted'], 'center', 600);
+    txt('solar panel', 715, 356, 12, C['text-muted'], 'center', 600);
     for (var i = 0; i < 6; i++) {
       var t0 = ((S.t * 90 + i * 40) % 240);
-      dot(400 + t0, 255 - Math.sin(i) * 20, 4, withA(scol('rad'), .95));
+      dot(410 + t0, 290 - Math.sin(i) * 20, 4, withA(scol('rad'), .95));
     }
-    txt('brightness ' + fmt(I, 0) + ' / 10', 380, 180, 12.5, scol('rad'), 'left', 600);
+    txt('brightness ' + fmt(I, 0) + ' / 10', 420, 240, 12.5, scol('rad'), 'left', 600);
 
-    formulaCard(620, 360, 340, 'brighter = more tokens per second',
+    formulaCard(620, 404, 340, 'brighter = more tokens per second',
       'in transit until something absorbs it', scol('rad'));
     moneyLine('Nothing carries these tokens — the light itself is the delivery van.');
     var PR = purse(E);
@@ -1849,25 +2003,26 @@ scene('1', 'elec', {
     /* the loop */
     CX.save();
     CX.strokeStyle = C['text-dim']; CX.lineWidth = 3;
-    rr(150, 170, 460, 200, 14); CX.stroke(); CX.restore();
+    rr(150, 228, 460, 200, 14); CX.stroke(); CX.restore();
     /* cell and lamp */
     CX.save(); CX.fillStyle = withA(scol('chem'), .5);
-    rr(220, 350, 90, 40, 6); CX.fill();
-    CX.strokeStyle = scol('chem'); CX.lineWidth = 2; rr(220, 350, 90, 40, 6); CX.stroke();
+    rr(220, 408, 90, 40, 6); CX.fill();
+    CX.strokeStyle = scol('chem'); CX.lineWidth = 2; rr(220, 408, 90, 40, 6); CX.stroke();
     CX.restore();
-    txt('cell', 265, 375, 11.5, C.text, 'center', 700);
-    dot(520, 170, 26, withA(scol('rad'), clamp(P / 40, .2, 1)));
-    txt('lamp', 520, 138, 11.5, C['text-muted'], 'center', 600);
+    txt('cell', 265, 433, 11.5, C.text, 'center', 700);
+    dot(520, 228, 26, withA(scol('rad'), clamp(P / 40, .2, 1)));
+    txt('lamp', 520, 196, 11.5, C['text-muted'], 'center', 600);
     /* the charges, crawling */
     for (var i = 0; i < 16; i++) {
       var u = ((S.t * 0.06 * I + i / 16) % 1);
       var pt = loopPoint(u);
       dot(pt.x, pt.y, 5, withA(scol('elec'), .95));
     }
-    txt('the charges drift slowly …', 640, 210, 12, C['text-muted'], 'left', 500);
-    txt('… but the energy arrives at once', 640, 232, 12, C['text-dim'], 'left', 600);
+    capStrip('CHARGES CARRYING ENERGY',
+      'The charges crawl round the loop — but the energy reaches the lamp almost at once, the ' +
+      'way water leaves a full pipe the instant you open the tap.', 'elec');
 
-    formulaCard(640, 280, 320, 'P = V I = ' + fmtW(P),
+    formulaCard(640, 300, 320, 'P = V I = ' + fmtW(P),
       'energy = V I t   ·   ' + fmtJ(P * 10) + ' in 10 s', scol('elec'));
     moneyLine('The wire is a conveyor belt of tokens, not a bank.');
     var PR = purse(P * 10, 2.2);
@@ -1899,7 +2054,7 @@ scene('1', 'elec', {
 });
 function loopPoint(u) {
   /* walk the rounded rectangle the circuit is drawn on */
-  var x = 150, y = 170, w = 460, h = 200, per = 2 * (w + h), d = u * per;
+  var x = 150, y = 228, w = 460, h = 200, per = 2 * (w + h), d = u * per;
   if (d < w) return { x: x + d, y: y };
   d -= w; if (d < h) return { x: x + w, y: y + d };
   d -= h; if (d < w) return { x: x + w - d, y: y + h };
@@ -1915,7 +2070,7 @@ scene('1', 'mag', {
   ctrl: ['gap'],
   draw: function () {
     var gp = V('gap'), E = 0.6 * (8 - gp) < 0 ? 0 : 0.4 * gp;
-    var cx = 330, cy = 260, sep = 40 + gp * 22;
+    var cx = 340, cy = 330, sep = 40 + gp * 22;
     CX.save();
     CX.fillStyle = scol('mag'); rr(cx - sep - 60, cy - 26, 60, 52, 5); CX.fill();
     CX.fillStyle = withA(C['text-dim'], .8); rr(cx + sep, cy - 26, 60, 52, 5); CX.fill();
@@ -1933,11 +2088,12 @@ scene('1', 'mag', {
     }
     arrow(cx - sep - 70, cy + 70, cx - sep - 20, cy + 70, C['text-dim'], 2.4, { head: 10 });
     arrow(cx + sep + 70, cy + 70, cx + sep + 20, cy + 70, C['text-dim'], 2.4, { head: 10 });
-    txt('they pull together — holding them apart costs tokens', cx, cy + 110, 12,
-      C['text-muted'], 'center', 500);
+    capStrip('HELD APART',
+      'These two pull towards each other, so holding them apart costs tokens. Let go and the ' +
+      'magnetic store empties as they snap back together.', 'mag');
     plate('gap = ' + fmt(gp, 1) + ' cm', cx, cy - 60, 12, scol('mag'), 'center', true);
 
-    formulaCard(660, 160, 300, 'wider gap = more tokens',
+    formulaCard(640, 200, 320, 'wider gap = more tokens',
       'released, they snap back as movement', scol('mag'));
     moneyLine('Same idea as the spring: the tokens are stored in the arrangement, not the motion.');
     var PR = purse(E);
@@ -2013,9 +2169,20 @@ scene('1', 'chem', {
     else if (cyc < 0.62) { st = 'react'; q = (cyc - 0.34) / 0.28; u = q * q * (3 - 2 * q); p = u; }
     else { st = 'out'; q = (cyc - 0.62) / 0.38; u = 1; p = 1; }
 
-    withCard('zoom', 110, 110, 420, 322, function () {
-      card(110, 110, 420, 322, 'burning the fuel  ·  CH₄ + 2O₂ → CO₂ + 2H₂O');
-      var cx = 320, cy = 238;
+    var CAPC = {
+      in: ['THE MOLECULES MEET', 'The fuel is methane, CH₄, and it is drifting into two oxygen ' +
+        'molecules. Nothing has happened yet — the tokens are still locked in the old bonds.',
+        'chem'],
+      react: ['THE ATOMS SWAP PARTNERS', 'Each hydrogen goes to an oxygen and the carbon takes ' +
+        'two oxygens. The old bonds break as the new ones form.', 'therm'],
+      out: ['CO₂ AND 2 H₂O LEAVE', 'The new bonds are stronger than the old ones, so there are ' +
+        'tokens left over — and they leave as heat and light.', 'therm']
+    }[st];
+    capStrip(CAPC[0], CAPC[1], CAPC[2]);
+
+    withCard('zoom', 110, 166, 420, 320, function () {
+      card(110, 166, 420, 320, 'burning the fuel  ·  CH₄ + 2O₂ → CO₂ + 2H₂O');
+      var cx = 320, cy = 296;
       var apart = st === 'in' ? (1 - q) * 62 : 0;      /* still coming in    */
       var split = st === 'out' ? q * 66 : 0;           /* products drifting  */
 
@@ -2083,27 +2250,19 @@ scene('1', 'chem', {
         }
       }
 
-      var CAPC = {
-        in: ['the molecules meet — the fuel is methane, CH₄', C['text-dim'], 600],
-        react: ['the atoms swap partners: H goes to O, C takes two O', scol('therm'), 800],
-        out: ['CO₂ and 2 H₂O — the new bonds are stronger, so energy is left over',
-          scol('therm'), 600]
-      }[st];
-      fitTxt(CAPC[0], cx, cy + 122, 384, 12.5, CAPC[1], 'center', CAPC[2]);
       runLine([{ t: 'chemical', k: 'chem' }, { t: '  →  ' }, { t: 'thermal', k: 'therm' },
       { t: '  +  ' }, { t: 'radiant', k: 'rad' }, { t: '   ·  CO₂ and H₂O carry the rest away' }],
-        130, 410, 390, 11.5, 'left');
+        130, 462, 390, 11.5, 'left');
     });
 
     formulaCard(580, 130, 400, fmt(f, 0) + ' g of petrol ≈ ' + fmtJ(E),
-      'about 46 000 J in every gram', scol('chem'));
-    withCard('note', 580, 250, 400, 150, function () {
-      card(580, 250, 400, 150, 'rough energy densities');
-      ['petrol      46 000 J per gram', 'chocolate   20 000 J per gram',
-        'AA battery  about 10 000 J in total'].forEach(function (r, i) {
-          mtxt(r, 598, 286 + i * 26, 12, C['text-dim'], 'left', 600);
-        });
-    });
+      'about 46 000 J in every gram', scol('chem'),
+      { t: 'rough energy densities', h: 108, body: function (ny) {
+        ['petrol      46 000 J per gram', 'chocolate   20 000 J per gram',
+          'AA battery  about 10 000 J in total'].forEach(function (r, i) {
+            mtxt(r, 598, ny + i * 24, 12, C['text-dim'], 'left', 600);
+          });
+      } });
     moneyLine('A full tank is a wallet: the tokens are real, but locked until you spend them.');
     energyBank([{ k: 'chem', v: E * (1 - p), keep: true }, { k: 'therm', v: E * p * .7, keep: true },
     { k: 'ke', v: E * p * .3, keep: true }],
@@ -2141,7 +2300,7 @@ scene('1', 'nuc', {
   init: function () { if (!S.nuke) S.nuke = 'fission'; },
   draw: function () {
     var dm = V('dm') * 1e-9, E = dm * 9e16;
-    var cx = 290, cy = 250, fis = S.nuke !== 'fusion';
+    var cx = 300, cy = 274, fis = S.nuke !== 'fusion';
     var cyc = prog(7), st, q;
     if (cyc < 0.40) { st = 'in'; q = cyc / 0.40; }
     else if (cyc < 0.52) { st = 'bang'; q = (cyc - 0.40) / 0.12; }
@@ -2173,15 +2332,17 @@ scene('1', 'nuc', {
         neutron(cx - 190 + q * 140, cy);
         arrow(cx - 190 + q * 140 + 14, cy, cx - 190 + q * 140 + 34, cy,
           withA(C['text-muted'], .8), 1.6, { head: 7 });
-        txt('a slow neutron is fired at the nucleus', cx, cy + 104, 12,
-          C['text-dim'], 'center', 600);
+        capStrip('A NEUTRON IS FIRED IN',
+          'A slow neutron is aimed at a uranium-235 nucleus. Everything is still locked up: the ' +
+          'nuclear account is full.', 'nuc');
       } else if (st === 'bang') {
         nuke(cx, cy, 40 + Math.sin(q * 18) * 5, 'unstable', scol('nuc'));
         CX.save(); CX.globalAlpha = 1 - q * .5;
         CX.fillStyle = withA('#fde047', .8);
         CX.beginPath(); CX.arc(cx, cy, 26 + q * 46, 0, 7); CX.fill(); CX.restore();
-        txt('it absorbs the neutron and becomes unstable', cx, cy + 104, 12,
-          scol('therm'), 'center', 700);
+        capStrip('THE NUCLEUS BECOMES UNSTABLE',
+          'It has swallowed the neutron and is wobbling badly. This is the moment before it ' +
+          'breaks apart.', 'therm');
       } else {
         var sp = q * 130;
         nuke(cx - sp - 10, cy - 26, 26, 'Ba', scol('nuc'));
@@ -2194,10 +2355,9 @@ scene('1', 'nuc', {
           var a = i / 8 * 6.283, r0 = 46 + sp;
           dot(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0, 4, withA(scol('rad'), 1 - q * .7));
         }
-        txt('it splits into two smaller nuclei — and 2 or 3 neutrons fly out',
-          cx, cy + 104, 12, C['text-dim'], 'center', 600);
-        txt('those neutrons can split more nuclei: a chain reaction',
-          cx, cy + 124, 11, C['text-muted'], 'center', 500);
+        capStrip('FISSION — IT SPLITS',
+          'Two smaller nuclei fly apart, and 2 or 3 neutrons fly out with them. Those neutrons ' +
+          'can split more nuclei: that is a chain reaction.', 'nuc');
       }
     } else {
       /* ---- FUSION: two light nuclei are forced together into one ---------- */
@@ -2206,15 +2366,17 @@ scene('1', 'nuc', {
         nuke(cx + 120 - q * 78, cy, 22, 'H', scol('nuc'));
         arrow(cx - 54, cy - 42, cx - 20, cy - 42, withA(C['text-muted'], .8), 1.6, { head: 7 });
         arrow(cx + 54, cy - 42, cx + 20, cy - 42, withA(C['text-muted'], .8), 1.6, { head: 7 });
-        txt('two light nuclei, pushed together hard enough to touch',
-          cx, cy + 104, 12, C['text-dim'], 'center', 600);
+        capStrip('TWO LIGHT NUCLEI CLOSING IN',
+          'Both are positive, so they push each other away hard. Only millions of degrees can ' +
+          'drive them close enough to touch.', 'nuc');
       } else if (st === 'bang') {
         CX.save(); CX.globalAlpha = 1 - q * .5;
         CX.fillStyle = withA('#fde047', .85);
         CX.beginPath(); CX.arc(cx, cy, 22 + q * 50, 0, 7); CX.fill(); CX.restore();
         nuke(cx, cy, 30, '', scol('nuc'), .9);
-        txt('they fuse — it takes millions of degrees to get this far',
-          cx, cy + 104, 12, scol('therm'), 'center', 700);
+        capStrip('THEY FUSE',
+          'The two nuclei join into one. A tiny amount of mass disappears at this instant — and ' +
+          'that is where the energy comes from.', 'therm');
       } else {
         nuke(cx - 20, cy, 30, 'He', scol('nuc'));
         neutron(cx + 60 + q * 110, cy - 26);
@@ -2222,10 +2384,9 @@ scene('1', 'nuc', {
           var aj = j / 8 * 6.283, rj = 44 + q * 90;
           dot(cx + Math.cos(aj) * rj, cy + Math.sin(aj) * rj, 4, withA(scol('rad'), 1 - q * .7));
         }
-        txt('one heavier nucleus, one spare neutron, and a lot of energy',
-          cx, cy + 104, 12, C['text-dim'], 'center', 600);
-        txt('this is what powers the Sun',
-          cx, cy + 124, 11, C['text-muted'], 'center', 500);
+        capStrip('ONE HEAVIER NUCLEUS, AND A LOT OF ENERGY',
+          'Helium, one spare neutron, and the missing mass paid out as energy. This is what ' +
+          'powers the Sun.', 'nuc');
       }
     }
     runLine([{ t: 'nuclear', k: 'nuc' }, { t: '  →  ' }, { t: 'kinetic', k: 'ke' },
@@ -2233,12 +2394,11 @@ scene('1', 'nuc', {
     { t: 'radiant', k: 'rad' }], cx, cy + 154, 480, 12, 'center');
 
     formulaCard(600, 140, 360, 'E = m c²',
-      fmt(V('dm'), 0) + ' µg → ' + fmtJ(E), scol('nuc'));
-withCard('note', 600, 260, 360, 140, function () {
-      card(600, 260, 360, 140, 'why it is so big');
-      wrap('c² is 90 000 000 000 000 000. Turning a microgram of mass into energy releases about as ' +
-        'much as burning 20 kg of petrol.', 618, 294, 326, 12, C['text-dim'], 19, 500);
-    });
+      fmt(V('dm'), 0) + ' µg → ' + fmtJ(E), scol('nuc'),
+      { t: 'why it is so big', h: 106, body: function (ny) {
+        wrap('c² is 90 000 000 000 000 000. Turning a microgram of mass into energy releases ' +
+          'about as much as burning 20 kg of petrol.', 618, ny, 326, 12, C['text-dim'], 19, 500);
+      } });
     moneyLine('Same rule, bigger numbers: the tokens were always there, locked in the nucleus.');
     energyBank([{ k: 'nuc', v: E * (1 - rel), keep: true,
       n: 'Nuclear · ' + (fis ? 'the heavy nucleus' : 'the light nuclei') },
@@ -2356,73 +2516,119 @@ scene('2', 'force', {
 /* 2.2 AGAINST FRICTION ----------------------------------------------------- */
 scene('2', 'friction', {
   label: '↔ Against Friction',
-  hero: 'W_{friction} = \\mu m g s',
-  title: 'Working against friction — where the tokens really go',
-  sub: 'Push a box along a rough floor and some of your tokens never become movement: they warm the floor.',
-  ctrl: ['F', 's', 'mu', 'm'],
+  hero: '\\tfrac12 mv^2 = \\mu m g s',
+  title: 'Sliding to a stop — where the tokens really go',
+  sub: 'Give the box a speed and let go. Friction empties the movement account into the thermal one, and the box stops.',
+  ctrl: ['v', 'mu', 'm'],
   draw: function () {
-    var F = V('F'), s = V('s'), mu = V('mu'), m = V('m'), p = prog();
-    var fr = mu * m * 10, net = F - fr;
-    var Wpush = F * s, Wfr = fr * s, Wke = Math.max(net * s, 0);
-    var floorY = 350, x0 = 120, span = 320, px = x0 + p * span;
+    var v = V('v'), mu = V('mu'), m = V('m'), g = 10;
+    var E0 = 0.5 * m * v * v, fr = mu * m * g;
+    var free = fr <= 0.001;                       /* nothing to stop it      */
+    var d = free ? 0 : v * v / (2 * mu * g);      /* stopping distance, m    */
+
+    /* one run: it slides, it stops, and it stays stopped so the numbers can
+       be read before the cycle ends.                                      */
+    var cyc = prog(6), u = clamp(cyc / 0.74, 0, 1);
+    var vNow = free ? v : v * (1 - u);
+    var ke = free ? E0 : E0 * (1 - u) * (1 - u);
+    var th = E0 - ke;
+    var sNow = free ? 0 : d * (2 * u - u * u);
+
+    var floorY = 408, x0 = 120, span = 340;
+    /* metres to pixels: short slides really do look short, so a scale bar
+       says how big a metre is on screen at the moment.                    */
+    var ppm = free ? span / 6 : clamp(span / Math.max(d, 0.02), 6, 80);
+    var px = x0 + (free ? u * span : Math.min(sNow * ppm, span));
+
     ground(floorY + 24, x0 - 20, x0 + span + 60);
     /* the rough floor */
     CX.save();
-    CX.strokeStyle = withA(scol('therm'), .55); CX.lineWidth = 2;
+    CX.strokeStyle = withA(scol('therm'), free ? .12 : .55); CX.lineWidth = 2;
     for (var i = 0; i < 40; i++) {
       var gx2 = x0 - 20 + i * 11;
       CX.beginPath(); CX.moveTo(gx2, floorY + 24); CX.lineTo(gx2 + 5, floorY + 32); CX.stroke();
     }
     CX.restore();
-    block(px, floorY + 22, 66, 48, scol('ke'), fmt(m, 1) + ' kg');
-    arrow(px - 36 - 60, floorY, px - 36, floorY, scol('elec'), 3.2, { head: 12 });
-    plate('push ' + fmt(F, 0) + ' N', px - 100, floorY - 12, 11, scol('elec'), 'right', true);
-    arrow(px + 36 + 52, floorY + 12, px + 36, floorY + 12, scol('therm'), 2.6, { head: 11 });
-    plate('friction ' + fmt(fr, 1) + ' N', px + 96, floorY + 2, 11, scol('therm'), 'left', true);
     /* the floor warming where it has been dragged */
     CX.save();
     CX.fillStyle = withA(scol('therm'), .25);
     CX.fillRect(x0, floorY + 24, px - x0, 8); CX.restore();
-    txt(net > 0 ? 'the push wins — the box speeds up, and the floor still warms'
-      : 'the push only just balances friction — every token goes to heat',
-      x0, 150, 12.5, C['text-muted'], 'left', 500);
 
-    withCard('note', GX - 20, GY, 420, 210, function () {
-      card(GX - 20, GY, 420, 210, 'where your tokens went');
-      mtxt('you paid       ' + fmtJ(Wpush * p), GX, GY + 46, 13.5, scol('elec'), 'left', 700);
-      mtxt('→ movement     ' + fmtJ(Wke * p), GX, GY + 82, 13.5, scol('ke'), 'left', 700);
-      mtxt('→ heat         ' + fmtJ(Math.min(Wfr, Wpush) * p), GX, GY + 118, 13.5, scol('therm'),
-        'left', 700);
+    block(px, floorY + 22, 66, 48, scol('ke'), fmt(m, 1) + ' kg');
+    /* friction is the ONLY force along the floor now: it always opposes */
+    if (!free && vNow > 0.01) {
+      arrow(px - 36, floorY + 12, px - 36 - clamp(fr * 1.6, 24, 70), floorY + 12,
+        scol('therm'), 2.8, { head: 11 });
+      plate('friction ' + fmt(fr, 1) + ' N', px - 50 - clamp(fr * 1.6, 24, 70),
+        floorY + 2, 11, scol('therm'), 'right', true);
+    }
+    if (vNow > 0.01) {
+      /* velocity is NOT a force: it rides above the box so nobody reads it
+         as a second arrow pushing it along.                              */
+      var vl = clamp(vNow * 4.5, 14, 58);
+      arrow(px - vl / 2, floorY - 44, px + vl / 2, floorY - 44, scol('ke'), 3, { head: 10 });
+      plate('v = ' + fmt(vNow, 2) + ' m/s', px, floorY - 66, 11.5, scol('ke'), 'center', true);
+    } else {
+      plate('stopped', px, floorY - 50, 11.5, scol('therm'), 'center', true);
+    }
+    /* where it started, and how far it has come */
+    line(x0, floorY - 10, x0, floorY + 44, withA(C['text-muted'], .7), 1.4, [4, 4]);
+    if (!free) {
+      arrow(x0, floorY + 56, px, floorY + 56, withA(scol('therm'), .8), 1.8, { head: 9 });
+      plate('s = ' + fmt(sNow, 2) + ' m', (x0 + px) / 2, floorY + 76, 11,
+        C['text-muted'], 'center', false);
+      /* a scale bar, because the picture is drawn to a different scale for
+         every setting and the student should see that                     */
+      line(x0, floorY + 100, x0 + ppm, floorY + 100, C['text-muted'], 2);
+      line(x0, floorY + 95, x0, floorY + 105, C['text-muted'], 2);
+      line(x0 + ppm, floorY + 95, x0 + ppm, floorY + 105, C['text-muted'], 2);
+      txt('1 m', x0 + ppm + 8, floorY + 104, 10.5, C['text-muted'], 'left', 600);
+    }
+
+    capStrip(free ? 'A PERFECTLY SMOOTH FLOOR'
+      : (vNow > 0.01 ? 'SLIDING — FRICTION IS SPENDING THE TOKENS' : 'STOPPED — EVERY TOKEN IS NOW HEAT'),
+      free ? 'With μ = 0 nothing takes the tokens off the box, so it keeps every joule and never stops.'
+        : (vNow > 0.01
+          ? 'Nobody is pushing any more. Friction alone acts, and every joule it takes out of the movement account turns up in the thermal one.'
+          : 'The movement account is empty. The floor and the box are warmer by exactly the joules the box started with.'),
+      vNow > 0.01 ? 'ke' : 'therm');
+
+    withCard('note', GX - 20, GY, 420, 200, function () {
+      card(GX - 20, GY, 420, 200, 'where your tokens went');
+      mtxt('started with   ' + fmtJ(E0), GX, GY + 46, 13.5, scol('ke'), 'left', 700);
+      mtxt('→ movement now ' + fmtJ(ke), GX, GY + 82, 13.5, scol('ke'), 'left', 700);
+      mtxt('→ heat so far  ' + fmtJ(th), GX, GY + 118, 13.5, scol('therm'), 'left', 700);
       txt('nothing vanished — the floor and the box are simply warmer',
         GX, GY + 156, 11.5, C['text-muted'], 'left', 500);
     });
-    energyBank([{ k: 'chem', v: Math.max(Wpush - Wpush * p, 0), keep: true },
-      { k: 'ke', v: Wke * p, keep: true },
-      { k: 'therm', v: Math.min(Wfr, Wpush) * p, keep: true }],
-      { total: Wpush || 1, note: 'friction always pays into the thermal account' });
+    energyBank([{ k: 'ke', v: ke, keep: true }, { k: 'therm', v: th, keep: true }],
+      { total: E0 || 1, note: 'friction always pays into the thermal account',
+        totalNote: 'the joules it was given — it never changes' });
   },
   data: function () {
-    var F = V('F'), s = V('s'), mu = V('mu'), m = V('m');
-    var fr = mu * m * 10;
-    return [{ l: 'friction force  μmg', v: fmt(fr, 1) + ' N', k: 'therm' },
-    { l: 'you did', v: fmtJ(F * s), k: 'elec' },
-    { l: 'went to heat', v: fmtJ(Math.min(fr * s, F * s)), k: 'therm' },
-    { l: 'became movement', v: fmtJ(Math.max((F - fr) * s, 0)), k: 'ke' }];
+    var v = V('v'), mu = V('mu'), m = V('m'), fr = mu * m * 10;
+    return [{ l: 'started with  ½mv²', v: fmtJ(0.5 * m * v * v), k: 'ke' },
+    { l: 'friction force  μmg', v: fmt(fr, 1) + ' N', k: 'therm' },
+    { l: 'stopping distance  v²/2μg', v: fr <= 0.001 ? 'it never stops'
+      : fmt(v * v / (2 * mu * 10), 2) + ' m' },
+    { l: 'ends up as heat', v: fmtJ(0.5 * m * v * v), k: 'therm' }];
   },
   eq: function () {
-    var F = V('F'), s = V('s'), mu = V('mu'), m = V('m'), fr = mu * m * 10;
-    return [['work against friction', 'W = \\mu m g' + sSym() + ' = ' + fmt(mu, 2) + ' \\times ' +
-      fmt(m, 1) + ' \\times 10 \\times ' + fmt(s, 1) + ' = ' + fmt(fr * s, 1) + '\\ \\text{J}',
-      'All of it ends up in the thermal store.'],
-    ['what is left over', 'W_{net} = (F - f)' + sSym() + ' = ' + fmt(Math.max((F - fr) * s, 0), 1) +
-      '\\ \\text{J}', 'Only the NET force adds kinetic energy.']];
+    var v = V('v'), mu = V('mu'), m = V('m'), fr = mu * m * 10;
+    return [['every joule goes to friction', '\\tfrac12 mv^2 = \\mu m g' + sSym(),
+      'The box keeps sliding until the movement account is empty.'],
+    ['so it stops after', sSym() + ' = \\frac{v^2}{2\\mu g} = ' + (fr <= 0.001 ? '\\infty'
+      : fmt(v * v / (2 * mu * 10), 2) + '\\ \\text{m}'),
+      'The mass cancels: a heavy box and a light one stop in the same distance.']];
   },
   info: function () {
-    return '<div class="note">Friction does not destroy energy — it <b>moves it to the thermal ' +
+    return '<div class="note">Nobody pushes here. The box is given some movement and let go, and ' +
+      'friction is the only force along the floor — so it <b>moves every joule to the thermal ' +
       'account</b>, where it is spread out and hard to use again. That is what "dissipated" means.</div>' +
-      '<ol class="steps"><li>Friction force = μ × weight.</li>' +
-      '<li>Work against friction = friction × distance → thermal.</li>' +
-      '<li>Anything left over speeds the box up.</li></ol>';
+      '<ol class="steps"><li>It starts with Eₖ = ½mv².</li>' +
+      '<li>Friction force = μ × weight.</li>' +
+      '<li>It slides until μmg × s has used up all of Eₖ.</li>' +
+      '<li>s = v²/2μg — and the mass cancels out.</li></ol>';
   }
 });
 
@@ -2435,16 +2641,20 @@ scene('2', 'gravity', {
   ctrl: ['m', 'h', 'g'],
   draw: function () {
     var m = V('m'), h = V('h'), g = V('g'), E = m * g * h, p = prog();
-    var floorY = 400, topY = 130, y = floorY - p * (floorY - topY);
+    /* the whole lift lives below the header band: nothing may overlap it */
+    var floorY = 484, topY = 252, y = floorY - p * (floorY - topY);
     ground(floorY + 22, 120, 470);
     block(300, y, 62, 48, scol('gpe'), fmt(m, 1) + ' kg');
-    arrow(300, y - 60, 300, y - 108, scol('elec'), 3, { head: 12 });
-    plate('F = mg = ' + fmt(m * g, 1) + ' N', 314, y - 116, 11.5, scol('elec'), 'left', true);
+    arrow(300, y - 58, 300, y - 96, scol('elec'), 3, { head: 12 });
+    plate('F = mg = ' + fmt(m * g, 1) + ' N', 286, y - 78, 11.5, scol('elec'), 'right', true);
     arrow(430, floorY + 22, 430, y - 50, scol('gpe'), 2.2, { head: 10 });
     plate('h = ' + fmt(h * p, 1) + ' m', 442, (floorY + y) / 2, 11.5, scol('gpe'), 'left', true);
     if (S.bank) fsGraph(GX, GY, GW, GH, function () { return m * g; }, h, h * p,
       { col: scol('elec'), title: 'a steady lift is a rectangle' });
-    plate(N().work + ' = mgh = ' + fmtJ(E * p), 120, 150, 13, C.accent, 'left', true);
+    capStrip('LIFTING AT A STEADY SPEED',
+      'You pull up with exactly mg, so nothing speeds up: every joule you supply lands in the ' +
+      'gravitational account and none of it goes anywhere else.', 'gpe');
+    plate(N().work + ' = mgh = ' + fmtJ(E * p), GX - 20, 380, 13, C.accent, 'left', true);
     energyBank([{ k: 'chem', v: Math.max(E - E * p, 0), keep: true }, { k: 'gpe', v: E * p, keep: true }],
       { total: E || 1, note: 'chemical (muscles or motor) → gravitational' });
   },
@@ -2526,7 +2736,13 @@ var CURVES = {
   constant: { lab: 'constant  →  rectangle', f: function (s, p) { return p.F; } },
   linear: { lab: 'linear (spring)  →  triangle', f: function (s, p) { return p.k * s; } },
   step: { lab: 'a push then a rest', f: function (s, p) { return s < p.s * .5 ? p.F : p.F * .25; } },
-  curve: { lab: 'a gentle curve', f: function (s, p) { return p.F * (1 - Math.cos(s / p.s * 3.1)) / 2 + p.F * .2; } }
+  curve: { lab: 'a gentle curve', f: function (s, p) { return p.F * (1 - Math.cos(s / p.s * 3.1)) / 2 + p.F * .2; } },
+  /* a short, sharp shove — the bell-shaped bump you get when a bat hits a
+     ball. Nearly all of the area is packed into a few centimetres.      */
+  impulse: { lab: 'a sharp impulse  →  a bump', f: function (s, p) {
+    var mid = p.s * 0.45, sg = p.s * 0.09, z = (s - mid) / sg;
+    return p.F * Math.exp(-0.5 * z * z);
+  } }
 };
 scene('2', 'graph', {
   label: '📈 F(x) Graph',
@@ -2595,15 +2811,15 @@ scene('2', 'power', {
   draw: function () {
     var m = V('m'), h = V('h'), tt = V('tt');
     var Wd = m * 10 * h, v = h / tt, F = m * 10, P1 = Wd / tt, P2 = F * v;
-    var p = prog(Math.max(tt, 2)), floorY = 400, topY = 140;
+    var p = prog(Math.max(tt, 2)), floorY = 470, topY = 250;
     var y = floorY - p * (floorY - topY);
     ground(floorY + 22, 100, 430);
     /* a hoist lifting the load */
-    line(265, 110, 265, y - 24, C['text-dim'], 2.5);
+    line(265, 196, 265, y - 24, C['text-dim'], 2.5);
     block(265, y, 58, 46, scol('gpe'), fmt(m, 1) + ' kg');
-    arrow(265, y - 30, 265, y - 74, scol('elec'), 3, { head: 12 });
-    plate('F = mg = ' + fmt(F, 0) + ' N', 280, y - 82, 11.5, scol('elec'), 'left', true);
-    plate('v = h/t = ' + fmt(v, 2) + ' m/s', 280, y + 6, 11.5, scol('ke'), 'left', true);
+    arrow(265, y - 30, 265, y - 70, scol('elec'), 3, { head: 12 });
+    plate('F = mg = ' + fmt(F, 0) + ' N', 251, y - 56, 11.5, scol('elec'), 'right', true);
+    plate('v = h/t = ' + fmt(v, 2) + ' m/s', 304, y + 6, 11.5, scol('ke'), 'left', true);
     arrow(400, floorY + 22, 400, topY, scol('gpe'), 2, { head: 10 });
     plate('h = ' + fmt(h, 1) + ' m', 412, (floorY + topY) / 2, 11.5, scol('gpe'), 'left', true);
 
@@ -4031,7 +4247,7 @@ function updateChrome() {
   [].forEach.call($('gPTabs').children, function (b) {
     b.classList.toggle('active', b.dataset.p === S.ptab);
   });
-  $('bPlay').textContent = S.play ? '⏸ Pause' : '▶ Play';
+  $('bPlay').textContent = S.play ? '⏸ Pause' : (cycleDone() ? '↻ Replay' : '▶ Play');
   $('tBank').classList.toggle('on', S.bank);
   $('tCoins').classList.toggle('on', S.coins);
   $('tNums').classList.toggle('on', S.nums);
@@ -4292,6 +4508,7 @@ function drawQuizBoard() {
 function draw() {
   applyVT();
   CARD_HITS = [];
+  CYC = 0;                      /* each frame re-declares its own cycle */
   if (S.mode === 'quiz') { drawQuizBoard(); updateChips(); return; }
   var sc = cur();
   sceneHeader(sc.title, sc.sub);
@@ -4310,6 +4527,9 @@ function loop(ts) {
   if (S.play && S.mode !== 'quiz' && !isCard()) {
     /* deliberately slow: a beginner has to be able to watch a token move */
     S.t += dt * S.speed * 0.5;
+    /* one complete run, then stop on the last frame — the final position and
+       the final numbers are the whole point of watching it.              */
+    if (CYC > 0 && S.t >= CYC) { S.t = CYC - 1e-3; S.play = false; updateChrome(); }
     draw();
     patchLive();
   }
@@ -4345,7 +4565,11 @@ function bindToolbar() {
   [].forEach.call($('gPTabs').children, function (b) {
     b.addEventListener('click', function () { S.ptab = b.dataset.p; updateChrome(); renderPanel(); });
   });
-  $('bPlay').addEventListener('click', function () { S.play = !S.play; updateChrome(); });
+  $('bPlay').addEventListener('click', function () {
+    /* pressing Play on a finished run starts it again from the beginning */
+    if (!S.play && cycleDone()) S.t = 0;
+    S.play = !S.play; updateChrome();
+  });
   $('bReset').addEventListener('click', function () {
     /* a beginner pressing Reset means "put everything back", not just this slider */
     S.play = false; S.t = 0; EFF_WARN = '';
