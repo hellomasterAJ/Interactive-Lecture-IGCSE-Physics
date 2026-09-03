@@ -368,7 +368,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">⚡ Energy Lab</span> <span class="badge-top" id="badge">v2.0.0</span></h1>
+    <h1><span class="t">⚡ Energy Lab</span> <span class="badge-top" id="badge">v2.0.9</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -1102,9 +1102,23 @@ function fsGraph(x, y, w, h, fn, sMax, sNow, opt) {
   var col = opt.col || C.accent, i, fMax = 0;
   for (i = 0; i <= 80; i++) fMax = Math.max(fMax, Math.abs(fn(sMax * i / 80)));
   fMax = fMax || 1;
-  card(x - 46, y - 30, w + 66, h + 64,
-    (opt.title || 'force–' + N().sName + ' graph  ·  the shaded area IS the ' + N().work) +
-    '   ·   F (N) vs ' + sSym() + ' (m)');
+  /* the graph is a card like any other: it can be dragged anywhere, and its
+     heading is set on two lines that are shrunk to fit rather than allowed
+     to run off the edge.                                                  */
+  var cx0 = x - 46, cy0 = y - 62, cw0 = w + 66, ch0 = h + 96;
+  var out = null;
+  withCard('fsgraph', cx0, cy0, cw0, ch0, function () {
+    card(cx0, cy0, cw0, ch0, null);
+    fitTxt(opt.title || 'force–' + N().sName + ' graph', cx0 + 13, cy0 + 22, cw0 - 46, 12,
+      C['text-muted'], 'left', 700);
+    fitTxt('the shaded area IS the ' + N().work + '   ·   F (N) vs ' + sSym() + ' (m)',
+      cx0 + 13, cy0 + 40, cw0 - 26, 11, C['text-muted'], 'left', 500);
+    out = fsPlot(x, y, w, h, fn, sMax, sNow, col, fMax);
+  });
+  return out;
+}
+function fsPlot(x, y, w, h, fn, sMax, sNow, col, fMax) {
+  var i;
   line(x, y + h, x + w, y + h, C['text-muted'], 1.2);
   line(x, y, x, y + h, C['text-muted'], 1.2);
   mtxt('0', x, y + h + 18, 10, C['text-muted'], 'center');
@@ -2441,7 +2455,7 @@ scene('1', 'nuc', {
    Work is HOW tokens move: a force pushing something along. Power is HOW FAST
    they move. Every scene ends in the Energy Bank so the tokens are traceable. */
 
-var GX = 640, GY = 130, GW = 380, GH = 190;   /* where the F–s graph lives */
+var GX = 640, GY = 152, GW = 380, GH = 186;   /* where the F–s graph lives */
 
 function ground(y, x1, x2) { line(x1, y, x2, y, C['text-muted'], 2.5); }
 function block(px, py, w, h, col, label) {
@@ -2463,12 +2477,12 @@ scene('2', 'force', {
   draw: function () {
     var F = V('F'), s = V('s'), ang = V('ang'), p = prog();
     var Fx = F * cosd(ang), Wd = Fx * s;
-    var floorY = 360, x0 = 120, span = 340, px = x0 + p * span;
+    var floorY = 360, x0 = 168, span = 330, px = x0 + p * span;
     ground(floorY + 24, x0 - 20, x0 + span + 60);
     block(px, floorY + 22, 62, 46, scol('ke'), '');
     /* the push, always pointing the way the block travels */
     var ax = cosd(ang), ay = -sind(ang);
-    arrow(px - 34 - ax * 64, floorY - ay * 64, px - 34, floorY, scol('elec'), 3.2, { head: 13 });
+    arrow(px - 31 - ax * 64, floorY - ay * 64, px - 31, floorY, scol('elec'), 3.2, { head: 13 });
     plate('F = ' + fmt(F, 0) + ' N' + (ang ? ' at ' + fmt(ang, 0) + '°' : ''),
       px - 40 - ax * 68, floorY - 10 - ay * 68, 11.5, scol('elec'), 'right', true);
     line(x0, floorY + 46, x0 + span, floorY + 46, C['text-muted'], 1, [4, 4]);
@@ -2534,7 +2548,7 @@ scene('2', 'friction', {
     var th = E0 - ke;
     var sNow = free ? 0 : d * (2 * u - u * u);
 
-    var floorY = 408, x0 = 120, span = 340;
+    var floorY = 408, x0 = 168, span = 320;
     /* metres to pixels: short slides really do look short, so a scale bar
        says how big a metre is on screen at the moment.                    */
     var ppm = free ? span / 6 : clamp(span / Math.max(d, 0.02), 6, 80);
@@ -2557,9 +2571,9 @@ scene('2', 'friction', {
     block(px, floorY + 22, 66, 48, scol('ke'), fmt(m, 1) + ' kg');
     /* friction is the ONLY force along the floor now: it always opposes */
     if (!free && vNow > 0.01) {
-      arrow(px - 36, floorY + 12, px - 36 - clamp(fr * 1.6, 24, 70), floorY + 12,
+      arrow(px - 33, floorY + 12, px - 33 - clamp(fr * 1.6, 24, 70), floorY + 12,
         scol('therm'), 2.8, { head: 11 });
-      plate('friction ' + fmt(fr, 1) + ' N', px - 50 - clamp(fr * 1.6, 24, 70),
+      plate('friction ' + fmt(fr, 1) + ' N', px - 47 - clamp(fr * 1.6, 24, 70),
         floorY + 2, 11, scol('therm'), 'right', true);
     }
     if (vNow > 0.01) {
@@ -2643,18 +2657,19 @@ scene('2', 'gravity', {
     var m = V('m'), h = V('h'), g = V('g'), E = m * g * h, p = prog();
     /* the whole lift lives below the header band: nothing may overlap it */
     var floorY = 484, topY = 252, y = floorY - p * (floorY - topY);
-    ground(floorY + 22, 120, 470);
+    ground(floorY + 22, 120, 500);
     block(300, y, 62, 48, scol('gpe'), fmt(m, 1) + ' kg');
-    arrow(300, y - 58, 300, y - 96, scol('elec'), 3, { head: 12 });
-    plate('F = mg = ' + fmt(m * g, 1) + ' N', 286, y - 78, 11.5, scol('elec'), 'right', true);
-    arrow(430, floorY + 22, 430, y - 50, scol('gpe'), 2.2, { head: 10 });
-    plate('h = ' + fmt(h * p, 1) + ' m', 442, (floorY + y) / 2, 11.5, scol('gpe'), 'left', true);
+    /* the tail of the force vector touches the box it acts on */
+    arrow(300, y - 48, 300, y - 96, scol('elec'), 3, { head: 12 });
+    plate('F = mg = ' + fmt(m * g, 1) + ' N', 284, y - 74, 11.5, scol('elec'), 'right', true);
+    arrow(452, floorY + 22, 452, y - 30, scol('gpe'), 2.2, { head: 10 });
+    plate('h = ' + fmt(h * p, 1) + ' m', 464, (floorY + y) / 2, 11.5, scol('gpe'), 'left', true);
     if (S.bank) fsGraph(GX, GY, GW, GH, function () { return m * g; }, h, h * p,
       { col: scol('elec'), title: 'a steady lift is a rectangle' });
     capStrip('LIFTING AT A STEADY SPEED',
       'You pull up with exactly mg, so nothing speeds up: every joule you supply lands in the ' +
       'gravitational account and none of it goes anywhere else.', 'gpe');
-    plate(N().work + ' = mgh = ' + fmtJ(E * p), GX - 20, 380, 13, C.accent, 'left', true);
+    plate(N().work + ' = mgh = ' + fmtJ(E * p), GX - 20, 424, 13, C.accent, 'left', true);
     energyBank([{ k: 'chem', v: Math.max(E - E * p, 0), keep: true }, { k: 'gpe', v: E * p, keep: true }],
       { total: E || 1, note: 'chemical (muscles or motor) → gravitational' });
   },
@@ -2755,7 +2770,7 @@ scene('2', 'graph', {
     var p = prog(), s = V('s');
     var fn = curveFn(), Wnow = integrate(fn, 0, Math.max(s * p, 1e-6)), Wtot = integrate(fn, 0, s);
     /* the object, pushed by whatever the curve says right now */
-    var floorY = 360, x0 = 90, span = 300, px = x0 + p * span;
+    var floorY = 360, x0 = 172, span = 300, px = x0 + p * span;
     ground(floorY + 24, x0 - 20, x0 + span + 50);
     block(px, floorY + 22, 54, 44, C.accent, '');
     var Fn = fn(s * p), Fmx = 1e-9;
@@ -2813,26 +2828,27 @@ scene('2', 'power', {
     var Wd = m * 10 * h, v = h / tt, F = m * 10, P1 = Wd / tt, P2 = F * v;
     var p = prog(Math.max(tt, 2)), floorY = 470, topY = 250;
     var y = floorY - p * (floorY - topY);
-    ground(floorY + 22, 100, 430);
+    ground(floorY + 22, 100, 520);
     /* a hoist lifting the load */
-    line(265, 196, 265, y - 24, C['text-dim'], 2.5);
+    line(265, 196, 265, y - 46, C['text-dim'], 2.5);
     block(265, y, 58, 46, scol('gpe'), fmt(m, 1) + ' kg');
-    arrow(265, y - 30, 265, y - 70, scol('elec'), 3, { head: 12 });
-    plate('F = mg = ' + fmt(F, 0) + ' N', 251, y - 56, 11.5, scol('elec'), 'right', true);
-    plate('v = h/t = ' + fmt(v, 2) + ' m/s', 304, y + 6, 11.5, scol('ke'), 'left', true);
-    arrow(400, floorY + 22, 400, topY, scol('gpe'), 2, { head: 10 });
-    plate('h = ' + fmt(h, 1) + ' m', 412, (floorY + topY) / 2, 11.5, scol('gpe'), 'left', true);
+    /* the pull acts up the cable, and its tail sits on the box */
+    arrow(265, y - 46, 265, y - 92, scol('elec'), 3, { head: 12 });
+    plate('F = mg = ' + fmt(F, 0) + ' N', 249, y - 70, 11.5, scol('elec'), 'right', true);
+    plate('v = h/t = ' + fmt(v, 2) + ' m/s', 302, y - 8, 11.5, scol('ke'), 'left', true);
+    arrow(470, floorY + 22, 470, topY, scol('gpe'), 2, { head: 10 });
+    plate('h = ' + fmt(h, 1) + ' m', 482, (floorY + topY) / 2, 11.5, scol('gpe'), 'left', true);
 
-    withCard('note', GX - 20, 110, 430, 200, function () {
-      card(GX - 20, 110, 430, 200, 'the same power, measured two ways');
-      mtxt('P = W / t  = ' + fmtW(P1), GX, 152, 16, C.accent, 'left', 700);
-      mtxt('P = F × v  = ' + fmtW(P2), GX, 186, 16, scol('ke'), 'left', 700);
+    withCard('note', GX - 20, 132, 430, 200, function () {
+      card(GX - 20, 132, 430, 200, 'the same power, measured two ways');
+      mtxt('P = W / t  = ' + fmtW(P1), GX, 174, 16, C.accent, 'left', 700);
+      mtxt('P = F × v  = ' + fmtW(P2), GX, 208, 16, scol('ke'), 'left', 700);
       txt(Math.abs(P1 - P2) < 1e-6 ? '✓ they agree — they are the same statement'
-        : 'they should agree', GX, 214, 12, C.green, 'left', 600);
-      mtxt('1 W = 1 J/s   ·   ' + fmt(P1 / 1000, 3) + ' kW', GX, 246, 12.5, C['text-dim'],
+        : 'they should agree', GX, 236, 12, C.green, 'left', 600);
+      mtxt('1 W = 1 J/s   ·   ' + fmt(P1 / 1000, 3) + ' kW', GX, 268, 12.5, C['text-dim'],
         'left', 600);
       txt('power is the RATE energy is transferred — never "used up"',
-        GX, 276, 11.5, C['text-muted'], 'left', 500);
+        GX, 298, 11.5, C['text-muted'], 'left', 500);
     });
     energyBank([{ k: 'chem', v: Math.max(Wd - Wd * p, 0), keep: true },
       { k: 'gpe', v: Wd * p, keep: true }],
@@ -2943,8 +2959,10 @@ scene('3', 'law', {
         CX.strokeStyle = withA(scol('therm'), .5); CX.lineWidth = 7; CX.setLineDash([10, 8]);
         CX.beginPath(); CX.moveTo(x0, floor2 + 20); CX.lineTo(px2, floor2 + 20); CX.stroke();
         CX.restore();
-        arrow(px2 - 44 - 46, floor2 - 2, px2 - 44, floor2 - 2, scol('therm'), 2.6, { head: 10 });
-        plate('brakes', px2 - 96, floor2 - 14, 11, scol('therm'), 'right', true);
+        /* braking friction points BACKWARDS: its tail is on the car and it
+           opposes the way the car is going.                             */
+        arrow(px2 - 38, floor2 - 2, px2 - 38 - 52, floor2 - 2, scol('therm'), 2.6, { head: 10 });
+        plate('braking friction', px2 - 98, floor2 - 20, 11, scol('therm'), 'right', true);
       }
       plate('v = ' + fmt(Math.sqrt(2 * ke / m), 2) + ' m/s', px2, floor2 - 40, 11.5, scol('ke'),
         'center', true);
@@ -2996,12 +3014,15 @@ scene('3', 'law', {
   }
 });
 
-/* 3.2 SANKEY ---------------------------------------------------------------- */
+/* 3.2 SANKEY + EFFICIENCY ---------------------------------------------------
+   These used to be two scenes saying the same thing twice. The Sankey picture
+   IS the efficiency sum, so the sum now travels with it as a card.        */
+var EFF_WARN = '';
 scene('3', 'sankey', {
-  label: '📊 Sankey Diagram',
-  hero: 'E_{in} = E_{useful} + E_{wasted}',
-  title: 'The Sankey diagram — conservation you can see',
-  sub: 'Arrow widths are drawn to scale, so the arrows going out always add up to the arrow coming in.',
+  label: '📊 Sankey & Efficiency',
+  hero: '\\eta = \\dfrac{E_{useful}}{E_{in}} \\times 100\\%',
+  title: 'The Sankey diagram — conservation you can see, efficiency you can measure',
+  sub: 'Arrow widths are drawn to scale, so the arrows going out always add up to the arrow coming in — and the useful share of that width IS the efficiency.',
   ctrl: ['Ein', 'eff', 'device'],
   init: function () { if (!S.device) S.device = 'lamp'; },
   draw: function () {
@@ -3016,13 +3037,46 @@ scene('3', 'sankey', {
     var use = Ein * eff / 100, waste = Ein - use;
     txt(DEV.n + '  ·  typical efficiency ' + DEV.typ + '%', 60, 110, 13.5, C['text-dim'],
       'left', 600);
-    sankey(90, 150, Ein,
+    sankey(70, 150, Ein,
       [{ k: DEV.k, v: use, n: 'useful — ' + DEV.useful },
       { k: 'therm', v: waste, n: 'wasted — heat to the surroundings' }],
-      'input energy', { inK: 'elec', band: 132,
+      'input energy', { inK: 'elec', band: 116,
         title: DEV.n + '  ·  Sankey diagram, widths drawn to scale' });
+
+    /* the efficiency sum, reading the very same two numbers */
+    var cX = 636, cY = 150, cW = 344, cH = 342;
+    withCard('eff', cX, cY, cW, cH, function () {
+      card(cX, cY, cW, cH, 'efficiency — how much of it you actually got');
+      /* the pie: the useful slice, drawn from twelve o'clock */
+      var px = cX + 92, py = cY + 116, r = 66;
+      var a0 = -Math.PI / 2, a1 = a0 + (eff / 100) * 6.283;
+      CX.save();
+      CX.fillStyle = withA(scol(DEV.k), .85);
+      CX.beginPath(); CX.moveTo(px, py); CX.arc(px, py, r, a0, a1); CX.closePath(); CX.fill();
+      CX.fillStyle = withA(scol('therm'), .85);
+      CX.beginPath(); CX.moveTo(px, py); CX.arc(px, py, r, a1, a0 + 6.283); CX.closePath();
+      CX.fill();
+      CX.restore();
+      mtxt(fmt(eff, 0) + '%', px, py + 8, 22, C.text, 'center', 800);
+      /* the two slices, named and valued */
+      runLine([{ t: '■ useful  ', c: scol(DEV.k) }, { t: fmtJ(use), c: scol(DEV.k) }],
+        cX + 186, cY + 96, 146, 12, 'left', 700);
+      runLine([{ t: '■ wasted  ', c: scol('therm') }, { t: fmtJ(waste), c: scol('therm') }],
+        cX + 186, cY + 122, 146, 12, 'left', 700);
+      fitTxt('input ' + fmtJ(Ein), cX + 186, cY + 150, 146, 12, C['text-dim'], 'left', 600);
+      /* the sum itself */
+      line(cX + 13, cY + 208, cX + cW - 13, cY + 208, withA(C.border, .9), 1);
+      mtxt('η = useful ÷ total × 100%', cX + 16, cY + 236, 14, C.accent, 'left', 700);
+      fitTxt(fmt(use / 1e6, 1) + ' ÷ ' + fmt(Ein / 1e6, 1) + ' × 100%  =  ' + fmt(eff, 0) + '%',
+        cX + 16, cY + 264, cW - 32, 13.5, C['text-dim'], 'left', 700);
+      wrap('Nothing can be more than 100% efficient — and the wasted tokens have not vanished, ' +
+        'they are in the thermal account.', cX + 16, cY + 292, cW - 32, 11.5,
+        C['text-muted'], 18, 500);
+      if (EFF_WARN) plate('⚠ no free money', cX + 16, cY + 332, 11.5, C.red, 'left', false);
+    });
+
     energyBank([{ k: DEV.k, v: use, keep: true }, { k: 'therm', v: waste, keep: true }],
-      { total: Ein, note: 'the arrows and the accounts say the same thing' });
+      { total: Ein, note: 'the arrows, the pie and the accounts all say the same thing' });
   },
   data: function () {
     var Ein = V('Ein') * 1e6, eff = V('eff');
@@ -3044,72 +3098,13 @@ scene('3', 'sankey', {
       '<ol class="steps"><li>Draw the input arrow to scale.</li>' +
       '<li>Split it: useful along the top, waste (usually heat) downwards.</li>' +
       '<li>Label every arrow with its value.</li>' +
-      '<li>Check: in = useful + wasted.</li></ol>';
+      '<li>Check: in = useful + wasted.</li></ol>' +
+      '<div class="note"><b>Efficiency</b> is just the useful arrow as a fraction of the input ' +
+      'one: η = useful ÷ total × 100%. The rest is still in the bank — in the thermal account, ' +
+      'spread out and hard to use. Nothing can ever be more than 100% efficient.</div>';
   }
 });
 
-/* 3.3 EFFICIENCY ------------------------------------------------------------ */
-var EFF_WARN = '';
-scene('3', 'eff', {
-  label: '🎯 Efficiency',
-  hero: '\\eta = \\dfrac{\\text{useful}}{\\text{total}} \\times 100\\%',
-  title: 'Efficiency — how much of it you actually got',
-  sub: 'Efficiency is the fraction of the tokens that did the job you wanted. It can never be more than all of them.',
-  ctrl: ['useful', 'wasted'],
-  draw: function () {
-    var u = V('useful'), w = V('wasted'), tot = u + w;
-    var eff = tot > 0 ? u / tot * 100 : 0;
-    /* the pie of it */
-    var cx = 300, cy = 260, r = 120, a0 = -Math.PI / 2, a1 = a0 + (u / (tot || 1)) * 6.283;
-    CX.save();
-    CX.fillStyle = withA(scol('ke'), .8);
-    CX.beginPath(); CX.moveTo(cx, cy); CX.arc(cx, cy, r, a0, a1); CX.closePath(); CX.fill();
-    CX.fillStyle = withA(scol('therm'), .8);
-    CX.beginPath(); CX.moveTo(cx, cy); CX.arc(cx, cy, r, a1, a0 + 6.283); CX.closePath(); CX.fill();
-    CX.restore();
-    mtxt(fmt(eff, 0) + '%', cx, cy + 10, 30, C.text, 'center', 800);
-    txt('useful ' + fmtJ(u), cx - r - 10, cy + r + 30, 12, scol('ke'), 'left', 700);
-    txt('wasted ' + fmtJ(w), cx + r - 60, cy + r + 30, 12, scol('therm'), 'left', 700);
-
-    withCard('note', 560, 130, 400, 150, function () {
-      card(560, 130, 400, 150, 'the sum');
-      mtxt('η = useful ÷ total × 100%', 580, 172, 14, C.accent, 'left', 700);
-      mtxt(fmt(u, 0) + ' ÷ ' + fmt(tot, 0) + ' × 100% = ' + fmt(eff, 0) + '%', 580, 204, 13.5,
-        C['text-dim'], 'left', 700);
-      txt('the wasted tokens are still in the bank — in the thermal account',
-        580, 238, 11.5, C['text-muted'], 'left', 500);
-    });
-    withCard('note2', 560, 300, 400, 150, function () {
-      card(560, 300, 400, 150, 'no free money');
-      wrap('Nothing can be more than 100% efficient. That would mean getting more tokens out than ' +
-        'you put in, and the bank simply does not work that way.', 578, 336, 366, 12.5,
-        C['text-dim'], 20, 500);
-      if (EFF_WARN) plate('⚠ ' + EFF_WARN, 578, 470, 12, C.red, 'left', false);
-    });
-    energyBank([{ k: 'ke', v: u, keep: true }, { k: 'therm', v: w, keep: true }],
-      { total: tot || 1, note: 'useful and wasted, adding up to everything you paid for' });
-  },
-  data: function () {
-    var u = V('useful'), w = V('wasted'), tot = u + w;
-    return [{ l: 'useful', v: fmtJ(u), k: 'ke' },
-    { l: 'wasted', v: fmtJ(w), k: 'therm' },
-    { l: 'total in', v: fmtJ(tot) },
-    { l: 'efficiency', v: fmt(tot ? u / tot * 100 : 0, 1) + ' %' }];
-  },
-  eq: function () {
-    var u = V('useful'), w = V('wasted'), tot = u + w;
-    return [['efficiency', '\\eta = \\dfrac{E_{useful}}{E_{total}} \\times 100\\% = \\dfrac{' +
-      fmt(u, 0) + '}{' + fmt(tot, 0) + '} \\times 100\\% = ' + fmt(tot ? u / tot * 100 : 0, 1) +
-      '\\%', 'The same sum works with power: useful watts ÷ total watts.']];
-  },
-  info: function () {
-    return '<div class="note">Efficiency answers "<b>how much of what I paid for did the job?</b>" ' +
-      'The rest is still there — it is just in the thermal account, spread out and hard to use.</div>' +
-      '<ol class="steps"><li>Find the useful output.</li><li>Divide by the total input.</li>' +
-      '<li>Multiply by 100 for a percentage.</li>' +
-      '<li>Sanity check: it can never exceed 100%.</li></ol>';
-  }
-});
 
 /* ============ MODE 4 — Energy transformations ============================
    The exam skill: say which store the tokens start in, every account they pass
