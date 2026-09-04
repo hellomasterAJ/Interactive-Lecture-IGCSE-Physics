@@ -167,6 +167,12 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
 .ctrl-btn{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:5px 13px;
   border-radius:8px;cursor:pointer;font-size:11.5px;font-weight:600;transition:all .16s;white-space:nowrap}
 .ctrl-btn:hover{border-color:var(--accent);color:var(--accent)}
+/* Play / Pause / Replay share one button. All three labels sit stacked in the SAME
+   grid cell and only one is visible, so the button is exactly as wide as the widest
+   label in whatever font is in use — no guessed min-width, and no reflow on toggle */
+#bPlay{display:inline-grid;justify-items:center;align-items:center}
+#bPlay .ppl{grid-area:1/1;visibility:hidden}
+#bPlay .ppl.on{visibility:visible}
 .ctrl-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
 .ctrl-btn.primary:hover{filter:brightness(1.08);color:var(--bg)}
 .sl{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--text-dim);white-space:nowrap}
@@ -267,7 +273,7 @@ table.res td.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">🏃 Motion &amp; Kinematics</span> <span class="badge-top" id="badge">v1.7.1</span></h1>
+    <h1><span class="t">🏃 Motion &amp; Kinematics</span> <span class="badge-top" id="badge">v1.7.5</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -321,7 +327,7 @@ table.res td.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
         </div>
       </div>
       <div class="tgroup">
-        <button class="ctrl-btn primary" id="bPlay">▶ Play</button>
+        <button class="ctrl-btn primary" id="bPlay"><span class="ppl on" data-pp="play">▶ Play</span><span class="ppl" data-pp="pause">⏸ Pause</span><span class="ppl" data-pp="replay">↻ Replay</span></button>
       </div>
       <div class="tgroup">
         <span class="tlabel">Speed</span>
@@ -471,7 +477,7 @@ var S = {
   md: 1,                 /* 1..4  mode                       */
   ex: { 1: 'dist', 2: 'tape', 3: 'accel', 4: 'suvat' },
   mode: 'sim',           /* sim | prac | quiz                */
-  play: true, speed: 1, t: 0,
+  play: true, done: false, speed: 1, t: 0,
   not: 'uk',             /* uk | us                          */
   labels: true, formula: false, trace: false, hints: true,
   ptab: 'data',
@@ -486,18 +492,31 @@ var S = {
 window.S = S;
 
 /* ---------- notation ---------------------------------------------------- */
+/* UK and US write kinematics differently, and the two clash on the letter x:
+   in US notation x is the DISTANCE and the displacement is the change in it,
+   Δx — so distance gets its own slot (d / x) and displacement is s / Δx. */
 var SYMS = {
-  uk: { s: 's', u: 'u', v: 'v', a: 'a', t: 't', ds: 'Δs', dv: 'Δv', dt: 'Δt' },
-  us: { s: 'x', u: 'v₀', v: 'v', a: 'a', t: 't', ds: 'Δx', dv: 'Δv', dt: 'Δt' }
+  uk: { d: 'd', s: 's', u: 'u', v: 'v', vav: 'v_{av}', a: 'a', t: 't', ds: 'Δs', dv: 'Δv', dt: 'Δt' },
+  us: { d: 'x', s: 'Δx', u: 'v_i', v: 'v_f', vav: 'v_{avg}', a: 'a', t: 't', ds: 'Δx', dv: 'Δv', dt: 'Δt' }
 };
 var TEXS = {
-  uk: { s: 's', u: 'u', v: 'v', a: 'a', t: 't', ds: '\\Delta s', dv: '\\Delta v', dt: '\\Delta t' },
-  us: { s: 'x', u: 'v_0', v: 'v', a: 'a', t: 't', ds: '\\Delta x', dv: '\\Delta v', dt: '\\Delta t' }
+  uk: { d: 'd', s: 's', u: 'u', v: 'v', vav: 'v_{av}', a: 'a', t: 't', ds: '\\Delta s', dv: '\\Delta v', dt: '\\Delta t' },
+  us: { d: 'x', s: '\\Delta x', u: 'v_i', v: 'v_f', vav: 'v_{avg}', a: 'a', t: 't', ds: '\\Delta x', dv: '\\Delta v', dt: '\\Delta t' }
 };
 function sym(k) { return SYMS[S.not][k] || k; }
 function tex(k) { return TEXS[S.not][k] || k; }
+/* LaTeX allows only one _ per token, so a numbered instance of a symbol that is
+   already subscripted has to fold the number in: v_1 in UK, v_{f1} in US. */
+function texN(k, i) {
+  var b = tex(k), j = b.indexOf('_');
+  return j < 0 ? b + '_{' + i + '}' : b.slice(0, j) + '_{' + b.slice(j + 1).replace(/[{}]/g, '') + i + '}';
+}
+function symN(k, i) {
+  var b = sym(k), j = b.indexOf('_');
+  return j < 0 ? b + '_' + i : b.slice(0, j) + '_{' + b.slice(j + 1).replace(/[{}]/g, '') + i + '}';
+}
 var NAMES = {
-  s: 'Displacement', u: 'Initial velocity', v: 'Final velocity',
+  d: 'Distance', s: 'Displacement', u: 'Initial velocity', v: 'Final velocity',
   a: 'Acceleration', t: 'Time'
 };
 function nameOf(k) { return NAMES[k] + ' ' + sym(k); }
@@ -535,7 +554,7 @@ function readTheme() {
 var AREA_A = 0.11, AREA_A2 = 0.13;
 /* the quantity legend, used by the panel key and by the tests */
 var QKEY = [
-  { k: 'dist', grp: 'how far', name: 'Distance travelled', sym: function () { return '—'; }, unit: 'm', kind: 'scalar' },
+  { k: 'dist', grp: 'how far', name: 'Distance travelled', sym: function () { return sym('d'); }, unit: 'm', kind: 'scalar' },
   { k: 'disp', grp: 'how far', name: 'Displacement', sym: function () { return sym('s'); }, unit: 'm', kind: 'vector' },
   { k: 'speed', grp: 'how fast', name: 'Speed', sym: function () { return '—'; }, unit: 'm/s', kind: 'scalar' },
   { k: 'vel', grp: 'how fast', name: 'Velocity', sym: function () { return sym('u') + ', ' + sym('v'); }, unit: 'm/s', kind: 'vector' },
@@ -593,25 +612,86 @@ function clampPan() {
 }
 
 /* ---------- primitive drawing helpers ----------------------------------- */
-function txt(str, x, y, size, col, align, weight, baseline) {
+/* US notation writes the velocities with a subscript (v_i, v_f) and Unicode has no
+   subscript f, so canvas text renders "letter_x" itself: the character after the
+   underscore is drawn smaller and dropped below the baseline. Strings without an
+   underscore take the original single-fillText path, so nothing else pays for it. */
+var SUBRE = /([A-Za-z])_(\{[A-Za-z0-9]+\}|[A-Za-z0-9])/;
+function subRuns(str) {
+  var runs = [], i = 0, m, re = /([A-Za-z])_(\{[A-Za-z0-9]+\}|[A-Za-z0-9])/g;
+  while ((m = re.exec(str)) !== null) {
+    runs.push({ t: str.slice(i, m.index + 1), sub: false });
+    runs.push({ t: m[2].charAt(0) === '{' ? m[2].slice(1, -1) : m[2], sub: true });
+    i = m.index + m[0].length;
+  }
+  if (i < str.length) runs.push({ t: str.slice(i), sub: false });
+  return runs;
+}
+function fontOf(size, weight, mono) {
+  return (weight || 600) + ' ' + size + 'px ' +
+    (mono ? '"JetBrains Mono", ui-monospace, monospace' : 'Inter, system-ui, sans-serif');
+}
+function drawRuns(str, x, y, size, col, align, weight, baseline, mono) {
+  var runs = subRuns(str), i, w = 0, x0;
   CX.save();
-  CX.font = (weight || 600) + ' ' + (size || 13) + 'px Inter, system-ui, sans-serif';
+  CX.fillStyle = col || C.text; CX.textAlign = 'left';
+  CX.textBaseline = baseline || 'alphabetic';
+  for (i = 0; i < runs.length; i++) {
+    CX.font = fontOf(runs[i].sub ? size * 0.72 : size, weight, mono);
+    runs[i].w = CX.measureText(runs[i].t).width;
+    w += runs[i].w;
+  }
+  x0 = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x;
+  for (i = 0; i < runs.length; i++) {
+    CX.font = fontOf(runs[i].sub ? size * 0.72 : size, weight, mono);
+    CX.fillText(runs[i].t, x0, y + (runs[i].sub ? size * 0.20 : 0));
+    x0 += runs[i].w;
+  }
+  CX.restore();
+}
+function txt(str, x, y, size, col, align, weight, baseline) {
+  size = size || 13;
+  if (SUBRE.test(str)) { drawRuns(str, x, y, size, col, align, weight, baseline, false); return; }
+  CX.save();
+  CX.font = fontOf(size, weight, false);
   CX.fillStyle = col || C.text; CX.textAlign = align || 'left';
   CX.textBaseline = baseline || 'alphabetic';
   CX.fillText(str, x, y); CX.restore();
 }
 function mtxt(str, x, y, size, col, align, weight, baseline) {
+  size = size || 12;
+  if (SUBRE.test(str)) { drawRuns(str, x, y, size, col, align, weight, baseline, true); return; }
   CX.save();
-  CX.font = (weight || 600) + ' ' + (size || 12) + 'px "JetBrains Mono", ui-monospace, monospace';
+  CX.font = fontOf(size, weight, true);
   CX.fillStyle = col || C.text; CX.textAlign = align || 'left';
   CX.textBaseline = baseline || 'alphabetic';
   CX.fillText(str, x, y); CX.restore();
 }
 function textW(str, size, weight, mono) {
+  size = size || 12;
+  var w = 0, i, runs;
   CX.save();
-  CX.font = (weight || 600) + ' ' + (size || 12) + 'px ' +
-    (mono ? '"JetBrains Mono", ui-monospace, monospace' : 'Inter, system-ui, sans-serif');
-  var w = CX.measureText(str).width; CX.restore(); return w;
+  if (SUBRE.test(str)) {
+    runs = subRuns(str);
+    for (i = 0; i < runs.length; i++) {
+      CX.font = fontOf(runs[i].sub ? size * 0.72 : size, weight, mono);
+      w += CX.measureText(runs[i].t).width;
+    }
+  } else {
+    CX.font = fontOf(size, weight, mono);
+    w = CX.measureText(str).width;
+  }
+  CX.restore(); return w;
+}
+/* the same subscript, for the HTML panel: only text between tags is touched,
+   so no attribute and no KaTeX markup can be caught by it */
+function subText(str) {
+  return str.replace(/([A-Za-z])_(\{[A-Za-z0-9]+\}|[A-Za-z0-9])/g, function (m, b, sb) {
+    return b + '<sub>' + (sb.charAt(0) === '{' ? sb.slice(1, -1) : sb) + '</sub>';
+  });
+}
+function subHTML(html) {
+  return html.replace(/>([^<]+)</g, function (m, t) { return '>' + subText(t) + '<'; });
 }
 function rr(x, y, w, h, r) {
   CX.beginPath();
@@ -1011,6 +1091,8 @@ SCEN[1].dist = {
   def: { v: 3, d1: 8, d2: 5 },
   reset: function () { S.t = 0; },
   step: function (dt) { S.t += dt; },
+  /* one full run of the animation, including the pause it holds at the end */
+  cycle: function () { var m = walkModel(S.p); return m.T + m.hold; },
   st: function () {
     var m = walkModel(S.p), L = loopT(S.t, m.T, m.hold);
     return { m: m, t: L.t, x: m.pos(L.t), dist: m.dist(L.t) };
@@ -1045,18 +1127,18 @@ SCEN[1].dist = {
 
     /* odometer */
     drawSceneCard('m1dist', 'Odometer', 220, 54, { x: 830, y: 96 }, function (bx, by, bw) {
-      txt('distance travelled', bx, by + 11, 11, C['text-dim'], 'left', 600);
+      txt('distance travelled  ' + sym('d'), bx, by + 11, 11, C['text-dim'], 'left', 600);
       mtxt(fmt(r.dist, 2) + ' m', bx, by + 40, 24, C.dist, 'left', 700);
       txt('always ≥ 0', bx + bw, by + 40, 10.5, C['text-muted'], 'right', 500);
     });
     m1Panel(this);
-    if (S.formula) fOverlay(['\\text{distance} = \\text{total path length (scalar)}']);
+    if (S.formula) fOverlay([tex('d') + ' = \\text{total path length (scalar)}']);
   },
   read: function () {
     var r = this.st();
     return [
       ['Time ' + sym('t'), fmt(r.t, 2) + ' s', 'time'],
-      ['Distance travelled', fmt(r.dist, 2) + ' m', 'dist'],
+      ['Distance travelled ' + sym('d'), fmt(r.dist, 2) + ' m', 'dist'],
       ['Position from start', fmt(r.x, 2) + ' m', 'disp'],
       ['Speed', fmt(S.p.v, 1) + ' m/s', 'speed'],
       ['Direction', r.t <= r.m.t1 ? 'away →' : '← back', 'd']
@@ -1064,7 +1146,7 @@ SCEN[1].dist = {
   },
   graph: function () {
     var self = this, m = walkModel(S.p);
-    return { t1: m.T, f: function (t) { return m.dist(t); }, lab: 'distance / m', col: C.dist, cur: self.st().t };
+    return { t1: m.T, f: function (t) { return m.dist(t); }, lab: sym('d') + ' / m', col: C.dist, cur: self.st().t };
   },
   info: function () {
     return '<div class="note"><b>Distance</b> is the total length of the path travelled. It is a ' +
@@ -1086,6 +1168,7 @@ SCEN[1].disp = {
   def: { v: 3, d1: 8, d2: 11 },
   reset: function () { S.t = 0; },
   step: function (dt) { S.t += dt; },
+  cycle: SCEN[1].dist.cycle,
   st: SCEN[1].dist.st,
   draw: function () {
     var r = this.st(), maxM = Math.max(S.p.d1, 10);
@@ -1121,16 +1204,16 @@ SCEN[1].disp = {
       txt('distance ≥ | displacement |  — always', bx, by + 64, 10.5, C['text-muted'], 'left', 500);
     });
     m1Panel(this);
-    if (S.formula) fOverlay(['\\text{distance} \\ge |\\,' + tex('s') + '\\,|']);
+    if (S.formula) fOverlay([tex('d') + ' \\ge |\\,' + tex('s') + '\\,|']);
   },
   read: function () {
     var r = this.st();
     return [
       ['Time ' + sym('t'), fmt(r.t, 2) + ' s', 'time'],
-      ['Distance travelled', fmt(r.dist, 2) + ' m', 'dist'],
+      ['Distance travelled ' + sym('d'), fmt(r.dist, 2) + ' m', 'dist'],
       [nameOf('s'), (r.x >= 0 ? '+' : '') + fmt(r.x, 2) + ' m', 'disp'],
       ['Direction of ' + sym('s'), r.x >= 0 ? 'right of start (+)' : 'left of start (−)', 'd'],
-      ['distance − |' + sym('s') + '|', fmt(r.dist - Math.abs(r.x), 2) + ' m', 'dist']
+      [sym('d') + ' − |' + sym('s') + '|', fmt(r.dist - Math.abs(r.x), 2) + ' m', 'dist']
     ];
   },
   graph: function () {
@@ -1159,6 +1242,7 @@ SCEN[1].speed = {
   def: { v: 4, d1: 12, d2: 9 },
   reset: function () { S.t = 0; },
   step: function (dt) { S.t += dt; },
+  cycle: SCEN[1].dist.cycle,
   st: SCEN[1].dist.st,
   draw: function () {
     var r = this.st(), maxM = Math.max(S.p.d1, 12), px;
@@ -1190,7 +1274,7 @@ SCEN[1].speed = {
     m1Panel(this);
     if (S.formula) fOverlay([
       '\\text{average speed} = \\dfrac{\\text{distance}}{' + tex('t') + '}',
-      tex('v') + '_{\\text{av}} = \\dfrac{' + tex('ds') + '}{' + tex('dt') + '}'
+      tex('vav') + ' = \\dfrac{' + tex('ds') + '}{' + tex('dt') + '}'
     ]);
   },
   read: function () {
@@ -1229,7 +1313,7 @@ SCEN[1].speed = {
         '\\ \\text{m}}{' + fmt(tt, 2) + '\\ \\text{s}} = ' + fmt(r.dist / tt, 2) + '\\ \\text{m/s}',
         'Distance counts every metre walked, so it never goes down.'],
       ['average velocity — uses the straight line from the start',
-        V + '_{\\text{av}} = \\dfrac{' + Ss + '}{' + T + '} = \\dfrac{' + fmt(r.x, 2) + '\\ \\text{m}}{' +
+        tex('vav') + ' = \\dfrac{' + Ss + '}{' + T + '} = \\dfrac{' + fmt(r.x, 2) + '\\ \\text{m}}{' +
         fmt(tt, 2) + '\\ \\text{s}} = ' + fmt(r.x / tt, 2) + '\\ \\text{m/s}',
         'Displacement is where the walker is now relative to the start — walk back and it shrinks. ' +
         'Return all the way and the average velocity is exactly zero, while the average speed is not.']
@@ -1257,6 +1341,8 @@ SCEN[1].accel = {
   reset: function () { S.t = 0; },
   step: function (dt) { S.t += dt; },
   T: 6,
+  /* ① the straight run plus its hold, ② one lap of the ball on the bend */
+  cycle: function () { return Math.max(this.T + .9, 2 * Math.PI / 0.9); },
   st: function () {
     var t = S.t % (this.T + .9); t = Math.min(t, this.T);
     var v = PHYS.vAt(S.p.u, S.p.a, t);
@@ -1403,6 +1489,7 @@ SCEN[1].time = {
   def: { v: 4, gate: 12, react: 0.25 },
   reset: function () { S.t = 0; },
   step: function (dt) { S.t += dt; },
+  cycle: function () { return 3 + S.p.gate / S.p.v + 3; },
   st: function () {
     var start = 3, T = start + S.p.gate / S.p.v + 3;
     var t = S.t % T, x = Math.max(0, (t - start)) * S.p.v;
@@ -1507,6 +1594,7 @@ SCEN[2].tape = {
   T: 4.2,
   reset: function () { S.t = 0; },
   step: function (dt) { S.t += dt; },
+  cycle: function () { return this.T + 1.2; },
   st: function () {
     var t = Math.min(S.t % (this.T + 1.2), this.T);
     var T = 1 / S.p.f, n = Math.floor(t / T);
@@ -1611,7 +1699,7 @@ SCEN[2].tape = {
       });
     }
     if (S.formula) fOverlay([tex('v') + ' = \\dfrac{\\text{gap}}{' + fmt(r.T, 3) + '\\ \\text{s}}',
-      tex('a') + ' = \\dfrac{v_2 - v_1}{' + tex('dt') + '}']);
+      tex('a') + ' = \\dfrac{' + texN('v', 2) + ' - ' + texN('v', 1) + '}{' + tex('dt') + '}']);
   },
   read: function () {
     var r = this.st(), p = S.p;
@@ -1647,7 +1735,7 @@ SCEN[2].tape = {
       '\\ \\text{s}} = ' + fmt(PHYS.tapeV(gL, p.f), 3) + '\\ \\text{m/s}',
       'The gap is ' + fmt(gL * 100, 2) + ' cm measured straight off the tape.']);
     if (r.n > 1) out.push(['a — from two neighbouring gaps',
-      A + ' = \\dfrac{' + V + '_2 - ' + V + '_1}{\\Delta t} = \\dfrac{' +
+      A + ' = \\dfrac{' + texN('v', 2) + ' - ' + texN('v', 1) + '}{\\Delta t} = \\dfrac{' +
       fmt(PHYS.tapeV(gL, p.f), 3) + ' - ' + fmt(PHYS.tapeV(gP, p.f), 3) + '}{' + fmt(r.T, 3) + '} = ' +
       fmt(PHYS.tapeA(gP, gL, p.f), 3) + '\\ \\text{m/s}^2',
       'Two gaps one interval apart, so the change in speed happened over Δt = ' + fmt(r.T, 3) + ' s.']);
@@ -1680,6 +1768,7 @@ SCEN[2].ramp = {
   reset: function () { S.t = 0; },
   step: function (dt) { S.t += dt; },
   aVal: function () { return PHYS.rampA(S.p.deg, !!S.p.roll); },
+  cycle: function () { return this.T + 1.1; },
   st: function () {
     var t = Math.min(S.t % (this.T + 1.1), this.T), a = this.aVal();
     return { t: t, a: a, s: PHYS.rampS(a, t), v: a * t };
@@ -1853,6 +1942,7 @@ SCEN[2].gates = {
   reset: function () { S.t = 0; },
   step: function (dt) { S.t += dt; },
   X0: 0.35,              /* where gate 1 sits, in metres from the start */
+  cycle: function () { return this.st().T + 1.2; },
   st: function () {
     var p = S.p, flag = p.flag / 100;
     var v1 = Math.sqrt(PHYS.vSq(p.u, p.a, this.X0));
@@ -1882,7 +1972,7 @@ SCEN[2].gates = {
     var steps = [
       ['1', 'the card of known width breaks the beam at each gate'],
       ['2', 'the timer records how long the beam stayed broken, Δt'],
-      ['3', 'v = card width ÷ Δt, then a = (v₂² − v₁²) ÷ 2d']
+      ['3', sym('v') + ' = card width ÷ Δt, then ' + sym('a') + ' = (' + symN('v', 2) + '² − ' + symN('v', 1) + '²) ÷ 2' + sym('d')]
     ];
     steps.forEach(function (st, i) {
       var yy = 130 + i * 30;
@@ -1927,25 +2017,25 @@ SCEN[2].gates = {
     if (S.labels) mtxt('card ' + fmt(p.flag, 0) + ' cm', cartX, by - 100, 11, C.meas, 'center', 600);
 
     drawSceneCard('m2gate', 'Acceleration between the gates', 292, 64, { x: 780, y: 116 }, function (bx, by2, bw) {
-      txt('a = (v₂² − v₁²) ÷ 2d', bx, by2 + 12, 12, C['text-dim'], 'left', 600);
+      txt(sym('a') + ' = (' + symN('v', 2) + '² − ' + symN('v', 1) + '²) ÷ 2' + sym('d'), bx, by2 + 12, 12, C['text-dim'], 'left', 600);
       mtxt(fmt(r.aMeas, 2) + ' m/s²', bx + bw, by2 + 13, 16, C.a, 'right', 700);
       mtxt('(' + fmt(r.v2, 2) + '² − ' + fmt(r.v1, 2) + '²) ÷ (2 × ' + fmt(p.D, 2) + ')',
         bx, by2 + 40, 11, C['text-muted'], 'left', 500);
       txt('set a = 0 to see two equal gate readings', bx, by2 + 58, 10, C['text-muted'], 'left', 500);
     });
     if (S.formula) fOverlay([tex('v') + ' = \\dfrac{\\text{card width}}{' + tex('dt') + '}',
-      tex('a') + ' = \\dfrac{' + tex('v') + '_2^2 - ' + tex('v') + '_1^2}{2d}']);
+      tex('a') + ' = \\dfrac{' + texN('v', 2) + '^2 - ' + texN('v', 1) + '^2}{2d}']);
   },
   read: function () {
     var r = this.st(), p = S.p;
     return [
       ['Card width', fmt(p.flag, 0) + ' cm', 'meas'],
-      ['Gate separation d', fmt(p.D, 2) + ' m', 'meas'],
+      ['Gate separation ' + sym('d'), fmt(p.D, 2) + ' m', 'meas'],
       ['Δt at gate 1', fmt(r.dt1 * 1000, 1) + ' ms', 'time'],
-      ['v₁ = card ÷ Δt₁', fmt(r.v1, 3) + ' m/s', 'vel'],
+      [symN('v', 1) + ' = card ÷ Δt₁', fmt(r.v1, 3) + ' m/s', 'vel'],
       ['Δt at gate 2', fmt(r.dt2 * 1000, 1) + ' ms', 'time'],
-      ['v₂ = card ÷ Δt₂', fmt(r.v2, 3) + ' m/s', 'vel'],
-      ['a = (v₂²−v₁²)/2d', fmt(r.aMeas, 3) + ' m/s²', 'acc'],
+      [symN('v', 2) + ' = card ÷ Δt₂', fmt(r.v2, 3) + ' m/s', 'vel'],
+      [sym('a') + ' = (' + symN('v', 2) + '²−' + symN('v', 1) + '²)/2' + sym('d'), fmt(r.aMeas, 3) + ' m/s²', 'acc'],
       ['cart ' + sym('s') + ' now', fmt(r.s, 2) + ' m', 'disp'],
       ['cart ' + sym('v') + ' now', fmt(r.v, 2) + ' m/s', 'vel']
     ];
@@ -1958,17 +2048,17 @@ SCEN[2].gates = {
   calc: function () {
     var r = this.st(), p = S.p, w = p.flag / 100, V = tex('v'), A = tex('a');
     return [
-      ['v₁ — the speed at gate 1',
-        V + '_1 = \\dfrac{\\text{card width}}{\\Delta t_1} = \\dfrac{' + fmt(w, 3) +
+      [symN('v', 1) + ' — the speed at gate 1',
+        texN('v', 1) + ' = \\dfrac{\\text{card width}}{\\Delta t_1} = \\dfrac{' + fmt(w, 3) +
         '\\ \\text{m}}{' + fmt(r.dt1, 4) + '\\ \\text{s}} = ' + fmt(r.v1, 3) + '\\ \\text{m/s}',
         'The card is ' + fmt(p.flag, 0) + ' cm = ' + fmt(w, 3) + ' m wide and it blocked gate 1 for ' +
         fmt(r.dt1 * 1000, 1) + ' ms.'],
-      ['v₂ — the speed at gate 2',
-        V + '_2 = \\dfrac{\\text{card width}}{\\Delta t_2} = \\dfrac{' + fmt(w, 3) +
+      [symN('v', 2) + ' — the speed at gate 2',
+        texN('v', 2) + ' = \\dfrac{\\text{card width}}{\\Delta t_2} = \\dfrac{' + fmt(w, 3) +
         '\\ \\text{m}}{' + fmt(r.dt2, 4) + '\\ \\text{s}} = ' + fmt(r.v2, 3) + '\\ \\text{m/s}',
         'Same card, shorter time — the trolley is moving faster by the time it reaches gate 2.'],
       ['a — from the two gate speeds',
-        A + ' = \\dfrac{' + V + '_2^{\\,2} - ' + V + '_1^{\\,2}}{2d} = \\dfrac{' + fmt(r.v2, 3) +
+        A + ' = \\dfrac{' + texN('v', 2) + '^{\\,2} - ' + texN('v', 1) + '^{\\,2}}{2d} = \\dfrac{' + fmt(r.v2, 3) +
         '^2 - ' + fmt(r.v1, 3) + '^2}{2 \\times ' + fmt(p.D, 2) + '} = ' + fmt(r.aMeas, 3) +
         '\\ \\text{m/s}^2',
         'This uses ' + tex('v') + '² = ' + tex('u') + '² + 2as with the gate separation d = ' +
@@ -1985,12 +2075,12 @@ SCEN[2].gates = {
       sym('v') + '₁ = ' + fmt(r.flag, 3) + ' ÷ ' + fmt(r.dt1, 4) + ' = <b>' + fmt(r.v1, 2) + ' m/s</b>.</li>' +
       '<li>Gate 2: Δ' + sym('t') + '₂ = ' + fmt(r.dt2 * 1000, 1) + ' ms ⇒ ' +
       sym('v') + '₂ = <b>' + fmt(r.v2, 2) + ' m/s</b>.</li>' +
-      '<li>Use ' + sym('v') + '² = ' + sym('u') + '² + 2' + sym('a') + sym('s') + ' over the gap d = ' +
+      '<li>Use ' + sym('v') + '² = ' + sym('u') + '² + 2' + sym('a') + sym('s') + ' over the gap ' + sym('d') + ' = ' +
       fmt(p.D, 2) + ' m, rearranged: ' + sym('a') + ' = (' + sym('v') + '₂² − ' + sym('v') + '₁²) ÷ 2d = <b>' +
       fmt(r.aMeas, 2) + ' m/s²</b>.</li>' +
       '<li>A narrower card gives a more truly instantaneous reading, but a shorter Δ' + sym('t') +
       ' the timer must resolve — that is the real experimental trade-off.</li></ol>' +
-      '<div class="eqbox">' + K(tex('a') + ' = \\dfrac{' + tex('v') + '_2^{\\,2} - ' + tex('v') + '_1^{\\,2}}{2d}') + '</div>';
+      '<div class="eqbox">' + K(tex('a') + ' = \\dfrac{' + texN('v', 2) + '^{\\,2} - ' + texN('v', 1) + '^{\\,2}}{2d}') + '</div>';
   }
 };
 
@@ -2153,6 +2243,7 @@ function m3(key, ord, label, title, sub, build, sliders, def, info) {
     model: function () { return build(S.p); },
     reset: function () { S.t = 0; S.hover = null; },
     step: function (dt) { S.t += dt; },
+    cycle: function () { return this.model().T + 1.0; },
     st: function () { var T = this.model().T; return { t: Math.min(S.t % (T + 1.0), T) }; },
     draw: function () { m3Draw(this); },
     read: function () { return m3Read(this); },
@@ -2331,6 +2422,7 @@ function m4Scene(ord, key, label, title, def) {
     def: def,
     reset: function () { S.t = 0; },
     step: function (dt) { S.t += dt; },
+    cycle: function () { return S.p.t + .8; },
     draw: function () { m4Draw(this); },
     read: function () { return m4Read(); },
     graph: function () {
@@ -2878,7 +2970,7 @@ function loadParams(keepT) {
   var sc = cur(), k;
   S.p = {};
   for (k in sc.def) if (sc.def.hasOwnProperty(k)) S.p[k] = sc.def[k];
-  if (!keepT) { S.t = 0; S.hover = null; }
+  if (!keepT) { S.t = 0; S.hover = null; S.done = false; S.play = true; }
   S.zoom = { k: 1, ox: 0, oy: 0, panning: false, px: 0, py: 0 };
   S.cardPos = {};
 }
@@ -2936,7 +3028,10 @@ function updateChrome() {
   $('tFormula').classList.toggle('active', S.formula);
   $('tTrace').classList.toggle('active', S.trace);
   $('tHints').classList.toggle('active', S.hints);
-  $('bPlay').textContent = S.play ? '⏸ Pause' : '▶ Play';
+  var ppState = S.done ? 'replay' : (S.play ? 'pause' : 'play');
+  [].forEach.call($('bPlay').querySelectorAll('.ppl'), function (el) {
+    el.classList.toggle('on', el.dataset.pp === ppState);
+  });
   $('gDefine').classList.toggle('slot-hidden', S.md !== 4);
   $('tDefine').classList.toggle('active', S.define);
   $('chipZoom').hidden = S.zoom.k === 1;
@@ -3040,7 +3135,7 @@ function renderPanel() {
   } else {
     html += ansTab();
   }
-  $('pbody').innerHTML = html;
+  $('pbody').innerHTML = subHTML(html);
   wirePanel();
   patchLive(true);
 }
@@ -3146,8 +3241,10 @@ function patchLive(force) {
   for (i = 0; i < rows.length; i++) {
     var kEl = $('rk' + i), vEl = $('rv' + i);
     if (!kEl || !vEl) { renderPanel(); return; }
-    if (kEl.textContent !== rows[i][0]) kEl.textContent = rows[i][0];
-    if (vEl.textContent !== rows[i][1]) vEl.textContent = rows[i][1];
+    /* compare against the raw string, not the rendered one: the rendered cell may
+       carry <sub> markup that textContent would flatten, causing a rewrite a frame */
+    if (kEl.dataset.raw !== rows[i][0]) { kEl.dataset.raw = rows[i][0]; kEl.innerHTML = subText(rows[i][0]); }
+    if (vEl.dataset.raw !== rows[i][1]) { vEl.dataset.raw = rows[i][1]; vEl.innerHTML = subText(rows[i][1]); }
   }
   /* KaTeX is expensive, so the working is re-typeset a few times a second and
      only when the numbers in it have actually moved */
@@ -3185,7 +3282,8 @@ function drawMini() {
   mtxt('t / s', g.x + g.w, g.y + g.h + 30, 11, C['text-muted'], 'right', 600);
   CX = old;
   var cap = $('miniCap');
-  if (cap) cap.textContent = g2.lab.replace(/ \/.*/, '') + ' against time  ·  cursor at t = ' + fmt(g2.cur, 2) + ' s';
+  /* the axis label can carry a subscript (v_f), so this caption is HTML too */
+  if (cap) cap.innerHTML = subText(g2.lab.replace(/ \/.*/, '') + ' against time  ·  cursor at t = ' + fmt(g2.cur, 2) + ' s');
 }
 
 /* ---------- main draw --------------------------------------------------- */
@@ -3199,7 +3297,7 @@ function draw() {
   /* bottom bar */
   $('botLeft').textContent = sc.title;
   $('botRight').textContent = 'mode ' + S.md + ' · ' + sc.key + ' · t = ' + fmt(S.t, 2) + ' s · ' +
-    S.not.toUpperCase() + ' · ' + (S.play ? 'playing' : 'paused') + ' · ×' + S.speed;
+    S.not.toUpperCase() + ' · ' + (S.done ? 'finished' : S.play ? 'playing' : 'paused') + ' · ×' + S.speed;
 }
 
 /* ---------- animation loop ---------------------------------------------- */
@@ -3209,7 +3307,15 @@ function loop(now) {
   last = now;
   if (!(dt > 0)) dt = 0;
   if (dt > 0.1) dt = 0.1;
-  if (S.play) { cur().step(dt * S.speed); patchLive(); }
+  if (S.play) {
+    var sc = cur();
+    sc.step(dt * S.speed);
+    // one run only: park the clock a hair short of the end so the last frame is
+    // the finished state (not the wrapped-around start), then offer a replay
+    var L = sc.cycle ? sc.cycle() : 0;
+    if (L > 0 && S.t >= L) { S.t = L - 1e-3; S.play = false; S.done = true; updateChrome(); }
+    patchLive();
+  }
   draw();
   requestAnimationFrame(loop);
 }
@@ -3281,6 +3387,14 @@ function setTheme(name) {
   readTheme(); renderPanel(); draw();
 }
 
+/* one button, three jobs: pause a running animation, resume a paused one, and
+   start the whole run again once it has played through */
+function playPauseReplay() {
+  if (S.done) { S.done = false; cur().reset(); S.play = true; }
+  else S.play = !S.play;
+  updateChrome();
+}
+
 /* ---------- init -------------------------------------------------------- */
 function init() {
   CV = $('cv'); CX = CV.getContext('2d');
@@ -3317,7 +3431,7 @@ function init() {
   $('tFormula').addEventListener('click', function () { S.formula = !S.formula; updateChrome(); draw(); });
   $('tTrace').addEventListener('click', function () { S.trace = !S.trace; updateChrome(); draw(); });
   $('tHints').addEventListener('click', function () { S.hints = !S.hints; updateChrome(); draw(); });
-  $('bPlay').addEventListener('click', function () { S.play = !S.play; updateChrome(); });
+  $('bPlay').addEventListener('click', playPauseReplay);
   $('bReset').addEventListener('click', function () {
     loadParams(); cur().reset(); renderSliders(); updateChrome(); renderPanel(); draw();
   });
@@ -3329,7 +3443,7 @@ function init() {
   window.addEventListener('keydown', function (e) {
     var tg = e.target.tagName;
     if (tg === 'INPUT' || tg === 'SELECT' || tg === 'TEXTAREA' || tg === 'BUTTON') return;
-    if (e.key === ' ') { S.play = !S.play; updateChrome(); e.preventDefault(); }
+    if (e.key === ' ') { playPauseReplay(); e.preventDefault(); }
     if (e.key === 'Escape' && S.zoom.k > 1) { S.zoom = { k: 1, ox: 0, oy: 0, panning: false, px: 0, py: 0 }; updateChrome(); }
   });
   window.addEventListener('resize', function () { resize(); draw(); });
