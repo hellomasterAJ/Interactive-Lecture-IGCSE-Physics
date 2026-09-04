@@ -187,6 +187,19 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
 .pillrow{min-height:32px;flex-wrap:wrap;row-gap:5px}
 .brk{display:none;flex-basis:100%;height:0}
 .pillrow.two .brk{display:block}
+/* Mode 4's explanation cards are a dropdown, not a second row of pills: the row
+   stays one line tall however many cards are added, so nothing below it moves.
+   A native select sizes itself to its widest option, so it never jitters either. */
+.exsel{height:32px;padding:0 26px 0 10px;border-radius:9px;font-family:inherit;font-size:11px;
+  font-weight:600;cursor:pointer;background:var(--card);border:1px solid var(--border);
+  color:var(--text);outline:none;box-sizing:border-box;appearance:none;
+  background-image:linear-gradient(45deg,transparent 50%,var(--text-dim) 50%),
+                   linear-gradient(135deg,var(--text-dim) 50%,transparent 50%);
+  background-position:calc(100% - 14px) 14px,calc(100% - 9px) 14px;
+  background-size:5px 5px,5px 5px;background-repeat:no-repeat}
+.exsel:hover{border-color:var(--accent)}
+.exsel:focus{border-color:var(--accent)}
+.exsel.picked{background-color:var(--accent-glow);border-color:var(--accent);color:var(--accent)}
 .pills{display:flex;gap:3px;background:var(--card);border:1px solid var(--border);border-radius:9px;
   padding:3px;height:32px;align-items:center;box-sizing:border-box}
 .pill{padding:0 11px;height:24px;line-height:24px;border:none;border-radius:6px;background:transparent;
@@ -211,8 +224,12 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
 .ctrl-btn{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:0 12px;
   height:28px;line-height:26px;border-radius:8px;cursor:pointer;font-size:11.5px;font-weight:600;
   transition:all .16s;white-space:nowrap;box-sizing:border-box}
-/* Play / Pause / Replay all sit in the same box, so the row never jumps */
-#bPlay{min-width:104px;text-align:center;justify-content:center}
+/* Play / Pause / Replay share one button. All three labels sit stacked in the SAME
+   grid cell and only one is visible, so the button is exactly as wide as the widest
+   label in whatever font is in use — no guessed min-width, and no reflow on toggle */
+#bPlay{display:inline-grid;justify-items:center;align-items:center}
+#bPlay .ppl{grid-area:1/1;visibility:hidden}
+#bPlay .ppl.on{visibility:visible}
 .ctrl-btn:hover{border-color:var(--accent);color:var(--accent)}
 .ctrl-btn:disabled{opacity:.4;cursor:default;border-color:var(--border);color:var(--text-muted)}
 .ctrl-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
@@ -368,7 +385,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">⚡ Energy Lab</span> <span class="badge-top" id="badge">v2.0.9</span></h1>
+    <h1><span class="t">⚡ Energy Lab</span> <span class="badge-top" id="badge">v2.1.6</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -398,14 +415,13 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
     <span class="tlabel" id="lblA" hidden>Sims</span>
     <div class="pills" id="gSub"></div>
     <span class="spacer"></span>
+    <span class="tlabel" id="lblB" hidden>Explain</span>
+    <select class="exsel" id="gExSel" hidden></select>
     <span class="tlabel">Notation</span>
     <div class="pills gold" id="gNote">
       <button class="pill active" data-n="uk">UK</button>
       <button class="pill" data-n="us">US</button>
     </div>
-    <span class="brk"></span>
-    <span class="tlabel" id="lblB" hidden>Explain</span>
-    <div class="pills" id="gEx"></div>
   </div>
 
   <div class="toolbar">
@@ -418,19 +434,19 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
     </div>
 
     <div class="trow">
-      <div class="tgroup">
-        <button class="ctrl-btn primary" id="bPlay">▶ Play</button>
-        <div class="pills" id="gSpeed">
-          <button class="pill" data-s="0.5">0.5×</button>
-          <button class="pill active" data-s="1">1×</button>
-          <button class="pill" data-s="2">2×</button>
-        </div>
-      </div>
       <div class="tgroup" id="gViewWrap">
         <span class="tlabel">Show</span>
         <button class="ctrl-btn on" id="tCoins" title="draw the tokens, not just the bars">🪙 Tokens</button>
         <button class="ctrl-btn on" id="tNums" title="the numbers on every account">🔢 Numbers</button>
         <button class="ctrl-btn on" id="tChain" title="the transfer chain: which store feeds which">🔗 Chain</button>
+      </div>
+      <div class="tgroup">
+        <button class="ctrl-btn primary" id="bPlay"><span class="ppl on" data-pp="play">▶ Play</span><span class="ppl" data-pp="pause">⏸ Pause</span><span class="ppl" data-pp="replay">↻ Replay</span></button>
+        <div class="pills" id="gSpeed">
+          <button class="pill" data-s="0.5">0.5×</button>
+          <button class="pill active" data-s="1">1×</button>
+          <button class="pill" data-s="2">2×</button>
+        </div>
       </div>
       <span class="spacer"></span>
       <div class="tgroup nb">
@@ -560,12 +576,16 @@ function fmtW(w) {
 }
 
 /* ---------- UK / US wording --------------------------------------------- */
+/* The distance moved in the direction of the force. At IGCSE the UK writes it d
+   (A-level switches to W = Fs cos θ); the US writes the displacement Δx.
+   sSym() is the on-screen text, sTex() the LaTeX twin — KaTeX wants \Delta, not Δ. */
 var NOTE = {
-  uk: { s: 's', sName: 'distance moved', work: 'work done' },
-  us: { s: 'd', sName: 'distance', work: 'work' }
+  uk: { s: 'd', sTex: 'd', sName: 'distance moved', work: 'work done' },
+  us: { s: 'Δx', sTex: '\\Delta x', sName: 'distance', work: 'work' }
 };
 function N() { return NOTE[S.note]; }
 function sSym() { return N().s; }
+function sTex() { return N().sTex; }
 
 /* ---------- canvas ------------------------------------------------------- */
 function resize() {
@@ -1708,64 +1728,66 @@ scene('1', 'therm', {
       txt('faster jiggle = hotter = more tokens in the thermal account',
         130, 392, 11.5, C['text-muted'], 'left', 500);
 
-      /* the immersion heater: this is WHY the electrical account is on the
-         books at all — the tokens come down this wire. It is drawn as one
-         smooth coiled tube, the way a real element looks.                */
-      var hy = 428, hx0 = 186, hx1 = 438, loops = 9;
-      var pitch = (hx1 - hx0) / loops, rx = pitch * 0.92, ry = 21;
-      var glow = clamp(T / 100, 0, 1);
+      /* The immersion heater, drawn the way a boiler element really looks:
+         ONE hairpin tube — a run out, a U-bend, a run back — dark on the
+         outside and glowing from the inside, with the heat it gives off
+         rising into the water above. This is WHY the electrical account is on
+         the books at all: the tokens come down the lead and leave as warmth. */
+      var hy = 444, hx0 = 186, hx1 = 446, gap = 32;
+      var yTop = hy - gap / 2, yBot = hy + gap / 2;
+      var glow = clamp((T - 20) / 80, 0, 1);
+      var hairpin = function () {
+        CX.beginPath();
+        CX.moveTo(hx0, yTop);
+        CX.lineTo(hx1 - gap / 2, yTop);
+        CX.arc(hx1 - gap / 2, hy, gap / 2, -Math.PI / 2, Math.PI / 2);
+        CX.lineTo(hx0, yBot);
+      };
       CX.save();
-      CX.lineCap = 'round';
-      /* the heat haze the whole coil sits in */
-      var hz = CX.createRadialGradient((hx0 + hx1) / 2, hy, 6, (hx0 + hx1) / 2, hy, 150);
-      hz.addColorStop(0, withA('#f87171', .10 + glow * .16));
+      CX.lineCap = 'round'; CX.lineJoin = 'round';
+
+      /* the heat haze the tube sits in */
+      var hz = CX.createRadialGradient((hx0 + hx1) / 2, hy, 8, (hx0 + hx1) / 2, hy, 170);
+      hz.addColorStop(0, withA('#f87171', .08 + glow * .18));
       hz.addColorStop(1, withA('#f87171', 0));
       CX.fillStyle = hz;
-      CX.fillRect(hx0 - 60, hy - 60, hx1 - hx0 + 120, 120);
-      /* the two straight legs the coil is wound on */
-      CX.strokeStyle = withA(C['text-muted'], .8); CX.lineWidth = 4;
-      CX.beginPath(); CX.moveTo(hx0 - 16, hy - ry); CX.lineTo(hx0, hy - ry); CX.stroke();
-      CX.beginPath(); CX.moveTo(hx1, hy + ry); CX.lineTo(hx1 + 14, hy + ry); CX.stroke();
+      CX.fillRect(hx0 - 70, hy - 90, hx1 - hx0 + 140, 180);
 
-      /* A real element is a HELIX. Every turn is drawn twice: the half that
-         goes round the back first, dim, then the half that comes towards
-         you, bright — which is what makes it read as a coil and not a
-         wavy line.                                                       */
-      var turn = function (i, back) {
-        var cxk = hx0 + (i + 0.5) * pitch;
-        CX.beginPath();
-        CX.ellipse(cxk, hy, rx, ry, 0, back ? Math.PI / 2 : -Math.PI / 2,
-          back ? Math.PI * 1.5 : Math.PI / 2);
-        CX.stroke();
-      };
-      var lit = CX.createLinearGradient(0, hy - ry, 0, hy + ry);
-      lit.addColorStop(0, '#fecaca');
-      lit.addColorStop(0.42, '#fb7185');
-      lit.addColorStop(1, '#991b1b');
-      for (var i = 0; i < loops; i++) {
-        /* behind the axis: darker and thinner, as if further away */
-        CX.strokeStyle = withA('#7f1d1d', .75 + glow * .2); CX.lineWidth = 4.5;
-        turn(i, true);
-        /* the near half, glowing */
-        CX.strokeStyle = withA(scol('therm'), .35 + glow * .35);
-        CX.lineWidth = 11; turn(i, false);          /* its own halo        */
-        CX.strokeStyle = lit; CX.lineWidth = 6; turn(i, false);
-        CX.strokeStyle = withA('#fff1f2', .20 + glow * .45);
-        CX.lineWidth = 1.6; turn(i, false);
-      }
+      /* one path, stroked over and over from wide to narrow: the glow around
+         the tube, the dark casing, then the core running hotter as T rises */
+      hairpin(); CX.strokeStyle = withA(scol('therm'), .12 + glow * .24); CX.lineWidth = 21; CX.stroke();
+      hairpin(); CX.strokeStyle = '#4a1010'; CX.lineWidth = 16; CX.stroke();
+      hairpin(); CX.strokeStyle = '#7f1d1d'; CX.lineWidth = 12; CX.stroke();
+      hairpin(); CX.strokeStyle = withA('#ef4444', .30 + glow * .62); CX.lineWidth = 7; CX.stroke();
+      hairpin(); CX.strokeStyle = withA('#fdba74', .08 + glow * .70); CX.lineWidth = 3; CX.stroke();
+      hairpin(); CX.strokeStyle = withA('#fff7ed', .05 + glow * .50); CX.lineWidth = 1.3; CX.stroke();
       CX.restore();
+
+      /* the heat leaving the tube, drawn the way a boiler diagram draws it:
+         a row of arrows rising into the water, each one fading as it goes */
+      var nA = 5, aSpan = (hx1 - hx0 - 56) / (nA - 1);
+      for (var ai = 0; ai < nA; ai++) {
+        var axp = hx0 + 28 + ai * aSpan;
+        var ph = (S.t * 0.9 + ai * 0.19) % 1;
+        var aA = (0.28 + glow * 0.55) * (1 - ph * 0.7);
+        arrow(axp, yTop - 9, axp, yTop - 17 - (2 + ph * 10),
+          withA('#f87171', aA), 2.8, { head: 8 });
+      }
+
       /* the lead, and the tokens crawling along it into the element */
-      var ly = hy - ry;
-      line(150, 470, 150, ly, scol('elec'), 2.6);
-      line(150, ly, hx0 - 14, ly, scol('elec'), 2.6);
-      dot(150, 472, 5, scol('elec'));
+      var ly = yTop, lx = 146, lend = hx0 - 4;
+      line(lx, 470, lx, ly, scol('elec'), 2.6);
+      line(lx, ly, lend, ly, scol('elec'), 2.6);
+      /* the return terminal — the hairpin's second tail */
+      line(hx0 - 22, yBot, hx0, yBot, withA(C['text-muted'], .85), 3.2);
+      dot(lx, 472, 5, scol('elec'));
       for (var ci = 0; ci < 4; ci++) {
         var cq = (S.t * 0.5 + ci / 4) % 1, cyp, cxp;
-        if (cq < 0.55) { cxp = 150; cyp = 470 - (cq / 0.55) * (470 - ly); }
-        else { cxp = 150 + ((cq - 0.55) / 0.45) * (hx0 - 14 - 150); cyp = ly; }
+        if (cq < 0.55) { cxp = lx; cyp = 470 - (cq / 0.55) * (470 - ly); }
+        else { cxp = lx + ((cq - 0.55) / 0.45) * (lend - lx); cyp = ly; }
         coin(cxp, cyp, 5.5, scol('elec'));
       }
-      txt('electrical in', 158, 484, 11, scol('elec'), 'left', 600);
+      txt('electrical in', 154, 484, 11, scol('elec'), 'left', 600);
       txt('the heating element', hx1, 484, 11, scol('therm'), 'right', 600);
     });
     /* the thermometer */
@@ -2196,24 +2218,27 @@ scene('1', 'chem', {
 
     withCard('zoom', 110, 166, 420, 320, function () {
       card(110, 166, 420, 320, 'burning the fuel  ·  CH₄ + 2O₂ → CO₂ + 2H₂O');
-      var cx = 320, cy = 296;
+      var cx = 320, cy = 302;
       var apart = st === 'in' ? (1 - q) * 62 : 0;      /* still coming in    */
-      var split = st === 'out' ? q * 66 : 0;           /* products drifting  */
+      var split = st === 'out' ? q * 40 : 0;           /* products drifting  */
 
       /* ---- where every atom starts, and where it ends up --------------- */
       var Cx = cx - 84, dH = 31, HA = [-90, 15, 90, 165];
       var o1x = cx + 54 - 0, o1y = cy - 52, o2x = cx + 54, o2y = cy + 52;
       var A = [];                                      /* one entry per atom */
-      A.push({ el: 'C', r: 13, ax: Cx, ay: cy, bx: cx + 26, by: cy });
+      A.push({ el: 'C', r: 13, ax: Cx, ay: cy, bx: cx - 88, by: cy });
       HA.forEach(function (ang, i) {
         A.push({ el: 'H', r: 8, ax: Cx + cosd(ang) * dH, ay: cy + sind(ang) * dH,
           bx: 0, by: 0, water: i < 2 ? 0 : 1, slot: i % 2 });
       });
-      /* the four oxygens: the two nearest the carbon become CO₂ */
-      A.push({ el: 'O', r: 11, ax: o1x - 16, ay: o1y - 3, bx: cx + 26, by: cy - 32 });   /* 5 */
-      A.push({ el: 'O', r: 11, ax: o1x + 16, ay: o1y + 3, bx: cx + 96, by: cy - 56 });   /* 6 */
-      A.push({ el: 'O', r: 11, ax: o2x - 16, ay: o2y + 2, bx: cx + 26, by: cy + 32 });   /* 7 */
-      A.push({ el: 'O', r: 11, ax: o2x + 16, ay: o2y - 2, bx: cx + 96, by: cy + 56 });   /* 8 */
+      /* The four oxygens: the two nearest the carbon become CO₂. The products
+         are laid out symmetrically about cx — CO₂ to the left, the two waters
+         to the right — so the finished reaction sits in the middle of the card
+         instead of piling up against its right-hand edge. */
+      A.push({ el: 'O', r: 11, ax: o1x - 16, ay: o1y - 3, bx: cx - 88, by: cy - 32 });   /* 5 */
+      A.push({ el: 'O', r: 11, ax: o1x + 16, ay: o1y + 3, bx: cx + 76, by: cy - 52 });   /* 6 */
+      A.push({ el: 'O', r: 11, ax: o2x - 16, ay: o2y + 2, bx: cx - 88, by: cy + 32 });   /* 7 */
+      A.push({ el: 'O', r: 11, ax: o2x + 16, ay: o2y - 2, bx: cx + 76, by: cy + 52 });   /* 8 */
       /* the hydrogens land on their own water molecule, bent at ~104° */
       A.forEach(function (a) {
         if (a.el !== 'H') return;
@@ -2224,7 +2249,7 @@ scene('1', 'chem', {
       /* the reactants slide in from the sides; the products slide apart */
       A.forEach(function (a) {
         var inOff = a.el === 'O' ? apart : -apart;
-        var outOff = (a.bx > cx + 60) ? split : -split;
+        var outOff = (a.bx > cx) ? split : -split;
         a.x = (a.ax + inOff) + ((a.bx + outOff) - (a.ax + inOff)) * u;
         a.y = a.ay + (a.by - a.ay) * u;
       });
@@ -2253,16 +2278,34 @@ scene('1', 'chem', {
         CX.restore();
       }
 
-      A.forEach(function (a) { atomBall(a.x, a.y, a.r, a.el); });
+      /* ---- energy leaving, once the new bonds have formed ---------------
+         The spare tokens spray out of the reaction point in every direction,
+         the way heat and light really leave — on a wide ellipse so they fill
+         the card rather than trailing off in one line, and drawn BEFORE the
+         atoms so the molecules always sit on top of the spray.
 
-      /* ---- energy leaving, once the new bonds have formed --------------- */
+         The COUNT is not decorative: it is the size of the two piles the
+         Energy Bank below is about to show, worked out from the same token
+         value, so the picture and the accounts agree. When the bank is only
+         showing a small pile the spray runs two in flight per banked token,
+         so the burst still reads. Every token recycles round its phase, so
+         the stream never dries up while the products are still leaving. */
       if (st !== 'in') {
-        for (var oi = 0; oi < 9; oi++) {
-          var oq = ((st === 'react' ? u : q) + oi / 9) % 1;
-          dot(cx - 130 + oi * 17, cy + 96 - oq * 46, 4.5,
-            withA(oi % 2 ? scol('therm') : scol('rad'), (1 - oq) * (st === 'react' ? u : 1)));
+        var emit = st === 'react' ? u : 1;
+        var coinJ = niceCoin(Math.max(E, 1));
+        var banked = clamp(Math.round(E * .7 / coinJ) + Math.round(E * .3 / coinJ), 6, 34);
+        var NB = banked < 16 ? banked * 2 : banked;
+        var phase = st === 'react' ? u * 0.8 : 0.8 + q * 1.7;
+        for (var oi = 0; oi < NB; oi++) {
+          var oa = (oi / NB) * 360 + (oi % 2 ? 10 : 0);
+          var oq = (phase + oi * 0.61803) % 1;   /* golden ratio: every token is at a different radius */
+          dot(cx + cosd(oa) * (16 + oq * 136), cy + sind(oa) * (12 + oq * 82),
+            4.6 - oq * 1.9,
+            withA(oi % 2 ? scol('therm') : scol('rad'), Math.sin(oq * Math.PI) * .95 * emit));
         }
       }
+
+      A.forEach(function (a) { atomBall(a.x, a.y, a.r, a.el); });
 
       runLine([{ t: 'chemical', k: 'chem' }, { t: '  →  ' }, { t: 'thermal', k: 'therm' },
       { t: '  +  ' }, { t: 'radiant', k: 'rad' }, { t: '   ·  CO₂ and H₂O carry the rest away' }],
@@ -2511,7 +2554,7 @@ scene('2', 'force', {
   },
   eq: function () {
     var F = V('F'), s = V('s'), ang = V('ang');
-    return [['work done by a force', 'W = F' + sSym() + '\\cos\\theta = ' + fmt(F, 0) +
+    return [['work done by a force', 'W = F' + sTex() + '\\cos\\theta = ' + fmt(F, 0) +
       ' \\times ' + fmt(s, 1) + ' \\times \\cos ' + fmt(ang, 0) + '^\\circ = ' +
       fmt(F * cosd(ang) * s, 1) + '\\ \\text{J}',
       ang === 90 ? 'At 90° the force does no work at all.' :
@@ -2629,9 +2672,9 @@ scene('2', 'friction', {
   },
   eq: function () {
     var v = V('v'), mu = V('mu'), m = V('m'), fr = mu * m * 10;
-    return [['every joule goes to friction', '\\tfrac12 mv^2 = \\mu m g' + sSym(),
+    return [['every joule goes to friction', '\\tfrac12 mv^2 = \\mu m g' + sTex(),
       'The box keeps sliding until the movement account is empty.'],
-    ['so it stops after', sSym() + ' = \\frac{v^2}{2\\mu g} = ' + (fr <= 0.001 ? '\\infty'
+    ['so it stops after', sTex() + ' = \\frac{v^2}{2\\mu g} = ' + (fr <= 0.001 ? '\\infty'
       : fmt(v * v / (2 * mu * 10), 2) + '\\ \\text{m}'),
       'The mass cancels: a heavy box and a light one stop in the same distance.']];
   },
@@ -2796,10 +2839,10 @@ scene('2', 'graph', {
   },
   eq: function () {
     var fn = curveFn(), s = V('s');
-    return [['the general rule', 'W = \\text{area under the } F\\!-\\!' + sSym() + ' \\text{ graph} = ' +
+    return [['the general rule', 'W = \\text{area under the } F\\!-\\!' + sTex() + ' \\text{ graph} = ' +
       fmt(integrate(fn, 0, s), 1) + '\\ \\text{J}',
       'Count squares if the shape is awkward — the answer is still the area.'],
-    ['the two easy shapes', '\\begin{aligned}\\text{rectangle} &: W = F' + sSym() +
+    ['the two easy shapes', '\\begin{aligned}\\text{rectangle} &: W = F' + sTex() +
       ' \\\\[3pt] \\text{triangle} &: W = \\tfrac12 kx^2\\end{aligned}',
       'Both are just special cases of the same picture.']];
   },
@@ -3812,7 +3855,7 @@ var PRAC = {
       F = pick(rnd, [10, 20, 50, 100]); s = pick(rnd, [2, 3, 5, 8]);
       return numQ('A steady force of <b>' + F + ' N</b> pushes a box <b>' + s +
         ' m</b> in the direction of the push. How much work is done?', F * s, 'J',
-        [[N().work, 'W = F' + sSym() + ' = ' + F + ' \\times ' + s + ' = ' + (F * s) +
+        [[N().work, 'W = F' + sTex() + ' = ' + F + ' \\times ' + s + ' = ' + (F * s) +
           '\\ \\text{J}', 'Work done in joules is simply the tokens you handed over.']],
         'W = F' + sSym());
     }
@@ -3821,7 +3864,7 @@ var PRAC = {
       return numQ('A rope pulls a sledge with <b>' + F + ' N</b> at <b>60°</b> to the ground, ' +
         'moving it <b>' + s + ' m</b> forwards. How much work does the rope do? (cos 60° = 0.5)',
         F * s * 0.5, 'J',
-        [['only the part along the motion counts', 'W = F' + sSym() + '\\cos\\theta = ' + F +
+        [['only the part along the motion counts', 'W = F' + sTex() + '\\cos\\theta = ' + F +
           ' \\times ' + s + ' \\times \\cos 60^\\circ = ' + fmt(F * s * .5, 0) + '\\ \\text{J}',
           'The upward part of the pull moves the sledge nowhere, so it does no work.']],
         'W = F' + sSym() + ' cos θ');
@@ -4123,24 +4166,34 @@ function bindPills(box) {
     });
   });
 }
-/* Mode 4 is the only one that needs two rows: six simulations on the first,
-   nine explanation cards on the second. Everything else keeps one row.    */
+/* Mode 4's explanation cards live in a dropdown rather than a second row of pills:
+   adding another card must not grow the toolbar, because every extra row pushes the
+   canvas below it down. The pill row is therefore always exactly one line tall. */
+function explainOptions(activeKey) {
+  var html = '<option value="">\u2014 pick an explanation \u2014</option>';
+  Object.keys(SCEN['4D'] || {}).forEach(function (k) {
+    html += '<option value="' + k + '"' + (activeKey === k ? ' selected' : '') + '>' +
+      SCEN['4D'][k].label + '</option>';
+  });
+  return html;
+}
 function buildPills() {
-  var A = $('gSub'), B = $('gEx');
+  var A = $('gSub'), B = $('gExSel');
   if (S.md === 4) {
-    $('pillrow').classList.add('two');
+    var onExplain = S.g4 === '4D';
     $('lblA').hidden = false; $('lblB').hidden = false;
-    A.style.display = ''; B.style.display = '';
-    A.innerHTML = pillHTML('4S', S.g4 === '4S' ? curKey() : null);
-    B.innerHTML = pillHTML('4D', S.g4 === '4D' ? curKey() : null);
+    A.style.display = ''; B.hidden = false;
+    A.innerHTML = pillHTML('4S', onExplain ? null : curKey());
+    B.innerHTML = explainOptions(onExplain ? curKey() : null);
+    B.value = onExplain ? curKey() : '';
+    B.classList.toggle('picked', onExplain);
   } else {
-    $('pillrow').classList.remove('two');
     $('lblA').hidden = true; $('lblB').hidden = true;
     A.style.display = '';
     A.innerHTML = pillHTML(String(S.md), curKey());
-    B.innerHTML = ''; B.style.display = 'none';
+    B.innerHTML = ''; B.hidden = true; B.classList.remove('picked');
   }
-  bindPills(A); bindPills(B);
+  bindPills(A);
 }
 
 /* ---------- the per-scene control row ------------------------------------ */
@@ -4242,7 +4295,10 @@ function updateChrome() {
   [].forEach.call($('gPTabs').children, function (b) {
     b.classList.toggle('active', b.dataset.p === S.ptab);
   });
-  $('bPlay').textContent = S.play ? '⏸ Pause' : (cycleDone() ? '↻ Replay' : '▶ Play');
+  var pp = S.play ? 'pause' : (cycleDone() ? 'replay' : 'play');
+  [].forEach.call($('bPlay').querySelectorAll('.ppl'), function (el) {
+    el.classList.toggle('on', el.dataset.pp === pp);
+  });
   $('tBank').classList.toggle('on', S.bank);
   $('tCoins').classList.toggle('on', S.coins);
   $('tNums').classList.toggle('on', S.nums);
@@ -4258,7 +4314,7 @@ function updateChrome() {
   $('gCtrl').classList.toggle('locked', qz);
   $('gViewWrap').classList.toggle('locked', qz);
   $('gSub').classList.toggle('locked', qz);
-  $('gEx').classList.toggle('locked', qz);
+  $('gExSel').disabled = qz;
   $('bbLeft').textContent = MODE_LABEL[S.md] +
     (S.mode === 'quiz' ? '' : ' — ' + cur().label.replace(/^\S+\s*/, ''));
   $('bbRight').textContent = 'mode ' + S.md + ' · ' + S.mode + ' · ' + S.note.toUpperCase();
@@ -4553,6 +4609,12 @@ function bindToolbar() {
   /* switching notation must never throw the student's settings away */
   [].forEach.call($('gNote').children, function (b) {
     b.addEventListener('click', function () { S.note = b.dataset.n; refresh(); });
+  });
+  $('gExSel').addEventListener('change', function () {
+    if (!this.value) { buildPills(); return; }   /* the placeholder puts it back */
+    S.g4 = '4D'; S.ex['4D'] = this.value;
+    S.t = 0; EFF_WARN = '';
+    buildPills(); resetVals(); refresh();
   });
   [].forEach.call($('gSpeed').children, function (b) {
     b.addEventListener('click', function () { S.speed = +b.dataset.s; updateChrome(); });
