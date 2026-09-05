@@ -385,7 +385,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">⚡ Energy Lab</span> <span class="badge-top" id="badge">v2.1.6</span></h1>
+    <h1><span class="t">⚡ Energy Lab</span> <span class="badge-top" id="badge">v2.2.5</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -596,11 +596,22 @@ function resize() {
   var s = Math.min(r.width / W, r.height / H);
   VT = { s: s, dpr: dpr, cw: r.width, ch: r.height, ox: (r.width - W * s) / 2, oy: 0 };
 }
+/* Double-clicking bare canvas magnifies ×2 about the point that was clicked,
+   for the diagrams with fine detail (the power station, the hydro scheme).
+   Because the scale is taken about a point inside the drawing, the magnified
+   view is always a sub-rectangle of it — no blank edges to clamp away.    */
+var ZOOM = { k: 1, cx: W / 2, cy: H / 2 };
+function zoomOff() { ZOOM.k = 1; }
 function applyVT() {
   CX.setTransform(VT.dpr, 0, 0, VT.dpr, 0, 0);
   CX.clearRect(0, 0, VT.cw, VT.ch);
   CX.translate(VT.ox, VT.oy);
   CX.scale(VT.s, VT.s);
+  if (ZOOM.k !== 1) {
+    CX.translate(ZOOM.cx, ZOOM.cy);
+    CX.scale(ZOOM.k, ZOOM.k);
+    CX.translate(-ZOOM.cx, -ZOOM.cy);
+  }
 }
 
 /* ---------- drawing vocabulary ------------------------------------------ */
@@ -1013,21 +1024,30 @@ function sankey(x, y, inV, flows, label, opt) {
   var sumOn = opt.sum !== false;
 
   var useful = live[0];
-  var lblW = Math.max(textW(fmtJ(useful.v), 16, 800, true),
-    textW('100%  ' + useful.n, 12.5, 600), 90) + 30;
 
-  /* one column per wasted stream, wide enough for its arrow head */
+  /* one column per wasted stream, wide enough for its arrow head AND for the
+     value printed under it — two arrows close together would otherwise write
+     their numbers on top of each other */
   var cols = [], i, cx0;
   for (i = 1; i < live.length; i++)
     cols.push({ f: live[i], t: Math.max(live[i].v * scale, 7) });
+  /* with more than one wasted stream the names no longer fit under their own
+     arrows, so they are listed once under the picture instead */
+  var manyOut = cols.length > 1, vSize = manyOut ? 13 : 16;
   var colsW = 44;
   cols.forEach(function (c) {
     c.hf = clamp(c.t * 0.22, 8, 20); c.hl = clamp(c.t * 0.34, 14, 30);
-    colsW += c.t + c.hf * 2 + 26;
+    c.pitch = Math.max(c.t + c.hf * 2 + 26, textW(fmtJ(c.f.v), vSize, 800, true) + 16);
+    colsW += c.pitch;
   });
 
+  var lblW = (manyOut ? Math.max(textW(fmtJ(useful.v), 16, 800, true), 90)
+    : Math.max(textW(fmtJ(useful.v), 16, 800, true),
+      textW('100%  ' + useful.n, 12.5, 600), 90)) + 30;
+
+  var legH = manyOut ? live.length * 17 + 14 : 0;
   var w = opt.w || (padL + inW + colsW + tail + lblW + padR);
-  var h = opt.h || (titleH + 22 + band + dropH + 52 + (sumOn ? 26 : 0));
+  var h = opt.h || (titleH + 22 + band + dropH + (manyOut ? 34 : 52) + legH + (sumOn ? 26 : 0));
 
   withCard(opt.id || 'sankey', x, y, w, h, function () {
     if (opt.frame !== false) card(x, y, w, h, opt.title || 'Sankey diagram · widths to scale');
@@ -1039,7 +1059,7 @@ function sankey(x, y, inV, flows, label, opt) {
     /* place the wasted columns, then the useful arrow beyond them */
     var cx = xSplit + 44;
     cols.forEach(function (c) {
-      c.xc = cx + c.t / 2; cx += c.t + c.hf * 2 + 26;
+      c.xc = cx + c.pitch / 2; cx += c.pitch;
     });
     var xEnd = cx + tail;
 
@@ -1057,11 +1077,25 @@ function sankey(x, y, inV, flows, label, opt) {
     txt('100%', bx + inW / 2, inTop + band / 2 + 20, 12, withA(LIGHT ? '#fff' : C['graph-bg'], .8),
       'center', 700);
 
-    /* ---- each outgoing stream ------------------------------------------ */
-    var acc = inTop, ci = 0;
+    /* ---- each outgoing stream ------------------------------------------
+       WHICH SLICE OF THE BAND a stream gets is not cosmetic. A wasted stream
+       peels off downwards at its own column, so the one that leaves FIRST (the
+       leftmost column) has to be the BOTTOM slice — otherwise it would have to
+       cut straight down through the streams that are still running on to their
+       own columns, and the ribbons would cross. So: useful keeps the top, and
+       the wasted ones stack upwards in the order they leave. */
+    var th = live.map(function (f) { return Math.max(f.v * scale, 7); });
+    var slot = [{ top: inTop, bot: inTop + th[0] }];
+    var stackBot = inTop + th.reduce(function (a, b) { return a + b; }, 0);
+    for (i = 1; i < live.length; i++) {
+      slot[i] = { top: stackBot - th[i], bot: stackBot };
+      stackBot -= th[i];
+    }
+
+    var ci = 0;
     live.forEach(function (f, k) {
-      var t = Math.max(f.v * scale, 7), col = scol(f.k);
-      var yTop = acc, yBot = acc + t, pc = Math.round(f.v / total * 100);
+      var t = th[k], col = scol(f.k);
+      var yTop = slot[k].top, yBot = slot[k].bot, pc = Math.round(f.v / total * 100);
       CX.save();
       CX.fillStyle = withA(col, .82);
       CX.strokeStyle = col; CX.lineWidth = 1.6;
@@ -1079,8 +1113,8 @@ function sankey(x, y, inV, flows, label, opt) {
         CX.closePath(); CX.fill(); CX.stroke();
         CX.restore();
         var my = (yTop + yBot) / 2;
-        mtxt(fmtJ(f.v), xEnd + 22, my - 4, 16, col, 'left', 800);
-        txt(pc + '%  ' + f.n, xEnd + 22, my + 16, 12.5, C['text-dim'], 'left', 600);
+        mtxt(fmtJ(f.v), xEnd + 22, my + (manyOut ? 5 : -4), 16, col, 'left', 800);
+        if (!manyOut) txt(pc + '%  ' + f.n, xEnd + 22, my + 16, 12.5, C['text-dim'], 'left', 600);
       } else {
         var c = cols[ci++], xc = c.xc, half = t / 2;
         var rIn = clamp(t * 0.12, 8, 18), rOut = rIn + t;
@@ -1097,11 +1131,22 @@ function sankey(x, y, inV, flows, label, opt) {
         CX.lineTo(xSplit, yBot);
         CX.closePath(); CX.fill(); CX.stroke();
         CX.restore();
-        mtxt(fmtJ(f.v), xc, yFloor + 22, 16, col, 'center', 800);
-        txt(pc + '%  ' + f.n, xc, yFloor + 41, 12.5, C['text-dim'], 'center', 600);
+        mtxt(fmtJ(f.v), xc, yFloor + 22, vSize, col, 'center', 800);
+        if (!manyOut) txt(pc + '%  ' + f.n, xc, yFloor + 41, 12.5, C['text-dim'], 'center', 600);
       }
-      acc += t;
     });
+
+    /* ---- every stream named once, in order, under the picture ---------- */
+    if (manyOut) {
+      var ly = yFloor + 52;
+      live.forEach(function (f, k) {
+        var lcol = scol(f.k), lpc = Math.round(f.v / total * 100);
+        CX.save(); CX.fillStyle = withA(lcol, .92);
+        rr(bx + 2, ly - 8 + k * 17, 10, 10, 2); CX.fill(); CX.restore();
+        fitTxt(lpc + '%   ' + f.n + '   ' + fmtJ(f.v), bx + 20, ly + k * 17,
+          w - padL - padR - 26, 11.5, withA(lcol, .95), 'left', 600);
+      });
+    }
 
     /* ---- the balance, spelled out inside the picture -------------------- */
     if (sumOn) {
@@ -1265,6 +1310,7 @@ var CTL = {
   Wj: { lab: 'energy transferred', u: 'J', min: 100, max: 10000, step: 100, def: 3000 },
   tt: { lab: 'time', u: 's', min: 1, max: 60, step: 1, def: 10 },
   eff: { lab: 'efficiency', u: '%', min: 5, max: 100, step: 1, def: 40 },
+  u0: { lab: 'starting speed u', u: 'm/s', min: 0, max: 12, step: 0.5, def: 3 },
   Ein: { lab: 'input energy', u: 'MJ', min: 10, max: 1000, step: 10, def: 100 },
   useful: { lab: 'useful energy', u: 'J', min: 0, max: 1000, step: 10, def: 300 },
   wasted: { lab: 'wasted energy', u: 'J', min: 0, max: 1000, step: 10, def: 700 },
@@ -1277,6 +1323,7 @@ function ctlDef(k) { return CTL[k] ? CTL[k].def : 0; }
 function V(k) { var v = S.v[k]; return v == null ? ctlDef(k) : v; }
 function resetVals() {
   var sc = cur();
+  zoomOff();
   (sc.ctrl || []).forEach(function (k) { S.v[k] = ctlDef(k); });
   if (sc.init) sc.init();
   S.t = 0;
@@ -2036,24 +2083,158 @@ scene('1', 'elec', {
   ctrl: ['cur', 'volt'],
   draw: function () {
     var I = V('cur'), U = V('volt'), P = I * U;
-    /* the loop */
+    var LX = 150, LY = 250, LW = 460, LH = 200, WY = LY + LH;   /* the loop  */
+    var BX = 236, BW = 148;                                     /* battery   */
+    var TN = 272, TP = 348;                                     /* terminals */
+    var by0 = WY + 16, by1 = WY + 70;                           /* the case  */
+    var lit = clamp(P / 40, 0, 1);
+
+    /* ---- the wire, drawn as ONE stroke that stops at each terminal so the
+            battery really sits IN the circuit rather than on top of it ---- */
     CX.save();
     CX.strokeStyle = C['text-dim']; CX.lineWidth = 3;
-    rr(150, 228, 460, 200, 14); CX.stroke(); CX.restore();
-    /* cell and lamp */
-    CX.save(); CX.fillStyle = withA(scol('chem'), .5);
-    rr(220, 408, 90, 40, 6); CX.fill();
-    CX.strokeStyle = scol('chem'); CX.lineWidth = 2; rr(220, 408, 90, 40, 6); CX.stroke();
+    CX.lineCap = 'round'; CX.lineJoin = 'round';
+    CX.beginPath();
+    CX.moveTo(TN, WY);
+    CX.lineTo(LX + 14, WY);
+    CX.arcTo(LX, WY, LX, WY - 14, 14);
+    CX.lineTo(LX, LY + 14);
+    CX.arcTo(LX, LY, LX + 14, LY, 14);
+    CX.lineTo(LX + LW - 14, LY);
+    CX.arcTo(LX + LW, LY, LX + LW, LY + 14, 14);
+    CX.lineTo(LX + LW, WY - 14);
+    CX.arcTo(LX + LW, WY, LX + LW - 14, WY, 14);
+    CX.lineTo(TP, WY);
+    CX.stroke();
     CX.restore();
-    txt('cell', 265, 433, 11.5, C.text, 'center', 700);
-    dot(520, 228, 26, withA(scol('rad'), clamp(P / 40, .2, 1)));
-    txt('lamp', 520, 196, 11.5, C['text-muted'], 'center', 600);
-    /* the charges, crawling */
+
+    /* ---- the charges, crawling round the wire ------------------------- */
     for (var i = 0; i < 16; i++) {
-      var u = ((S.t * 0.06 * I + i / 16) % 1);
-      var pt = loopPoint(u);
+      var uu = ((S.t * 0.06 * I + i / 16) % 1);
+      var pt = loopPoint(uu);
+      /* the stretch the battery occupies is battery, not wire */
+      if (pt.y > WY - 2 && pt.x > TN - 8 && pt.x < TP + 8) continue;
       dot(pt.x, pt.y, 5, withA(scol('elec'), .95));
     }
+
+    /* ================= the lamp: a real filament bulb in a holder ======= */
+    var lx = 520;
+    CX.save();
+    var gg = CX.createRadialGradient(lx, 200, 4, lx, 200, 74);
+    gg.addColorStop(0, withA(scol('rad'), .07 + lit * .34));
+    gg.addColorStop(1, withA(scol('rad'), 0));
+    CX.fillStyle = gg;
+    CX.beginPath(); CX.arc(lx, 200, 74, 0, 7); CX.fill();
+    CX.restore();
+    /* glass envelope */
+    CX.save();
+    CX.fillStyle = withA(scol('rad'), .08 + lit * .28);
+    CX.beginPath(); CX.ellipse(lx, 200, 23, 26, 0, 0, 7); CX.fill();
+    CX.strokeStyle = withA(C['text-dim'], .85); CX.lineWidth = 2;
+    CX.beginPath(); CX.ellipse(lx, 200, 23, 26, 0, 0, 7); CX.stroke();
+    CX.restore();
+    /* the two support wires and the coiled filament they hold */
+    CX.save();
+    CX.strokeStyle = withA(C['text-muted'], .95); CX.lineWidth = 1.6;
+    CX.beginPath(); CX.moveTo(lx - 8, 224); CX.lineTo(lx - 8, 203);
+    CX.moveTo(lx + 8, 224); CX.lineTo(lx + 8, 203); CX.stroke();
+    CX.strokeStyle = withA('#fde68a', .35 + lit * .65);
+    CX.lineWidth = 2.2; CX.lineCap = 'round';
+    CX.beginPath(); CX.moveTo(lx - 8, 203);
+    for (var fz = 0; fz < 6; fz++)
+      CX.lineTo(lx - 8 + (fz + 0.5) * (16 / 6), 203 + (fz % 2 ? 5 : -5));
+    CX.lineTo(lx + 8, 203); CX.stroke();
+    CX.restore();
+    /* the screw cap, with its thread */
+    CX.save();
+    CX.fillStyle = withA(C['text-muted'], .55);
+    rr(lx - 13, 222, 26, 20, 3); CX.fill();
+    CX.strokeStyle = withA(C['text-dim'], .8); CX.lineWidth = 1;
+    for (var th = 0; th < 3; th++) {
+      CX.beginPath(); CX.moveTo(lx - 13, 227 + th * 5); CX.lineTo(lx + 13, 227 + th * 5); CX.stroke();
+    }
+    CX.restore();
+    /* the holder, which is what the wire actually runs into */
+    CX.save();
+    CX.fillStyle = C.card2 || C.card;
+    rr(lx - 30, 239, 60, 22, 5); CX.fill();
+    CX.strokeStyle = withA(C['text-dim'], .9); CX.lineWidth = 2;
+    rr(lx - 30, 239, 60, 22, 5); CX.stroke();
+    CX.fillStyle = withA(C['text-muted'], .8);
+    CX.beginPath(); CX.arc(lx - 22, 250, 3.4, 0, 7); CX.fill();
+    CX.beginPath(); CX.arc(lx + 22, 250, 3.4, 0, 7); CX.fill();
+    CX.restore();
+    txt('lamp', lx + 38, 204, 11.5, C['text-muted'], 'left', 600);
+
+    /* ================= the battery: a wet (lead-acid) cell ============== */
+    CX.save();
+    /* the two terminal posts, and the short leads the wire meets them by */
+    CX.strokeStyle = C['text-dim']; CX.lineWidth = 3;
+    CX.beginPath(); CX.moveTo(TN, WY); CX.lineTo(TN, WY - 12);
+    CX.moveTo(TP, WY); CX.lineTo(TP, WY - 12); CX.stroke();
+    [[TN, C['text-muted'], '−'], [TP, C.red || scol('therm'), '+']].forEach(function (t) {
+      CX.fillStyle = withA(t[1], .85);
+      rr(t[0] - 7, WY - 14, 14, 18, 3); CX.fill();
+      CX.strokeStyle = withA(t[1], 1); CX.lineWidth = 1.4;
+      rr(t[0] - 7, WY - 14, 14, 18, 3); CX.stroke();
+    });
+    /* the case: a translucent box with the acid and the plates inside */
+    CX.fillStyle = withA(scol('chem'), .13);
+    rr(BX + 6, by0, BW - 12, by1 - by0, 6); CX.fill();
+    CX.save();
+    rr(BX + 6, by0, BW - 12, by1 - by0, 6); CX.clip();
+    CX.fillStyle = withA(scol('chem'), .22);
+    CX.fillRect(BX + 6, by0 + 14, BW - 12, by1 - by0);        /* acid level  */
+    CX.strokeStyle = withA(scol('chem'), .45); CX.lineWidth = 1.4;
+    for (var cw = 1; cw < 3; cw++) {                          /* three cells */
+      var cxw = BX + 6 + cw * (BW - 12) / 3;
+      CX.beginPath(); CX.moveTo(cxw, by0); CX.lineTo(cxw, by1); CX.stroke();
+    }
+    CX.fillStyle = withA(C['text-muted'], .40);               /* lead plates */
+    for (var pl = 0; pl < 9; pl++) {
+      var plx = BX + 16 + pl * ((BW - 32) / 8);
+      CX.fillRect(plx - 1.6, by0 + 20, 3.2, by1 - by0 - 30);
+    }
+    CX.restore();
+    CX.strokeStyle = withA(scol('chem'), .95); CX.lineWidth = 2;
+    rr(BX + 6, by0, BW - 12, by1 - by0, 6); CX.stroke();
+    /* the lid, wider than the case, with its three filler caps */
+    CX.fillStyle = C.card2 || C.card;
+    rr(BX, WY + 4, BW, 16, 4); CX.fill();
+    CX.strokeStyle = withA(C['text-dim'], .9); CX.lineWidth = 2;
+    rr(BX, WY + 4, BW, 16, 4); CX.stroke();
+    CX.fillStyle = withA(C['text-muted'], .55);
+    for (var fc = 0; fc < 3; fc++) {
+      CX.beginPath();
+      CX.arc(BX + 34 + fc * 40, WY + 12, 4.5, 0, 7); CX.fill();
+    }
+    CX.restore();
+    txt('−', TN, WY - 22, 15, C['text-dim'], 'center', 800);
+    txt('+', TP, WY - 22, 15, C.red || scol('therm'), 'center', 800);
+    mtxt(fmt(U, 0) + ' V battery', BX + BW / 2, by1 + 18, 11.5, scol('chem'), 'center', 700);
+
+    /* ---- inside it: chemical tokens turning into electrical ones ------- */
+    for (var ti = 0; ti < 5; ti++) {
+      var tq = (S.t * 0.30 + ti / 5) % 1, sx = BX + 26 + ti * 24, tx, ty, mixv;
+      if (tq < 0.55) {                       /* rising up through the acid  */
+        var r0 = tq / 0.55;
+        tx = sx; ty = by1 - 12 - r0 * (by1 - by0 - 26); mixv = 0;
+      } else if (tq < 0.82) {                /* crossing to the + terminal  */
+        var r1 = (tq - 0.55) / 0.27;
+        tx = sx + (TP - sx) * r1;
+        ty = (by0 + 12) + ((WY - 6) - (by0 + 12)) * r1;
+        mixv = r1 * r1 * (3 - 2 * r1);
+      } else {                               /* away along the wire         */
+        var r2 = (tq - 0.82) / 0.18;
+        tx = TP + r2 * 62; ty = WY; mixv = 1;
+      }
+      var fade = tq < 0.06 ? tq / 0.06 : (tq > 0.94 ? (1 - tq) / 0.06 : 1);
+      if (mixv < 1) coin(tx, ty, 5, withA(scol('chem'), (1 - mixv) * fade));
+      if (mixv > 0) coin(tx, ty, 5, withA(scol('elec'), mixv * fade));
+    }
+    txt('chemical → electrical, inside the cells', BX + BW + 16, by0 + 22,
+      11, C['text-muted'], 'left', 600);
+
     capStrip('CHARGES CARRYING ENERGY',
       'The charges crawl round the loop — but the energy reaches the lamp almost at once, the ' +
       'way water leaves a full pipe the instant you open the tap.', 'elec');
@@ -2090,7 +2271,7 @@ scene('1', 'elec', {
 });
 function loopPoint(u) {
   /* walk the rounded rectangle the circuit is drawn on */
-  var x = 150, y = 228, w = 460, h = 200, per = 2 * (w + h), d = u * per;
+  var x = 150, y = 250, w = 460, h = 200, per = 2 * (w + h), d = u * per;
   if (d < w) return { x: x + d, y: y };
   d -= w; if (d < h) return { x: x + w, y: y + d };
   d -= h; if (d < w) return { x: x + w - d, y: y + h };
@@ -2212,7 +2393,7 @@ scene('1', 'chem', {
       react: ['THE ATOMS SWAP PARTNERS', 'Each hydrogen goes to an oxygen and the carbon takes ' +
         'two oxygens. The old bonds break as the new ones form.', 'therm'],
       out: ['CO₂ AND 2 H₂O LEAVE', 'The new bonds are stronger than the old ones, so there are ' +
-        'tokens left over — and they leave as heat and light.', 'therm']
+        'tokens left over — and they leave as heat and movement.', 'therm']
     }[st];
     capStrip(CAPC[0], CAPC[1], CAPC[2]);
 
@@ -2291,24 +2472,38 @@ scene('1', 'chem', {
          so the burst still reads. Every token recycles round its phase, so
          the stream never dries up while the products are still leaving. */
       if (st !== 'in') {
-        var emit = st === 'react' ? u : 1;
         var coinJ = niceCoin(Math.max(E, 1));
-        var banked = clamp(Math.round(E * .7 / coinJ) + Math.round(E * .3 / coinJ), 6, 34);
-        var NB = banked < 16 ? banked * 2 : banked;
-        var phase = st === 'react' ? u * 0.8 : 0.8 + q * 1.7;
+        /* exactly the two piles the bank is about to show, colour for colour */
+        var nT = Math.max(1, Math.round(E * .7 / coinJ));      /* thermal  */
+        var nK = Math.max(1, Math.round(E * .3 / coinJ));      /* kinetic  */
+        var mult = (nT + nK) < 16 ? 2 : 1;
+        var NT = nT * mult, NB = (nT + nK) * mult;
+        /* ONE wave per reaction, not a repeating ring: rel runs 0 → 1 across the
+           whole release, and every token's journey is a clamped ramp on it. The
+           old version let the phase wrap, so a second wave started and the cycle
+           ended before it finished — half a batch left hanging. Now the last
+           token lands exactly as the release ends, and the next wave belongs to
+           the next reaction. */
+        var rel = st === 'react' ? u * 0.42 : 0.42 + q * 0.58;
         for (var oi = 0; oi < NB; oi++) {
           var oa = (oi / NB) * 360 + (oi % 2 ? 10 : 0);
-          var oq = (phase + oi * 0.61803) % 1;   /* golden ratio: every token is at a different radius */
+          /* golden ratio: the departures are staggered but never line up with
+             the angles, so at any instant the tokens sit at different radii */
+          var oq = clamp((rel - ((oi * 0.61803) % 1) * 0.25) / 0.70, 0, 1);
+          /* spread the thermal ones evenly through the ring rather than
+             letting them bunch into one arc — the count still comes out
+             at exactly NT thermal and NB - NT kinetic */
+          var isT = Math.floor((oi + 1) * NT / NB) > Math.floor(oi * NT / NB);
           dot(cx + cosd(oa) * (16 + oq * 136), cy + sind(oa) * (12 + oq * 82),
             4.6 - oq * 1.9,
-            withA(oi % 2 ? scol('therm') : scol('rad'), Math.sin(oq * Math.PI) * .95 * emit));
+            withA(isT ? scol('therm') : scol('ke'), Math.sin(oq * Math.PI) * .95));
         }
       }
 
       A.forEach(function (a) { atomBall(a.x, a.y, a.r, a.el); });
 
       runLine([{ t: 'chemical', k: 'chem' }, { t: '  →  ' }, { t: 'thermal', k: 'therm' },
-      { t: '  +  ' }, { t: 'radiant', k: 'rad' }, { t: '   ·  CO₂ and H₂O carry the rest away' }],
+      { t: '  +  ' }, { t: 'kinetic', k: 'ke' }, { t: '   ·  CO₂ and H₂O carry the rest away' }],
         130, 462, 390, 11.5, 'left');
     });
 
@@ -2923,9 +3118,10 @@ scene('2', 'power', {
   }
 });
 
+
 /* ============ MODE 3 — Conservation & Efficiency =========================
    The bank never loses money. Three scenes: the law itself (with and without
-   friction), the Sankey picture of it, and efficiency as useful ÷ total.   */
+   friction), the work-energy theorem, and the Sankey picture with efficiency. */
 
 var PROC = {
   drop: 'a falling ball',
@@ -3057,7 +3253,117 @@ scene('3', 'law', {
   }
 });
 
-/* 3.2 SANKEY + EFFICIENCY ---------------------------------------------------
+/* ---------- 3.2  WORK-ENERGY THEOREM (A-level) ---------------------------
+   The one line that ties work to motion: the work done by the RESULTANT
+   force equals the change in kinetic energy. Nothing new is being claimed —
+   it is F = ma and v² = u² + 2as multiplied together — but seeing W and ΔKE
+   land on the same number is what makes the idea stick.                    */
+scene('3', 'wet', {
+  label: '📘 Work–Energy',
+  hero: 'W_{net} = \\Delta KE = \\tfrac12 mv^2 - \\tfrac12 mu^2',
+  title: 'The work–energy theorem — work in, kinetic energy out  ·  A-level',
+  sub: 'The work done by the resultant force IS the change in kinetic energy. Two sums, one answer, every time.',
+  ctrl: ['m', 'F', 's', 'u0'],
+  draw: function () {
+    var m = V('m'), F = V('F'), sD = V('s'), u = V('u0');
+    var a = F / m, v = Math.sqrt(u * u + 2 * a * sD);
+    var W = F * sD, KE0 = 0.5 * m * u * u, KE1 = 0.5 * m * v * v;
+    var T = a > 1e-9 ? (v - u) / a : (sD / Math.max(u, 1e-9));
+    var q = prog(Math.max(T, 1.6));                    /* 0 → 1 over the run  */
+    var tNow = Math.min(q * Math.max(T, 1.6), T);
+    var sNow = u * tNow + 0.5 * a * tNow * tNow;
+    sNow = clamp(sNow, 0, sD);
+    var vNow = Math.sqrt(Math.max(u * u + 2 * a * sNow, 0));
+    var Wnow = F * sNow, KEnow = 0.5 * m * vNow * vNow;
+
+    var x0 = 150, x1 = 512, floorY = 322;
+    var px = x0 + (sNow / Math.max(sD, 1e-9)) * (x1 - x0);
+    ground(floorY, 110, 600);
+
+    /* the distance the force acts over */
+    line(x0, floorY + 14, x0, floorY + 38, C['text-muted'], 1.4);
+    line(x1, floorY + 14, x1, floorY + 38, C['text-muted'], 1.4);
+    arrow(x0, floorY + 30, x1, floorY + 30, C['text-muted'], 1.6, { head: 9 });
+    plate('s = ' + fmt(sD, 1) + ' m', (x0 + x1) / 2, floorY + 54, 11.5, C['text-muted'], 'center', true);
+    /* the two speeds live UNDER the track, so the moving readout never lands on them */
+    plate('u = ' + fmt(u, 1) + ' m/s  at the start', x0, floorY + 84, 11,
+      C['text-muted'], 'center', true);
+    plate('v = ' + fmt(v, 2) + ' m/s  at the end', x1, floorY + 84, 11, scol('ke'), 'center', true);
+
+    /* the trail it has already covered — the part of the work already done */
+    CX.save(); CX.fillStyle = withA(scol('elec'), .13);
+    CX.fillRect(x0, floorY - 38, px - x0, 38); CX.restore();
+
+    block(px, floorY - 19, 54, 38, scol('ke'), fmt(m, 1) + ' kg');
+    /* the resultant force: the SAME length all the way, because F is constant */
+    arrow(px + 27, floorY - 19, px + 27 + 62, floorY - 19, scol('elec'), 4, { head: 12 });
+    plate('F net = ' + fmt(F, 0) + ' N', px, floorY - 62, 11.5, scol('elec'), 'center', true);
+    plate('v = ' + fmt(vNow, 2) + ' m/s', px, floorY - 88, 12, scol('ke'), 'center', true);
+
+    /* the two sums, side by side, converging on the same number */
+    withCard('wet', 640, 132, 452, 296, function () {
+      card(640, 132, 452, 296, 'two ways to the same number');
+      mtxt('W net = F × s', 660, 176, 15, scol('elec'), 'left', 700);
+      fitTxt(fmt(F, 0) + ' × ' + fmt(sD, 1) + '  =  ' + fmtJ(W), 660, 202, 412, 14,
+        C['text-dim'], 'left', 700);
+      line(654, 220, 1078, 220, withA(C.border, .8), 1);
+      mtxt('ΔKE = ½mv² − ½mu²', 660, 248, 15, scol('ke'), 'left', 700);
+      fitTxt(fmtJ(KE1) + ' − ' + fmtJ(KE0) + '  =  ' + fmtJ(KE1 - KE0), 660, 274, 412, 14,
+        C['text-dim'], 'left', 700);
+      line(654, 292, 1078, 292, withA(C.border, .8), 1);
+      txt(Math.abs(W - (KE1 - KE0)) < 1e-6 * Math.max(W, 1)
+        ? '✓ identical — this is the work–energy theorem'
+        : 'they must agree', 660, 316, 12.5, C.green, 'left', 700);
+      wrap('It is not a new law: F = ma says a = F/m, and v² = u² + 2as says ' +
+        'v² − u² = 2as. Multiply the second by ½m and the right-hand side becomes Fs.',
+        660, 340, 412, 11.5, C['text-muted'], 17, 500);
+      mtxt('a = F/m = ' + fmt(a, 2) + ' m/s²   ·   t = ' + fmt(T, 2) + ' s',
+        660, 400, 12, C['text-dim'], 'left', 600);
+    });
+
+    energyBank([{ k: 'chem', v: Math.max(W - Wnow, 0), n: 'still to be done', keep: true },
+      { k: 'ke', v: KEnow, keep: true }],
+      { total: KE0 + W, note: 'the pusher pays; every joule of that work lands in the kinetic account' });
+  },
+  data: function () {
+    var m = V('m'), F = V('F'), sD = V('s'), u = V('u0');
+    var a = F / m, v = Math.sqrt(u * u + 2 * a * sD);
+    return [{ l: 'resultant force F', v: fmt(F, 0) + ' N', k: 'elec' },
+    { l: 'acceleration  a = F/m', v: fmt(a, 2) + ' m/s²' },
+    { l: 'starting KE  ½mu²', v: fmtJ(0.5 * m * u * u), k: 'ke' },
+    { l: 'final speed v', v: fmt(v, 2) + ' m/s', k: 'ke' },
+    { l: 'final KE  ½mv²', v: fmtJ(0.5 * m * v * v), k: 'ke' },
+    { l: 'W net = F·s', v: fmtJ(F * sD), k: 'elec' },
+    { l: 'ΔKE', v: fmtJ(0.5 * m * (v * v - u * u)), k: 'ke' }];
+  },
+  eq: function () {
+    var m = V('m'), F = V('F'), sD = V('s'), u = V('u0');
+    var a = F / m, v = Math.sqrt(u * u + 2 * a * sD);
+    return [['the theorem', 'W_{net} = \\Delta KE = \\tfrac12 mv^2 - \\tfrac12 mu^2',
+      'The work done by the RESULTANT force — not by one force on its own.'],
+    ['work from the force', 'W = Fs = ' + fmt(F, 0) + ' \\times ' + fmt(sD, 1) + ' = ' +
+      fmt(F * sD, 0) + '\\ \\text{J}', 'Force along the motion, times the distance moved.'],
+    ['and the same from the speeds', '\\tfrac12 m(v^2 - u^2) = \\tfrac12 \\times ' +
+      fmt(m, 1) + ' \\times (' + fmt(v * v, 1) + ' - ' + fmt(u * u, 1) + ') = ' +
+      fmt(0.5 * m * (v * v - u * u), 0) + '\\ \\text{J}',
+      'v comes from v^2 = u^2 + 2as with a = F/m = ' + fmt(a, 2) + ' m/s².'],
+    ['why they are the same', 'v^2 - u^2 = 2as \\;\\Rightarrow\\; \\tfrac12 m(v^2-u^2) = mas = Fs',
+      'Multiply the SUVAT result by ½m and F = ma turns the right-hand side into Fs.']];
+  },
+  info: function () {
+    return '<div class="note">The <b>work–energy theorem</b>: the work done by the <b>resultant</b> ' +
+      'force on a body equals the change in its kinetic energy. W<sub>net</sub> = ΔKE.</div>' +
+      '<ol class="steps"><li>Find the <b>resultant</b> force — add every force along the motion.</li>' +
+      '<li>W<sub>net</sub> = F<sub>net</sub> × s, with s measured along the force.</li>' +
+      '<li>That work is the CHANGE in ½mv², not the final value — subtract the starting KE.</li>' +
+      '<li>Negative resultant (braking, friction) ⇒ negative work ⇒ the KE falls.</li></ol>' +
+      '<div class="note">It saves a step whenever a question gives you a force and a distance and ' +
+      'asks for a speed: you never have to find the time. At A-level it also generalises — for a ' +
+      'force that changes, W is the <b>area under the F–s graph</b>, and that area is still ΔKE.</div>';
+  }
+});
+
+/* 3.3 SANKEY + EFFICIENCY ---------------------------------------------------
    These used to be two scenes saying the same thing twice. The Sankey picture
    IS the efficiency sum, so the sum now travels with it as a card.        */
 var EFF_WARN = '';
@@ -3066,28 +3372,52 @@ scene('3', 'sankey', {
   hero: '\\eta = \\dfrac{E_{useful}}{E_{in}} \\times 100\\%',
   title: 'The Sankey diagram — conservation you can see, efficiency you can measure',
   sub: 'Arrow widths are drawn to scale, so the arrows going out always add up to the arrow coming in — and the useful share of that width IS the efficiency.',
-  ctrl: ['Ein', 'eff', 'device'],
+  ctrl: ['Ein', 'eff', 'device', 'tt'],
   init: function () { if (!S.device) S.device = 'lamp'; },
   draw: function () {
     var Ein = V('Ein') * 1e6, eff = V('eff');
+    /* `waste` splits the wasted arrow into named streams. A device without one
+       wastes it all as heat, drawn as a single arrow the way it always was. */
     var DEV = {
-      lamp: { n: 'filament lamp', useful: 'light', k: 'rad', typ: 5 },
-      led: { n: 'LED lamp', useful: 'light', k: 'rad', typ: 90 },
-      motor: { n: 'electric motor', useful: 'movement', k: 'ke', typ: 85 },
-      plant: { n: 'coal power station', useful: 'electricity', k: 'elec', typ: 35 },
-      person: { n: 'a person cycling', useful: 'movement', k: 'ke', typ: 20 }
+      lamp: { n: 'filament lamp', useful: 'light', k: 'rad', typ: 5, i: 'elec' },
+      led: { n: 'LED lamp', useful: 'light', k: 'rad', typ: 90, i: 'elec' },
+      motor: { n: 'electric motor', useful: 'movement', k: 'ke', typ: 85, i: 'elec' },
+      plant: { n: 'coal power station', useful: 'electricity', k: 'elec', typ: 35, i: 'chem' },
+      person: { n: 'a person cycling', useful: 'movement', k: 'ke', typ: 20, i: 'chem' },
+      car: { n: 'petrol car engine', useful: 'movement', k: 'ke', typ: 25, i: 'chem',
+        waste: [{ f: .45, k: 'therm', n: 'wasted — hot exhaust gases' },
+        { f: .40, k: 'therm', n: 'wasted — heat into the cooling water' },
+        { f: .15, k: 'snd', n: 'wasted — friction and sound' }] },
+      wind: { n: 'wind turbine', useful: 'electricity', k: 'elec', typ: 40, i: 'ke',
+        waste: [{ f: .70, k: 'ke', n: 'wasted — air still moving on past' },
+        { f: .22, k: 'therm', n: 'wasted — heat in gearbox and generator' },
+        { f: .08, k: 'snd', n: 'wasted — sound of the blades' }] },
+      speaker: { n: 'loudspeaker', useful: 'sound', k: 'snd', typ: 2, i: 'elec',
+        waste: [{ f: .80, k: 'therm', n: 'wasted — heat in the coil' },
+        { f: .20, k: 'ke', n: 'wasted — the cabinet shaking' }] }
     }[S.device];
     var use = Ein * eff / 100, waste = Ein - use;
+    var multi = !!(DEV.waste && DEV.waste.length > 1);
     txt(DEV.n + '  ·  typical efficiency ' + DEV.typ + '%', 60, 110, 13.5, C['text-dim'],
       'left', 600);
-    sankey(70, 150, Ein,
-      [{ k: DEV.k, v: use, n: 'useful — ' + DEV.useful },
-      { k: 'therm', v: waste, n: 'wasted — heat to the surroundings' }],
-      'input energy', { inK: 'elec', band: 116,
+
+    /* one flow for the useful stream, then one per named wasted stream */
+    var flows = [{ k: DEV.k, v: use, n: 'useful — ' + DEV.useful }];
+    if (DEV.waste) DEV.waste.forEach(function (wf) {
+      flows.push({ k: wf.k, v: waste * wf.f, n: wf.n });
+    });
+    else flows.push({ k: 'therm', v: waste, n: 'wasted — heat to the surroundings' });
+
+    /* several wasted columns need more room, so the diagram is drawn a little
+       narrower and shifted left, and the efficiency card steps out of its way */
+    sankey(multi ? 36 : 70, 150, Ein, flows, 'input energy',
+      { inK: DEV.i || 'elec', band: multi ? 88 : 116,
+        inW: multi ? 100 : 128, tail: multi ? 38 : 58,
         title: DEV.n + '  ·  Sankey diagram, widths drawn to scale' });
 
     /* the efficiency sum, reading the very same two numbers */
-    var cX = 636, cY = 150, cW = 344, cH = 342;
+    var cX = multi ? 668 : 636, cY = 150, cW = 344, cH = 404;
+    var tt = V('tt'), Pin = Ein / tt, Puse = use / tt;
     withCard('eff', cX, cY, cW, cH, function () {
       card(cX, cY, cW, cH, 'efficiency — how much of it you actually got');
       /* the pie: the useful slice, drawn from twelve o'clock */
@@ -3107,33 +3437,55 @@ scene('3', 'sankey', {
       runLine([{ t: '■ wasted  ', c: scol('therm') }, { t: fmtJ(waste), c: scol('therm') }],
         cX + 186, cY + 122, 146, 12, 'left', 700);
       fitTxt('input ' + fmtJ(Ein), cX + 186, cY + 150, 146, 12, C['text-dim'], 'left', 600);
-      /* the sum itself */
-      line(cX + 13, cY + 208, cX + cW - 13, cY + 208, withA(C.border, .9), 1);
-      mtxt('η = useful ÷ total × 100%', cX + 16, cY + 236, 14, C.accent, 'left', 700);
+      /* the sum itself — from the ENERGIES */
+      line(cX + 13, cY + 196, cX + cW - 13, cY + 196, withA(C.border, .9), 1);
+      mtxt('η = useful ÷ total × 100%', cX + 16, cY + 220, 14, C.accent, 'left', 700);
       fitTxt(fmt(use / 1e6, 1) + ' ÷ ' + fmt(Ein / 1e6, 1) + ' × 100%  =  ' + fmt(eff, 0) + '%',
-        cX + 16, cY + 264, cW - 32, 13.5, C['text-dim'], 'left', 700);
-      wrap('Nothing can be more than 100% efficient — and the wasted tokens have not vanished, ' +
-        'they are in the thermal account.', cX + 16, cY + 292, cW - 32, 11.5,
-        C['text-muted'], 18, 500);
-      if (EFF_WARN) plate('⚠ no free money', cX + 16, cY + 332, 11.5, C.red, 'left', false);
+        cX + 16, cY + 244, cW - 32, 13.5, C['text-dim'], 'left', 700);
+      /* ...and the SAME answer from the POWERS, because both are divided by the
+         same time. Drag the time slider and η does not move — that is the point. */
+      line(cX + 13, cY + 262, cX + cW - 13, cY + 262, withA(C.border, .55), 1);
+      fitTxt('over t = ' + fmt(tt, 0) + ' s the same job gives these powers:',
+        cX + 16, cY + 282, cW - 32, 11, C['text-muted'], 'left', 500);
+      fitTxt('P in ' + fmtW(Pin) + '   ·   P useful ' + fmtW(Puse),
+        cX + 16, cY + 302, cW - 32, 12, scol('elec'), 'left', 700);
+      mtxt('η = P useful ÷ P in × 100%', cX + 16, cY + 326, 14, C.accent, 'left', 700);
+      fitTxt(fmtW(Puse) + ' ÷ ' + fmtW(Pin) + ' × 100%  =  ' + fmt(eff, 0) + '%',
+        cX + 16, cY + 350, cW - 32, 13.5, C['text-dim'], 'left', 700);
+      wrap('The same t is on the bottom of both, so it cancels — the two routes must agree.',
+        cX + 16, cY + 372, cW - 32, 11.5, C['text-muted'], 17, 500);
+      if (EFF_WARN) plate('⚠ no free money', cX + cW - 16, cY + 220, 11.5, C.red, 'right', false);
     });
 
-    energyBank([{ k: DEV.k, v: use, keep: true }, { k: 'therm', v: waste, keep: true }],
+    var byK = {}, kOrder = [];
+    flows.forEach(function (fl) {
+      if (byK[fl.k] === undefined) { byK[fl.k] = 0; kOrder.push(fl.k); }
+      byK[fl.k] += fl.v;
+    });
+    energyBank(kOrder.map(function (kk) { return { k: kk, v: byK[kk], keep: true }; }),
       { total: Ein, note: 'the arrows, the pie and the accounts all say the same thing' });
   },
   data: function () {
     var Ein = V('Ein') * 1e6, eff = V('eff');
+    var tt = V('tt');
     return [{ l: 'input', v: fmtJ(Ein), k: 'chem' },
     { l: 'useful output', v: fmtJ(Ein * eff / 100), k: 'ke' },
     { l: 'wasted', v: fmtJ(Ein * (1 - eff / 100)), k: 'therm' },
+    { l: 'time taken', v: fmt(tt, 0) + ' s' },
+    { l: 'input power  P in', v: fmtW(Ein / tt), k: 'elec' },
+    { l: 'useful power', v: fmtW(Ein * eff / 100 / tt), k: 'elec' },
     { l: 'efficiency', v: fmt(eff, 0) + ' %' }];
   },
   eq: function () {
     var Ein = V('Ein') * 1e6, eff = V('eff');
     return [['the balance', 'E_{in} = E_{useful} + E_{wasted}',
       'That is conservation of energy, drawn to scale.'],
-    ['efficiency', '\\eta = \\dfrac{E_{useful}}{E_{in}} \\times 100\\% = ' + fmt(eff, 0) + '\\%',
-      fmtJ(Ein * eff / 100) + ' useful out of ' + fmtJ(Ein) + '.']];
+    ['efficiency from the energies', '\\eta = \\dfrac{E_{useful}}{E_{in}} \\times 100\\% = ' +
+      fmt(eff, 0) + '\\%', fmtJ(Ein * eff / 100) + ' useful out of ' + fmtJ(Ein) + '.'],
+    ['or from the powers', '\\eta = \\dfrac{P_{useful}}{P_{in}} \\times 100\\% = ' +
+      '\\dfrac{E_{useful}/t}{E_{in}/t} \\times 100\\% = ' + fmt(eff, 0) + '\\%',
+      'Divide top and bottom by the same time and it cancels — power and energy give the ' +
+      'same efficiency, so use whichever the question hands you.']];
   },
   info: function () {
     return '<div class="note">In a Sankey diagram the <b>width of each arrow is proportional to ' +
@@ -3144,7 +3496,11 @@ scene('3', 'sankey', {
       '<li>Check: in = useful + wasted.</li></ol>' +
       '<div class="note"><b>Efficiency</b> is just the useful arrow as a fraction of the input ' +
       'one: η = useful ÷ total × 100%. The rest is still in the bank — in the thermal account, ' +
-      'spread out and hard to use. Nothing can ever be more than 100% efficient.</div>';
+      'spread out and hard to use. Nothing can ever be more than 100% efficient.</div>' +
+      '<div class="note"><b>The same ratio works for power.</b> Divide every energy by the same ' +
+      'time t and you get powers: η = P<sub>useful</sub> ÷ P<sub>in</sub> × 100%. The t cancels, ' +
+      'so the answer is identical — which is why a question may hand you joules OR watts and ' +
+      'still be asking for the same thing. Drag the time slider and watch η refuse to move.</div>';
   }
 });
 
@@ -3165,20 +3521,15 @@ scene('4S', 'plant', {
     var e1 = 0.9, e2 = 0.45, e3 = eff / (e1 * e2) > 1 ? 1 : eff / (e1 * e2);
     var thermal = Ein * e1, kinetic = thermal * e2, electric = kinetic * e3;
     var p = prog(4);
-    /* furnace, boiler, turbine, generator */
-    var y = 150;
-    fire(140, y + 60, p);
-    boiler(280, y, p);
-    turbine(470, y + 40, p * 12);
-    genr(650, y + 40, p);
-    chainDiagram(90, 300, 1020, [
+    powerPlant();
+    chainDiagram(90, 396, 1020, [
       { k: 'chem', n: 'fuel', waste: true }, { k: 'therm', n: 'steam', waste: true },
       { k: 'ke', n: 'turbine', waste: true }, { k: 'elec', n: 'to the grid' }
     ]);
     mtxt(fmtJ(Ein) + ' → ' + fmtJ(thermal) + ' → ' + fmtJ(kinetic) + ' → ' + fmtJ(electric),
-      90, 420, 13.5, C['text-dim'], 'left', 700);
+      90, 508, 13.5, C['text-dim'], 'left', 700);
     txt('overall efficiency ' + fmt(electric / Ein * 100, 0) + '%  ·  the rest leaves as warm water and warm air',
-      90, 444, 12, C['text-muted'], 'left', 500);
+      90, 532, 12, C['text-muted'], 'left', 500);
     energyBank([{ k: 'chem', v: Ein - thermal, keep: true },
       { k: 'elec', v: electric, keep: true },
       { k: 'therm', v: Ein - electric - (Ein - thermal), keep: true }],
@@ -3206,6 +3557,200 @@ scene('4S', 'plant', {
         'At every stage some energy is <b>dissipated</b> to the surroundings as heat.']);
   }
 });
+
+/* ---------- the power station, drawn the way a textbook draws one ---------
+   Every part a syllabus diagram names is here and labelled: the coal store
+   and its conveyor, the boiler with its water tubes, the chimney, the steam
+   line, the turbine on a shaft with the generator, the condenser and the
+   cooling-water circuit that closes the loop, then the transformer and the
+   transmission lines. The energy tokens travel through it in the colour of
+   the store they are in at that moment, so the picture and the accounts
+   below it are telling the same story.                                     */
+function powerPlant() {
+  var GND = 340, T = S.t;
+  var flow = function (x0, y0, x1, y1, cnt, spd, col, r, ph) {
+    for (var i = 0; i < cnt; i++) {
+      var q = (T * spd + i / cnt + (ph || 0)) % 1;
+      dot(x0 + (x1 - x0) * q, y0 + (y1 - y0) * q, r || 4.5, withA(col, .95));
+    }
+  };
+  CX.save();
+  line(56, GND, 1164, GND, C['text-muted'], 2.5);
+
+  /* ---- 1. coal store and the conveyor climbing to the boiler ---------- */
+  var hx = 100, hy = 250;
+  CX.fillStyle = withA(scol('chem'), .22);
+  CX.beginPath(); CX.moveTo(hx - 28, hy); CX.lineTo(hx + 28, hy);
+  CX.lineTo(hx + 15, hy + 42); CX.lineTo(hx - 15, hy + 42); CX.closePath();
+  CX.fill(); CX.strokeStyle = withA(scol('chem'), .95); CX.lineWidth = 1.8; CX.stroke();
+  line(hx - 22, hy + 42, hx - 22, GND, C['text-muted'], 1.6);
+  line(hx + 22, hy + 42, hx + 22, GND, C['text-muted'], 1.6);
+  for (var lm = 0; lm < 5; lm++)
+    dot(hx - 16 + lm * 8, hy + 14 + (lm % 2) * 8, 5, withA(scol('chem'), .8));
+  txt('coal supply', hx, GND + 18, 11, C['text-muted'], 'center', 600);
+  var bx0 = hx + 18, by0 = hy + 34, bx1 = 282, by1 = 206;
+  line(bx0, by0, bx1, by1, C['text-dim'], 2.2);
+  line(bx0, by0 + 15, bx1, by1 + 15, C['text-dim'], 2.2);
+  flow(bx0, by0 + 8, bx1, by1 + 8, 6, 0.20, scol('chem'), 4.5);
+
+  /* ---- 2. the chimney, with the flue gases going up it ---------------- */
+  CX.fillStyle = withA(C['text-muted'], .22);
+  CX.beginPath(); CX.moveTo(212, 158); CX.lineTo(252, 158);
+  CX.lineTo(262, GND); CX.lineTo(202, GND); CX.closePath(); CX.fill();
+  CX.strokeStyle = withA(C['text-dim'], .9); CX.lineWidth = 2; CX.stroke();
+  CX.fillStyle = withA(C['text-muted'], .30); CX.fillRect(207, 176, 50, 8);
+  for (var sm = 0; sm < 5; sm++) {
+    var sq = (T * 0.22 + sm / 5) % 1;
+    CX.save(); CX.globalAlpha = (1 - sq) * .45; CX.fillStyle = C['text-muted'];
+    CX.beginPath();
+    CX.arc(232 + Math.sin(sq * 5) * 13, 158 - sq * 44, 8 + sq * 12, 0, 7);
+    CX.fill(); CX.restore();
+  }
+  flow(232, GND - 20, 232, 166, 4, 0.30, scol('therm'), 3.6);
+  txt('chimney', 232, GND + 18, 11, C['text-muted'], 'center', 600);
+
+  /* ---- 3. the boiler: flame underneath, water tubes, steam on top ----- */
+  var BL = 280, BR = 400, BT = 178;
+  CX.fillStyle = withA(C.card2 || C.card, .55);
+  rr(BL, BT, BR - BL, GND - BT, 8); CX.fill();
+  CX.save(); rr(BL, BT, BR - BL, GND - BT, 8); CX.clip();
+  CX.fillStyle = withA(scol('therm'), .10); CX.fillRect(BL, BT, BR - BL, 50);
+  CX.fillStyle = withA('#38bdf8', .16); CX.fillRect(BL, BT + 50, BR - BL, GND - BT - 50);
+  CX.strokeStyle = withA(C['text-dim'], .8); CX.lineWidth = 3;
+  for (var tb = 0; tb < 6; tb++) {
+    var tx = BL + 13 + tb * ((BR - BL - 26) / 5);
+    CX.beginPath(); CX.moveTo(tx, BT + 28); CX.lineTo(tx, GND - 36); CX.stroke();
+    for (var bu = 0; bu < 3; bu++) {
+      var bq = (T * 0.55 + tb * 0.17 + bu / 3) % 1;
+      dot(tx, (GND - 40) - bq * (GND - 74 - BT), 3.4, withA(scol('therm'), (1 - bq) * .9));
+    }
+  }
+  for (var fl = 0; fl < 11; fl++) {
+    var fq = (T * 0.9 + fl / 11) % 1;
+    dot(BL + 15 + fl * ((BR - BL - 30) / 10), GND - 11 - fq * 24,
+      6 - fq * 2.8, withA(fl % 2 ? '#f59e0b' : scol('therm'), (1 - fq) * .95));
+  }
+  CX.restore();
+  CX.strokeStyle = withA(C['text-dim'], .95); CX.lineWidth = 2.2;
+  rr(BL, BT, BR - BL, GND - BT, 8); CX.stroke();
+  txt('boiler', (BL + BR) / 2, GND + 18, 11.5, C['text-muted'], 'center', 700);
+  txt('water tubes · furnace below', (BL + BR) / 2, GND + 33, 9.5, C['text-muted'], 'center', 500);
+
+  /* ---- 4. the steam line, running to the turbine ---------------------- */
+  var SY = 170, TX = 552, TY = 218, GXc = 800;
+  CX.strokeStyle = withA(scol('therm'), .5); CX.lineWidth = 12; CX.lineCap = 'round';
+  CX.beginPath(); CX.moveTo(BR, SY); CX.lineTo(534, SY); CX.lineTo(534, 190); CX.stroke();
+  CX.strokeStyle = withA(scol('therm'), .95); CX.lineWidth = 1.8;
+  CX.beginPath(); CX.moveTo(BR, SY - 6.5); CX.lineTo(540, SY - 6.5);
+  CX.moveTo(BR, SY + 6.5); CX.lineTo(527, SY + 6.5); CX.stroke();
+  flow(BR + 6, SY, 530, SY, 5, 0.42, scol('therm'), 4);
+  txt('steam line', (BR + 534) / 2, SY - 16, 10.5, scol('therm'), 'center', 600);
+
+  /* ---- 5. turbine and generator on one shaft -------------------------- */
+  CX.strokeStyle = withA(C['text-muted'], .9); CX.lineWidth = 7;
+  CX.beginPath(); CX.moveTo(TX, TY); CX.lineTo(GXc, TY); CX.stroke();
+  CX.save(); CX.translate(TX, TY); CX.rotate(T * 5);
+  for (var bl = 0; bl < 8; bl++) {
+    CX.rotate(6.283 / 8);
+    CX.fillStyle = withA(scol('ke'), .85);
+    rr(-4.5, -30, 9, 25, 3); CX.fill();
+  }
+  CX.restore();
+  dot(TX, TY, 7, C['text-dim']);
+  txt('turbine', TX, TY + 44, 11.5, C['text-muted'], 'center', 700);
+  flow(TX + 34, TY - 11, GXc - 34, TY - 11, 4, 0.5, scol('ke'), 4);
+  txt('the shaft carries the kinetic store', (TX + GXc) / 2, TY + 28, 9.5,
+    C['text-muted'], 'center', 500);
+  CX.save();
+  CX.fillStyle = withA(scol('elec'), .12);
+  CX.beginPath(); CX.arc(GXc, TY, 30, 0, 7); CX.fill();
+  CX.strokeStyle = scol('elec'); CX.lineWidth = 2.6;
+  CX.beginPath(); CX.arc(GXc, TY, 30, 0, 7); CX.stroke(); CX.restore();
+  txt('G', GXc, TY + 8, 19, scol('elec'), 'center', 800);
+  txt('generator', GXc, TY + 48, 11.5, C['text-muted'], 'center', 700);
+
+  /* ---- 6. the condenser and the cooling-water circuit ------------------ */
+  var CL = 500, CR = 660, CT = 288, CB = 334;
+  CX.strokeStyle = withA(scol('therm'), .42); CX.lineWidth = 9;
+  CX.beginPath(); CX.moveTo(TX, TY + 26); CX.lineTo(TX, CT); CX.stroke();
+  flow(TX, TY + 26, TX, CT, 3, 0.5, scol('therm'), 3.4);
+  txt('spent steam', TX + 16, CT - 6, 9.5, scol('therm'), 'left', 600);
+  CX.fillStyle = withA('#38bdf8', .13); rr(CL, CT, CR - CL, CB - CT, 6); CX.fill();
+  CX.save(); rr(CL, CT, CR - CL, CB - CT, 6); CX.clip();
+  CX.strokeStyle = withA('#38bdf8', .8); CX.lineWidth = 2.4;
+  for (var cc = 0; cc < 3; cc++) {
+    var cy = CT + 11 + cc * 13;
+    CX.beginPath(); CX.moveTo(CL + 4, cy);
+    for (var wv = 0; wv <= 12; wv++)
+      CX.lineTo(CL + 4 + wv * ((CR - CL - 8) / 12), cy + (wv % 2 ? 4 : -4));
+    CX.stroke();
+  }
+  CX.restore();
+  CX.strokeStyle = withA('#38bdf8', .95); CX.lineWidth = 1.8;
+  rr(CL, CT, CR - CL, CB - CT, 6); CX.stroke();
+  txt('condenser', (CL + CR) / 2, GND + 18, 11, '#38bdf8', 'center', 700);
+  /* the cooling water comes in cold on one side and leaves warm on the other */
+  arrow(742, CT + 12, CR + 4, CT + 12, '#38bdf8', 2.4, { head: 9 });
+  txt('cool water in', 748, CT + 14, 9.5, '#38bdf8', 'left', 600);
+  arrow(CR + 4, CB - 10, 742, CB - 10, scol('therm'), 2.4, { head: 9 });
+  txt('warm water out', 748, CB - 8, 9.5, scol('therm'), 'left', 600);
+  /* the feed pump sends the condensed water back to the boiler */
+  CX.strokeStyle = withA('#38bdf8', .7); CX.lineWidth = 3;
+  CX.beginPath(); CX.moveTo(CL, CB - 6); CX.lineTo(BR, CB - 6); CX.stroke();
+  flow(CL, CB - 6, BR, CB - 6, 3, 0.30, '#38bdf8', 3.4);
+  CX.fillStyle = withA('#38bdf8', .30);
+  CX.beginPath(); CX.arc(452, CB - 6, 9, 0, 7); CX.fill();
+  CX.strokeStyle = withA('#38bdf8', .95); CX.lineWidth = 1.6;
+  CX.beginPath(); CX.arc(452, CB - 6, 9, 0, 7); CX.stroke();
+  txt('feed pump', 452, CB - 22, 9.5, '#38bdf8', 'center', 600);
+
+  /* ---- 7. transformer, then the transmission lines -------------------- */
+  var FX = 906;
+  CX.strokeStyle = scol('elec'); CX.lineWidth = 2.4;
+  CX.beginPath(); CX.moveTo(GXc + 30, TY); CX.lineTo(FX - 36, TY); CX.stroke();
+  flow(GXc + 34, TY, FX - 40, TY, 3, 0.5, scol('elec'), 4);
+  CX.fillStyle = withA(scol('elec'), .12);
+  rr(FX - 36, TY - 32, 72, 64, 7); CX.fill();
+  CX.strokeStyle = withA(scol('elec'), .95); CX.lineWidth = 2;
+  rr(FX - 36, TY - 32, 72, 64, 7); CX.stroke();
+  for (var co = 0; co < 4; co++) {
+    CX.beginPath(); CX.arc(FX - 13, TY - 18 + co * 12, 6, -1.57, 1.57); CX.stroke();
+    CX.beginPath(); CX.arc(FX + 13, TY - 18 + co * 12, 6, 1.57, 4.71); CX.stroke();
+  }
+  CX.strokeStyle = withA(C['text-dim'], .8); CX.lineWidth = 1.6;
+  CX.beginPath(); CX.moveTo(FX, TY - 28); CX.lineTo(FX, TY + 28); CX.stroke();
+  txt('transformer', FX, TY + 48, 11.5, C['text-muted'], 'center', 700);
+  txt('steps the voltage UP', FX, TY + 63, 9.5, C['text-muted'], 'center', 500);
+  /* the pylon and its lines */
+  var PX = 1032, PT = 150;
+  CX.strokeStyle = withA(C['text-dim'], .95); CX.lineWidth = 2.2;
+  CX.beginPath();
+  CX.moveTo(PX - 26, GND); CX.lineTo(PX - 8, PT);
+  CX.lineTo(PX + 8, PT); CX.lineTo(PX + 26, GND); CX.stroke();
+  for (var xb = 0; xb < 4; xb++) {
+    var yb = PT + 16 + xb * ((GND - PT - 20) / 4), wb = 9 + xb * 4.2;
+    CX.beginPath(); CX.moveTo(PX - wb, yb); CX.lineTo(PX + wb, yb); CX.stroke();
+  }
+  CX.beginPath(); CX.moveTo(PX - 34, PT + 14); CX.lineTo(PX + 34, PT + 14); CX.stroke();
+  CX.beginPath(); CX.moveTo(PX - 26, PT + 40); CX.lineTo(PX + 26, PT + 40); CX.stroke();
+  CX.strokeStyle = withA(scol('elec'), .85); CX.lineWidth = 2;
+  [[PT + 14, 34], [PT + 40, 26]].forEach(function (r0) {
+    CX.beginPath();
+    CX.moveTo(FX + 36, TY - 22);
+    CX.quadraticCurveTo((FX + PX) / 2, r0[0] + 34, PX - r0[1], r0[0]);
+    CX.stroke();
+    CX.beginPath();
+    CX.moveTo(PX + r0[1], r0[0]);
+    CX.quadraticCurveTo((PX + 1160) / 2, r0[0] + 26, 1160, r0[0] - 4);
+    CX.stroke();
+  });
+  flow(PX + 26, PT + 20, 1156, PT + 12, 4, 0.36, scol('elec'), 4);
+  txt('transmission lines', 1160, PT - 10, 11, scol('elec'), 'right', 700);
+  txt('to homes and factories', 1160, PT + 6, 9.5, C['text-muted'], 'right', 500);
+  txt('pylon', PX, GND + 18, 10.5, C['text-muted'], 'center', 600);
+  CX.restore();
+}
+
 function fire(x, y, p) {
   for (var i = 0; i < 9; i++) {
     var a = i / 9 * 6.283 + S.t;
@@ -3250,6 +3795,224 @@ function genr(x, y, p) {
   txt('generator', x, y + 70, 11.5, C['text-muted'], 'center', 600);
 }
 
+/* ---------------------------------------------------------------------------
+   hydroPlant() — the whole scheme in cross-section, the way a textbook draws
+   it: headpond behind the dam, intake and trash rack, penstock down the hill,
+   powerhouse with turbine and generator on one shaft, draft tube into the
+   tailrace, then transformer and transmission lines. The tokens change colour
+   at exactly the places the energy changes store.                          */
+function hydroPlant(h, fl, eff) {
+  var T = S.t, WATER = '#38bdf8';
+  var WS = 152, BED = 300, GND = 396, TW = 352;   /* head water, rock, ground, tail water */
+  var DAM = 336, TCX = 596, TCY = 344;            /* dam face, turbine centre             */
+  var flow = function (x0, y0, x1, y1, cnt, spd, col, r, ph) {
+    for (var i = 0; i < cnt; i++) {
+      var q = (T * spd + i / cnt + (ph || 0)) % 1;
+      dot(x0 + (x1 - x0) * q, y0 + (y1 - y0) * q, r || 4.5, withA(col, .95));
+    }
+  };
+  CX.save();
+
+  /* ---- 1. the rock the whole thing is built on ------------------------ */
+  CX.fillStyle = withA(C['text-muted'], .16);
+  CX.beginPath();
+  CX.moveTo(56, BED); CX.lineTo(DAM, BED); CX.lineTo(DAM, GND);
+  CX.lineTo(1164, GND); CX.lineTo(1164, 424); CX.lineTo(56, 424);
+  CX.closePath(); CX.fill();
+  CX.strokeStyle = withA(C['text-dim'], .8); CX.lineWidth = 2;
+  CX.beginPath();
+  CX.moveTo(56, BED); CX.lineTo(DAM, BED); CX.moveTo(424, GND); CX.lineTo(1164, GND);
+  CX.stroke();
+
+  /* ---- 2. the headpond, held back by the dam -------------------------- */
+  CX.fillStyle = withA(WATER, .22);
+  CX.fillRect(56, WS, DAM - 56, BED - WS);
+  CX.strokeStyle = withA(WATER, .95); CX.lineWidth = 2;
+  CX.beginPath(); CX.moveTo(56, WS);
+  for (var wv = 0; wv <= 28; wv++)
+    CX.lineTo(56 + wv * ((DAM - 56) / 28), WS + Math.sin(wv * 0.9 + T * 1.6) * 2.6);
+  CX.stroke();
+  txt('reservoir  ·  the headpond', 150, WS - 14, 12, WATER, 'left', 700);
+  /* the gravitational store, drifting slowly towards the intake */
+  for (var g = 0; g < 7; g++) {
+    var gq = (T * 0.14 + g / 7) % 1;
+    dot(84 + gq * (DAM - 104), WS + 26 + ((g * 37) % 84), 5, withA(scol('gpe'), .85));
+  }
+
+  /* ---- 3. the dam itself ---------------------------------------------- */
+  CX.fillStyle = withA(C['text-dim'], .35);
+  CX.beginPath();
+  CX.moveTo(DAM, 132); CX.lineTo(400, 132); CX.lineTo(424, GND); CX.lineTo(DAM, GND);
+  CX.closePath(); CX.fill();
+  CX.strokeStyle = withA(C['text-dim'], .95); CX.lineWidth = 2.2; CX.stroke();
+  CX.fillStyle = withA(C['text-muted'], .5); CX.fillRect(DAM - 4, 126, 72, 7);
+  txt('dam', 368, 118, 12, C['text-muted'], 'center', 700);
+
+  /* ---- 4. intake and trash rack, low down on the wet face ------------- */
+  var IY = 208;
+  CX.fillStyle = withA(WATER, .30); rr(DAM - 4, IY - 17, 38, 34, 4); CX.fill();
+  CX.strokeStyle = withA(WATER, .95); CX.lineWidth = 1.8;
+  rr(DAM - 4, IY - 17, 38, 34, 4); CX.stroke();
+  CX.strokeStyle = withA(C['text-muted'], .95); CX.lineWidth = 2;
+  for (var bar = 0; bar < 5; bar++) {
+    CX.beginPath();
+    CX.moveTo(DAM - 26 + bar * 6, IY - 22); CX.lineTo(DAM - 26 + bar * 6, IY + 22);
+    CX.stroke();
+  }
+  txt('intake', DAM - 34, IY - 30, 10.5, C['text-muted'], 'right', 700);
+  txt('trash rack', DAM - 34, IY - 16, 9.5, C['text-muted'], 'right', 500);
+
+  /* ---- 5. the penstock, carrying the water down to the machine -------- */
+  var PX0 = DAM + 30, PY0 = IY, PX1 = TCX - 4, PY1 = TCY - 6;
+  CX.lineCap = 'round';
+  CX.strokeStyle = withA(WATER, .30); CX.lineWidth = 20;
+  CX.beginPath(); CX.moveTo(PX0, PY0); CX.lineTo(PX1, PY1); CX.stroke();
+  CX.strokeStyle = withA(WATER, .95); CX.lineWidth = 2;
+  var pdx = PX1 - PX0, pdy = PY1 - PY0, plen = Math.sqrt(pdx * pdx + pdy * pdy);
+  var pnx = -pdy / plen * 10, pny = pdx / plen * 10;
+  CX.beginPath();
+  CX.moveTo(PX0 + pnx, PY0 + pny); CX.lineTo(PX1 + pnx, PY1 + pny);
+  CX.moveTo(PX0 - pnx, PY0 - pny); CX.lineTo(PX1 - pnx, PY1 - pny);
+  CX.stroke();
+  /* the pipe rings, so it reads as a pipe and not a stripe */
+  CX.lineWidth = 1.4; CX.strokeStyle = withA(WATER, .55);
+  for (var rg = 1; rg < 6; rg++) {
+    var ru = rg / 6;
+    CX.beginPath();
+    CX.moveTo(PX0 + pdx * ru + pnx, PY0 + pdy * ru + pny);
+    CX.lineTo(PX0 + pdx * ru - pnx, PY0 + pdy * ru - pny);
+    CX.stroke();
+  }
+  /* gravitational tokens become kinetic ones on the way down */
+  for (var k = 0; k < 9; k++) {
+    var kq = (T * 0.42 + k / 9) % 1;
+    dot(PX0 + pdx * kq, PY0 + pdy * kq, 5,
+      withA(kq < .5 ? scol('gpe') : scol('ke'), .95));
+  }
+  plate('penstock', 440, 212, 11, WATER, 'left', true);
+  txt('the water speeds up', 440, 232, 9.5, C['text-muted'], 'left', 500);
+
+  /* ---- 6. gross head, measured from the datum ------------------------- */
+  CX.setLineDash([5, 5]); CX.strokeStyle = withA(C['text-dim'], .8); CX.lineWidth = 1.4;
+  CX.beginPath(); CX.moveTo(84, WS); CX.lineTo(300, WS);
+  CX.moveTo(84, TCY); CX.lineTo(300, TCY); CX.stroke();
+  CX.setLineDash([]);
+  arrow(112, WS + 3, 112, TCY - 3, scol('gpe'), 2.4, { head: 10 });
+  arrow(112, TCY - 3, 112, WS + 3, scol('gpe'), 2.4, { head: 10 });
+  plate('h = ' + fmt(h, 1) + ' m', 124, (WS + TCY) / 2, 11.5, scol('gpe'), 'left', true);
+  txt('gross head', 124, (WS + TCY) / 2 + 18, 9.5, C['text-muted'], 'left', 500);
+
+  /* ---- 7. the powerhouse: turbine and generator on one shaft ---------- */
+  var PL = 520, PR = 772, PT = 250;
+  CX.fillStyle = withA(C.card2 || C.card, .6);
+  rr(PL, PT, PR - PL, GND - PT, 8); CX.fill();
+  CX.strokeStyle = withA(C['text-dim'], .95); CX.lineWidth = 2.2;
+  rr(PL, PT, PR - PL, GND - PT, 8); CX.stroke();
+  CX.fillStyle = withA(C['text-muted'], .45);
+  CX.beginPath();
+  CX.moveTo(PL - 12, PT); CX.lineTo(PR + 12, PT); CX.lineTo(PR + 12, PT - 9);
+  CX.lineTo(PL - 12, PT - 9); CX.closePath(); CX.fill();
+  txt('powerhouse', (PL + PR) / 2, PT - 18, 11.5, C['text-muted'], 'center', 700);
+  /* generator */
+  CX.save();
+  CX.fillStyle = withA(scol('elec'), .12);
+  CX.beginPath(); CX.arc(TCX, 292, 27, 0, 7); CX.fill();
+  CX.strokeStyle = scol('elec'); CX.lineWidth = 2.6;
+  CX.beginPath(); CX.arc(TCX, 292, 27, 0, 7); CX.stroke(); CX.restore();
+  txt('G', TCX, 300, 18, scol('elec'), 'center', 800);
+  txt('generator', TCX + 34, 288, 10.5, C['text-muted'], 'left', 700);
+  txt('spun by the shaft', TCX + 34, 302, 9.5, C['text-muted'], 'left', 500);
+  /* the shaft */
+  CX.strokeStyle = withA(C['text-muted'], .95); CX.lineWidth = 6;
+  CX.beginPath(); CX.moveTo(TCX, 319); CX.lineTo(TCX, TCY - 16); CX.stroke();
+  /* turbine runner */
+  CX.save(); CX.translate(TCX, TCY); CX.rotate(T * 5);
+  for (var bl = 0; bl < 8; bl++) {
+    CX.rotate(6.283 / 8);
+    CX.fillStyle = withA(scol('ke'), .85);
+    rr(-4.5, -26, 9, 21, 3); CX.fill();
+  }
+  CX.restore();
+  dot(TCX, TCY, 6.5, C['text-dim']);
+  txt('turbine', TCX + 34, TCY + 2, 10.5, C['text-muted'], 'left', 700);
+  txt('the water spins the blades', TCX + 34, TCY + 16, 9.5, C['text-muted'], 'left', 500);
+
+  /* ---- 8. draft tube out into the tailrace ---------------------------- */
+  CX.strokeStyle = withA(WATER, .32); CX.lineWidth = 15; CX.lineCap = 'round';
+  CX.beginPath();
+  CX.moveTo(TCX, TCY + 18);
+  CX.quadraticCurveTo(TCX, 376, TCX + 62, 376);
+  CX.lineTo(790, 376); CX.stroke();
+  CX.strokeStyle = withA(WATER, .9); CX.lineWidth = 1.6;
+  CX.beginPath();
+  CX.moveTo(TCX - 8, TCY + 18);
+  CX.quadraticCurveTo(TCX - 8, 384, TCX + 58, 384); CX.lineTo(790, 384);
+  CX.moveTo(TCX + 8, TCY + 22);
+  CX.quadraticCurveTo(TCX + 8, 368, TCX + 66, 368); CX.lineTo(790, 368);
+  CX.stroke();
+  flow(TCX + 20, 376, 788, 376, 4, 0.34, WATER, 4);
+  txt('draft tube', 640, 404, 10.5, WATER, 'center', 600);
+
+  /* ---- 9. the tailrace: the same water, low down and slow ------------- */
+  CX.fillStyle = withA(WATER, .20); CX.fillRect(790, TW, 200, GND - TW);
+  CX.strokeStyle = withA(WATER, .9); CX.lineWidth = 2;
+  CX.beginPath(); CX.moveTo(790, TW);
+  for (var tv = 0; tv <= 16; tv++)
+    CX.lineTo(790 + tv * (200 / 16), TW + Math.sin(tv * 0.9 + T * 2.2) * 2.4);
+  CX.stroke();
+  flow(800, 370, 980, 370, 4, 0.22, WATER, 4);
+  txt('tailrace  ·  the river carries it away', 890, 412, 10.5, WATER, 'center', 600);
+
+  /* ---- 10. transformer, pylon, transmission lines --------------------- */
+  var FX = 880, FY = 236;
+  CX.strokeStyle = scol('elec'); CX.lineWidth = 2.4;
+  CX.beginPath();
+  CX.moveTo(TCX + 27, 292); CX.lineTo(820, 292); CX.lineTo(820, FY);
+  CX.lineTo(FX - 34, FY); CX.stroke();
+  flow(TCX + 30, 292, 816, 292, 3, 0.5, scol('elec'), 4);
+  CX.fillStyle = withA(scol('elec'), .12);
+  rr(FX - 34, FY - 30, 68, 60, 7); CX.fill();
+  CX.strokeStyle = withA(scol('elec'), .95); CX.lineWidth = 2;
+  rr(FX - 34, FY - 30, 68, 60, 7); CX.stroke();
+  for (var co = 0; co < 4; co++) {
+    CX.beginPath(); CX.arc(FX - 12, FY - 17 + co * 11, 5.5, -1.57, 1.57); CX.stroke();
+    CX.beginPath(); CX.arc(FX + 12, FY - 17 + co * 11, 5.5, 1.57, 4.71); CX.stroke();
+  }
+  CX.strokeStyle = withA(C['text-dim'], .8); CX.lineWidth = 1.6;
+  CX.beginPath(); CX.moveTo(FX, FY - 26); CX.lineTo(FX, FY + 26); CX.stroke();
+  txt('transformer', FX, FY + 46, 11, C['text-muted'], 'center', 700);
+  txt('steps the voltage UP', FX, FY + 60, 9.5, C['text-muted'], 'center', 500);
+  var PXp = 1060, PTp = 150;
+  CX.strokeStyle = withA(C['text-dim'], .95); CX.lineWidth = 2.2;
+  CX.beginPath();
+  CX.moveTo(PXp - 26, GND); CX.lineTo(PXp - 8, PTp);
+  CX.lineTo(PXp + 8, PTp); CX.lineTo(PXp + 26, GND); CX.stroke();
+  for (var xb = 0; xb < 4; xb++) {
+    var yb = PTp + 16 + xb * ((GND - PTp - 20) / 4), wb = 9 + xb * 4.2;
+    CX.beginPath(); CX.moveTo(PXp - wb, yb); CX.lineTo(PXp + wb, yb); CX.stroke();
+  }
+  CX.beginPath(); CX.moveTo(PXp - 34, PTp + 14); CX.lineTo(PXp + 34, PTp + 14); CX.stroke();
+  CX.beginPath(); CX.moveTo(PXp - 26, PTp + 40); CX.lineTo(PXp + 26, PTp + 40); CX.stroke();
+  CX.strokeStyle = withA(scol('elec'), .85); CX.lineWidth = 2;
+  [[PTp + 14, 34], [PTp + 40, 26]].forEach(function (r0) {
+    CX.beginPath();
+    CX.moveTo(FX + 34, FY - 20);
+    CX.quadraticCurveTo((FX + PXp) / 2, r0[0] + 40, PXp - r0[1], r0[0]);
+    CX.stroke();
+    CX.beginPath();
+    CX.moveTo(PXp + r0[1], r0[0]);
+    CX.quadraticCurveTo((PXp + 1164) / 2, r0[0] + 24, 1164, r0[0] - 4);
+    CX.stroke();
+  });
+  flow(PXp + 26, PTp + 20, 1158, PTp + 12, 4, 0.36, scol('elec'), 4);
+  txt('transmission lines', 1164, PTp - 26, 11, scol('elec'), 'right', 700);
+  txt('to homes and factories', 1164, PTp - 10, 9.5, C['text-muted'], 'right', 500);
+  txt('pylon', PXp, GND + 18, 10.5, C['text-muted'], 'center', 600);
+
+  plate(fmt(fl, 0) + ' kg of water every second', 84, 336, 11, WATER, 'left', true);
+  CX.restore();
+}
+
 /* ---------- S2 HYDROELECTRIC ---------------------------------------------- */
 scene('4S', 'hydro', {
   label: '🌊 Hydroelectric',
@@ -3260,32 +4023,13 @@ scene('4S', 'hydro', {
   draw: function () {
     var h = V('h'), fl = V('flow'), eff = V('eff') / 100;
     var Pin = fl * 10 * h, Pout = Pin * eff, p = prog(3);
-    /* reservoir, pipe, turbine */
-    CX.save();
-    CX.fillStyle = withA(scol('elec'), .25);
-    CX.fillRect(90, 150, 220, 90);
-    CX.strokeStyle = C['text-dim']; CX.lineWidth = 2.5;
-    CX.beginPath(); CX.moveTo(90, 150); CX.lineTo(90, 240); CX.lineTo(310, 240); CX.stroke();
-    CX.restore();
-    txt('reservoir', 200, 140, 12, C['text-muted'], 'center', 600);
-    CX.save();
-    CX.strokeStyle = C['text-dim']; CX.lineWidth = 12; CX.lineCap = 'round';
-    CX.beginPath(); CX.moveTo(310, 230); CX.lineTo(470, 350); CX.stroke(); CX.restore();
-    for (var i = 0; i < 7; i++) {
-      var u = ((S.t * 0.5 + i / 7) % 1);
-      dot(310 + u * 160, 230 + u * 120, 5, withA(scol('elec'), .9));
-    }
-    turbine(520, 360, S.t * 4);
-    genr(660, 360, p);
-    arrow(360, 200, 360, 320, scol('gpe'), 2.4, { head: 11 });
-    plate('h = ' + fmt(h, 1) + ' m', 372, 260, 11.5, scol('gpe'), 'left', true);
-    plate(fmt(fl, 0) + ' kg every second', 130, 300, 11.5, scol('elec'), 'left', true);
+    hydroPlant(h, fl, eff);
 
-    chainDiagram(90, 440, 1020, [
+    chainDiagram(90, 448, 1020, [
       { k: 'gpe', n: 'water up high', waste: true }, { k: 'ke', n: 'falling water', waste: true },
       { k: 'elec', n: 'electricity' }]);
-    mtxt('input ' + fmtW(Pin) + '   →   output ' + fmtW(Pout), 700, 200, 14, C.accent, 'left', 700);
-    txt('efficiency ' + fmt(eff * 100, 0) + '%  ·  hydro is one of the best', 700, 228, 12,
+    mtxt('input ' + fmtW(Pin) + '   →   output ' + fmtW(Pout), 660, 152, 14, C.accent, 'left', 700);
+    txt('efficiency ' + fmt(eff * 100, 0) + '%  ·  hydro is one of the best', 660, 176, 12,
       C['text-muted'], 'left', 500);
     energyBank([{ k: 'gpe', v: Pin * (1 - p), keep: true }, { k: 'ke', v: Pin * p * .9, keep: true },
     { k: 'elec', v: Pout * p, keep: true }, { k: 'therm', v: (Pin - Pout) * p * .1, keep: true }],
@@ -3314,6 +4058,158 @@ scene('4S', 'hydro', {
   }
 });
 
+/* ---------------------------------------------------------------------------
+   solarScheme() — the whole domestic PV chain the way the textbook draws it:
+   sunlight → panel → direct current → inverter → alternating current → lamp.
+   The sun and the glass panel are the same drawings Mode 1 uses for Radiant,
+   so a student who met them there recognises them here.                    */
+function lampGlass(x, y, lit, sc) {
+  sc = sc || 1;
+  CX.save();
+  var gg = CX.createRadialGradient(x, y, 4, x, y, 74 * sc);
+  gg.addColorStop(0, withA(scol('rad'), .07 + lit * .38));
+  gg.addColorStop(1, withA(scol('rad'), 0));
+  CX.fillStyle = gg;
+  CX.beginPath(); CX.arc(x, y, 74 * sc, 0, 7); CX.fill();
+  CX.restore();
+  rays(x, y, 40 * sc, 8, 16 * sc, withA(scol('rad'), .25 + lit * .6), 0);
+  CX.save();                                        /* the glass envelope   */
+  CX.fillStyle = withA(scol('rad'), .08 + lit * .30);
+  CX.beginPath(); CX.ellipse(x, y, 23 * sc, 26 * sc, 0, 0, 7); CX.fill();
+  CX.strokeStyle = withA(C['text-dim'], .85); CX.lineWidth = 2;
+  CX.beginPath(); CX.ellipse(x, y, 23 * sc, 26 * sc, 0, 0, 7); CX.stroke();
+  CX.restore();
+  CX.save();                                        /* supports + filament  */
+  CX.strokeStyle = withA(C['text-muted'], .95); CX.lineWidth = 1.6;
+  CX.beginPath();
+  CX.moveTo(x - 8 * sc, y + 24 * sc); CX.lineTo(x - 8 * sc, y + 3 * sc);
+  CX.moveTo(x + 8 * sc, y + 24 * sc); CX.lineTo(x + 8 * sc, y + 3 * sc); CX.stroke();
+  CX.strokeStyle = withA('#fde68a', .35 + lit * .65);
+  CX.lineWidth = 2.2; CX.lineCap = 'round';
+  CX.beginPath(); CX.moveTo(x - 8 * sc, y + 3 * sc);
+  for (var fz = 0; fz < 6; fz++)
+    CX.lineTo(x - 8 * sc + (fz + 0.5) * (16 * sc / 6), y + 3 * sc + (fz % 2 ? 5 : -5) * sc);
+  CX.lineTo(x + 8 * sc, y + 3 * sc); CX.stroke();
+  CX.restore();
+  CX.save();                                        /* the screw cap        */
+  CX.fillStyle = withA(C['text-muted'], .55);
+  rr(x - 13 * sc, y + 22 * sc, 26 * sc, 20 * sc, 3); CX.fill();
+  CX.strokeStyle = withA(C['text-dim'], .8); CX.lineWidth = 1;
+  for (var th = 0; th < 3; th++) {
+    CX.beginPath();
+    CX.moveTo(x - 13 * sc, y + (27 + th * 5) * sc);
+    CX.lineTo(x + 13 * sc, y + (27 + th * 5) * sc); CX.stroke();
+  }
+  CX.restore();
+}
+
+function solarScheme(I, eff, Pin, Pout) {
+  var T = S.t, GND = 412, PCX = 430, PCY = 286, TILT = -0.34;
+  var flow = function (x0, y0, x1, y1, cnt, spd, col, r, ph) {
+    for (var i = 0; i < cnt; i++) {
+      var q = (T * spd + i / cnt + (ph || 0)) % 1;
+      dot(x0 + (x1 - x0) * q, y0 + (y1 - y0) * q, r || 4.5, withA(col, .95));
+    }
+  };
+  CX.save();
+  line(56, GND, 620, GND, C['text-muted'], 2.5);
+
+  /* ---- 1. the Sun: hottest in the core, cooling outwards --------------- */
+  var sx = 150, sy = 212, sr = 38 + I * 1.4;
+  CX.save();
+  var sg = CX.createRadialGradient(sx, sy, 1, sx, sy, sr);
+  sg.addColorStop(0, '#7f1d1d'); sg.addColorStop(0.28, '#b91c1c');
+  sg.addColorStop(0.55, '#ea580c'); sg.addColorStop(0.80, '#f59e0b');
+  sg.addColorStop(1, '#fde047');
+  CX.fillStyle = sg;
+  CX.beginPath(); CX.arc(sx, sy, sr, 0, 7); CX.fill();
+  CX.restore();
+  rays(sx, sy, sr + 12, 12, 22, withA(scol('rad'), .9), 0);
+  txt('sunlight', sx, sy - sr - 34, 12, scol('rad'), 'center', 700);
+  plate('brightness ' + fmt(I, 0) + ' / 10', sx, sy + sr + 44, 11, scol('rad'), 'center', true);
+
+  /* ---- 2. the beams landing on the glass ------------------------------ */
+  var b0 = { x: 224, y: 214 }, b1 = { x: 330, y: 268 };
+  for (var bm = 0; bm < 3; bm++) {
+    var oy2 = bm * 26;
+    arrow(b0.x, b0.y + oy2, b1.x, b1.y + oy2, withA(scol('rad'), .75), 3, { head: 11 });
+    flow(b0.x, b0.y + oy2, b1.x, b1.y + oy2, 2, 0.55, scol('rad'), 4.5, bm * 0.3);
+  }
+
+  /* ---- 3. the panel: dark glass, cell grid, busbars, sheen ------------- */
+  CX.save();
+  CX.translate(PCX, PCY); CX.rotate(TILT);
+  var pw = 248, ph = 136, px = -pw / 2, py = -ph / 2;
+  CX.fillStyle = LIGHT ? '#4b5563' : '#1f2937';
+  rr(px, py, pw, ph, 6); CX.fill();
+  CX.strokeStyle = withA('#cbd5e1', .5); CX.lineWidth = 1;
+  for (var gi = 1; gi < 6; gi++) {
+    CX.beginPath(); CX.moveTo(px + pw * gi / 6, py + 5);
+    CX.lineTo(px + pw * gi / 6, py + ph - 5); CX.stroke();
+  }
+  for (var gj = 1; gj < 4; gj++) {
+    CX.beginPath(); CX.moveTo(px + 5, py + ph * gj / 4);
+    CX.lineTo(px + pw - 5, py + ph * gj / 4); CX.stroke();
+  }
+  CX.fillStyle = withA('#ffffff', .07);                    /* glass sheen   */
+  CX.beginPath(); CX.moveTo(px, py + ph); CX.lineTo(px + pw * .55, py);
+  CX.lineTo(px + pw, py); CX.lineTo(px + pw * .45, py + ph); CX.closePath(); CX.fill();
+  CX.strokeStyle = LIGHT ? '#334155' : '#94a3b8'; CX.lineWidth = 3;
+  rr(px, py, pw, ph, 6); CX.stroke();
+  CX.restore();
+  /* the mounting frame, so it is standing on something */
+  CX.strokeStyle = withA(C['text-dim'], .95); CX.lineWidth = 4; CX.lineCap = 'round';
+  CX.beginPath();
+  CX.moveTo(453, 350); CX.lineTo(453, GND);
+  CX.moveTo(453, 372); CX.lineTo(402, GND);
+  CX.moveTo(453, 372); CX.lineTo(506, GND); CX.stroke();
+  txt('panel  ·  photovoltaic cells, no moving parts', PCX, GND + 20, 11.5,
+    C['text-muted'], 'center', 700);
+  /* what the panel does NOT convert simply warms it */
+  var nWarm = Math.max(1, Math.round((1 - eff) * 6));
+  for (var w = 0; w < nWarm; w++) {
+    var wq = (T * 0.5 + w / nWarm) % 1;
+    dot(360 + w * 30, 214 - wq * 46, 4, withA(scol('therm'), (1 - wq) * .8));
+  }
+  txt('the rest warms the panel', 360, 160, 9.5, scol('therm'), 'left', 600);
+
+  /* ---- 4. direct current, out of the panel and into the inverter ------- */
+  var IL = 652, IR = 748, IT = 356, IB = 410;
+  CX.strokeStyle = scol('elec'); CX.lineWidth = 2.6; CX.lineCap = 'round';
+  CX.beginPath();
+  CX.moveTo(570, 309); CX.lineTo(600, 342); CX.lineTo(600, 384); CX.lineTo(IL, 384);
+  CX.stroke();
+  flow(600, 384, IL, 384, 3, 0.55, scol('elec'), 4);
+  txt('direct current  (DC)', 592, 366, 9.5, scol('elec'), 'right', 600);
+
+  /* ---- 5. the inverter: DC in one side, AC out the other --------------- */
+  CX.fillStyle = withA(scol('elec'), .12); rr(IL, IT, IR - IL, IB - IT, 7); CX.fill();
+  CX.strokeStyle = withA(scol('elec'), .95); CX.lineWidth = 2;
+  rr(IL, IT, IR - IL, IB - IT, 7); CX.stroke();
+  CX.strokeStyle = withA(C['text-muted'], .95); CX.lineWidth = 2.4;
+  CX.beginPath(); CX.moveTo(IL + 16, IT + 20); CX.lineTo(IL + 34, IT + 20); CX.stroke();
+  CX.strokeStyle = withA(C.accent, .95); CX.lineWidth = 2.4;
+  CX.beginPath();
+  for (var sw = 0; sw <= 22; sw++)
+    CX.lineTo(IL + 52 + sw * 1.5, IT + 20 - Math.sin(sw / 22 * 6.283) * 8);
+  CX.stroke();
+  txt('inverter', (IL + IR) / 2, IB + 20, 11.5, C['text-muted'], 'center', 700);
+  txt('turns DC into mains AC', (IL + IR) / 2, IB + 35, 9.5, C['text-muted'], 'center', 500);
+
+  /* ---- 6. alternating current, up to the lamp ------------------------- */
+  var LX = 1030, LY = 250;
+  CX.strokeStyle = scol('elec'); CX.lineWidth = 2.6;
+  CX.beginPath();
+  CX.moveTo(IR, 384); CX.lineTo(LX, 384); CX.lineTo(LX, LY + 44); CX.stroke();
+  flow(IR + 6, 384, LX - 6, 384, 4, 0.5, scol('elec'), 4);
+  txt('alternating current  (AC)', (IR + LX) / 2, 372, 9.5, scol('elec'), 'center', 600);
+  lampGlass(LX, LY, clamp(Pout / 300, .06, 1), 1);
+  txt('lamp', LX, LY - 78, 11.5, C['text-muted'], 'center', 700);
+  txt('light again, at the far end of the chain', LX, LY - 62, 9.5,
+    C['text-muted'], 'center', 500);
+  CX.restore();
+}
+
 /* ---------- S3 SOLAR PV ---------------------------------------------------- */
 scene('4S', 'solar', {
   label: '☀️ Solar PV',
@@ -3324,33 +4220,14 @@ scene('4S', 'solar', {
   draw: function () {
     var I = V('inten'), eff = V('eff') / 100;
     var Pin = I * 100, Pout = Pin * eff;
-    dot(210, 190, 44, withA(scol('rad'), .9));
-    rays(210, 190, 56, 10, 22, withA(scol('rad'), .85), 0);
-    txt('☀️', 210, 200, 32, '#000', 'center', 700);
-    /* the panel */
-    CX.save();
-    CX.translate(560, 300); CX.rotate(-0.35);
-    CX.fillStyle = withA(scol('elec'), .3); rr(-110, -60, 220, 120, 8); CX.fill();
-    CX.strokeStyle = scol('elec'); CX.lineWidth = 2; rr(-110, -60, 220, 120, 8); CX.stroke();
-    for (var i = 1; i < 4; i++) line(-110 + i * 55, -60, -110 + i * 55, 60, withA(scol('elec'), .5), 1);
-    CX.restore();
-    for (var j = 0; j < 6; j++) {
-      var t0 = ((S.t * 70 + j * 40) % 260);
-      dot(270 + t0, 210 + t0 * .28, 4.5, withA(scol('rad'), .95));
-    }
-    dot(830, 300, 24, withA(scol('rad'), clamp(Pout / 400, .2, 1)));
-    txt('lamp', 830, 344, 11.5, C['text-muted'], 'center', 600);
-    for (var m = 0; m < 5; m++) {
-      var u = ((S.t * .5 + m / 5) % 1);
-      dot(660 + u * 150, 300, 4, withA(scol('elec'), .9));
-    }
-    chainDiagram(90, 430, 1020, [
+    solarScheme(I, eff, Pin, Pout);
+
+    chainDiagram(90, 462, 1020, [
       { k: 'rad', n: 'sunlight', waste: true }, { k: 'elec', n: 'the panel' },
       { k: 'rad', n: 'the lamp lights up' }]);
-    mtxt('light in ' + fmtW(Pin) + '  →  electricity out ' + fmtW(Pout), 700, 170, 13.5,
+    mtxt('light in ' + fmtW(Pin) + '  →  electricity out ' + fmtW(Pout), 620, 152, 13.5,
       C.accent, 'left', 700);
-    txt('typical panels manage about 20% — the rest warms the panel', 700, 196, 12,
-      C['text-muted'], 'left', 500);
+    txt('about 20% in a real panel', 620, 176, 12, C['text-muted'], 'left', 500);
     energyBank([{ k: 'rad', v: Pin - Pout, keep: true }, { k: 'elec', v: Pout, keep: true }],
       { total: Pin || 1, note: 'the light that misses the job simply warms the panel' });
   },
@@ -3371,9 +4248,46 @@ scene('4S', 'solar', {
       ['Light from the Sun is <b>radiant</b> energy in transit.',
         'It is absorbed by the cell, which drives charges round the circuit: <b>electrical</b>.',
         'Most of the light is not converted and warms the panel: <b>thermal</b> waste.',
+        'The panel makes <b>direct current</b>; the inverter turns it into the alternating ' +
+        'current the mains uses. No energy store changes there — it is still electrical.',
         'If the electricity lights a lamp, the chain continues: electrical → light + heat.']);
   }
 });
+
+/* A real basketball: shaded leather, four seams, and a highlight. It squashes
+   only at the instant of impact — a ball sitting still on the floor is round,
+   which is what the last frame of the animation should show.               */
+function basketball(cx, cy, r, sq, spin) {
+  var rx = r + sq, ry = r - sq;
+  CX.save();
+  CX.translate(cx, cy);
+  CX.beginPath(); CX.ellipse(0, 0, rx, ry, 0, 0, 7); CX.clip();
+  var g = CX.createRadialGradient(-rx * .35, -ry * .42, r * .12, 0, 0, rx * 1.2);
+  g.addColorStop(0, '#fdba74'); g.addColorStop(.42, '#f97316');
+  g.addColorStop(.82, '#c2410c'); g.addColorStop(1, '#7c2d12');
+  CX.fillStyle = g; CX.fillRect(-rx, -ry, rx * 2, ry * 2);
+  CX.strokeStyle = 'rgba(28,14,4,.85)';
+  CX.lineWidth = Math.max(1.5, r * .085);
+  CX.lineCap = 'round';
+  CX.save(); CX.rotate(spin);
+  CX.beginPath(); CX.moveTo(0, -ry * 1.1); CX.lineTo(0, ry * 1.1); CX.stroke();
+  CX.beginPath(); CX.moveTo(-rx * 1.1, 0); CX.lineTo(rx * 1.1, 0); CX.stroke();
+  CX.beginPath();
+  CX.moveTo(-rx * .60, -ry * 1.05);
+  CX.quadraticCurveTo(-rx * .12, 0, -rx * .60, ry * 1.05); CX.stroke();
+  CX.beginPath();
+  CX.moveTo(rx * .60, -ry * 1.05);
+  CX.quadraticCurveTo(rx * .12, 0, rx * .60, ry * 1.05); CX.stroke();
+  CX.restore();
+  CX.restore();
+  CX.save();
+  CX.strokeStyle = 'rgba(0,0,0,.4)'; CX.lineWidth = 1.4;
+  CX.beginPath(); CX.ellipse(cx, cy, rx, ry, 0, 0, 7); CX.stroke();
+  CX.fillStyle = 'rgba(255,255,255,.20)';
+  CX.beginPath();
+  CX.ellipse(cx - rx * .34, cy - ry * .42, rx * .27, ry * .17, -0.6, 0, 7); CX.fill();
+  CX.restore();
+}
 
 /* ---------- S4 BOUNCING BALL ---------------------------------------------- */
 scene('4S', 'bounce', {
@@ -3385,29 +4299,55 @@ scene('4S', 'bounce', {
   draw: function () {
     var m = V('m'), h = V('h'), keep = V('bounce') / 100, g = 10;
     var E0 = m * g * h;
+    /* one complete run = the drop, ten bounces, then a moment sitting still,
+       so ▶ Play stops with the ball at rest instead of looping forever.   */
+    var tbase = Math.sqrt(2 * h / g), tot = tbase;
+    for (var q = 1; q <= 10; q++) tot += 2 * tbase * Math.pow(Math.sqrt(keep), q);
+    prog(tot + 1.2);
     /* work out which bounce we are in */
     var tt = S.t, hh = h, tb = Math.sqrt(2 * h / g), acc = 0, n = 0;
     while (tt > acc + 2 * tb && n < 10) { acc += 2 * tb; hh *= keep; tb = Math.sqrt(2 * hh / g); n++; }
     var tl = tt - acc, y = Math.max(hh - 0.5 * g * Math.pow(tl - tb, 2), 0);
     var floorY = 430, top = 130, sc = (floorY - top) / h;
     ground(floorY + 4, 90, 560);
-    var squash = y < 0.05 ? 6 : 0;
-    CX.save();
-    CX.fillStyle = scol('ke');
-    CX.beginPath();
-    CX.ellipse(300, floorY - y * sc - 18 + squash, 18 + squash, 18 - squash, 0, 0, 7);
-    CX.fill(); CX.restore();
-    /* the ghosts of earlier bounce heights */
+    var BX = 300, R = 20;
+    /* the ghosts of earlier bounce heights come FIRST, so nothing is ever
+       drawn across the ball, and they stop short of the column it falls
+       down — a dashed line through the ball reads as part of the ball.  */
     var gh = h;
     for (var i = 0; i <= n && i < 6; i++) {
-      line(90, floorY - gh * sc, 560, floorY - gh * sc, withA(C['text-muted'], .35), 1, [4, 6]);
-      mtxt(fmt(gh, 2) + ' m', 566, floorY - gh * sc + 4, 10, C['text-muted'], 'left');
+      var gy = floorY - gh * sc;
+      line(96, gy, BX - R - 14, gy, withA(C['text-muted'], .35), 1, [4, 6]);
+      line(BX + R + 14, gy, 548, gy, withA(C['text-muted'], .35), 1, [4, 6]);
+      mtxt(fmt(gh, 2) + ' m', 556, gy + 4, 10, C['text-muted'], 'left');
       gh *= keep;
     }
+    /* the ball is round unless it is actually touching the floor: it squashes
+       for the instant of the impact and springs back, and the ball that has
+       finished bouncing simply sits there, round.                         */
+    var atRest = n >= 10 || tl > 2 * tb;
+    /* once it has settled the spin freezes too — a ball lying on the floor
+       does not keep turning.                                             */
+    var spinT = atRest ? Math.min(tt, acc + 2 * tb) : tt;
+    var squash = 0;
+    if (!atRest) {
+      var edge = Math.min(tl, 2 * tb - tl);
+      if (edge < 0.06) squash = 6 * (1 - edge / 0.06);
+    }
+    var by = floorY - y * sc - R + squash;
+    CX.save();                                  /* the shadow it casts     */
+    CX.fillStyle = withA('#000000', clamp(.30 - y * sc / 900, .06, .30));
+    CX.beginPath();
+    CX.ellipse(BX, floorY + 3, R * clamp(1.25 - y * sc / 500, .5, 1.25), 4.5, 0, 0, 7);
+    CX.fill(); CX.restore();
+    basketball(BX, by, R, squash, spinT * 2.4);
     var En = E0 * Math.pow(keep, n);
     var gpeNow = m * g * y, keNow = Math.max(En - gpeNow, 0);
     txt('bounce ' + n + ' · it keeps ' + fmt(keep * 100, 0) + '% of its tokens each time',
-      90, 110, 13, C['text-dim'], 'left', 600);
+      90, 470, 13, C['text-dim'], 'left', 600);
+    txt(atRest ? 'at rest — every token has ended up in the thermal account'
+      : 'each impact leaves a few tokens behind as heat and sound',
+      90, 492, 11.5, C['text-muted'], 'left', 500);
     chainDiagram(620, 150, 520, [
       { k: 'gpe', n: 'held up' }, { k: 'ke', n: 'falling' },
       { k: 'elas', n: 'squashed', waste: true }, { k: 'ke', n: 'bouncing back' }]);
@@ -3447,76 +4387,402 @@ scene('4S', 'bounce', {
   }
 });
 
-/* ---------- S5 FILAMENT vs LED --------------------------------------------- */
-scene('4S', 'bulb', {
-  label: '💡 Filament vs LED',
-  hero: '\\text{electrical} \\rightarrow \\text{light} + \\text{thermal}',
-  title: 'Filament against LED — same job, very different waste',
-  sub: 'Both turn electricity into light. One of them mostly makes heat instead.',
-  ctrl: ['Pin', 'bulb'],
-  init: function () { if (!S.bulb) S.bulb = 'filament'; },
-  draw: function () {
-    var P = V('Pin'), isLED = S.bulb === 'led';
-    var eff = isLED ? 0.45 : 0.05;
-    var light = P * eff, heat = P - light;
-    var cx = 300, cy = 250;
-    /* the bulb */
-    CX.save();
-    CX.fillStyle = withA(scol('rad'), clamp(light / 30, .12, .95));
-    CX.beginPath(); CX.arc(cx, cy, 58, 0, 7); CX.fill();
-    CX.strokeStyle = C['text-dim']; CX.lineWidth = 2;
-    CX.beginPath(); CX.arc(cx, cy, 58, 0, 7); CX.stroke();
-    rr(cx - 20, cy + 54, 40, 34, 5); CX.stroke();
-    CX.restore();
-    if (isLED) {
-      CX.save(); CX.fillStyle = scol('elec'); rr(cx - 14, cy - 10, 28, 22, 4); CX.fill(); CX.restore();
-    } else {
-      CX.save();
-      CX.strokeStyle = withA(scol('therm'), .95); CX.lineWidth = 2.6; CX.beginPath();
-      for (var i = 0; i <= 20; i++)
-        CX.lineTo(cx - 20 + i * 2, cy + (i % 2 ? -10 : 10));
-      CX.stroke(); CX.restore();
-    }
-    rays(cx, cy, 66, 8, 18, withA(scol('rad'), clamp(light / 25, .15, .9)), 0);
-    /* heat shimmer */
-    for (var j = 0; j < Math.round(heat / 6); j++) {
-      var t0 = (S.t * 40 + j * 25) % 90;
-      dot(cx - 40 + j * 12, cy - 70 - t0, 4, withA(scol('therm'), clamp(1 - t0 / 90, 0, .8)));
-    }
-    txt(isLED ? 'LED — cool to touch, bright' : 'filament — very hot, dim',
-      cx, cy + 130, 13.5, isLED ? C.green : scol('therm'), 'center', 700);
+/* ---------------------------------------------------------------------------
+   speakerCut() — a moving-coil loudspeaker in cross-section, drawn the way the
+   textbook diagram does it: permanent magnet with its pole pieces, the voice
+   coil sitting in the gap, the cone it is glued to, the suspension holding the
+   rim, the chassis, the leads. The coil and the cone move together, because
+   that is the whole mechanism: current in the coil, force in the gap, air
+   pushed by the cone.                                                      */
+function speakerCut(ox, oy, drive, vol) {
+  var MAG = LIGHT ? '#0284c7' : '#7dd3fc';
+  var COIL = '#ef4444';
+  CX.save();
+  CX.translate(ox, oy);
 
-    sankey(620, 130, P,
-      [{ k: 'rad', v: light, n: 'useful light' }, { k: 'therm', v: heat, n: 'wasted heat' }],
-      'electricity in', { inK: 'elec', band: 96, inW: 108,
-        title: (isLED ? 'LED' : 'filament') + '  ·  one second of running' });
-    mtxt('efficiency ' + fmt(eff * 100, 0) + '%', 620, 482, 15, C.accent, 'left', 700);
-    txt('an LED gives the same light for about a tenth of the electricity',
-      620, 508, 12, C['text-muted'], 'left', 500);
-    energyBank([{ k: 'rad', v: light, keep: true }, { k: 'therm', v: heat, keep: true }],
-      { total: P, note: 'one second of running: the tokens split between light and heat' });
+  /* ---- the magnet assembly ------------------------------------------- */
+  CX.fillStyle = withA(MAG, .14);
+  rr(-16, -106, 108, 212, 16); CX.fill();
+  CX.strokeStyle = withA(MAG, .95); CX.lineWidth = 2;
+  rr(-16, -106, 108, 212, 16); CX.stroke();
+  CX.fillStyle = withA(MAG, .30);
+  [[-98, 58], [40, 58]].forEach(function (b) {                 /* S poles   */
+    rr(8, b[0], 84, b[1], 3); CX.fill();
+    CX.strokeStyle = withA(MAG, .95); CX.lineWidth = 1.6;
+    rr(8, b[0], 84, b[1], 3); CX.stroke();
+  });
+  txt('S', 50, -62, 15, C.text, 'center', 800);
+  txt('S', 50, 78, 15, C.text, 'center', 800);
+  CX.fillStyle = withA(MAG, .30);                              /* N centre  */
+  rr(8, -22, 92, 44, 3); CX.fill();
+  CX.strokeStyle = withA(MAG, .95); CX.lineWidth = 1.6;
+  rr(8, -22, 92, 44, 3); CX.stroke();
+  txt('N', 52, 6, 15, C.text, 'center', 800);
+
+  /* ---- the moving assembly: voice coil, former and cone ---------------- */
+  var d = drive, cx0 = 62 + d, RIM = 296, LIP = 100;
+  CX.save();
+  CX.fillStyle = withA(C['text-muted'], .18);                  /* the cone  */
+  CX.beginPath();
+  CX.moveTo(cx0 + 40, -34); CX.lineTo(RIM, -LIP);
+  CX.lineTo(RIM, LIP); CX.lineTo(cx0 + 40, 34); CX.closePath();
+  CX.fill();
+  CX.strokeStyle = withA(C['text-dim'], .95); CX.lineWidth = 2.2;
+  CX.beginPath(); CX.moveTo(cx0 + 40, -34); CX.lineTo(RIM, -LIP); CX.stroke();
+  CX.beginPath(); CX.moveTo(cx0 + 40, 34); CX.lineTo(RIM, LIP); CX.stroke();
+  CX.restore();
+  CX.save();                                                   /* the dome  */
+  CX.strokeStyle = withA(C['text-dim'], .95); CX.lineWidth = 2;
+  CX.beginPath(); CX.arc(cx0 + 40, 0, 34, -1.57, 1.57); CX.stroke();
+  CX.restore();
+  CX.save();                                                   /* the coil  */
+  CX.strokeStyle = COIL; CX.lineWidth = 2.2;
+  [-31, 31].forEach(function (cy) {
+    for (var t = 0; t <= 5; t++) {
+      CX.beginPath();
+      CX.arc(cx0 - 34 + t * 15, cy, 7.5, 0, 6.283);
+      CX.stroke();
+    }
+  });
+  CX.beginPath();
+  CX.moveTo(cx0 + 40, -31); CX.lineTo(cx0 + 40, 31); CX.stroke();
+  CX.restore();
+
+  /* ---- the chassis arms and the suspension at the rim ------------------ */
+  CX.fillStyle = withA(C['text-muted'], .30);
+  [1, -1].forEach(function (sgn) {
+    CX.beginPath();
+    CX.moveTo(92, sgn * 96); CX.lineTo(RIM, sgn * 124);
+    CX.lineTo(RIM, sgn * 110); CX.lineTo(92, sgn * 74); CX.closePath(); CX.fill();
+    CX.strokeStyle = withA(C['text-dim'], .8); CX.lineWidth = 1.2; CX.stroke();
+    /* the springy suspension between cone rim and chassis */
+    CX.strokeStyle = withA(C['text-dim'], .95); CX.lineWidth = 1.8;
+    CX.beginPath();
+    for (var z = 0; z <= 6; z++)
+      CX.lineTo(RIM + (z % 2 ? 7 : -7), sgn * (LIP + 2 + z * 2.2));
+    CX.stroke();
+    CX.fillStyle = withA(C['text-muted'], .6);
+    rr(RIM - 7, sgn * 118 - (sgn > 0 ? 0 : 24), 14, 24, 3); CX.fill();
+  });
+
+  /* ---- the leads that carry the signal in ----------------------------- */
+  CX.save();
+  CX.strokeStyle = COIL; CX.lineWidth = 2;
+  CX.beginPath();
+  CX.moveTo(cx0 - 20, 39);
+  CX.quadraticCurveTo(cx0 + 30, 96, 128, 126); CX.stroke();
+  CX.beginPath();
+  CX.moveTo(cx0 - 4, 39);
+  CX.quadraticCurveTo(cx0 + 46, 100, 150, 126); CX.stroke();
+  CX.fillStyle = withA(C['text-muted'], .7); rr(116, 124, 48, 11, 3); CX.fill();
+  CX.restore();
+
+  /* ---- the air the cone pushes, and the wave that leaves --------------- */
+  var amp = clamp(vol / 10, .2, 1);
+  for (var k = 0; k < 4; k++) {
+    var r0 = ((S.t * 90 + k * 40) % 160) + 44;
+    CX.save();
+    CX.strokeStyle = withA(scol('snd'), clamp(1 - r0 / 220, 0, 1) * .9 * amp);
+    CX.lineWidth = 2 + amp * 2.4;
+    CX.beginPath(); CX.arc(RIM + 8, 0, r0, -0.95, 0.95); CX.stroke();
+    CX.restore();
+  }
+  arrow(RIM + 26, 74, RIM + 66, 74, withA(scol('snd'), .8), 2, { head: 8 });
+  arrow(RIM + 66, 74, RIM + 26, 74, withA(scol('snd'), .8), 2, { head: 8 });
+  txt('air pushed back and forth', RIM + 26, 94, 9.5, C['text-muted'], 'left', 500);
+  CX.restore();
+
+  /* ---- the labels, in world coordinates ------------------------------- */
+  txt('permanent magnet', ox + 38, oy - 118, 10.5, MAG, 'center', 700);
+  txt('chassis', ox + 190, oy - 126, 10, C['text-muted'], 'center', 600);
+  txt('cone suspension', ox + 300, oy - 152, 10, C['text-muted'], 'center', 600);
+  line(ox + 300, oy - 146, ox + 300, oy - 130, withA(C['text-muted'], .7), 1);
+  txt('cone', ox + 215, oy - 34, 11, C['text-dim'], 'center', 700);
+  txt('moving voice coil', ox + 186, oy + 68, 10, '#ef4444', 'left', 700);
+  line(ox + 184, oy + 64, ox + 106, oy + 40, withA('#ef4444', .8), 1.2);
+  txt('electrical leads', ox + 116, oy + 152, 9.5, C['text-muted'], 'left', 500);
+  txt('sound wave', ox + 420, oy - 62, 11, scol('snd'), 'center', 700);
+}
+
+/* ---------- S5 MICROPHONE & LOUDSPEAKER ----------------------------------- */
+scene('4S', 'speaker', {
+  label: '🔊 Mic / Speaker',
+  hero: '\\text{sound} \\rightarrow \\text{electrical} \\rightarrow \\text{sound}',
+  title: 'Microphone and loudspeaker — one machine, run both ways',
+  sub: 'A voice moves a coil in a magnet and makes a signal; the signal moves a coil in a magnet and makes a voice again.',
+  ctrl: ['Pin', 'loud'],
+  draw: function () {
+    var P = V('Pin'), L = V('loud');
+    var eff = 0.02, snd = P * eff, heat = P - snd;
+    var drive = Math.sin(S.t * 7) * (L / 10) * 9;
+    var flow = function (x0, y0, x1, y1, cnt, spd, col, r) {
+      for (var i = 0; i < cnt; i++) {
+        var q = (S.t * spd + i / cnt) % 1;
+        dot(x0 + (x1 - x0) * q, y0 + (y1 - y0) * q, r || 4.5, withA(col, .95));
+      }
+    };
+
+    /* ---- the microphone: the same parts, working backwards ------------ */
+    for (var v = 0; v < 3; v++) {
+      var vr = ((S.t * 60 + v * 26) % 78) + 14;
+      CX.save();
+      CX.strokeStyle = withA(scol('snd'), clamp(1 - vr / 96, 0, 1) * .9);
+      CX.lineWidth = 2.2;
+      CX.beginPath(); CX.arc(48, 250, vr, -0.9, 0.9); CX.stroke(); CX.restore();
+    }
+    txt('a voice', 48, 196, 11, scol('snd'), 'center', 700);
+    CX.save();
+    CX.fillStyle = withA(C['text-muted'], .3);
+    CX.beginPath(); CX.arc(158, 250, 30, 0, 7); CX.fill();
+    CX.strokeStyle = withA(C['text-dim'], .95); CX.lineWidth = 2;
+    CX.beginPath(); CX.arc(158, 250, 30, 0, 7); CX.stroke();
+    CX.strokeStyle = withA(C['text-dim'], .55); CX.lineWidth = 1;
+    for (var mg = -2; mg <= 2; mg++) {
+      CX.beginPath(); CX.moveTo(158 + mg * 10, 250 - 28); CX.lineTo(158 + mg * 10, 250 + 28);
+      CX.stroke();
+    }
+    CX.fillStyle = withA(C['text-muted'], .45); rr(180, 238, 46, 24, 6); CX.fill();
+    CX.strokeStyle = withA(C['text-dim'], .9); CX.lineWidth = 1.6;
+    rr(180, 238, 46, 24, 6); CX.stroke();
+    CX.restore();
+    line(130, 250 - 16 + drive * .4, 130, 250 + 16 + drive * .4, '#ef4444', 2.4);
+    txt('microphone', 158, 300, 11.5, C['text-muted'], 'center', 700);
+    txt('a coil on a diaphragm', 158, 316, 9.5, C['text-muted'], 'center', 500);
+    txt('sound → electrical', 158, 332, 9.5, scol('elec'), 'center', 600);
+
+    /* ---- the amplifier in between ------------------------------------- */
+    CX.strokeStyle = scol('elec'); CX.lineWidth = 2.4;
+    CX.beginPath(); CX.moveTo(226, 250); CX.lineTo(288, 250); CX.stroke();
+    flow(226, 250, 288, 250, 2, 0.6, scol('elec'), 4);
+    CX.fillStyle = withA(scol('elec'), .12); rr(288, 222, 96, 56, 7); CX.fill();
+    CX.strokeStyle = withA(scol('elec'), .95); CX.lineWidth = 2;
+    rr(288, 222, 96, 56, 7); CX.stroke();
+    CX.fillStyle = withA(scol('elec'), .55);
+    CX.beginPath();
+    CX.moveTo(320, 234); CX.lineTo(354, 250); CX.lineTo(320, 266); CX.closePath(); CX.fill();
+    txt('amplifier', 336, 296, 11, C['text-muted'], 'center', 700);
+    txt('makes the signal big enough', 336, 312, 9.5, C['text-muted'], 'center', 500);
+    CX.strokeStyle = scol('elec'); CX.lineWidth = 2.4; CX.lineCap = 'round';
+    CX.beginPath();
+    CX.moveTo(384, 258); CX.lineTo(452, 258); CX.lineTo(452, 404); CX.lineTo(722, 404);
+    CX.stroke();
+    flow(452, 404, 716, 404, 4, 0.5, scol('elec'), 4);
+    txt('the signal — electrical, ' + fmtW(P), 462, 394, 9.5, scol('elec'), 'left', 600);
+
+    /* ---- the loudspeaker itself --------------------------------------- */
+    speakerCut(600, 274, drive, L);
+
+    mtxt('electricity in ' + fmtW(P) + '   →   sound out ' + fmtW(snd), 48, 140, 13.5,
+      C.accent, 'left', 700);
+    txt('a loudspeaker is only about 2% efficient — the coil warms up instead',
+      48, 162, 11.5, C['text-muted'], 'left', 500);
+
+    chainDiagram(90, 452, 1020, [
+      { k: 'snd', n: 'your voice' }, { k: 'elec', n: 'the signal', waste: true },
+      { k: 'snd', n: 'the loudspeaker' }]);
+    energyBank([{ k: 'snd', v: snd, keep: true }, { k: 'therm', v: heat, keep: true }],
+      { total: P, note: 'one second of playing: almost all of it warms the voice coil' });
   },
   data: function () {
-    var P = V('Pin'), isLED = S.bulb === 'led', eff = isLED ? .45 : .05;
-    return [{ l: 'bulb', v: isLED ? 'LED' : 'filament' },
-    { l: 'electrical power in', v: fmtW(P), k: 'elec' },
-    { l: 'useful light out', v: fmtW(P * eff), k: 'rad' },
-    { l: 'wasted as heat', v: fmtW(P * (1 - eff)), k: 'therm' },
-    { l: 'efficiency', v: fmt(eff * 100, 0) + ' %' }];
+    var P = V('Pin'), L = V('loud'), eff = 0.02;
+    return [{ l: 'electrical power in', v: fmtW(P), k: 'elec' },
+    { l: 'sound power out', v: fmtW(P * eff), k: 'snd' },
+    { l: 'warming the voice coil', v: fmtW(P * (1 - eff)), k: 'therm' },
+    { l: 'efficiency', v: fmt(eff * 100, 0) + ' %' },
+    { l: 'volume setting', v: fmt(L, 0) + ' / 10' }];
   },
   eq: function () {
-    var P = V('Pin'), eff = S.bulb === 'led' ? .45 : .05;
-    return [['efficiency of the lamp', '\\eta = \\dfrac{P_{light}}{P_{electrical}} = ' +
-      fmt(eff * 100, 0) + '\\%', fmtW(P * eff) + ' of light from ' + fmtW(P) + ' of electricity.']];
+    var P = V('Pin'), eff = 0.02;
+    return [['efficiency of the loudspeaker',
+      '\\eta = \\dfrac{P_{sound}}{P_{electrical}} = ' + fmt(eff * 100, 0) + '\\%',
+      fmtW(P * eff) + ' of sound from ' + fmtW(P) + ' of electricity.'],
+    ['the same machine backwards', '\\text{sound} \\rightarrow \\text{electrical}',
+      'Move the coil and you generate a signal — that is the microphone.']];
   },
   info: function () {
-    return mark('Electrical → light (useful) + thermal (wasted).',
-      ['Electricity carries energy to the lamp.',
-        'A filament works by getting white hot, so most of the energy leaves as <b>thermal</b>.',
-        'An LED makes light directly, so far more of it is <b>useful light</b>.',
-        'Same brightness, much less input: that is what higher efficiency means.']);
+    return mark('Sound → electrical → sound, with thermal energy wasted all the way along.',
+      ['Sound waves make the microphone diaphragm — and the coil glued to it — vibrate.',
+        'A coil moving in a magnetic field generates a signal: <b>sound → electrical</b>.',
+        'The amplifier makes that signal larger, taking energy from the mains.',
+        'In the loudspeaker the current in the voice coil sits in the magnet gap, so it ' +
+        'feels a force and pushes the cone in and out: <b>electrical → sound</b>.',
+        'Only about 2% leaves as sound; the rest is <b>dissipated</b> as thermal energy ' +
+        'in the coil, which is why a hard-worked speaker gets warm.']);
   }
 });
+
+/* ---------------------------------------------------------------------------
+   The archery range, drawn the way a sports-science textbook labels it: an
+   archer at full draw with a recurve bow — riser, limbs, string, sight,
+   stabiliser rods, arm guard, finger tab, quiver — and a target on its stand
+   down range. The energy story is the same three lines it always was; the
+   detail is there so the student recognises the real thing.               */
+var BOWW = '#a16207', BOWM = '#94a3b8';
+
+function arrowShaft(x, y, len, col) {
+  CX.save();
+  CX.strokeStyle = withA(C['text-muted'], .95); CX.lineWidth = 3; CX.lineCap = 'butt';
+  CX.beginPath(); CX.moveTo(x, y); CX.lineTo(x + len, y); CX.stroke();
+  CX.fillStyle = C['text-dim'];                       /* the point          */
+  CX.beginPath();
+  CX.moveTo(x + len + 15, y); CX.lineTo(x + len, y - 5);
+  CX.lineTo(x + len, y + 5); CX.closePath(); CX.fill();
+  CX.fillStyle = withA(col, .95);                     /* the fletching      */
+  [-1, 1].forEach(function (sg) {
+    CX.beginPath();
+    CX.moveTo(x + 5, y); CX.lineTo(x + 26, y + sg * 9);
+    CX.lineTo(x + 32, y + sg * 1.5); CX.closePath(); CX.fill();
+  });
+  CX.fillStyle = withA(C['text-muted'], .95);         /* the nock           */
+  CX.beginPath(); CX.arc(x, y, 3.2, 0, 7); CX.fill();
+  CX.restore();
+}
+
+function targetFace(cx, cy, r, GND, hit) {
+  CX.save();                                          /* the stand behind it */
+  CX.strokeStyle = '#7c4a1e'; CX.lineWidth = 9; CX.lineCap = 'round';
+  CX.beginPath();
+  CX.moveTo(cx - 34, cy + r - 22); CX.lineTo(cx - 54, GND);
+  CX.moveTo(cx + 34, cy + r - 22); CX.lineTo(cx + 54, GND);
+  CX.moveTo(cx, cy + r - 26); CX.lineTo(cx, GND);
+  CX.stroke();
+  CX.strokeStyle = '#8b5e34'; CX.lineWidth = 7;
+  CX.beginPath();
+  CX.moveTo(cx - 46, GND - 34); CX.lineTo(cx + 46, GND - 34); CX.stroke();
+  CX.restore();
+  /* the boss: straw-coloured edge, then the five scoring colours */
+  CX.save();
+  CX.fillStyle = '#d6b370';
+  CX.beginPath(); CX.arc(cx, cy, r + 6, 0, 7); CX.fill();
+  [['#f8fafc', 1], ['#1f2937', .78], ['#38bdf8', .58], ['#ef4444', .38], ['#fbbf24', .20]]
+    .forEach(function (b) {
+      CX.fillStyle = b[0];
+      CX.beginPath(); CX.arc(cx, cy, r * b[1], 0, 7); CX.fill();
+    });
+  CX.strokeStyle = 'rgba(0,0,0,.35)'; CX.lineWidth = 1;
+  [1, .89, .78, .68, .58, .48, .38, .29, .20, .10].forEach(function (f) {
+    CX.beginPath(); CX.arc(cx, cy, r * f, 0, 7); CX.stroke();
+  });
+  CX.restore();
+  if (hit) {                                          /* the arrow in the gold */
+    CX.save();
+    CX.strokeStyle = 'rgba(0,0,0,.28)'; CX.lineWidth = 3;
+    CX.beginPath(); CX.moveTo(cx + 4, cy + 3); CX.lineTo(cx + 26, cy + 5); CX.stroke();
+    CX.restore();
+  }
+}
+
+/* The archer, drawn as a clean silhouette at real proportions: about 1.75 m
+   tall, seven and a half heads, and the bow he is holding is three quarters
+   of his height — the ratio a photograph of a recurve archer actually has. */
+function archer(dx, GND) {
+  var HX = 214, HY = 183, HR = 21;
+  var SH = { x: 216, y: 222 }, HIP = { x: 208, y: 300 };
+  CX.save();
+  CX.lineCap = 'round'; CX.lineJoin = 'round';
+  CX.strokeStyle = withA(C['text-dim'], .95);
+  CX.lineWidth = 15;                                   /* legs, feet apart  */
+  CX.beginPath();
+  CX.moveTo(HIP.x, HIP.y); CX.lineTo(182, 366); CX.lineTo(164, GND);
+  CX.moveTo(HIP.x, HIP.y); CX.lineTo(238, 364); CX.lineTo(258, GND);
+  CX.stroke();
+  CX.lineWidth = 32;                                   /* torso             */
+  CX.beginPath(); CX.moveTo(SH.x, SH.y + 6); CX.lineTo(HIP.x, HIP.y - 8); CX.stroke();
+  CX.fillStyle = withA(C['text-dim'], .95);            /* head              */
+  CX.beginPath(); CX.arc(HX, HY, HR, 0, 7); CX.fill();
+  CX.fillStyle = withA(C['text-muted'], .55);          /* chest guard       */
+  CX.beginPath();
+  CX.moveTo(205, 213); CX.lineTo(232, 224); CX.lineTo(221, 286);
+  CX.lineTo(196, 275); CX.closePath(); CX.fill();
+  CX.strokeStyle = withA(C['text-muted'], .95); CX.lineWidth = 14;
+  CX.beginPath();                                      /* the bow arm       */
+  CX.moveTo(SH.x, SH.y); CX.lineTo(270, 224); CX.lineTo(310, 226); CX.stroke();
+  CX.beginPath();                                      /* the drawing arm   */
+  CX.moveTo(SH.x, SH.y); CX.lineTo(184, 193); CX.lineTo(dx + 5, 226); CX.stroke();
+  CX.restore();
+  /* arm guard on the bow forearm */
+  CX.save();
+  CX.translate(284, 225); CX.rotate(0.04);
+  CX.fillStyle = withA('#e2e8f0', .55); rr(-26, -11, 52, 22, 6); CX.fill();
+  CX.strokeStyle = withA(C['text-muted'], .9); CX.lineWidth = 1.4;
+  rr(-26, -11, 52, 22, 6); CX.stroke();
+  CX.restore();
+  /* the finger tab on the string hand */
+  CX.save();
+  CX.fillStyle = withA('#f1f5f9', .6); rr(dx - 5, 216, 15, 21, 3); CX.fill();
+  CX.strokeStyle = withA(C['text-muted'], .95); CX.lineWidth = 1.2;
+  rr(dx - 5, 216, 15, 21, 3); CX.stroke();
+  CX.restore();
+  /* the quiver on the hip, with spare arrows in it */
+  CX.save();
+  CX.translate(150, 372); CX.rotate(-0.42);
+  CX.fillStyle = withA('#334155', .85); rr(-18, -15, 84, 30, 9); CX.fill();
+  CX.strokeStyle = withA(C['text-muted'], .9); CX.lineWidth = 1.6;
+  rr(-18, -15, 84, 30, 9); CX.stroke();
+  CX.strokeStyle = withA(C['text-muted'], .9); CX.lineWidth = 2;
+  for (var q = 0; q < 4; q++) {
+    CX.beginPath();
+    CX.moveTo(46, -9 + q * 6); CX.lineTo(114, -22 + q * 6); CX.stroke();
+    CX.fillStyle = withA(q % 2 ? scol('ke') : scol('elas'), .95);
+    CX.beginPath();
+    CX.moveTo(95, -19 + q * 6); CX.lineTo(114, -22 + q * 6);
+    CX.lineTo(112, -14 + q * 6); CX.closePath(); CX.fill();
+  }
+  CX.restore();
+}
+
+/* The bow: riser, two recurve limbs, sight, stabilisers and the string. Its
+   total length is 200 px against the archer's 268 — three quarters, as it
+   is on a real shooting line.                                             */
+function recurveBow(GX, GY, strX, tension) {
+  var TOPX = GX + 12, TOPY = GY - 100, BOTY = GY + 100;
+  CX.save();
+  CX.lineCap = 'round'; CX.lineJoin = 'round';
+  /* the limbs, each a long curve with the recurve hook at the tip */
+  CX.strokeStyle = BOWW; CX.lineWidth = 6;
+  CX.beginPath();
+  CX.moveTo(GX + 1, GY - 20);
+  CX.bezierCurveTo(GX + 22, GY - 49, GX + 20, GY - 73, GX + 7, GY - 90);
+  CX.bezierCurveTo(GX + 1, GY - 97, GX + 4, GY - 102, TOPX, TOPY);
+  CX.stroke();
+  CX.beginPath();
+  CX.moveTo(GX + 1, GY + 20);
+  CX.bezierCurveTo(GX + 22, GY + 49, GX + 20, GY + 73, GX + 7, GY + 90);
+  CX.bezierCurveTo(GX + 1, GY + 97, GX + 4, GY + 102, TOPX, BOTY);
+  CX.stroke();
+  /* the riser — the rigid handle the limbs bolt onto */
+  CX.fillStyle = withA(BOWM, .55);
+  rr(GX - 5, GY - 30, 13, 60, 5); CX.fill();
+  CX.strokeStyle = withA(BOWM, .95); CX.lineWidth = 1.6;
+  rr(GX - 5, GY - 30, 13, 60, 5); CX.stroke();
+  CX.fillStyle = withA('#1f2937', .8); rr(GX - 4, GY - 7, 11, 22, 4); CX.fill();
+  CX.strokeStyle = withA(BOWM, .95); CX.lineWidth = 2.2;
+  CX.beginPath(); CX.moveTo(GX + 7, GY); CX.lineTo(GX + 18, GY - 2); CX.stroke();
+  /* the sight: a bar forward of the riser with a ring on it */
+  CX.lineWidth = 2.6;
+  CX.beginPath();
+  CX.moveTo(GX + 3, GY - 18); CX.lineTo(GX + 36, GY - 18);
+  CX.moveTo(GX + 36, GY - 24); CX.lineTo(GX + 36, GY - 10); CX.stroke();
+  CX.beginPath(); CX.arc(GX + 36, GY - 17, 4, 0, 7); CX.stroke();
+  /* the stabiliser rods and their weights */
+  [[GX + 6, GY + 13, GX + 68, GY + 24], [GX + 4, GY - 28, GX + 42, GY - 43]]
+    .forEach(function (rd) {
+      CX.strokeStyle = withA(BOWM, .9); CX.lineWidth = 2.6;
+      CX.beginPath(); CX.moveTo(rd[0], rd[1]); CX.lineTo(rd[2], rd[3]); CX.stroke();
+      CX.fillStyle = withA(BOWM, .8);
+      CX.save();
+      CX.translate(rd[2], rd[3]);
+      CX.rotate(Math.atan2(rd[3] - rd[1], rd[2] - rd[0]));
+      rr(-3, -4.5, 15, 9, 3); CX.fill();
+      CX.restore();
+    });
+  /* the string — brighter the harder it is working */
+  CX.strokeStyle = withA(scol('elas'), .5 + tension * .5);
+  CX.lineWidth = 2 + tension * 1.2;
+  CX.beginPath();
+  CX.moveTo(TOPX, TOPY); CX.lineTo(strX, GY); CX.lineTo(TOPX, BOTY); CX.stroke();
+  CX.restore();
+}
 
 /* ---------- S6 SPRING / BOW ------------------------------------------------ */
 scene('4S', 'bow', {
@@ -3527,35 +4793,72 @@ scene('4S', 'bow', {
   ctrl: ['k', 'draw'],
   draw: function () {
     var k = V('k'), x = V('draw'), E = 0.5 * k * x * x;
-    var p = prog(4), released = p > .45;
-    var bx = 260, by = 270;
-    var pull = released ? 0 : x * 120;
-    /* the bow */
-    CX.save();
-    CX.strokeStyle = C['text-dim']; CX.lineWidth = 5;
-    CX.beginPath(); CX.arc(bx + 60, by, 110, 2.2, 4.1); CX.stroke();
-    CX.strokeStyle = scol('elas'); CX.lineWidth = 2.4;
-    CX.beginPath();
-    CX.moveTo(bx - 26, by - 96); CX.lineTo(bx - 26 - pull, by); CX.lineTo(bx - 26, by + 96);
-    CX.stroke(); CX.restore();
-    /* the arrow */
-    var ax = released ? bx - 26 + (p - .45) * 1500 : bx - 26 - pull;
-    arrow(ax, by, ax + 90, by, scol('ke'), 3.5, { head: 14 });
-    if (!released) {
-      plate('draw-back ' + fmt(x, 2) + ' m', bx - 40, by + 130, 12, scol('elas'), 'center', true);
-      plate('stored ' + fmtJ(E), bx - 40, by - 130, 12, scol('elas'), 'center', true);
-    } else {
-      plate('arrow speed ' + fmt(Math.sqrt(2 * E * 0.9 / 0.02), 0) + ' m/s', 640, by - 40, 12,
-        scol('ke'), 'center', true);
+    var p = prog(5), released = p > .45;
+    var GND = 430, GX = 318, GY = 226, BRACE = 287;
+    var v = Math.sqrt(2 * E * 0.9 / 0.02);
+    /* 153 px to the metre — the scale the archer himself is drawn at */
+    var pull = x * 153, rel = clamp((p - .45) / .06, 0, 1);
+    /* at full draw the string is back at the archer's chin; on release it
+       snaps forward past the brace point and rings for a moment.        */
+    var strX = released
+      ? BRACE - (1 - rel) * pull + Math.sin(rel * 22) * 9 * Math.exp(-rel * 4)
+      : BRACE - pull;
+    var tension = released ? (1 - rel) : 1;
+
+    line(116, GND, 366, GND, C['text-muted'], 2.5);
+    line(950, GND, 1170, GND, C['text-muted'], 2.5);
+    archer(BRACE - pull - (released ? 18 * rel : 0), GND);
+    recurveBow(GX, GY, strX, tension);
+    targetFace(1064, GY, 76, GND, released && rel >= 1);
+    txt('target', 1064, GY - 98, 12, C['text-muted'], 'center', 700);
+
+    /* the arrow: nocked on the string, then away down the range */
+    var fly = clamp((p - .48) / .34, 0, 1);
+    var ax = released ? strX + fly * (939 - strX) : strX;
+    arrowShaft(ax, GY, 110, scol('ke'));
+    if (released && fly > 0 && fly < 1) {
+      for (var w = 0; w < 3; w++)
+        dot(ax - 16 - w * 22, GY, 3.5 - w, withA(scol('ke'), .5 - w * .14));
     }
-    chainDiagram(640, 150, 500, [
+    if (released && rel < 1) {                       /* the twang leaving the bow */
+      for (var sq = 0; sq < 3; sq++) {
+        var sr = 20 + sq * 22 + rel * 40;
+        CX.save();
+        CX.strokeStyle = withA(scol('snd'), (1 - rel) * .7 * (1 - sq / 3));
+        CX.lineWidth = 2;
+        CX.beginPath(); CX.arc(GX, GY, sr, -2.4, -0.7); CX.stroke(); CX.restore();
+      }
+    }
+
+    /* ---- the labels, the way the textbook diagram carries them -------- */
+    var lab = function (str, tx, ty, al, px, py, col) {
+      txt(str, tx, ty, 10, col || C['text-muted'], al, 600);
+      line(al === 'right' ? tx + 4 : tx - 4, ty - 4, px, py, withA(C['text-muted'], .6), 1);
+    };
+    lab('bowstring', 152, 134, 'right', 282, 172, scol('elas'));
+    lab('finger tab', 152, 246, 'right', BRACE - pull + 4, 230);
+    lab('chest guard', 152, 300, 'right', 202, 262);
+    lab('quiver', 130, 404, 'right', 150, 384);
+    lab('arm guard', 296, 292, 'center', 286, 240);
+    lab('recurve bow', 402, 152, 'left', 332, 172, BOWW);
+    lab('sight', 402, 198, 'left', 358, 208);
+    lab('arrow', 402, 250, 'left', 352, 230, scol('ke'));
+    lab('stabilizer rod', 402, 296, 'left', 386, 250);
+
+    mtxt('stored  ' + fmtJ(E) + '   ·   draw-back ' + fmt(x, 2) + ' m', 530, 140, 13.5,
+      C.accent, 'left', 700);
+    txt(released ? 'released — the arrow leaves at about ' + fmt(v, 0) + ' m/s'
+      : 'drawn — every token is sitting in the elastic account', 530, 164, 12,
+      C['text-muted'], 'left', 500);
+
+    chainDiagram(90, 466, 1020, [
       { k: 'chem', n: 'your arm' }, { k: 'elas', n: 'the drawn bow', waste: true },
       { k: 'ke', n: 'the arrow' }]);
-    withCard('note', 640, 280, 500, 140, function () {
-      card(640, 280, 500, 140, 'the split when you let go');
-      mtxt('stored in the bow   ' + fmtJ(E), 660, 316, 12.5, scol('elas'), 'left', 700);
-      mtxt('into the arrow      ' + fmtJ(E * .9), 660, 344, 12.5, scol('ke'), 'left', 700);
-      mtxt('twang + warm bow    ' + fmtJ(E * .1), 660, 372, 12.5, scol('snd'), 'left', 700);
+    withCard('note', 600, 300, 330, 140, function () {
+      card(600, 300, 330, 140, 'the split when you let go');
+      mtxt('stored in the bow  ' + fmtJ(E), 620, 336, 12.5, scol('elas'), 'left', 700);
+      mtxt('into the arrow     ' + fmtJ(E * .9), 620, 364, 12.5, scol('ke'), 'left', 700);
+      mtxt('twang + warm bow   ' + fmtJ(E * .1), 620, 392, 12.5, scol('snd'), 'left', 700);
     });
     energyBank([{ k: 'elas', v: released ? 0 : E, keep: true },
       { k: 'ke', v: released ? E * .9 : 0, keep: true },
@@ -3702,20 +5005,23 @@ cardScene('wind', {
   bank: [{ k: 'elec', v: 40, keep: true }, { k: 'ke', v: 55, keep: true },
   { k: 'therm', v: 5, keep: true }]
 });
-cardScene('mic', {
-  label: '🎤 Mic / Speaker', hero: '\\text{sound} \\rightarrow \\text{electrical} \\rightarrow \\text{sound}',
-  title: 'Microphone and speaker', sub: 'The same chain, run forwards and then backwards.',
-  tex: '\\text{sound} \\rightarrow \\text{electrical} \\rightarrow \\text{sound}',
-  stages: [{ k: 'snd', n: 'your voice' }, { k: 'elec', n: 'the cable', waste: true },
-  { k: 'snd', n: 'the speaker' }],
-  bullets: ['Sound waves make the microphone diaphragm vibrate.',
-    'That vibration generates an electrical signal.',
-    'The speaker turns the signal back into a vibration, and so into sound.',
-    'Thermal energy is dissipated in the amplifier and the coils.'],
-  oneLine: 'Sound → electrical → sound, with thermal waste.',
-  rows: [{ l: 'in', v: 'sound', k: 'snd' }, { l: 'carried by', v: 'electricity', k: 'elec' },
-  { l: 'out', v: 'sound again, louder', k: 'snd' }],
-  bank: [{ k: 'snd', v: 30, keep: true }, { k: 'therm', v: 70, keep: true }]
+cardScene('bulb', {
+  label: '\ud83d\udca1 Filament vs LED',
+  hero: '\\text{electrical} \\rightarrow \\text{light} + \\text{thermal}',
+  title: 'Filament lamp and LED', sub: 'Same job, very different waste — the classic efficiency comparison.',
+  tex: '\\text{electrical} \\rightarrow \\text{light} + \\text{thermal}',
+  stages: [{ k: 'elec', n: 'from the mains', waste: true }, { k: 'rad', n: 'the light you use' }],
+  bullets: ['Electricity carries energy to the lamp.',
+    'A filament lamp works by getting white hot, so only about 5% leaves as light.',
+    'The other 95% is dissipated as <b>thermal</b> energy — the bulb is too hot to touch.',
+    'An LED makes light directly rather than by getting hot, so around 45% is useful light.',
+    'Same brightness for about a tenth of the electricity: that is what higher efficiency means.'],
+  oneLine: 'Electrical \u2192 light (useful) + thermal (wasted).',
+  rows: [{ l: 'useful', v: 'light', k: 'rad' },
+  { l: 'wasted', v: 'thermal from the filament', k: 'therm' },
+  { l: 'filament efficiency', v: 'about 5 %' },
+  { l: 'LED efficiency', v: 'about 45 %' }],
+  bank: [{ k: 'rad', v: 5, keep: true }, { k: 'therm', v: 95, keep: true }]
 });
 cardScene('brake', {
   label: '🛑 Braking', hero: 'E_k \\rightarrow E_{thermal}',
@@ -4141,7 +5447,8 @@ var MODE_LABEL = {
   4: 'Energy Transformations'
 };
 var DEVICES = { lamp: 'filament lamp', led: 'LED lamp', motor: 'electric motor',
-  plant: 'coal power station', person: 'a person cycling' };
+  plant: 'coal power station', person: 'a person cycling',
+  car: 'petrol car engine', wind: 'wind turbine', speaker: 'loudspeaker' };
 var BULBS = { filament: 'filament', led: 'LED' };
 var NUKES = { fission: 'fission — a heavy nucleus splits', fusion: 'fusion — light nuclei join' };
 
@@ -4259,7 +5566,8 @@ function bindCtrls(sc) {
   });
   if ((e = $('cDevice'))) e.addEventListener('change', function () {
     S.device = this.value;
-    var typ = { lamp: 5, led: 90, motor: 85, plant: 35, person: 20 }[S.device];
+    var typ = { lamp: 5, led: 90, motor: 85, plant: 35, person: 20,
+      car: 25, wind: 40, speaker: 2 }[S.device];
     if (typ) S.v.eff = typ;
     EFF_WARN = ''; renderCtrls(); renderPanel(); draw();
   });
@@ -4327,10 +5635,12 @@ function updateChips() {
   var warn = !!EFF_WARN;
   $('chipHint').classList.toggle('warn', warn);
   $('chipHint').hidden = S.mode === 'quiz';
-  $('chipHint').innerHTML = warn ? '⚠ ' + EFF_WARN
-    : (S.mode === 'prac' ? 'work it out, then answer in the 📊 Data panel'
-      : (isCard() ? 'read the chain left to right — the same words earn the marks'
-        : 'drag the sliders · ▶ Play animates · the 🔒 TOTAL never changes'));
+  $('chipHint').innerHTML = ZOOM.k !== 1
+    ? '🔍 zoomed ×2 — double-click again to zoom back out'
+    : (warn ? '⚠ ' + EFF_WARN
+      : (S.mode === 'prac' ? 'work it out, then answer in the 📊 Data panel'
+        : (isCard() ? 'read the chain left to right — the same words earn the marks'
+          : 'drag the sliders · ▶ Play animates · double-click to zoom ×2 · the 🔒 TOTAL never changes')));
 }
 
 /* ---------- panel -------------------------------------------------------- */
@@ -4632,6 +5942,7 @@ function bindToolbar() {
     S.play = false; S.t = 0; EFF_WARN = '';
     S.v = {}; S.proc = 'drop'; S.fric = false; S.device = 'lamp';
     S.curve = 'constant'; S.bulb = 'filament'; S.nuke = 'fission'; S.cardPos = {};
+    zoomOff();
     resetVals(); refresh();
   });
   $('tBank').addEventListener('click', function () { S.bank = !S.bank; updateChrome(); draw(); });
@@ -4645,7 +5956,12 @@ function bindToolbar() {
   /* ---- dragging the explanation cards around the canvas ---------------- */
   var cvXY = function (ev) {
     var r = CV.getBoundingClientRect();
-    return { x: (ev.clientX - r.left - VT.ox) / VT.s, y: (ev.clientY - r.top - VT.oy) / VT.s };
+    var x = (ev.clientX - r.left - VT.ox) / VT.s, y = (ev.clientY - r.top - VT.oy) / VT.s;
+    if (ZOOM.k !== 1) {
+      x = ZOOM.cx + (x - ZOOM.cx) / ZOOM.k;
+      y = ZOOM.cy + (y - ZOOM.cy) / ZOOM.k;
+    }
+    return { x: x, y: y };
   };
   CV.addEventListener('pointerdown', function (ev) {
     var p = cvXY(ev), hit = cardAt(p.x, p.y);
@@ -4677,12 +5993,14 @@ function bindToolbar() {
   };
   CV.addEventListener('pointerup', endDrag);
   CV.addEventListener('pointercancel', endDrag);
-  /* double-click puts a card back where it started */
+  /* double-click on a card puts it back where it started; double-click on the
+     drawing itself zooms in ×2, and again zooms back out                   */
   CV.addEventListener('dblclick', function (ev) {
     var p = cvXY(ev), hit = cardAt(p.x, p.y);
-    if (!hit) return;
-    delete S.cardPos[hit.id];
-    draw();
+    if (hit) { delete S.cardPos[hit.id]; draw(); return; }
+    if (ZOOM.k === 1) { ZOOM.k = 2; ZOOM.cx = p.x; ZOOM.cy = p.y; }
+    else zoomOff();
+    updateChips(); draw();
   });
 
   window.addEventListener('resize', function () { resize(); draw(); });
