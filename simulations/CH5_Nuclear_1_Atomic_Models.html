@@ -151,7 +151,12 @@ body{
       font-family:'JetBrains Mono',monospace;cursor:pointer;transition:.14s}
 .pill:hover{color:var(--text)}
 .pill.active{background:var(--accent);color:var(--bg);border-color:var(--accent)}
-.erabadge{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:10px;
+/* The auto margin moved OFF the era badge and ONTO the separator in front of
+   Reset, so the free space in the toolbar collects before that separator and
+   Reset + badge travel together to the right-hand end. Leaving it on the badge
+   parked the badge on the edge but stranded Reset with a gap after it. */
+#sepRight{margin-left:auto}
+.erabadge{font-family:'JetBrains Mono',monospace;font-size:10px;
           font-weight:600;padding:4px 10px;border-radius:8px;
           background:var(--accent-glow);color:var(--accent);border:1px solid var(--accent);
           white-space:nowrap}
@@ -222,7 +227,7 @@ table.feat tr:last-child td{border-bottom:none}
   <!-- ===== HEADER ZONE ===== -->
   <div class="top-bar">
     <h1>⚛️ <span class="ttl">Atomic Models</span>
-      <span class="badge-top">v1.2.3</span>
+      <span class="badge-top">v1.3.2</span>
       <span class="sub">IGCSE Physics 0625 · Topic 5.1 Nuclear Physics</span>
     </h1>
     <div class="top-right">
@@ -281,9 +286,9 @@ table.feat tr:last-child td{border-bottom:none}
       <div class="tsep" id="foilSep"></div>
       <div class="tgroup" id="foilGroup">
         <span class="tlabel">Gold Foil</span>
-        <button class="tbtn fire" id="btnBurst" title="Fire 120 alpha particles at once (works while paused)">🔥 Fire burst</button>
+        <button class="tbtn fire" id="btnBurst" title="Fire 340 alpha particles at once — about 100 get through the collimator (works while paused)">🔥 Fire burst</button>
       </div>
-      <div class="tsep"></div>
+      <div class="tsep" id="sepRight"></div>
       <button class="tbtn" id="btnReset" title="Reset this era only — does not change the selected era">↺ Reset</button>
       <div class="erabadge" id="eraBadge">Solid Sphere Model · 1803</div>
     </div>
@@ -366,6 +371,10 @@ const S = {
   alphas: [],
   flashes: [],
   spawnAcc: 0,
+  /* per-card drag offsets from their designed home positions */
+  cardOff: { angleKey: { x: 0, y: 0 }, levels: { x: 0, y: 0 } },
+  cardDrag: null,          /* id being dragged */
+  cardHot:  null,          /* id under the cursor */
   stats: { passed: 0, deflected: 0, bounced: 0 },
   warn: ''
 };
@@ -382,21 +391,38 @@ const RU = (function(){
   return {
     axisY:    axisY,
     src:      { x: 70, y: axisY - 52, w: 70, h: 104 },   // lead-shielded radium
-    slotH:    20,                                  // emission slot in the source
+    /* ---- what actually sets the width of the beam ----------------------
+       The surviving half-angle is fixed by TWO apertures and the distance
+       between them: the emission slot (half-height slotH/2, at spawnX) and
+       the collimator gap (half-height colGap/2, at colX). The steepest track
+       that gets through runs from one edge of the slot to the far edge of the
+       gap, so
+
+           max |vy/vx|  =  (slotH + colGap) / 2 / (colX - spawnX)
+
+       v1.2.3 had slotH = 20 and colGap = 26 over a 192 px baseline, i.e. a
+       slope of 0.12 — which let essentially the whole ±30 emission cone
+       straight through and sprayed the beam ±53 px at the foil and ±175 px at
+       the right-hand edge. Real α beams in Geiger-Marsden were a fine pencil.
+       Tightening both apertures brings the slope down to 0.036: ±17 px at the
+       foil, ±56 px at the screen edge, which reads as the narrow central
+       pencil the experiment actually used. RATE and BURST below are raised to
+       compensate for the ~30 % (was ~64 %) that now survive the lead.        */
+    slotH:    6,                                   // emission slot in the source
     spawnX:   140,                                 // right face of the source
-    colX:     332, colW: 26, colGap: 26,           // lead collimator + its aperture
+    colX:     332, colW: 26, colGap: 8,            // lead collimator + its aperture
     vx0:      300, vxr: 60,
-    vyr:      60,                                  // wide emission cone; the
-                                                   // collimator absorbs the rest
+    vyr:      40,                                  // emission cone; the collimator
+                                                   // absorbs all but the centre
     foilX:    760, foilHalf: 160,
     screenR:  180,                                 // ZnS ring, centred ON the foil
     P_BOUNCE: 1 / 8000,
     P_DEFLECT: 1 / 60,
-    CAP:      3000,                                // steady state ~1200
-    RATE:     480,                                 // emitted/s; ~63 % survive
-                                                   // the collimator -> ~300/s
-                                                   // reach the foil, as specified
-    BURST:    170                                  // ~120 survive the collimator
+    CAP:      3500,                                // steady state ~1200
+    RATE:     780,                                 // emitted/s; ~30 % survive
+                                                   // the collimator -> ~235/s
+                                                   // reach the foil
+    BURST:    340                                  // ~100 survive the collimator
   };
 })();
 RU.foilY0 = RU.axisY - RU.foilHalf;
@@ -452,7 +478,7 @@ const ERAS = [
   key:'ruther', name:'Rutherford', year:1911, model:'Nuclear Model',
   summary:'<b>Rutherford 1911</b> — gold foil experiment. Fire α particles and count what happens.',
   narr:'1911 — Geiger and Marsden fire alpha particles at gold foil. Most pass straight through, some are deflected, and about one in eight thousand bounces straight back. The atom must have a tiny, dense, positive nucleus.',
-  hint:'<b>📐 Angles</b> shows/hides the deviation detail.<br>θ is measured from the <b>original direction</b> of travel — the foil<br>plane is the <b>90°</b> boundary. <b>🔥 Fire burst</b> fires 170 α at once.',
+  hint:'<b>📐 Angles</b> shows/hides the deviation detail.<br>θ is measured from the <b>original direction</b> of travel — the foil<br>plane is the <b>90°</b> boundary. <b>🔥 Fire burst</b> fires 340 α at once.<br><b>✋ Drag the θ key card</b> anywhere on the canvas.',
   status:'',
   feats:[
     ['Structure','The atom is <b>mostly empty space</b>'],
@@ -473,7 +499,7 @@ const ERAS = [
   key:'bohr', name:'Bohr', year:1913, model:'Energy Levels Model',
   summary:'<b>Bohr 1913</b> — electrons sit in fixed shells; jumps emit or absorb photons.',
   narr:'1913 — Niels Bohr fixes the collapsing atom. Electrons are only allowed in certain energy levels, and light is emitted or absorbed only when an electron jumps between them.',
-  hint:'Shells hold <b>2, 8, 8</b> electrons — fixed energy levels.<br>Electron jumps <b>up</b> → photon <b>absorbed</b>.<br>Electron falls <b>down</b> → photon <b>emitted</b> (a spectral line).',
+  hint:'Shells hold <b>2, 8, 8</b> electrons — fixed energy levels.<br>Electron jumps <b>up</b> → photon <b>absorbed</b>.<br>Electron falls <b>down</b> → photon <b>emitted</b> (a spectral line).<br><b>✋ Drag the energy-level card</b> anywhere on the canvas.',
   status:'Shells &middot; <b>2, 8, 8</b><br>jump → photon',
   feats:[
     ['Structure','Nucleus in the centre, electrons in <b>fixed shells</b> (energy levels)'],
@@ -620,6 +646,64 @@ function card(x, y, w, h, title){
   CX.strokeStyle = cssVar('--border'); CX.lineWidth = 1; CX.stroke();
   CX.restore();
   if (title) label(title, x + w/2, y + 15, cssVar('--text-muted'), 11, 'center', 700);
+}
+/* =====================================================================
+   DRAGGABLE CARDS
+   ---------------------------------------------------------------------
+   A movable card stores an OFFSET from the position it was designed to sit
+   at, never an absolute position. That keeps the intended composition as the
+   single source of truth: Reset just zeroes the offsets and every card snaps
+   back to the layout the era was drawn for.
+
+   Each frame the card registers the rectangle it actually drew into
+   CARD_RECT, and the pointer handlers hit-test against THAT — so the grab
+   area can never drift away from the picture, and a card belonging to
+   another era simply is not in the registry and cannot be grabbed.
+   ===================================================================== */
+const CARD_RECT = {};                       /* id -> rect drawn this frame */
+const clampN = (v, lo, hi) => hi < lo ? lo : v < lo ? lo : v > hi ? hi : v;
+
+function movableCard(id, x, y, w, h, title){
+  const o = S.cardOff[id] || (S.cardOff[id] = { x: 0, y: 0 });
+  /* clamped against the stage every frame, so a card can never be parked
+     off-screen and then be impossible to retrieve */
+  o.x = clampN(o.x, 6 - x, W - 6 - w - x);
+  o.y = clampN(o.y, 6 - y, H - 6 - h - y);
+  const rx = x + o.x, ry = y + o.y;
+  CARD_RECT[id] = { x: rx, y: ry, w: w, h: h };
+  card(rx, ry, w, h, title);
+  /* grip dots in the top-left corner — the affordance that says "drag me" */
+  CX.save();
+  CX.fillStyle = cssVar('--text-muted');
+  CX.globalAlpha = (S.cardHot === id || S.cardDrag === id) ? .95 : .45;
+  for (let c = 0; c < 2; c++) for (let r = 0; r < 3; r++){
+    CX.beginPath(); CX.arc(rx + 11 + c * 4.5, ry + 10 + r * 4.5, 1.35, 0, 6.2832); CX.fill();
+  }
+  CX.restore();
+  if (S.cardDrag === id || S.cardHot === id){
+    CX.save();
+    CX.strokeStyle = cssVar('--accent');
+    CX.globalAlpha = S.cardDrag === id ? .85 : .45;
+    CX.lineWidth = 1.6; roundRect(rx, ry, w, h, 12); CX.stroke();
+    CX.restore();
+  }
+  return { x: rx, y: ry, dx: o.x, dy: o.y };
+}
+
+/* Canvas pixel -> logical stage coordinate, undoing the letterbox transform. */
+function toLogical(clientX, clientY){
+  const r = cv.getBoundingClientRect();
+  return { x: (clientX - r.left - offX) / scale, y: (clientY - r.top - offY) / scale };
+}
+/* Topmost card under a point. Later-drawn cards win, matching what the eye
+   sees when two of them overlap. */
+function cardAt(p){
+  const ids = Object.keys(CARD_RECT);
+  for (let i = ids.length - 1; i >= 0; i--){
+    const r = CARD_RECT[ids[i]];
+    if (r && p.x >= r.x && p.x <= r.x + r.w && p.y >= r.y && p.y <= r.y + r.h) return ids[i];
+  }
+  return null;
 }
 function roundRect(x, y, w, h, r){
   CX.beginPath();
@@ -1033,7 +1117,9 @@ function drawRutherford(){
   CX.strokeRect(RU.colX, 34, RU.colW, (ax - cH) - 34);
   CX.strokeRect(RU.colX, ax + cH, RU.colW, (H - 34) - (ax + cH));
   label('lead collimator', RU.colX + RU.colW / 2, H - 14, cssVar('--text-dim'), 11, 'center', 700);
-  label('aperture', RU.colX - 8, ax - cH - 16, cssVar('--text-muted'), 10, 'right');
+  /* pinned to the axis, not to the (now very thin) gap, so the caption keeps
+     its distance from the beam whatever the aperture is set to */
+  label('aperture', RU.colX - 8, ax - 34, cssVar('--text-muted'), 10, 'right');
 
   /* --- gold foil, centred on the axis, at the centre of the ring --- */
   CX.save();
@@ -1106,6 +1192,20 @@ function drawRutherford(){
   }
 
   label('α = helium nucleus (2p + 2n), charge +2e', 190, 62, cssVar('--alpha'), 12, 'center', 700);
+  /* The whole apparatus sat in an evacuated chamber. It has to: an α particle
+     is stopped by a few centimetres of air, so with air in the tube almost
+     nothing would ever reach the foil, let alone the screen. Placed in the
+     clear band between the α caption and the source label, and OUTSIDE the
+     showAngles gate — the vacuum is part of the apparatus, not of the angle
+     detail. */
+  /* Home: the empty column between the α caption (which ends at y = 71) and
+     the source caption (which starts at y = 129), left of the lead collimator
+     (x = 332). Centred at x = 170 the longer of the two lines runs 73 -> 267,
+     so it clears the collimator by 65 px; v1.3.1 centred it at 250 and the
+     line ran to 347, straight through the collimator block. */
+  label('VACUUM', 170, 88, cssVar('--screen'), 12, 'center', 800);
+  label('no air to absorb or deflect the α particles', 170, 112,
+        cssVar('--text-dim'), 10, 'center');
 
   /* --- the three reference angles the IGCSE syllabus asks for --- */
   if (S.showAngles){
@@ -1117,8 +1217,9 @@ function drawRutherford(){
   /* --- angle-of-deviation legend: colour → angle → IGCSE wording --- */
   /* placed right of the collimator and above the beam, so it covers neither
      the radium source nor the alpha stream                                  */
-  const gx = 392, gy = 54, gw = 240, gh = 100;
-  card(gx, gy, gw, gh, 'ANGLE OF DEVIATION θ');
+  const gw = 240, gh = 100;
+  const K = movableCard('angleKey', 392, 54, gw, gh, 'ANGLE OF DEVIATION θ');
+  const gx = K.x, gy = K.y;      /* every row below hangs off the drawn corner */
   const rows = [
     ['--alpha',    '0°',     'undeviated'],
     ['--alphaHit', '< 90°',  'small angle'],
@@ -1160,7 +1261,12 @@ function drawRutherford(){
    NOT evenly spaced: the gaps must shrink as n rises and crowd toward the
    ionisation limit. Physics wins over an evenly spaced ladder.              */
 const BO = (function(){
-  const lx = 880, lw = 200, yInf = 100, y1 = 346;
+  /* v1.3.0: the whole ladder shifted up 30 px (yInf 100 -> 70, y1 346 -> 316).
+     The card is 306 px tall, and at its old home the bottom 28 px sat under
+     the keyboard-hint overlay pinned to the stage's bottom-right corner
+     (logical x 950-1270, y 344-408), which clipped the n=1 line. The eV
+     spacing is unchanged — this is a pure translation, still to scale. */
+  const lx = 880, lw = 200, yInf = 70, y1 = 316;
   const E = n => -13.6 / (n * n);
   const k = (y1 - yInf) / 13.6;                       // px per eV
   const yOf = n => yInf + k * (-E(n));
@@ -1257,26 +1363,53 @@ function drawBohr(t){
     CX.restore();
   }
 
-  /* --- energy level ladder, spaced to scale from E(n) = -13.6/n² eV --- */
-  card(BO.lx - 52, 66, BO.lw + 96, 306, 'ENERGY LEVELS (to scale)');
+  /* --- energy level ladder, spaced to scale from E(n) = -13.6/n² eV ---
+     The card box is MEASURED from its own contents rather than guessed at.
+     v1.2.4 hard-coded it as (BO.lx - 52, w = BO.lw + 96); the n-level captions
+     are right-aligned at BO.lx - 10 and the widest of them ("n=1  -13.60 eV")
+     is ~84 px, so every one of the four captions hung ~48 px off the card's
+     left edge. Measuring both the caption column and the ΔE caption keeps the
+     text inside the card whatever the theme's font metrics turn out to be. */
+  const lvl = ['n=1', 'n=2', 'n=3'];
+  const lvlTxt = ['n=∞   0 eV'];
+  for (let i = 0; i < 3; i++) lvlTxt.push(lvl[i] + '   ' + BO.E(i + 1).toFixed(2) + ' eV');
+  const dETxt = 'ΔE = photon energy';
+  CX.save();
+  CX.font = "700 10px 'Inter',sans-serif";
+  let capW = 0;
+  lvlTxt.forEach(q => { capW = Math.max(capW, CX.measureText(q).width); });
+  CX.font = "600 11px 'Inter',sans-serif";
+  const dEW = CX.measureText(dETxt).width;
+  CX.restore();
+
+  const sy0 = 196, sx00 = BO.lx - 18, sw = BO.lw + 36;   /* spectrum strip */
+  const PLATE = 5;                       /* label() draws a 4 px plate each side */
+  const PADC  = 14;                      /* breathing room inside the card       */
+  const dECx  = BO.lx + BO.lw * .5 + 70;
+  const cL = Math.min(BO.lx - 10 - capW - PLATE, sx00) - PADC;
+  const cR = Math.max(BO.lx + BO.lw, dECx + dEW / 2 + PLATE, sx00 + sw) + PADC;
+  const L = movableCard('levels', cL, 36, cR - cL, 306, 'ENERGY LEVELS (to scale)');
+  /* everything below is expressed relative to where the card actually landed */
+  const dx = L.dx, dy = L.dy;
+  const lx = BO.lx + dx, lyInf = BO.yInf + dy;
+
   CX.save();
   CX.setLineDash([4, 5]); CX.strokeStyle = cssVar('--text-muted'); CX.lineWidth = 1.4;
-  CX.beginPath(); CX.moveTo(BO.lx, BO.yInf); CX.lineTo(BO.lx + BO.lw, BO.yInf); CX.stroke();
+  CX.beginPath(); CX.moveTo(lx, lyInf); CX.lineTo(lx + BO.lw, lyInf); CX.stroke();
   CX.restore();
-  label('n=∞   0 eV', BO.lx - 10, BO.yInf, cssVar('--text-muted'), 10, 'right', 700);
-  const lvl = ['n=1', 'n=2', 'n=3'];
-  BO.ly.forEach((y, i) => {
+  label(lvlTxt[0], lx - 10, lyInf, cssVar('--text-muted'), 10, 'right', 700);
+  BO.ly.forEach((y0, i) => {
+    const y = y0 + dy;
     CX.strokeStyle = cssVar('--text-dim'); CX.lineWidth = 2.4;
-    CX.beginPath(); CX.moveTo(BO.lx, y); CX.lineTo(BO.lx + BO.lw, y); CX.stroke();
-    label(lvl[i] + '   ' + BO.E(i + 1).toFixed(2) + ' eV',
-          BO.lx - 10, y, cssVar('--text-dim'), 10, 'right', 700);
+    CX.beginPath(); CX.moveTo(lx, y); CX.lineTo(lx + BO.lw, y); CX.stroke();
+    label(lvlTxt[i + 1], lx - 10, y, cssVar('--text-dim'), 10, 'right', 700);
   });
-  const y2 = BO.ly[1], y3 = BO.ly[2], axx = BO.lx + BO.lw * .5;
+  const y2 = BO.ly[1] + dy, y3 = BO.ly[2] + dy, axx = lx + BO.lw * .5;
   if (p >= .16 && p < .34)      arrow(axx, y2, axx, y2 + (y3 - y2) * jump, cssVar('--photon'), 3, 10);
   else if (p >= .56 && p < .74) arrow(axx, y3, axx, y3 + (y2 - y3) * (1 - jump), cssVar('--photon'), 3, 10);
-  label('ΔE = photon energy', BO.lx + BO.lw * .5 + 70, (y2 + y3) / 2, cssVar('--photon'), 11);
-  label('level gaps shrink as n rises', BO.lx + BO.lw / 2, 300, cssVar('--text-muted'), 10);
-  const sy = 226, sx0 = BO.lx - 18, sw = BO.lw + 36;
+  label(dETxt, dECx + dx, (y2 + y3) / 2, cssVar('--photon'), 11);
+  label('level gaps shrink as n rises', lx + BO.lw / 2, 270 + dy, cssVar('--text-muted'), 10);
+  const sy = sy0 + dy, sx0 = sx00 + dx;
   CX.fillStyle = cssVar('--stage');
   CX.fillRect(sx0, sy, sw, 18);
   CX.strokeStyle = cssVar('--border'); CX.lineWidth = 1; CX.strokeRect(sx0, sy, sw, 18);
@@ -1284,7 +1417,7 @@ function drawBohr(t){
     CX.fillStyle = l[1];
     CX.fillRect(sx0 + sw * l[0], sy + 2, 3, 14);
   });
-  label('line spectrum', BO.lx + BO.lw / 2, sy - 13, cssVar('--text-muted'), 10);
+  label('line spectrum', lx + BO.lw / 2, sy - 13, cssVar('--text-muted'), 10);
 
   label('electrons in fixed shells: 2, 8, 8', BO.cx, 390, cssVar('--accent'), 14, 'center', 700);
 }
@@ -1357,6 +1490,10 @@ function draw(){
   CX.fillStyle = cssVar('--stage');
   CX.fillRect(0, 0, W, H);
 
+  /* the registry is rebuilt from scratch each frame: a card that is not drawn
+     this frame (wrong era, Labels off) is therefore not draggable either */
+  Object.keys(CARD_RECT).forEach(k => { delete CARD_RECT[k]; });
+
   CX.textAlign = 'center'; CX.textBaseline = 'middle';
   const t = S.t[S.era];
   if      (S.era === 0) drawDalton(t);
@@ -1407,6 +1544,8 @@ function setEra(i, keepStory){
 function resetEra(){
   S.t[S.era] = 0;
   S.warn = '';
+  /* cards snap back to the composition the era was designed for */
+  Object.keys(S.cardOff).forEach(k => { S.cardOff[k].x = 0; S.cardOff[k].y = 0; });
   if (S.era === 2){
     S.alphas = []; S.flashes = []; S.spawnAcc = 0;
     S.stats = { passed: 0, deflected: 0, bounced: 0 };
@@ -1462,6 +1601,52 @@ $('btnBurst').addEventListener('click', () => { if (S.era === 2) fireBurst(); })
     p.classList.add('active');
   });
 });
+/* ---------------- card dragging ---------------- */
+(function(){
+  let grab = null;                       /* {id, ox, oy} at pointerdown */
+  cv.addEventListener('pointerdown', e => {
+    const pt = toLogical(e.clientX, e.clientY);
+    const id = cardAt(pt);
+    if (!id) return;
+    e.preventDefault();
+    const o = S.cardOff[id];
+    grab = { id: id, px: pt.x, py: pt.y, ox: o.x, oy: o.y };
+    S.cardDrag = id;
+    try { cv.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    cv.style.cursor = 'grabbing';
+    draw();
+  });
+  cv.addEventListener('pointermove', e => {
+    const pt = toLogical(e.clientX, e.clientY);
+    if (grab){
+      const o = S.cardOff[grab.id];
+      o.x = grab.ox + (pt.x - grab.px);
+      o.y = grab.oy + (pt.y - grab.py);   /* movableCard() clamps to the stage */
+      draw();
+      return;
+    }
+    const hot = cardAt(pt);
+    if (hot !== S.cardHot){
+      S.cardHot = hot;
+      cv.style.cursor = hot ? 'grab' : 'default';
+      draw();
+    }
+  });
+  const drop = e => {
+    if (!grab) return;
+    grab = null; S.cardDrag = null;
+    try { cv.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    cv.style.cursor = S.cardHot ? 'grab' : 'default';
+    draw();
+  };
+  cv.addEventListener('pointerup', drop);
+  cv.addEventListener('pointercancel', drop);
+  cv.addEventListener('pointerleave', () => {
+    if (grab) return;
+    if (S.cardHot){ S.cardHot = null; cv.style.cursor = 'default'; draw(); }
+  });
+})();
+
 $('themeSel').addEventListener('change', e => applyTheme(e.target.value));
 
 function applyTheme(v){
