@@ -385,7 +385,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">⚡ Energy Lab</span> <span class="badge-top" id="badge">v2.2.5</span></h1>
+    <h1><span class="t">⚡ Energy Lab</span> <span class="badge-top" id="badge">v2.2.6</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -1317,7 +1317,8 @@ var CTL = {
   flow: { lab: 'water flow', u: 'kg/s', min: 10, max: 500, step: 10, def: 100 },
   bounce: { lab: 'bounciness', u: '%', min: 20, max: 95, step: 5, def: 60 },
   draw: { lab: 'draw-back', u: 'm', min: 0.1, max: 0.8, step: 0.05, def: 0.4 },
-  Pin: { lab: 'input power', u: 'W', min: 3, max: 100, step: 1, def: 60 }
+  Pin: { lab: 'input power', u: 'W', min: 3, max: 100, step: 1, def: 60 },
+  fr: { lab: 'friction f', u: 'N', min: 0, max: 60, step: 5, def: 10 }
 };
 function ctlDef(k) { return CTL[k] ? CTL[k].def : 0; }
 function V(k) { var v = S.v[k]; return v == null ? ctlDef(k) : v; }
@@ -2126,12 +2127,17 @@ scene('1', 'elec', {
     CX.fillStyle = gg;
     CX.beginPath(); CX.arc(lx, 200, 74, 0, 7); CX.fill();
     CX.restore();
-    /* glass envelope */
+    /* glass envelope — a round bulb, the shape every textbook draws */
     CX.save();
     CX.fillStyle = withA(scol('rad'), .08 + lit * .28);
-    CX.beginPath(); CX.ellipse(lx, 200, 23, 26, 0, 0, 7); CX.fill();
+    CX.beginPath(); CX.arc(lx, 200, 27, 0, 7); CX.fill();
     CX.strokeStyle = withA(C['text-dim'], .85); CX.lineWidth = 2;
-    CX.beginPath(); CX.ellipse(lx, 200, 23, 26, 0, 0, 7); CX.stroke();
+    CX.beginPath(); CX.arc(lx, 200, 27, 0, 7); CX.stroke();
+    /* the short neck joining the glass to the cap */
+    CX.strokeStyle = withA(C['text-dim'], .85); CX.lineWidth = 2;
+    CX.beginPath();
+    CX.moveTo(lx - 13, 219); CX.lineTo(lx - 13, 224);
+    CX.moveTo(lx + 13, 219); CX.lineTo(lx + 13, 224); CX.stroke();
     CX.restore();
     /* the two support wires and the coiled filament they hold */
     CX.save();
@@ -2164,7 +2170,28 @@ scene('1', 'elec', {
     CX.beginPath(); CX.arc(lx - 22, 250, 3.4, 0, 7); CX.fill();
     CX.beginPath(); CX.arc(lx + 22, 250, 3.4, 0, 7); CX.fill();
     CX.restore();
-    txt('lamp', lx + 38, 204, 11.5, C['text-muted'], 'left', 600);
+    /* ---- at the lamp the electrical tokens BECOME light and heat -------
+       three light to one heat, the same 3 : 1 split the bank shows.     */
+    for (var e = 0; e < 6; e++) {
+      var eq = (S.t * 0.42 + e / 6) % 1;
+      if (eq < 0.5) {                       /* arriving along the top wire */
+        coin(lx + 96 - (eq / 0.5) * 96, 250, 5, withA(scol('elec'), .95));
+      } else {                              /* leaving the glass as light  */
+        var b0 = (eq - 0.5) / 0.5, ang = -2.75 + e * 0.62;
+        coin(lx + Math.cos(ang) * (30 + b0 * 50), 200 + Math.sin(ang) * (30 + b0 * 50),
+          5, withA(scol('rad'), (1 - b0) * (.35 + lit * .6)));
+      }
+    }
+    for (var h2 = 0; h2 < 2; h2++) {        /* and the heat, straight up   */
+      var hq = (S.t * 0.42 + 0.25 + h2 / 2) % 1;
+      if (hq >= 0.5) {
+        var c0 = (hq - 0.5) / 0.5;
+        coin(lx + Math.sin(c0 * 7 + h2) * 10, 172 - c0 * 52, 5,
+          withA(scol('therm'), (1 - c0) * .85));
+      }
+    }
+    txt('lamp', lx + 44, 196, 11.5, C['text-muted'], 'left', 700);
+    txt('electrical → light + heat', lx + 44, 212, 10, C['text-muted'], 'left', 500);
 
     /* ================= the battery: a wet (lead-acid) cell ============== */
     CX.save();
@@ -3003,7 +3030,7 @@ scene('2', 'graph', {
   title: 'The one picture that covers every case',
   sub: 'Rectangle, triangle or curve — the work done is always the area under the force–distance graph.',
   ctrl: ['curve', 'F', 'k', 's'],
-  init: function () { if (!S.curve) S.curve = 'constant'; },
+  init: function () { if (!S.curve) S.curve = 'curve'; },
   draw: function () {
     var p = prog(), s = V('s');
     var fn = curveFn(), Wnow = integrate(fn, 0, Math.max(s * p, 1e-6)), Wtot = integrate(fn, 0, s);
@@ -3055,6 +3082,42 @@ function curveFn() {
 }
 
 /* 2.6 POWER ---------------------------------------------------------------- */
+/* ---------------------------------------------------------------------------
+   A plain analogue clock whose single hand sweeps once through the whole lift.
+   Power is a RATE, so the picture needs something visibly counting the time
+   away next to the load that is visibly rising.                            */
+function sweepClock(cx, cy, r, frac, tNow, tTot) {
+  CX.save();
+  CX.fillStyle = withA(C.card2 || C.card, .75);
+  CX.beginPath(); CX.arc(cx, cy, r, 0, 7); CX.fill();
+  CX.strokeStyle = withA(C['text-dim'], .95); CX.lineWidth = 3;
+  CX.beginPath(); CX.arc(cx, cy, r, 0, 7); CX.stroke();
+  /* the elapsed sector, so the fraction of the job is readable at a glance */
+  CX.fillStyle = withA(C.accent, .16);
+  CX.beginPath(); CX.moveTo(cx, cy);
+  CX.arc(cx, cy, r - 5, -1.5708, -1.5708 + frac * 6.2832); CX.closePath(); CX.fill();
+  CX.strokeStyle = withA(C['text-muted'], .9);
+  for (var i = 0; i < 12; i++) {
+    var a = i / 12 * 6.2832, big = i % 3 === 0;
+    CX.lineWidth = big ? 2.4 : 1.2;
+    CX.beginPath();
+    CX.moveTo(cx + Math.cos(a) * (r - (big ? 12 : 7)), cy + Math.sin(a) * (r - (big ? 12 : 7)));
+    CX.lineTo(cx + Math.cos(a) * (r - 3), cy + Math.sin(a) * (r - 3));
+    CX.stroke();
+  }
+  var ha = -1.5708 + frac * 6.2832;
+  CX.strokeStyle = C.accent; CX.lineWidth = 3.4; CX.lineCap = 'round';
+  CX.beginPath();
+  CX.moveTo(cx - Math.cos(ha) * 7, cy - Math.sin(ha) * 7);
+  CX.lineTo(cx + Math.cos(ha) * (r - 13), cy + Math.sin(ha) * (r - 13)); CX.stroke();
+  CX.restore();
+  dot(cx, cy, 4.5, C.accent);
+  mtxt(fmt(tNow, 1) + ' s  of  ' + fmt(tTot, 0) + ' s', cx, cy + r + 22, 12,
+    C.accent, 'center', 700);
+  txt('the clock runs while the load rises', cx, cy + r + 40, 10,
+    C['text-muted'], 'center', 500);
+}
+
 scene('2', 'power', {
   label: '⚡ Power',
   hero: 'P = \\dfrac{W}{t} = Fv',
@@ -3066,16 +3129,19 @@ scene('2', 'power', {
     var Wd = m * 10 * h, v = h / tt, F = m * 10, P1 = Wd / tt, P2 = F * v;
     var p = prog(Math.max(tt, 2)), floorY = 470, topY = 250;
     var y = floorY - p * (floorY - topY);
-    ground(floorY + 22, 100, 520);
+    ground(floorY + 22, 210, 560);
+    sweepClock(112, 268, 56, p, p * tt, tt);
     /* a hoist lifting the load */
-    line(265, 196, 265, y - 46, C['text-dim'], 2.5);
-    block(265, y, 58, 46, scol('gpe'), fmt(m, 1) + ' kg');
+    line(330, 196, 330, y - 46, C['text-dim'], 2.5);
+    block(330, y, 58, 46, scol('gpe'), fmt(m, 1) + ' kg');
     /* the pull acts up the cable, and its tail sits on the box */
-    arrow(265, y - 46, 265, y - 92, scol('elec'), 3, { head: 12 });
-    plate('F = mg = ' + fmt(F, 0) + ' N', 249, y - 70, 11.5, scol('elec'), 'right', true);
-    plate('v = h/t = ' + fmt(v, 2) + ' m/s', 302, y - 8, 11.5, scol('ke'), 'left', true);
-    arrow(470, floorY + 22, 470, topY, scol('gpe'), 2, { head: 10 });
-    plate('h = ' + fmt(h, 1) + ' m', 482, (floorY + topY) / 2, 11.5, scol('gpe'), 'left', true);
+    arrow(330, y - 46, 330, y - 92, scol('elec'), 3, { head: 12 });
+    /* BOTH readouts sit to the right of the cable, one clear band apart, so
+       they can never land on the clock or on each other as the load rises */
+    plate('F = mg = ' + fmt(F, 0) + ' N', 372, y - 70, 11.5, scol('elec'), 'left', true);
+    plate('v = h/t = ' + fmt(v, 2) + ' m/s', 372, y - 24, 11.5, scol('ke'), 'left', true);
+    arrow(530, floorY + 22, 530, topY, scol('gpe'), 2, { head: 10 });
+    plate('h = ' + fmt(h, 1) + ' m', 542, (floorY + topY) / 2, 11.5, scol('gpe'), 'left', true);
 
     withCard('note', GX - 20, 132, 430, 200, function () {
       card(GX - 20, 132, 430, 200, 'the same power, measured two ways');
@@ -3262,23 +3328,39 @@ scene('3', 'wet', {
   label: '📘 Work–Energy',
   hero: 'W_{net} = \\Delta KE = \\tfrac12 mv^2 - \\tfrac12 mu^2',
   title: 'The work–energy theorem — work in, kinetic energy out  ·  A-level',
-  sub: 'The work done by the resultant force IS the change in kinetic energy. Two sums, one answer, every time.',
-  ctrl: ['m', 'F', 's', 'u0'],
+  sub: 'The work done by the RESULTANT force is the change in kinetic energy — the push minus the friction.',
+  ctrl: ['m', 'F', 'fr', 's', 'u0'],
   draw: function () {
-    var m = V('m'), F = V('F'), sD = V('s'), u = V('u0');
-    var a = F / m, v = Math.sqrt(u * u + 2 * a * sD);
-    var W = F * sD, KE0 = 0.5 * m * u * u, KE1 = 0.5 * m * v * v;
-    var T = a > 1e-9 ? (v - u) / a : (sD / Math.max(u, 1e-9));
+    var m = V('m'), F = V('F'), fr = V('fr'), sD = V('s'), u = V('u0');
+    var Fn = F - fr, a = Fn / m;
+    /* with enough friction the block stops before it has covered s — that is
+       a real answer, not an error, so solve for where it actually stops.  */
+    var v2 = u * u + 2 * a * sD, sMax = sD, stops = false;
+    if (v2 < 0) { sMax = (u * u) / (2 * Math.abs(a)); v2 = 0; stops = true; }
+    var v = Math.sqrt(Math.max(v2, 0));
+    var W = Fn * sMax, Wpush = F * sMax, Wfric = fr * sMax;
+    var KE0 = 0.5 * m * u * u, KE1 = 0.5 * m * v * v;
+    var T = Math.abs(a) > 1e-9 ? Math.abs((v - u) / a) : (sMax / Math.max(u, 1e-9));
     var q = prog(Math.max(T, 1.6));                    /* 0 → 1 over the run  */
     var tNow = Math.min(q * Math.max(T, 1.6), T);
-    var sNow = u * tNow + 0.5 * a * tNow * tNow;
-    sNow = clamp(sNow, 0, sD);
+    var sNow = clamp(u * tNow + 0.5 * a * tNow * tNow, 0, sMax);
     var vNow = Math.sqrt(Math.max(u * u + 2 * a * sNow, 0));
-    var Wnow = F * sNow, KEnow = 0.5 * m * vNow * vNow;
+    var Wnow = Fn * sNow, KEnow = 0.5 * m * vNow * vNow;
 
     var x0 = 150, x1 = 512, floorY = 322;
     var px = x0 + (sNow / Math.max(sD, 1e-9)) * (x1 - x0);
     ground(floorY, 110, 600);
+    /* the rough patch under the block, so friction is something you can see */
+    if (fr > 0) {
+      CX.save();
+      CX.strokeStyle = withA(scol('therm'), .55); CX.lineWidth = 1.6;
+      for (var hx = 0; hx < 30; hx++) {
+        var hxp = 112 + hx * 16;
+        CX.beginPath();
+        CX.moveTo(hxp, floorY + 2); CX.lineTo(hxp + 7, floorY + 9); CX.stroke();
+      }
+      CX.restore();
+    }
 
     /* the distance the force acts over */
     line(x0, floorY + 14, x0, floorY + 38, C['text-muted'], 1.4);
@@ -3294,61 +3376,94 @@ scene('3', 'wet', {
     CX.save(); CX.fillStyle = withA(scol('elec'), .13);
     CX.fillRect(x0, floorY - 38, px - x0, 38); CX.restore();
 
+    /* the heat friction leaves behind on the track */
+    if (fr > 0 && sNow > 0) {
+      for (var hb = 0; hb < 5; hb++) {
+        var hq = (S.t * 0.6 + hb / 5) % 1;
+        dot(px - 27 - hq * 34, floorY - 6 - hq * 16, 4 - hq * 2,
+          withA(scol('therm'), (1 - hq) * .8));
+      }
+    }
     block(px, floorY - 19, 54, 38, scol('ke'), fmt(m, 1) + ' kg');
-    /* the resultant force: the SAME length all the way, because F is constant */
-    arrow(px + 27, floorY - 19, px + 27 + 62, floorY - 19, scol('elec'), 4, { head: 12 });
-    plate('F net = ' + fmt(F, 0) + ' N', px, floorY - 62, 11.5, scol('elec'), 'center', true);
-    plate('v = ' + fmt(vNow, 2) + ' m/s', px, floorY - 88, 12, scol('ke'), 'center', true);
+    /* both forces to the same scale, so the resultant is read off the picture */
+    var fsc = 74 / Math.max(F, fr, 1e-6);
+    arrow(px + 27, floorY - 30, px + 27 + F * fsc, floorY - 30, scol('elec'), 4, { head: 12 });
+    plate('F = ' + fmt(F, 0) + ' N', px + 40, floorY - 48, 11, scol('elec'), 'left', true);
+    if (fr > 0) {
+      arrow(px - 27, floorY - 12, px - 27 - fr * fsc, floorY - 12, scol('therm'), 4, { head: 12 });
+      plate('f = ' + fmt(fr, 0) + ' N', px - 40, floorY - 30, 11, scol('therm'), 'right', true);
+    }
+    plate('F net = F − f = ' + fmt(Fn, 0) + ' N', px, floorY - 74, 11.5,
+      Fn >= 0 ? scol('elec') : scol('therm'), 'center', true);
+    plate('v = ' + fmt(vNow, 2) + ' m/s', px, floorY - 100, 12, scol('ke'), 'center', true);
+    if (stops) plate('it stops after ' + fmt(sMax, 2) + ' m', (x0 + x1) / 2, floorY - 126, 11,
+      scol('therm'), 'center', true);
 
     /* the two sums, side by side, converging on the same number */
     withCard('wet', 640, 132, 452, 296, function () {
-      card(640, 132, 452, 296, 'two ways to the same number');
-      mtxt('W net = F × s', 660, 176, 15, scol('elec'), 'left', 700);
-      fitTxt(fmt(F, 0) + ' × ' + fmt(sD, 1) + '  =  ' + fmtJ(W), 660, 202, 412, 14,
+      card(640, 132, 452, 296, 'every force does its own work');
+      mtxt('W push     = F × s   = ' + fmtJ(Wpush), 660, 168, 13, scol('elec'), 'left', 700);
+      mtxt('W friction = −f × s  = −' + fmtJ(Wfric), 660, 192, 13, scol('therm'), 'left', 700);
+      mtxt('W net = (F − f) × s  = ' + fmtJ(W), 660, 216, 13.5, C.accent, 'left', 800);
+      line(654, 232, 1078, 232, withA(C.border, .8), 1);
+      mtxt('ΔKE = ½mv² − ½mu²', 660, 258, 14, scol('ke'), 'left', 700);
+      fitTxt(fmtJ(KE1) + ' − ' + fmtJ(KE0) + '  =  ' + fmtJ(KE1 - KE0), 660, 282, 412, 13.5,
         C['text-dim'], 'left', 700);
-      line(654, 220, 1078, 220, withA(C.border, .8), 1);
-      mtxt('ΔKE = ½mv² − ½mu²', 660, 248, 15, scol('ke'), 'left', 700);
-      fitTxt(fmtJ(KE1) + ' − ' + fmtJ(KE0) + '  =  ' + fmtJ(KE1 - KE0), 660, 274, 412, 14,
-        C['text-dim'], 'left', 700);
-      line(654, 292, 1078, 292, withA(C.border, .8), 1);
-      txt(Math.abs(W - (KE1 - KE0)) < 1e-6 * Math.max(W, 1)
-        ? '✓ identical — this is the work–energy theorem'
-        : 'they must agree', 660, 316, 12.5, C.green, 'left', 700);
-      wrap('It is not a new law: F = ma says a = F/m, and v² = u² + 2as says ' +
-        'v² − u² = 2as. Multiply the second by ½m and the right-hand side becomes Fs.',
-        660, 340, 412, 11.5, C['text-muted'], 17, 500);
-      mtxt('a = F/m = ' + fmt(a, 2) + ' m/s²   ·   t = ' + fmt(T, 2) + ' s',
-        660, 400, 12, C['text-dim'], 'left', 600);
+      line(654, 298, 1078, 298, withA(C.border, .8), 1);
+      txt(Math.abs(W - (KE1 - KE0)) < 1e-6 * Math.max(Math.abs(W), 1)
+        ? '✓ identical — only the RESULTANT force counts'
+        : 'they must agree', 660, 320, 12.5, C.green, 'left', 700);
+      wrap('The push alone would give ' + fmtJ(Wpush) + '; friction takes ' + fmtJ(Wfric) +
+        ' of it straight into the thermal store. What is left, (F − f)s, is the change in ½mv².',
+        660, 344, 412, 11.5, C['text-muted'], 17, 500);
+      mtxt('a = (F−f)/m = ' + fmt(a, 2) + ' m/s²   ·   t = ' + fmt(T, 2) + ' s',
+        660, 404, 12, C['text-dim'], 'left', 600);
     });
 
-    energyBank([{ k: 'chem', v: Math.max(W - Wnow, 0), n: 'still to be done', keep: true },
-      { k: 'ke', v: KEnow, keep: true }],
-      { total: KE0 + W, note: 'the pusher pays; every joule of that work lands in the kinetic account' });
+    energyBank([{ k: 'chem', v: Math.max(Wpush - F * sNow, 0), n: 'still to be done', keep: true },
+      { k: 'ke', v: KEnow, keep: true },
+      { k: 'therm', v: fr * sNow, keep: true }],
+      { total: KE0 + Wpush,
+        note: fr > 0 ? 'the pusher pays; friction takes its cut as heat before the rest becomes speed'
+          : 'the pusher pays; every joule of that work lands in the kinetic account' });
   },
   data: function () {
-    var m = V('m'), F = V('F'), sD = V('s'), u = V('u0');
-    var a = F / m, v = Math.sqrt(u * u + 2 * a * sD);
-    return [{ l: 'resultant force F', v: fmt(F, 0) + ' N', k: 'elec' },
-    { l: 'acceleration  a = F/m', v: fmt(a, 2) + ' m/s²' },
+    var m = V('m'), F = V('F'), fr = V('fr'), sD = V('s'), u = V('u0');
+    var Fn = F - fr, a = Fn / m;
+    var v2 = u * u + 2 * a * sD, sM = sD;
+    if (v2 < 0) { sM = (u * u) / (2 * Math.abs(a)); v2 = 0; }
+    var v = Math.sqrt(Math.max(v2, 0));
+    return [{ l: 'push  F', v: fmt(F, 0) + ' N', k: 'elec' },
+    { l: 'friction  f', v: fmt(fr, 0) + ' N', k: 'therm' },
+    { l: 'resultant  F − f', v: fmt(Fn, 0) + ' N', k: 'elec' },
+    { l: 'work by friction', v: '−' + fmtJ(fr * sM), k: 'therm' },
+    { l: 'acceleration  a = (F−f)/m', v: fmt(a, 2) + ' m/s²' },
     { l: 'starting KE  ½mu²', v: fmtJ(0.5 * m * u * u), k: 'ke' },
     { l: 'final speed v', v: fmt(v, 2) + ' m/s', k: 'ke' },
     { l: 'final KE  ½mv²', v: fmtJ(0.5 * m * v * v), k: 'ke' },
-    { l: 'W net = F·s', v: fmtJ(F * sD), k: 'elec' },
+    { l: 'W net = (F−f)·s', v: fmtJ(Fn * sM), k: 'elec' },
     { l: 'ΔKE', v: fmtJ(0.5 * m * (v * v - u * u)), k: 'ke' }];
   },
   eq: function () {
-    var m = V('m'), F = V('F'), sD = V('s'), u = V('u0');
-    var a = F / m, v = Math.sqrt(u * u + 2 * a * sD);
+    var m = V('m'), F = V('F'), fr = V('fr'), sD = V('s'), u = V('u0');
+    var Fn = F - fr, a = Fn / m;
+    var v2 = u * u + 2 * a * sD, sM = sD;
+    if (v2 < 0) { sM = (u * u) / (2 * Math.abs(a)); v2 = 0; }
+    var v = Math.sqrt(Math.max(v2, 0));
     return [['the theorem', 'W_{net} = \\Delta KE = \\tfrac12 mv^2 - \\tfrac12 mu^2',
       'The work done by the RESULTANT force — not by one force on its own.'],
-    ['work from the force', 'W = Fs = ' + fmt(F, 0) + ' \\times ' + fmt(sD, 1) + ' = ' +
-      fmt(F * sD, 0) + '\\ \\text{J}', 'Force along the motion, times the distance moved.'],
+    ['the resultant force', 'F_{net} = F - f = ' + fmt(F, 0) + ' - ' + fmt(fr, 0) + ' = ' +
+      fmt(Fn, 0) + '\\ \\text{N}',
+      'The push forward minus the friction backward. Friction does NEGATIVE work.'],
+    ['work from the force', 'W_{net} = F_{net}s = ' + fmt(Fn, 0) + ' \\times ' + fmt(sM, 1) +
+      ' = ' + fmt(Fn * sM, 0) + '\\ \\text{J}', 'Resultant force along the motion, times the distance moved.'],
     ['and the same from the speeds', '\\tfrac12 m(v^2 - u^2) = \\tfrac12 \\times ' +
       fmt(m, 1) + ' \\times (' + fmt(v * v, 1) + ' - ' + fmt(u * u, 1) + ') = ' +
       fmt(0.5 * m * (v * v - u * u), 0) + '\\ \\text{J}',
-      'v comes from v^2 = u^2 + 2as with a = F/m = ' + fmt(a, 2) + ' m/s².'],
-    ['why they are the same', 'v^2 - u^2 = 2as \\;\\Rightarrow\\; \\tfrac12 m(v^2-u^2) = mas = Fs',
-      'Multiply the SUVAT result by ½m and F = ma turns the right-hand side into Fs.']];
+      'v comes from v² = u² + 2as with a = (F−f)/m = ' + fmt(a, 2) + ' m/s².'],
+    ['why they are the same',
+      'v^2 - u^2 = 2as \\;\\Rightarrow\\; \\tfrac12 m(v^2-u^2) = mas = F_{net}s',
+      'Multiply the SUVAT result by ½m and F = ma turns the right-hand side into F_net s.']];
   },
   info: function () {
     return '<div class="note">The <b>work–energy theorem</b>: the work done by the <b>resultant</b> ' +
@@ -3356,6 +3471,9 @@ scene('3', 'wet', {
       '<ol class="steps"><li>Find the <b>resultant</b> force — add every force along the motion.</li>' +
       '<li>W<sub>net</sub> = F<sub>net</sub> × s, with s measured along the force.</li>' +
       '<li>That work is the CHANGE in ½mv², not the final value — subtract the starting KE.</li>' +
+      '<li>Friction acts BACKWARDS, so its work is negative: it takes joules out of the ' +
+      'kinetic account and puts them in the thermal one. Slide the friction to 40 N and watch ' +
+      'W<sub>net</sub> fall while the push stays at 40 N.</li>' +
       '<li>Negative resultant (braking, friction) ⇒ negative work ⇒ the KE falls.</li></ol>' +
       '<div class="note">It saves a step whenever a question gives you a force and a distance and ' +
       'asks for a speed: you never have to find the time. At A-level it also generalises — for a ' +
@@ -5941,7 +6059,7 @@ function bindToolbar() {
     /* a beginner pressing Reset means "put everything back", not just this slider */
     S.play = false; S.t = 0; EFF_WARN = '';
     S.v = {}; S.proc = 'drop'; S.fric = false; S.device = 'lamp';
-    S.curve = 'constant'; S.bulb = 'filament'; S.nuke = 'fission'; S.cardPos = {};
+    S.curve = 'curve'; S.bulb = 'filament'; S.nuke = 'fission'; S.cardPos = {};
     zoomOff();
     resetVals(); refresh();
   });
