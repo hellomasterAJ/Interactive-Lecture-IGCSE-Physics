@@ -21,9 +21,27 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── kinematics_4_vertical_graphs_terminal_v.html  ← Terminal Velocity Skydive 🪂
 │   └── kinematics_5_advanced_velocity_time_graphs.html ← Advanced VT Graph 📈
 ├── simulations/           ← Interactive physics simulations (ไม่ใช่กราฟ)
-│   ├── Measurement_1_vernier_caliper.html            ← Vernier Caliper 📏
-│   ├── Measurement_2_micrometer_screw_gauge.html     ← Micrometer Screw Gauge 🔧
-│   └── Measurement_3_balance_newtonmeter.html        ← Mass vs Weight (Balance & Newtonmeter) ⚖️
+│   ├── CH0_Fundamental_1_Vector_Addition_Lab.html    ← Vector Addition ➕
+│   ├── CH0_Fundamental_2_Density.html                ← Density 📦
+│   ├── CH0_Instrument_1_Vernier_Caliper.html         ← Vernier Caliper 📏
+│   ├── CH0_Instrument_2_Micrometer_Screw_Gauge.html  ← Micrometer Screw Gauge 🔧
+│   ├── CH0_Instrument_3_Balance_Newtonmeter.html     ← Mass vs Weight (Balance & Newtonmeter) ⚖️
+│   ├── CH1_Mechanics_1_Motion_Graphs_Lab.html        ← Motion Graphs 🚗
+│   ├── CH1_Mechanics_2_Newtons_Laws_Lab.html         ← Newton's Laws 🍎
+│   ├── CH1_Mechanics_5_Moments_Equilibrium_Lab.html  ← Moments & Equilibrium ⚖️ (v2: 3-force scenes, choose-any-pivot, slope topple)
+│   ├── CH1_Mechanics_6_Energy_Lab.html               ← Energy ⚡
+│   ├── CH3_Wave_1_Introduction_to_Waves_v1.html      ← Introduction to Waves 🌊
+│   ├── CH3_Wave_2_Refraction_of_Light.html           ← Refraction of Light 🔦
+│   ├── CH3_Wave_3_Dispersion_of_Light.html           ← Dispersion of Light 🌈
+│   ├── CH3_Wave_4_Optical_Instruments.html           ← Optical Instruments 🔭
+│   ├── CH3_Wave_5_Diffraction_of_Waves.html          ← Diffraction of Waves 🌀
+│   ├── CH4_Electricity_1_Electrostatics_Lab.html     ← Electrostatics ⚡
+│   ├── CH4_Electricity_2_Circuit_Lab.html            ← Circuit Lab 🛠️
+│   ├── CH4_Magnetism_1_Magnetic_Fields_Lab.html      ← Magnetic Fields 🧲
+│   ├── CH4_Magnetism_2_Motor_Effect_Lab.html         ← Motor Effect 🔌
+│   ├── CH5_Nuclear_1_Atomic_Models.html              ← Atomic Models ⚛️
+│   ├── CH5_Nuclear_2_Nuclear_Symbols_Reactions.html  ← Nuclear Symbols & Reactions ☢️
+│   └── CH5_Nuclear_3_Radioactive_Lab.html            ← Radioactive Lab ☢️
 ├── scripts/               ← Build system (Python)
 │   ├── build.py           ← Main: python build.py lecture.md
 │   ├── build_dashboard.py ← Dashboard generator
@@ -62,16 +80,16 @@ python3 -m playwright install chromium
 
 | # | Topic | Interactive Graph | Simulation |
 |---|-------|:--------:|:--------:|
-|| 1.1 | Physical Quantities & Measurement | ❌ | ✅ Vernier Caliper, Micrometer |
-|| 1.2 | Motion — Kinematics | ✅ Horizontal, Free-fall, Stopping, Advanced VT, Terminal Velocity 🪂 | ❌ |
-|| 1.3 | Mass and Weight | ❌ | ✅ Balance & Newtonmeter ⚖️ |
-|| 1.4 | Density | ❌ | ❌ |
-|| 1.5 | Forces (Hooke's Law) | ❌ | ❌ |
-|| 1.6 | Effects of Forces (Moments, Pressure) | ❌ | ❌ |
-|| 1.7 | Energy, Work & Power | ❌ | ❌ |
-|| 1.8 | Energy Resources | ❌ | ❌ |
+| 1.1 | Physical Quantities & Measurement | ❌ | ✅ Vernier Caliper, Micrometer |
+| 1.2 | Motion — Kinematics | ✅ Horizontal, Free-fall, Stopping, Advanced VT, Terminal Velocity 🪂 | ❌ |
+| 1.3 | Mass and Weight | ❌ | ✅ Balance & Newtonmeter ⚖️ |
+| 1.4 | Density | ❌ | ✅ Density 📦 |
+| 1.5 | Forces (Hooke's Law) | ❌ | ❌ |
+| 1.6 | Effects of Forces (Moments, Pressure) | ❌ | ✅ Moments & Equilibrium ⚖️ |
+| 1.7 | Energy, Work & Power | ❌ | ❌ |
+| 1.8 | Energy Resources | ❌ | ❌ |
 
-> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี: 📏 Vernier Caliper (Topic 1.1), 🔧 Micrometer Screw Gauge (Topic 1.1), ⚖️ Balance & Newtonmeter (Topic 1.3)
+> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี 21 labs: CH0 (Vernier Caliper 📏, Micrometer 🔧, Balance ⚖️, Vector Addition ➕, Density 📦), CH1 (Motion Graphs 🚗, Newton's Laws 🍎, Moments & Equilibrium ⚖️, Energy ⚡), CH3 (Waves 🌊), CH4 (Electricity ⚡, Magnetism 🧲), CH5 (Nuclear ☢️)
 
 ## 🎯 Features
 
