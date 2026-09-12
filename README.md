@@ -30,6 +30,7 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── CH1_Mechanics_2_Newtons_Laws_Lab.html         ← Newton's Laws 🍎
 │   ├── CH1_Mechanics_5_Moments_Equilibrium_Lab.html  ← Moments & Equilibrium ⚖️ (v2: 3-force scenes, choose-any-pivot, slope topple)
 │   ├── CH1_Mechanics_6_Energy_Lab.html               ← Energy ⚡
+│   ├── CH2_Thermal_3_Heat_Transfer_Lab.html          ← Heat Transfer 🌡️ (Conduction · Convection · Radiation · Application)
 │   ├── CH3_Wave_1_Introduction_to_Waves_v1.html      ← Introduction to Waves 🌊
 │   ├── CH3_Wave_2_Refraction_of_Light.html           ← Refraction of Light 🔦
 │   ├── CH3_Wave_3_Dispersion_of_Light.html           ← Dispersion of Light 🌈
@@ -89,7 +90,7 @@ python3 -m playwright install chromium
 | 1.7 | Energy, Work & Power | ❌ | ❌ |
 | 1.8 | Energy Resources | ❌ | ❌ |
 
-> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี 21 labs: CH0 (Vernier Caliper 📏, Micrometer 🔧, Balance ⚖️, Vector Addition ➕, Density 📦), CH1 (Motion Graphs 🚗, Newton's Laws 🍎, Moments & Equilibrium ⚖️, Energy ⚡), CH3 (Waves 🌊), CH4 (Electricity ⚡, Magnetism 🧲), CH5 (Nuclear ☢️)
+> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี 22 labs: CH0 (Vernier Caliper 📏, Micrometer 🔧, Balance ⚖️, Vector Addition ➕, Density 📦), CH1 (Motion Graphs 🚗, Newton's Laws 🍎, Moments & Equilibrium ⚖️, Energy ⚡), CH2 (Heat Transfer 🌡️), CH3 (Waves 🌊), CH4 (Electricity ⚡, Magnetism 🧲), CH5 (Nuclear ☢️)
 
 ## 🎯 Features
 
@@ -99,6 +100,7 @@ python3 -m playwright install chromium
   - 📏 **Vernier Caliper** — 3 modes (Simulate/Practice/Quiz), 3 difficulty levels, zoom double-click, zero error ±5 div, workpiece clamping
   - 🔧 **Micrometer Screw Gauge** — 0–25 mm, LC 0.01 mm, drag-to-rotate thimble, sleeve + thimble scale, magnifier overlay, tutorial animation, practice/exam mode, 3 themes
   - ⚖️ **Balance & Newtonmeter (Mass vs Weight)** — ลาก masses (100 g–2 kg, ซ้อนได้ 5 ชิ้น) ขึ้นเครื่องชั่งดิจิทัล (g/kg) หรือแขวน spring balance (N), 4 ดาว (Earth/Moon/Mars/Jupiter), Simple (g=10, Earth เท่านั้น) ⇄ Location (g จริงต่อดาว), Newtonmeter range 0–5/0–10/Auto + over-range warning, force arrow W=mg, 3 modes (Simulate/Practice/Quiz)
+  - 🌡️ **Heat Transfer Lab — Thermal** — 4 modes (Conduction: molecular lattice + free electrons toggle + rods experiment with 🌡️ IR thermometer; Convection: wall-AC / floor-heater rooms · smoke box · dye beaker · sea & land breeze; Radiation: Leslie's cube + absorption/emission races + vacuum flask with atomic reasoning; Application: 7 real objects with colour-coded mechanism breakdown), Layout B 70/30, zoom ×2 + hold-drag pan
 - **SUVAT proofs**: 5 visual area proofs (v=u+at, s=ut+½at², s=vt-½at², s=½(u+v)t, v²=u²+2as)
 - **Non-uniform scenarios**: Terminal Velocity 🪂, Rocket Launch 🚀, Harmonic Motion 〰️ with gradient & trapezoidal analysis
 - **2-phase Skydive simulation**: Freefall (tanh model, a=g→Vt₁) + Parachute deployment (drag multiplier→Vt₂) with force arrows (Weight ↓ / Drag ↑), animated skydiver, moving clouds, airplane background
