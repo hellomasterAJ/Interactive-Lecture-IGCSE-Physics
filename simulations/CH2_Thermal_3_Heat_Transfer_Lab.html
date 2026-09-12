@@ -285,7 +285,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">🌡️ Heat Transfer Lab</span> <span class="badge-top" id="badge">v1.1.3</span></h1>
+    <h1><span class="t">🌡️ Heat Transfer Lab</span> <span class="badge-top" id="badge">v1.1.8</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -472,6 +472,12 @@ function smooth(u) { u = clamp(u, 0, 1); return u * u * (3 - 2 * u); }
 function withA(col, a) {
   var c = rgbOf(col);
   return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')';
+}
+/* blend two colours — used for the lit and shaded faces of a figure     */
+function mixCol(c1, c2, t) {
+  var A = rgbOf(c1), B = rgbOf(c2);
+  return 'rgb(' + Math.round(A[0] + (B[0] - A[0]) * t) + ',' + Math.round(A[1] + (B[1] - A[1]) * t) +
+    ',' + Math.round(A[2] + (B[2] - A[2]) * t) + ')';
 }
 function $(id) { return document.getElementById(id); }
 /* deterministic pseudo-noise, so a scene looks the same every time it opens */
@@ -1002,14 +1008,20 @@ var FIG_STYLE = {
   /* thin outline doodle with a big round head and a face — friendly, good
      when the figure is a character in the scene rather than a symbol       */
   doodle: {
-    headR: .105, sy: .255, hy: .560, ky: .780, hipW: .045, shoulderW: 0,
+    headR: .105, sy: .255, hy: .560, hipW: .045, shoulderW: 0,
     upper: .155, fore: .150, thigh: .225, shin: .220,
     lineW: .022, torsoW: 0, headFill: false, face: true
   },
-  /* the classic signage pictogram: small round head, solid capsule limbs   */
+  /* the classic signage pictogram: small round head, solid body. The body is
+     a rounded RECTANGLE, not a capsule — a capsule's domed top lets the arm
+     roots poke out as knobs above the shoulders and its domed bottom leaves
+     a notch where the legs join. Flat shoulders and a flat hip line, with a
+     joint capsule at each, give one continuous silhouette. Legs are 41% of
+     the height — shorter than a real figure's, which is what keeps it
+     reading as a sign rather than a person.                                */
   pictogram: {
-    headR: .082, sy: .215, ay: .240, hy: .545, ky: .775, hipW: .062, shoulderW: .100,
-    upper: .145, fore: .142, thigh: .230, shin: .225,
+    headR: .082, sy: .192, hy: .5905, hipW: .062, shoulderW: .100,
+    upper: .155, fore: .150, thigh: .207, shin: .2025,
     lineW: .050, torsoW: .150, headFill: true, face: false
   },
   /* the cuddly one: a chubby cartoon is NOT the pictogram at a heavier line
@@ -1019,11 +1031,22 @@ var FIG_STYLE = {
      Legs are thigh + shin = 1 − hy exactly, so a standing figure is still
      precisely the height it was asked for.                                 */
   chunky: {
-    headR: .112, sy: .250, ay: .282, hy: .620, ky: .812, hipW: .074, shoulderW: .125,
-    upper: .180, fore: .175, thigh: .195, shin: .185,
+    headR: .112, sy: .252, hy: .620, hipW: .074, shoulderW: .125,
+    upper: .165, fore: .160, thigh: .195, shin: .185,
     lineW: .095, torsoW: .240, headFill: true, face: false
+  },
+  /* the cuddly one with light and shade. A flat silhouette hides which arm
+     is in front: both are the same white. Here every limb is lit from the
+     upper left and the FAR arm and leg are painted darker, so the pose
+     reads in depth. Any style can be shaded with {shade:true}.            */
+  shaded: {
+    headR: .112, sy: .252, hy: .620, hipW: .074, shoulderW: .125,
+    upper: .165, fore: .160, thigh: .195, shin: .185,
+    lineW: .095, torsoW: .240, headFill: true, face: false, shade: true
   }
 };
+/* the light: a unit vector pointing TOWARDS the light source              */
+var FIG_LIGHT = { x: -0.55, y: -0.84 };
 /* Each pose gives four limbs as [upper-segment angle, lower-segment angle],
    plus an optional torso lean and head tilt. "near" is the arm/leg on the
    side the figure faces, "far" the other one.                             */
@@ -1043,16 +1066,18 @@ var FIG_POSE = {
 };
 /* figure(x, y, h, o) — (x, y) is the point on the GROUND the figure stands
    on, h its height in px. o: {style, pose, col, face:+1|-1, lookAt:{x,y},
-   smile:bool, alpha, lw}. Whatever the pose does with the legs, the lowest
-   foot is placed on that ground line, so a sitting or running figure never
-   floats. Returns the boxes a scene needs: the whole figure, the head and
-   both hands.                                                             */
+   smile:bool, shade:bool, shadow:bool, alpha, lw}. Whatever the pose does
+   with the legs, the lowest foot is placed on that ground line, so a
+   sitting or running figure never floats. Returns the boxes a scene needs:
+   the whole figure, the head and both hands.                              */
 function figure(x, y, h, o) {
   o = o || {};
   var st = FIG_STYLE[o.style] || FIG_STYLE.pictogram;
   var ps = FIG_POSE[o.pose] || FIG_POSE.stand;
   var f = o.face === -1 ? -1 : 1;                   /* +1 faces right       */
   var col = o.col || C.ink, lean = (ps.lean || 0) * Math.PI / 180;
+  var lw = (o.lw || st.lineW) * h;
+  var shade = o.shade != null ? o.shade : !!st.shade;
   /* local frame: origin at the ground point, y upwards is negative         */
   var rad = function (a) { return a * Math.PI / 180 + lean; };
   var seg = function (from, a, len) {
@@ -1078,15 +1103,25 @@ function figure(x, y, h, o) {
     var a1 = base + side * bend;
     return [root, { x: root.x + Math.sin(a1) * l1, y: root.y + Math.cos(a1) * l1 }, target];
   };
-  var sw = st.shoulderW * h * f / 2, hw = st.hipW * h * f;
-  var ay = (st.ay || st.sy);
-  var shoulder = { x: neck.x + Math.sin(lean) * (st.sy - ay) * h * f, y: neck.y + (ay - st.sy) * h };
+  /* the arms hang from a shoulder joint set just below the flat top of the
+     body, computed from the line weight so it is flush in EVERY style     */
+  var joint = lw * 0.62;
+  /* the arms hang from the EDGE of the body, never from its middle: on a
+     wide chunky torso a root set at shoulderW/2 makes both arms lie across
+     the chest and the near/far read is lost whatever the draw order       */
+  var sw = Math.max(st.shoulderW / 2, (st.torsoW || 0) / 2 - (st.lineW || 0) * .35) * h * f;
+  /* a stickman is MINIMAL: the legs come straight out from under the body,
+     with no hip block sticking out of its sides. So the leg roots are
+     tucked in far enough that the round cap of the leg lands exactly on
+     the torso edge, and there is no hip capsule at all                    */
+  var hwU = st.torsoW ? Math.min(st.hipW, st.torsoW / 2 - (st.lineW || 0) * .5) : st.hipW;
+  var hw = hwU * h * f;
+  var down = { x: Math.sin(lean) * f, y: Math.cos(lean) };
+  var shoulder = { x: neck.x + down.x * joint, y: neck.y + down.y * joint };
   var armRoot = function (sgn) { return { x: shoulder.x + sgn * sw, y: shoulder.y }; };
   var armF = limb(armRoot(-1), ps.armFar, st.upper, st.fore);
   var armN;
   if (ps.armNearTo === 'chin') {
-    /* beside the jaw: from the head's own radius, so it lands right in
-       every style rather than only in the one it was tuned for           */
     var chin = { x: (st.headR * .62) * h * f, y: (st.headR * 2.05 - 1) * h };
     armN = ik(armRoot(1), chin, st.upper * h, st.fore * h, -1 * f);
   } else armN = limb(armRoot(1), ps.armNear, st.upper, st.fore);
@@ -1094,56 +1129,111 @@ function figure(x, y, h, o) {
   var legN = limb({ x: hip.x + hw, y: hip.y }, ps.legNear, st.thigh, st.shin);
   /* stand the pose on the ground: shift so the lowest foot sits on y = 0   */
   var dy = -Math.max(legF[2].y, legN[2].y);
-  var all = [hip, neck, headC].concat(armF, armN, legF, legN);
+  var all = [hip, neck, headC, shoulder].concat(armF, armN, legF, legN);
   all.forEach(function (p) { p.x += x; p.y += y + dy; });
 
-  var lw = (o.lw || st.lineW) * h;
-  var stroke = function (pts, width, cap) {
-    CX.save();
-    CX.strokeStyle = col; CX.lineWidth = width; CX.lineCap = cap || 'round'; CX.lineJoin = 'round';
+  /* ---- paint ---------------------------------------------------------- */
+  /* the far side is painted darker AND with a flatter highlight, so no far
+     limb can ever out-shine a near one and the depth never reads inverted */
+  var farCol = shade ? mixCol(col, '#000000', .42) : col;
+  var segPaint = function (p0, p1, w, base, far) {
+    if (!shade) return base;
+    var vx = p1.x - p0.x, vy = p1.y - p0.y, L = Math.hypot(vx, vy) || 1;
+    var px = -vy / L, py = vx / L;                  /* across the limb      */
+    var s = (px * FIG_LIGHT.x + py * FIG_LIGHT.y) >= 0 ? 1 : -1;
+    var mx = (p0.x + p1.x) / 2, my = (p0.y + p1.y) / 2;
+    var g = CX.createLinearGradient(mx + px * s * w / 2, my + py * s * w / 2,
+      mx - px * s * w / 2, my - py * s * w / 2);
+    g.addColorStop(0, mixCol(base, '#ffffff', far ? .06 : .38));
+    g.addColorStop(.5, base);
+    g.addColorStop(1, mixCol(base, '#000000', far ? .26 : .30));
+    return g;
+  };
+  var strokeLimb = function (pts, w, base, far) {
+    for (var i = 1; i < pts.length; i++) {
+      CX.save();
+      CX.strokeStyle = segPaint(pts[i - 1], pts[i], w, base, far);
+      CX.lineWidth = w; CX.lineCap = 'round'; CX.lineJoin = 'round';
+      CX.beginPath(); CX.moveTo(pts[i - 1].x, pts[i - 1].y); CX.lineTo(pts[i].x, pts[i].y); CX.stroke();
+      CX.restore();
+    }
+  };
+  /* a near limb crossing the body needs an edge or it melts into it       */
+  var rimLimb = function (pts, w) {
+    if (!shade) return;
+    CX.save(); CX.strokeStyle = mixCol(col, '#000000', .52);
+    CX.lineWidth = w * 1.17; CX.lineCap = 'round'; CX.lineJoin = 'round';
     CX.beginPath(); CX.moveTo(pts[0].x, pts[0].y);
     for (var i = 1; i < pts.length; i++) CX.lineTo(pts[i].x, pts[i].y);
     CX.stroke(); CX.restore();
   };
   CX.save();
   if (o.alpha != null) CX.globalAlpha = o.alpha;
-  /* far side, torso, near side, head — the way a body overlaps itself      */
-  stroke(legF, lw); stroke(armF, lw);
+  /* a soft contact shadow sells the light direction                        */
+  if (shade && o.shadow !== false) {
+    CX.save(); CX.fillStyle = 'rgba(0,0,0,' + (LIGHT ? .16 : .30) + ')';
+    CX.beginPath(); CX.ellipse(x + h * .03, y + lw * .18, h * .21, h * .028, 0, 0, 7); CX.fill(); CX.restore();
+  }
+  /* STRICT z-order, so the body always separates the two sides:
+     far leg → far arm → body → near leg → near arm → head.
+     There are no joint capsules: every limb
+     root is tucked inside the torso outline, so a capsule would either be
+     invisible or, worse, stick out of the body as a shoulder knob or a
+     hip block — and a stickman is minimal, a silhouette that reads as a
+     POSE, not a human figure with every part modelled.                    */
+  strokeLimb(legF, lw, farCol, true); strokeLimb(armF, lw, farCol, true);
   if (st.torsoW) {
-    /* a capsule whose round caps land exactly on the neck and the hips, so
-       the shoulders never swallow the head                                */
-    var vx = hip.x - neck.x, vy = hip.y - neck.y, L = Math.hypot(vx, vy) || 1, k = st.torsoW * h / 2 / L;
-    stroke([{ x: neck.x + vx * k, y: neck.y + vy * k }, { x: hip.x - vx * k, y: hip.y - vy * k }], st.torsoW * h);
-  } else stroke([neck, hip], lw);
-  stroke(legN, lw); stroke(armN, lw);
-  CX.beginPath(); CX.arc(headC.x, headC.y, st.headR * h, 0, 7);
-  if (st.headFill) { CX.fillStyle = col; CX.fill(); }
-  else {
+    var tw = st.torsoW * h;
+    CX.save();
+    CX.translate(hip.x, hip.y); CX.rotate(lean * f);
+    if (shade) {
+      var g = CX.createLinearGradient(-tw / 2, 0, tw / 2, 0);
+      g.addColorStop(0, mixCol(col, '#ffffff', .30)); g.addColorStop(.55, col);
+      g.addColorStop(1, mixCol(col, '#000000', .26));
+      CX.fillStyle = g;
+    } else CX.fillStyle = col;
+    rr(-tw / 2, -spine, tw, spine, tw * .34); CX.fill();
+    CX.restore();
+  } else strokeLimb([neck, hip], lw, col);
+  rimLimb(legN, lw); strokeLimb(legN, lw, col);
+  rimLimb(armN, lw); strokeLimb(armN, lw, col);
+  /* the head */
+  var hr = st.headR * h;
+  CX.beginPath(); CX.arc(headC.x, headC.y, hr, 0, 7);
+  if (st.headFill) {
+    if (shade) {
+      var rg = CX.createRadialGradient(headC.x + FIG_LIGHT.x * hr * .45, headC.y + FIG_LIGHT.y * hr * .45,
+        hr * .12, headC.x, headC.y, hr * 1.15);
+      rg.addColorStop(0, mixCol(col, '#ffffff', .40)); rg.addColorStop(.55, col);
+      rg.addColorStop(1, mixCol(col, '#000000', .30));
+      CX.fillStyle = rg;
+    } else CX.fillStyle = col;
+    CX.fill();
+  } else {
     CX.fillStyle = withA(C['graph-bg'], .92); CX.fill();
     CX.strokeStyle = col; CX.lineWidth = lw * .95; CX.stroke();
   }
   /* a doodle gets a face; the eyes look wherever the scene points them     */
   if (st.face && o.face !== 'blank') {
-    var r = st.headR * h, tilt = (ps.headTilt || 0) * Math.PI / 180;
-    var ex = r * .36, ey = -r * .10, pr = Math.max(1.5, r * .14), dx = r * .10 * f, dy2 = 0;
+    var tilt = (ps.headTilt || 0) * Math.PI / 180;
+    var ex = hr * .36, ey = -hr * .10, pr = Math.max(1.5, hr * .14), ddx = hr * .10 * f, ddy = 0;
     if (o.lookAt) {
       var lx = o.lookAt.x - headC.x, ly = o.lookAt.y - headC.y, LL = Math.hypot(lx, ly) || 1;
-      dx = lx / LL * r * .18; dy2 = ly / LL * r * .18;
+      ddx = lx / LL * hr * .18; ddy = ly / LL * hr * .18;
     }
     CX.save(); CX.translate(headC.x, headC.y); CX.rotate(tilt);
-    dot(-ex + dx, ey + dy2, pr, col); dot(ex + dx, ey + dy2, pr, col);
+    dot(-ex + ddx, ey + ddy, pr, col); dot(ex + ddx, ey + ddy, pr, col);
     CX.strokeStyle = col; CX.lineWidth = Math.max(1.3, lw * .6); CX.lineCap = 'round';
     CX.beginPath();
-    if (o.smile === false) CX.arc(dx * .4, r * .92, r * .45, -Math.PI * .80, -Math.PI * .20);
-    else CX.arc(dx * .4, r * .16, r * .54, Math.PI * .20, Math.PI * .80);
+    if (o.smile === false) CX.arc(ddx * .4, hr * .92, hr * .45, -Math.PI * .80, -Math.PI * .20);
+    else CX.arc(ddx * .4, hr * .16, hr * .54, Math.PI * .20, Math.PI * .80);
     CX.stroke(); CX.restore();
   }
   CX.restore();
   var xs = all.map(function (p) { return p.x; }), ys = all.map(function (p) { return p.y; });
   var x0 = Math.min.apply(null, xs) - lw, x1 = Math.max.apply(null, xs) + lw;
-  return { x: x0, y: headC.y - st.headR * h - lw, w: x1 - x0,
-    h: (y + lw) - (headC.y - st.headR * h - lw),
-    head: { x: headC.x, y: headC.y, r: st.headR * h },
+  return { x: x0, y: headC.y - hr - lw, w: x1 - x0, h: (y + lw) - (headC.y - hr - lw),
+    head: { x: headC.x, y: headC.y, r: hr },
     handNear: armN[2], handFar: armF[2], neck: neck, hip: hip };
 }
 
@@ -2141,6 +2231,136 @@ scene(3, 'flask', {
   data: function () { var L = flaskLoss(), P = L.cond + L.rad + L.top; return [['gap', V('vac') ? 'vacuum — stops conduction & convection' : 'air — conducts and convects'], ['walls', V('silver') ? 'silvered — reflect IR back' : 'plain — radiate out'], ['top', V('stopper') ? 'stopper — stops convection & evaporation' : 'open — hot air escapes'], ['loss: conduction+convection', fmt(L.cond, 1) + ' W'], ['loss: radiation', fmt(L.rad, 1) + ' W'], ['loss: out of the top', fmt(L.top, 1) + ' W'], ['total', fmt(P, 1) + ' W'], ['85 → 55 °C takes', (FLASK.m * FLASK.c * 30 / P > 3600 ? fmt(FLASK.m * FLASK.c * 30 / P / 3600, 1) + ' h' : fmt(FLASK.m * FLASK.c * 30 / P / 60, 0) + ' min')]]; },
   dataGraph: function () { return panelGraph('pgFlask', function (ctx, box) { var L = flaskLoss(); drawBars(ctx, box, [{ name: 'cond+conv', val: L.cond, col: C.cond, lab: fmt(L.cond, 1) + ' W' }, { name: 'radiation', val: L.rad, col: C.rad, lab: fmt(L.rad, 1) + ' W' }, { name: 'top', val: L.top, col: C.conv, lab: fmt(L.top, 1) + ' W' }], { title: 'loss rate by route / W (scale fixed at 60 W)', max: 60 }); }); },
   info: function () { return steps('The vacuum flask — one layer per mechanism', ['<b>Vacuum between the two glass walls:</b> no particles, so no conduction and no convection across the gap.', '<b>Silvered (shiny) walls:</b> the inner surface is a poor emitter and the outer surface of the inner wall reflects infrared back into the drink — radiation is cut.', '<b>Stopper</b> (plastic or cork, poor conductors): stops convection currents and evaporation out of the top.', '<b>Glass</b> walls themselves are poor conductors, and the thin neck keeps conduction along the glass small.']) + '<div class="note"><b>Bridge to Application mode:</b> every good design either helps a mechanism (fins, black plates) or blocks one (trapped air, silvering, vacuum).</div>'; }
+});
+
+/* ---------- 3.5 Earth's radiation balance & the greenhouse effect ------ */
+/* a simplified "single-layer atmosphere" energy-balance model: the surface
+   emits infrared Es; a fraction a of it is absorbed by the atmosphere,
+   which re-emits half up (to space) and half down (back radiation); the
+   rest of Es escapes straight through the "atmospheric window". Balance at
+   the top of the atmosphere (what escapes to space = what arrives from the
+   Sun) fixes Es from a, and Es fixes the equilibrium surface temperature
+   through T ∝ Es^¼. a = 0 reproduces the airless-Moon figure of −18 °C;
+   a ≈ 0.77 reproduces Earth's real average of +15 °C.                    */
+var GH_LEVELS = {
+  none: { a: 0.00, label: 'no atmosphere' },
+  natural: { a: 0.77, label: 'natural greenhouse effect' },
+  enhanced: { a: 0.80, label: 'enhanced greenhouse effect' }
+};
+function ghA(level) { return (GH_LEVELS[level] || GH_LEVELS.natural).a; }
+function ghEs(a) { return 200 / (2 - a); }
+function ghDirect(a) { return ghEs(a) * (1 - a); }
+function ghBack(a) { return 100 * a / (2 - a); }
+function ghAtmUp(a) { return 100 * a / (2 - a); }
+function ghTemp(a) { return 255 * Math.pow(ghEs(a) / 100, 0.25) - 273; }
+scene(3, 'greenhouse', {
+  label: '🌍 Earth\'s Balance',
+  title: 'Radiation — Earth\'s radiation balance & the greenhouse effect',
+  sub: 'shortwave sunlight in · infrared out · greenhouse gases send some of it back down',
+  ctrl: [{ type: 'pills', key: 'level', label: 'Atmosphere', opts: [['none', 'no atmosphere'], ['natural', 'natural greenhouse'], ['enhanced', 'enhanced (extra CO₂)']], def: 'natural' }],
+  hint: 'switch the atmosphere to see the surface temperature the balance settles at · double-click to zoom ×2',
+  draw: function () {
+    var t = S.t, lvl = V('level'), a = ghA(lvl);
+    var Es = ghEs(a), direct = ghDirect(a), back = ghBack(a), atmUp = ghAtmUp(a), T = ghTemp(a);
+    prog(30);
+    var X0 = 30, X1 = 560, spaceY = 30, bandY0 = 108, bandY1 = 218, groundY0 = 232, groundY1 = 298;
+    var CX0 = 760, i;
+    /* space: a few fixed stars */
+    for (i = 0; i < 16; i++) dot(X0 + hash(i, 21) * (X1 - X0), spaceY + 4 + hash(i, 22) * (bandY0 - spaceY - 10), 1.2, withA(C.text, .5));
+    /* the Sun */
+    var sx = 80, sy = spaceY + 34;
+    CX.save(); CX.globalAlpha = .18; CX.fillStyle = C.sun; CX.beginPath(); CX.arc(sx, sy, 30, 0, 7); CX.fill(); CX.restore();
+    dot(sx, sy, 16, C.sun);
+    /* the atmosphere band — invisible with no atmosphere, tinted and
+       seeded with greenhouse-gas molecules in proportion to how much
+       outgoing infrared it absorbs                                       */
+    if (a > 0) {
+      fillRR(X0, bandY0, X1 - X0, bandY1 - bandY0, 8, withA(C.blue, .10 + .32 * a), withA(C.blue, .5));
+      var n = Math.round(46 * a);
+      for (i = 0; i < n; i++) dot(X0 + 14 + hash(i, 1) * (X1 - X0 - 28), bandY0 + 12 + hash(i, 2) * (bandY1 - bandY0 - 24), 2.6, withA(C.green, .8));
+    } else {
+      CX.save(); CX.setLineDash([4, 4]); CX.strokeStyle = withA(C['text-dim'], .4); CX.lineWidth = 1;
+      rr(X0, bandY0, X1 - X0, bandY1 - bandY0, 8); CX.stroke(); CX.restore();
+    }
+    /* the ground, coloured by its equilibrium temperature */
+    fillRR(X0, groundY0, X1 - X0, groundY1 - groundY0, 8, tcol(tu(T, -20, 20), .9), withA(C.ink, .6));
+    txt('Earth\'s surface', X0 + 16, groundY0 + 26, 12, C['black-surf'], 'left', 700);
+    mtxt(fmt(T, 0) + ' °C', X1 - 16, groundY0 + 26, 14, C['black-surf'], 'right', 700);
+    /* shortwave sunlight in — always the full 100 %, passing straight
+       through the atmosphere (it is nearly transparent to visible light) */
+    var swX = 150;
+    for (i = 0; i < 4; i++) waveArrow(sx + 12 + i * 5, sy + 26, swX - 30 + i * 24, groundY0 - 2, C.sun, t, { amp: 2.2, lam: 6, w: 1.8, speed: 90 });
+    /* infrared leaving the surface: part escapes straight through the
+       "atmospheric window", part is absorbed by the greenhouse gases     */
+    var dirX = 260, absX = 370, upX = 480;
+    if (direct > 0) for (i = 0; i < 3; i++) waveArrow(dirX - 16 + i * 16, groundY0 - 2, dirX - 16 + i * 16, spaceY + 6, C.rad, t, { amp: 3, lam: 13, w: 1.8, alpha: .3 + .6 * (direct / 100) });
+    if (a > 0) {
+      /* absorbed partway up, inside the band — a visibly different column
+         from where the atmosphere's own re-emission climbs to space, so
+         "absorbed" never looks like it simply passed straight through   */
+      for (i = 0; i < 3; i++) waveArrow(absX - 16 + i * 16, groundY0 - 2, absX - 16 + i * 16, (bandY0 + bandY1) / 2, C.rad, t, { amp: 3, lam: 13, w: 1.8, alpha: .35 + .55 * a });
+      /* the atmosphere re-emits what it absorbed: half up to space,
+         half back down to the surface — the greenhouse effect itself   */
+      for (i = 0; i < 3; i++) waveArrow(upX - 16 + i * 16, bandY0 - 2, upX - 16 + i * 16, spaceY + 6, C.rad, t, { amp: 3, lam: 13, w: 1.8, alpha: .35 + .55 * a });
+      for (i = 0; i < 4; i++) waveArrow(60 + i * 130, bandY1 + 2, 60 + i * 130, groundY0 - 2, C.violet, t, { amp: 2.4, lam: 10, w: 2, alpha: .5 + .45 * a, speed: 90 });
+    }
+    /* captions, stacked in the gutter between the diagram and the cards
+       so none of them ever crosses the diagram or another caption        */
+    var lx = CX0 - 175, ly0 = 108;
+    lab('sunlight in: 100%', lx, ly0, 'left', swX, (sy + groundY0) / 2, C.sun);
+    lab('direct to space: ' + fmt(direct, 0) + '%', lx, ly0 + 40, 'left', dirX, spaceY + 60, C.rad);
+    lab('absorbed by GHGs: ' + fmt(Es - direct, 0) + '%', lx, ly0 + 80, 'left', absX, (bandY0 + bandY1) / 2, C.rad);
+    lab('atmosphere out: ' + fmt(atmUp, 0) + '%', lx, ly0 + 120, 'left', upX, bandY0 + 4, C.rad);
+    lab('back radiation: ' + fmt(back, 0) + '%', lx, ly0 + 160, 'left', 190, bandY1 + 8, C.violet);
+    /* the energy budget, as a bar chart, and the plain-English "why" —
+       both draggable cards, so nothing is fixed on top of the diagram   */
+    dcard('budget', CX0, 60, 380, 272, null, function () {
+      var items = [
+        { name: 'sun in', val: 100, col: C.sun, lab: '100' },
+        { name: 'surface', val: Es, col: C.rad, lab: fmt(Es, 0) },
+        { name: 'direct', val: direct, col: withA(C.rad, .55), lab: fmt(direct, 0) },
+        { name: 'atm. out', val: atmUp, col: C.blue, lab: fmt(atmUp, 0) },
+        { name: 'back rad.', val: back, col: C.violet, lab: fmt(back, 0) }
+      ];
+      drawBars(CX, { x: CX0 + 10, y: 96, w: 360, h: 190 }, items, { title: 'energy budget (% of incoming sunlight)', max: 200 });
+      wrap('some flows exceed 100% — energy recycles between surface & atmosphere before finally escaping to space', CX0 + 14, 96 + 190 + 20, 356, 9, C['text-muted'], 12, 500);
+    });
+    dcard('why', CX0, 352, 380, 240, 'WHY THIS SCENARIO IS ' + fmt(T, 0) + ' °C', function () {
+      var txt1 = lvl === 'none'
+        ? 'With nothing to absorb or return the surface\'s infrared, all of it escapes directly to space. Balance is struck at the coldest of the three temperatures.'
+        : lvl === 'natural'
+          ? 'Back radiation from the natural level of greenhouse gases adds to the sunlight the surface receives, so the surface runs hotter — this is why Earth is habitable rather than frozen.'
+          : 'Extra CO₂ absorbs and returns even more outgoing infrared than the natural case, so the balance settles a little hotter still — the enhanced greenhouse effect.';
+      wrap(txt1, CX0 + 14, 392, 352, 10.5, C['text-dim'], 15);
+      mtxt('equilibrium temperature', CX0 + 14, 482, 10.5, C['text-muted'], 'left', 600);
+      mtxt(fmt(T, 0) + ' °C', CX0 + 366, 482, 18, tink(clamp(tu(T, -20, 20), 0, 1)), 'right', 800);
+      if (lvl === 'enhanced') { var dT = T - ghTemp(GH_LEVELS.natural.a); txt('+' + fmt(dT, 1) + ' °C above the natural greenhouse effect', CX0 + 14, 508, 9.5, C.violet, 'left', 600); }
+    });
+  },
+  data: function () {
+    var lvl = V('level'), a = ghA(lvl);
+    return [['scenario', GH_LEVELS[lvl].label], ['incoming sunlight', '100 %'], ['surface emits (infrared)', fmt(ghEs(a), 0) + ' %'],
+      ['escapes directly to space', fmt(ghDirect(a), 0) + ' %'], ['atmosphere → space', fmt(ghAtmUp(a), 0) + ' %'],
+      ['back radiation → surface', fmt(ghBack(a), 0) + ' %'], ['equilibrium surface temperature', fmt(ghTemp(a), 0) + ' °C']];
+  },
+  dataGraph: function () {
+    return panelGraph('pgGH', function (ctx, box) {
+      var items = ['none', 'natural', 'enhanced'].map(function (k) {
+        var Tv = ghTemp(GH_LEVELS[k].a);
+        return { name: k, val: Tv + 20, col: k === V('level') ? C.accent : C.rad, lab: fmt(Tv, 0) + '°C' };
+      });
+      drawBars(ctx, box, items, { title: 'equilibrium surface temperature by scenario', max: 40 });
+    });
+  },
+  info: function () {
+    return steps('Earth\'s radiation balance and the greenhouse effect', [
+      '<b>Energy balance:</b> for a planet\'s average temperature to stay steady, the rate it absorbs energy from the Sun (mostly visible, <b>shortwave</b>) must equal the rate it radiates energy back to space (infrared, <b>longwave</b> — Earth is far cooler than the Sun, so it radiates at a much longer wavelength).',
+      'With <b>no atmosphere</b> (like the Moon), the surface\'s own infrared goes straight to space, and balance is struck at about <b>−18 °C</b> — well below freezing.',
+      '<b>Greenhouse gases</b> (water vapour, CO₂, methane, ...) are mostly transparent to incoming sunlight but absorb outgoing infrared, then re-emit it in all directions — including back down to the surface (<b>back radiation</b>).',
+      'That back radiation adds to the sunlight the surface already receives, so the surface must run hotter — and emit more infrared — before enough escapes from the top of the atmosphere to balance the Sun again. This <b>natural greenhouse effect</b> keeps Earth near <b>+15 °C</b>, not −18 °C.',
+      'Burning fossil fuels adds extra CO₂ (and methane), so the atmosphere absorbs and returns even more outgoing infrared. The balance then settles at a still higher surface temperature — the <b>enhanced greenhouse effect</b>, the physical mechanism behind human-caused global warming.'
+    ]) + '<div class="note"><b>The key idea:</b> greenhouse gases do not trap heat inside a sealed box — they change the temperature at which the balance is struck, by controlling how much outgoing infrared leaves directly versus how much is recycled back to the surface first.</div>';
+  }
 });
 
 /* ═══════════════════════════ MODE 4 — APPLICATION ══════════════════════════ */
