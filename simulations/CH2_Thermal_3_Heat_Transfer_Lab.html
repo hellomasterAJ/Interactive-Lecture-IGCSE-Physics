@@ -285,7 +285,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">🌡️ Heat Transfer Lab</span> <span class="badge-top" id="badge">v1.1.8</span></h1>
+    <h1><span class="t">🌡️ Heat Transfer Lab</span> <span class="badge-top" id="badge">v1.1.9</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -2005,54 +2005,135 @@ function cup(x, y, w, h, s, T, label) {
 }
 
 /* ---------- 3.1 Leslie's cube ------------------------------------------ */
-/* the cube sits nearer the middle of the free space on the left; the two
-   cards own the right-hand column, so nothing overlaps at the start      */
-var LES = { cx: 400, cy: 300, s: 170, Th: 90, det: 120, cardX: 700 };
+/* Drawn as the bench experiment actually looks, not as a plan: a cube seen
+   slightly from the side, its right-hand face turned to a thermopile on a
+   stand that is wired to a galvanometer. A small plan inset says which
+   painted face is which — click one to turn that side to the detector.   */
+var LES = {
+  Th: 90, cardX: 700,
+  fx: 118, fy: 352, fs: 152,          /* the cube's front face             */
+  dxo: 56, dyo: -38,                  /* the oblique depth offset          */
+  bench: 504,                         /* the bench top                     */
+  mouth: 452,                         /* where the thermopile cone opens   */
+  gx: 566, gw: 104,                   /* the galvanometer on the bench     */
+  px: 104, py: 152, ps: 100, pt: 13   /* the plan inset: origin, side, edge */
+};
+/* fill and outline a polygon (the cube is drawn from three of them)       */
+function poly(pts, fill, edge, lw) {
+  CX.save(); CX.beginPath(); CX.moveTo(pts[0][0], pts[0][1]);
+  for (var i = 1; i < pts.length; i++) CX.lineTo(pts[i][0], pts[i][1]);
+  CX.closePath();
+  if (fill) { CX.fillStyle = fill; CX.fill(); }
+  if (edge) { CX.strokeStyle = edge; CX.lineWidth = lw || 1.3; CX.lineJoin = 'round'; CX.stroke(); }
+  CX.restore();
+}
+function polyBB(pts) {
+  var x0 = pts[0][0], x1 = x0, y0 = pts[0][1], y1 = y0;
+  for (var i = 1; i < pts.length; i++) { x0 = Math.min(x0, pts[i][0]); x1 = Math.max(x1, pts[i][0]); y0 = Math.min(y0, pts[i][1]); y1 = Math.max(y1, pts[i][1]); }
+  return { x: x0, y: y0, w: x1 - x0, h: y1 - y0 };
+}
+/* the painted face of the 3-D cube: matte speckle, or a shiny highlight   */
+function surfFace(pts, s) {
+  var bb = polyBB(pts), i;
+  poly(pts, s.fill(), withA(C.ink, .7), 1.4);
+  CX.save(); CX.beginPath(); CX.moveTo(pts[0][0], pts[0][1]);
+  for (i = 1; i < pts.length; i++) CX.lineTo(pts[i][0], pts[i][1]);
+  CX.closePath(); CX.clip();
+  if (s.shiny) { CX.globalAlpha = .5; CX.fillStyle = C.shiny; CX.fillRect(bb.x + bb.w * .28, bb.y - 12, bb.w * .16, bb.h + 24); }
+  else {
+    CX.globalAlpha = .25; CX.fillStyle = s.fill() === C['black-surf'] ? C.shiny : C.ink;
+    var n = Math.round(bb.w * bb.h / 90);
+    for (i = 0; i < n; i++) CX.fillRect(bb.x + hash(i, 1) * bb.w, bb.y + hash(i, 2) * bb.h, 1.4, 1.4);
+  }
+  CX.restore();
+}
 scene(3, 'leslie', {
   label: '▪️ Leslie\'s Cube',
   title: 'Radiation — Leslie\'s cube (emission from four surfaces)',
-  sub: 'one cube of hot water, four different faces · the detector reads how strongly each face emits',
+  sub: 'one cube of hot water, four painted faces · the thermopile reads how strongly the face in front of it emits',
   ctrl: [
-    { type: 'pills', key: 'aim', label: 'Aim at', opts: [['db', 'dull black'], ['sb', 'shiny black'], ['dw', 'dull white'], ['sw', 'shiny white']], def: 'db' },
+    { type: 'pills', key: 'aim', label: 'Face the detector', opts: [['db', 'dull black'], ['sb', 'shiny black'], ['dw', 'dull white'], ['sw', 'shiny white']], def: 'db' },
     { type: 'toggle', key: 'why', label: 'Atomic view', def: false }
   ],
-  hint: 'click a face to aim the thermopile · Atomic view shows what the surface does · double-click to zoom ×2',
+  hint: 'click a face in the plan view to turn that side to the detector · Atomic view shows what the surface does · double-click to zoom ×2',
   draw: function () {
-    var pb = PB(this), t = S.t, s = LES.s, cx = LES.cx, cy = LES.cy, aim = V('aim'), sf = surfBy(aim);
+    var pb = PB(this), t = S.t, aim = V('aim'), sf = surfBy(aim), i;
+    var idx = 0; SURF.forEach(function (s, k) { if (s.key === aim) idx = k; });
+    var east = SURF[idx], south = SURF[(idx + 1) % 4], west = SURF[(idx + 2) % 4], north = SURF[(idx + 3) % 4];
+    var fx = LES.fx, fy = LES.fy, fs = LES.fs, dx = LES.dxo, dy = LES.dyo, B = LES.bench;
     prog(30);
-    /* plan view of the cube: four faces = four sides of the square */
-    fillRR(cx - s / 2 + 14, cy - s / 2 + 14, s - 28, s - 28, 6, tcol(tu(LES.Th), .85), withA(C.ink, .6));
-    txt('hot water', cx, cy - 6, 12, C['black-surf'], 'center', 700);
-    mtxt(fmt(LES.Th, 0) + ' °C', cx, cy + 14, 12, C['black-surf'], 'center', 700);
-    var faces = { db: { x: cx - s / 2, y: cy - s / 2, w: s, h: 14, v: false, lx: cx + 72, ly: cy - s / 2 - 44, la: 'left', ax: cx, ay: cy - s / 2 - 8, dir: [0, -1] },
-      sb: { x: cx + s / 2 - 14, y: cy - s / 2, w: 14, h: s, v: true, lx: cx + s / 2 + 16, ly: cy + 84, la: 'left', ax: cx + s / 2 + 8, ay: cy, dir: [1, 0] },
-      dw: { x: cx - s / 2, y: cy + s / 2 - 14, w: s, h: 14, v: false, lx: cx + 72, ly: cy + s / 2 + 52, la: 'left', ax: cx, ay: cy + s / 2 + 8, dir: [0, 1] },
-      sw: { x: cx - s / 2, y: cy - s / 2, w: 14, h: s, v: true, lx: cx - s / 2 - 16, ly: cy + 84, la: 'right', ax: cx - s / 2 - 8, ay: cy, dir: [-1, 0] } };
-    pb.faces = faces;
-    SURF.forEach(function (sd) {
-      var f = faces[sd.key];
-      surfPatch(f.x, f.y, f.w, f.h, sd, f.v);
-      plate(sd.name, f.lx, f.ly, 11, aim === sd.key ? C.accent : C['text-dim'], f.la);
-      /* emitted IR: number of wavy arrows ∝ emission */
-      var n = Math.round(1 + 4 * sd.e);
-      for (var i = 0; i < n; i++) {
-        var off = (i - (n - 1) / 2) * 26, L = 40 + 30 * sd.e;
-        var x0 = f.ax + (f.v ? 0 : off), y0 = f.ay + (f.v ? off : 0);
-        waveArrow(x0, y0, x0 + f.dir[0] * L, y0 + f.dir[1] * L, C.rad, t, { amp: 3, lam: 11, w: 1.8, alpha: .35 + .6 * sd.e });
-      }
-      if (aim === sd.key) { CX.save(); CX.strokeStyle = C.accent; CX.lineWidth = 2.5; CX.setLineDash([5, 3]); rr(f.x - 4, f.y - 4, f.w + 8, f.h + 8, 5); CX.stroke(); CX.restore(); }
+    /* the bench, in the same oblique projection as the cube               */
+    poly([[30, B], [634, B], [634 + dx, B + dy], [30 + dx, B + dy]], withA(C.card, .9), withA(C.border, .9), 1.2);
+    fillRR(30, B, 604, 13, 2, C['metal-dk'], withA(C.ink, .5));
+    /* the cube: top face, the face turned to us, and the tested face      */
+    poly([[fx, fy], [fx + dx, fy + dy], [fx + fs + dx, fy + dy], [fx + fs, fy]], withA(C.metal, .5), withA(C.ink, .6));
+    surfFace([[fx, fy], [fx + fs, fy], [fx + fs, fy + fs], [fx, fy + fs]], south);
+    surfFace([[fx + fs, fy], [fx + fs + dx, fy + dy], [fx + fs + dx, fy + fs + dy], [fx + fs, fy + fs]], east);
+    /* a cut-away window: the same hot water touches every face            */
+    var wx = fx + 30, wy = fy + 42, ww = fs - 60, wh = fs - 88;
+    CX.save(); CX.fillStyle = tcol(tu(LES.Th), .92); rr(wx, wy, ww, wh, 6); CX.fill();
+    CX.setLineDash([5, 4]); CX.strokeStyle = withA(C.ink, .85); CX.lineWidth = 1.6; rr(wx, wy, ww, wh, 6); CX.stroke(); CX.restore();
+    txt('hot water', wx + ww / 2, wy + wh / 2 + 5, 12.5, C['black-surf'], 'center', 700);
+    /* stopper and thermometer through the lid                             */
+    var sx = fx + fs / 2 + dx * .55, sy = fy + dy * .55;
+    fillRR(sx - 17, sy - 7, 34, 14, 5, C['metal-dk'], C.metal);
+    thermo(sx + 40, sy + 4, 62, LES.Th);
+    lab('cut away — the water holds all four faces at the same temperature', 34, 556, 'left', 150, 470);
+    /* the tested face, and the infrared it sends to the detector          */
+    var fcy = fy + dy / 2 + fs / 2;
+    lab(east.name + ' — the face being tested', 348, 300, 'left', 322, 348, C.accent);
+    var n = Math.round(1 + 4 * east.e);
+    for (i = 0; i < n; i++) {
+      var yy = fcy + (i - (n - 1) / 2) * 19;
+      waveArrow(fx + fs + dx + 6, yy, LES.mouth - 6, yy, C.rad, t, { amp: 3, lam: 11, w: 1.8, alpha: .35 + .6 * east.e });
+    }
+    /* the thermopile: a cone on a stand, wired to a galvanometer          */
+    var M = LES.mouth, bx = M + 48;
+    poly([[M, fcy - 38], [M, fcy + 38], [bx, fcy + 19], [bx, fcy - 19]], withA(C['metal-dk'], .95), C.metal, 1.4);
+    poly([[M, fcy - 38], [M, fcy + 38], [M + 7, fcy + 34], [M + 7, fcy - 34]], C['black-surf'], withA(C.ink, .6), 1);
+    fillRR(bx, fcy - 22, 42, 44, 6, C['metal-dk'], C.metal, 1.4);
+    line(bx + 21, fcy + 22, bx + 21, B, C.metal, 5);
+    fillRR(bx - 5, B - 6, 52, 10, 3, C['metal-dk'], C.metal);
+    lab('thermopile (the IR detector)', M + 4, 340, 'left', bx + 6, fcy - 26);
+    /* the two leads running to the meter on the bench                     */
+    var gx = LES.gx, gy = 452;
+    CX.save(); CX.strokeStyle = withA(C.accent, .8); CX.lineWidth = 2; CX.lineCap = 'round';
+    [[fcy - 8, gx + 34], [fcy + 6, gx + 58]].forEach(function (w) {
+      CX.beginPath(); CX.moveTo(bx + 42, w[0]); CX.quadraticCurveTo(bx + 86, w[0] + 14, w[1], gy); CX.stroke();
     });
-    /* the thermopile detector, on the aimed side, with a meter */
-    var f = faces[aim], dx = f.ax + f.dir[0] * LES.det, dy = f.ay + f.dir[1] * LES.det;
-    fillRR(dx - 22, dy - 22, 44, 44, 8, C['metal-dk'], C.metal);
-    CX.save(); CX.fillStyle = C['black-surf']; CX.beginPath();
-    var fx = dx - f.dir[0] * 22, fy = dy - f.dir[1] * 22;
-    CX.moveTo(fx + f.dir[1] * 14, fy - f.dir[0] * 14); CX.lineTo(fx - f.dir[0] * 12 + f.dir[1] * 20, fy - f.dir[1] * 12 - f.dir[0] * 20);
-    CX.lineTo(fx - f.dir[0] * 12 - f.dir[1] * 20, fy - f.dir[1] * 12 + f.dir[0] * 20); CX.lineTo(fx - f.dir[1] * 14, fy + f.dir[0] * 14); CX.closePath(); CX.fill(); CX.restore();
-    txt('thermopile', dx, dy + (f.dir[1] === 0 ? -30 : f.dir[1] * 40 + (f.dir[1] < 0 ? 4 : 0)), 9.5, C['text-muted'], 'center', 600);
-    /* the meter: needle eases to the reading */
+    CX.restore();
+    /* the galvanometer                                                    */
+    fillRR(gx, gy, LES.gw, 52, 6, withA(C.card, .95), C.border, 1.5);
+    txt('galvanometer', gx + 52, gy + 15, 9.5, C['text-muted'], 'center', 600);
     if (pb.read == null) pb.read = 0;
     sceneTick(this, function (dt) { pb.read += (sf.e * 100 - pb.read) * Math.min(1, dt * 3); });
+    var gcx = gx + 52, gcy = gy + 46, gr = 26;
+    CX.save(); CX.strokeStyle = withA(C.border, .9); CX.lineWidth = 3; CX.beginPath(); CX.arc(gcx, gcy, gr, Math.PI, 2 * Math.PI); CX.stroke(); CX.restore();
+    var ga = Math.PI + Math.PI * pb.read / 100;
+    line(gcx, gcy, gcx + Math.cos(ga) * (gr - 4), gcy + Math.sin(ga) * (gr - 4), C.accent, 2.5);
+    dot(gcx, gcy, 3, C.accent);
+    /* ── the plan inset: which painted face is where, and click to turn ── */
+    var px = LES.px, py = LES.py, ps = LES.ps, pt = LES.pt;
+    txt('from above · click a face to turn it toward the detector', px, py - 32, 10, C['text-muted'], 'left', 600);
+    CX.save(); CX.fillStyle = tcol(tu(LES.Th), .35); rr(px + pt, py + pt, ps - 2 * pt, ps - 2 * pt, 4); CX.fill(); CX.restore();
+    txt('hot water', px + ps / 2, py + ps / 2 + 4, 8.5, withA(C.ink, .85), 'center', 600);
+    var edges = [
+      { s: north, x: px, y: py, w: ps, h: pt, v: false, lx: px + ps / 2, ly: py - 9, la: 'center' },
+      { s: east, x: px + ps - pt, y: py, w: pt, h: ps, v: true, lx: px + ps + 26, ly: py + ps / 2 + 3, la: 'left' },
+      { s: south, x: px, y: py + ps - pt, w: ps, h: pt, v: false, lx: px + ps / 2, ly: py + ps + 18, la: 'center' },
+      { s: west, x: px, y: py, w: pt, h: ps, v: true, lx: px - 8, ly: py + ps / 2 + 3, la: 'right' }
+    ];
+    pb.hit = edges.map(function (e) { return { k: e.s.key, x: e.x, y: e.y, w: e.w, h: e.h }; });
+    edges.forEach(function (e) {
+      surfPatch(e.x, e.y, e.w, e.h, e.s, e.v);
+      var onE = e.s.key === aim;
+      txt(e.s.name, e.lx, e.ly, 9.5, onE ? C.accent : C['text-dim'], e.la, onE ? 700 : 500);
+    });
+    /* the detector, seen from above, and the accent ring on the tested face */
+    poly([[px + ps + 7, py + ps / 2 - 11], [px + ps + 7, py + ps / 2 + 11], [px + ps + 18, py + ps / 2 + 6], [px + ps + 18, py + ps / 2 - 6]], C['metal-dk'], C.metal, 1.2);
+    CX.save(); CX.strokeStyle = C.accent; CX.lineWidth = 2; CX.setLineDash([4, 3]);
+    rr(px + ps - pt - 3, py - 3, pt + 6, ps + 6, 4); CX.stroke(); CX.restore();
+    /* the meter: the needle eases to the reading                          */
     var cdx = LES.cardX, mx = cdx + 170, my = 246, mr = 84;
     dcard('meter', cdx, 96, 340, 240, 'EMISSION METER', function () {
       CX.save(); CX.strokeStyle = C.border; CX.lineWidth = 6; CX.beginPath(); CX.arc(mx, my, mr, Math.PI, 2 * Math.PI); CX.stroke();
@@ -2064,20 +2145,20 @@ scene(3, 'leslie', {
       mtxt(fmt(pb.read, 0) + ' %', mx, my + 32, 16, C.text, 'center', 700);
       txt('aimed at ' + sf.name, mx, my + 50, 10.5, C.accent, 'center', 600);
     });
-    /* the ranking — or, with Atomic view on, the surface explanation in its place */
+    /* the ranking — or, with Atomic view on, the surface explanation       */
     if (V('why')) dcard('atomic', cdx, 360, 460, 272, 'WHY DULL BLACK BEATS SHINY WHITE', function () { atomicBody(cdx, 360, 460, 272); });
     else dcard('rank', cdx, 360, 460, 200, 'MEASURED ORDER — detector = thermopile', function () {
-      SURF.forEach(function (sd, i) {
-        var on = sd.key === aim, bx = cdx + 14, by = 396 + i * 32;
-        txt((i + 1) + '. ' + sd.name, bx, by + 12, 10.5, on ? C.text : C['text-dim'], 'left', on ? 700 : 500);
-        fillRR(bx + 110, by + 2, 270 * sd.e, 14, 4, withA(C.rad, on ? .95 : .4));
-        mtxt(fmt(sd.e * 100, 0) + ' %', bx + 116 + 270 * sd.e, by + 13, 10, on ? C.rad : C['text-muted'], 'left', 600);
+      SURF.forEach(function (sd, k) {
+        var onS = sd.key === aim, bx2 = cdx + 14, by = 396 + k * 32;
+        txt((k + 1) + '. ' + sd.name, bx2, by + 12, 10.5, onS ? C.text : C['text-dim'], 'left', onS ? 700 : 500);
+        fillRR(bx2 + 110, by + 2, 270 * sd.e, 14, 4, withA(C.rad, onS ? .95 : .4));
+        mtxt(fmt(sd.e * 100, 0) + ' %', bx2 + 116 + 270 * sd.e, by + 13, 10, onS ? C.rad : C['text-muted'], 'left', 600);
       });
     });
   },
   click: function (p) {
-    var pb = PB(this); if (!pb.faces) return false;
-    for (var k in pb.faces) { var f = pb.faces[k]; if (p.x >= f.x - 8 && p.x <= f.x + f.w + 8 && p.y >= f.y - 8 && p.y <= f.y + f.h + 8) { setV('aim', k); return true; } }
+    var pb = PB(this); if (!pb.hit) return false;
+    for (var i = 0; i < pb.hit.length; i++) { var h = pb.hit[i]; if (p.x >= h.x - 3 && p.x <= h.x + h.w + 3 && p.y >= h.y - 3 && p.y <= h.y + h.h + 3) { setV('aim', h.k); return true; } }
     return false;
   },
   data: function () {
@@ -2085,7 +2166,7 @@ scene(3, 'leslie', {
     return [['water', fmt(LES.Th, 0) + ' °C — same for every face'], ['aimed at', sf.name], ['reading', fmt(pb.read || 0, 0) + ' % of dull black']].concat(SURF.map(function (s) { return ['emission · ' + s.name, fmt(s.e * 100, 0) + ' %']; }));
   },
   dataGraph: function () { return panelGraph('pgLes', function (ctx, box) { drawBars(ctx, box, SURF.map(function (s) { return { name: s.name, val: s.e * 100, col: s.key === V('aim') ? C.accent : C.rad, lab: fmt(s.e * 100, 0) + '%' }; }), { title: 'emission strength by surface (dull black = 100 %)', max: 100 }); }); },
-  info: function () { return radInfo(['<b>Leslie\'s cube:</b> the water keeps all four faces at the same temperature, so the only difference is the surface. The detector reads dull black highest and shiny white lowest — colour and texture both matter.']); }
+  info: function () { return radInfo(['<b>Leslie\'s cube:</b> the water keeps all four faces at the same temperature, so the only difference is the surface. Turn each face to the thermopile in turn: the galvanometer reads dull black highest and shiny white lowest — colour and texture both matter.']); }
 });
 
 /* ---------- 3.2 Absorption race ---------------------------------------- */
@@ -2522,31 +2603,38 @@ appScene('solar', {
   share: function () { var g = V('glass'); return { cond: null, conv: g ? 70 : 30, rad: g ? 30 : 70 }; },
   shareLabel: 'share of the absorbed energy that reaches the water vs is lost',
   draw: function (t) {
-    var g = V('glass'), x = 90, y = 270, w = 480, h = 150;
-    /* roof, box, plate, pipes, glass */
-    CX.save(); CX.translate(x, y); CX.rotate(-0.22);
+    /* the collector sits low-left so the sky above it is free: sunlight
+       then arrives as a PARALLEL beam, the way real sunlight does.      */
+    var g = V('glass'), x = 70, y = 380, w = 460, h = 150, TH = -0.22, i;
+    var DX = 0.5, DY = -0.866, L = 120;          /* the beam, pointing back at the sun */
+    CX.save(); CX.translate(x, y); CX.rotate(TH);
     fillRR(-10, 20, w + 20, h, 6, C.wood, withA(C.ink, .7));
     fillRR(0, 50, w, 24, 3, C['black-surf'], withA(C.ink, .7));
-    for (var i = 0; i < 6; i++) { fillRR(40 + i * 80, 46, 20, 32, 6, '#d08b5b', withA(C.ink, .7)); CX.fillStyle = tcol(tu(20 + 10 * i), .9); CX.fillRect(44 + i * 80, 50, 12, 24); }
+    for (i = 0; i < 6; i++) { fillRR(30 + i * 75, 46, 20, 32, 6, '#d08b5b', withA(C.ink, .7)); CX.fillStyle = tcol(tu(20 + 10 * i), .9); CX.fillRect(34 + i * 75, 50, 12, 24); }
     if (g) { fillRR(0, 30, w, 12, 3, C.glass, C['glass-edge'], 2); }
     CX.restore();
-    var P = function (lx, ly) { var c = Math.cos(-0.22), s = Math.sin(-0.22); return { x: x + lx * c - ly * s, y: y + lx * s + ly * c }; };
-    lab(g ? 'glass cover · still air trapped beneath' : 'no cover: plate open to the air', 60, 460, 'left', P(120, 36).x, P(120, 36).y);
-    lab('dull black absorber plate', 60, 490, 'left', P(200, 60).x, P(200, 60).y);
-    lab('copper water pipes', 60, 520, 'left', P(280, 66).x, P(280, 66).y);
-    lab('cold water in', P(0, 120).x + 30, P(0, 120).y + 30, 'left', P(20, 62).x, P(20, 62).y);
-    lab('warm water out → tank', P(470, 90).x + 10, P(470, 90).y - 30, 'left', P(470, 62).x, P(470, 62).y);
-    dot(640, 100, 30, C.sun); for (i = 0; i < 10; i++) { var a = i * .628 + t * .2; line(640 + Math.cos(a) * 38, 100 + Math.sin(a) * 38, 640 + Math.cos(a) * 50, 100 + Math.sin(a) * 50, C.sun, 2.5); }
+    var P = function (lx, ly) { var c = Math.cos(TH), s = Math.sin(TH); return { x: x + lx * c - ly * s, y: y + lx * s + ly * c }; };
+    /* the sun sits exactly on the line of the last ray, so the whole beam
+       reads as coming from it                                            */
+    var q4 = P(420, 48), SX = q4.x + DX * (L + 45), SY = q4.y + DY * (L + 45);
+    dot(SX, SY, 26, C.sun);
+    for (i = 0; i < 10; i++) { var a = i * .628 + t * .2; line(SX + Math.cos(a) * 32, SY + Math.sin(a) * 32, SX + Math.cos(a) * 44, SY + Math.sin(a) * 44, C.sun, 2.5); }
+    /* captions live in the free column on the left, clear of the beam     */
+    lab(g ? 'glass cover · still air trapped beneath' : 'no cover: plate open to the air', 25, 270, 'left', P(25, 36).x, P(25, 36).y);
+    lab('dull black absorber plate', 25, 302, 'left', P(25, 60).x, P(25, 60).y);
+    lab('copper water pipes', 25, 334, 'left', P(45, 62).x, P(45, 62).y);
+    lab('cold water in', 40, 590, 'left', P(20, 62).x, P(20, 62).y);
+    lab('warm water out → tank', 570, 392, 'left', P(450, 62).x, P(450, 62).y);
     if (on('rad')) {
-      for (i = 0; i < 5; i++) { var q = P(80 + i * 90, 50); waveArrow(600 - i * 10, 130, q.x, q.y, C.rad, t, { amp: 3, lam: 12, w: 1.8 }); }
-      for (i = 0; i < 4; i++) { var q0 = P(120 + i * 100, 48), q1 = P(110 + i * 100, g ? 40 : -10); waveArrow(q0.x, q0.y, q1.x, q1.y, C.rad, t, { amp: 2, lam: 8, w: 1.5, alpha: .7 }); if (g) { var q2 = P(100 + i * 100, 46); waveArrow(q1.x, q1.y, q2.x, q2.y, C.rad, t, { amp: 2, lam: 8, w: 1.5, alpha: .5 }); } }
-      plate(g ? 'sunlight in · re-radiated IR reflected back by the glass' : 'sunlight in · the warm plate re-radiates freely to the sky', 430, 560, 11, C.rad, 'center');
+      for (i = 0; i < 5; i++) { var q = P(60 + i * 90, 48); waveArrow(q.x + DX * L, q.y + DY * L, q.x, q.y, C.rad, t, { amp: 3, lam: 12, w: 1.8 }); }
+      for (i = 0; i < 4; i++) { var q0 = P(95 + i * 90, 48), q1 = P(85 + i * 90, g ? 40 : -12); waveArrow(q0.x, q0.y, q1.x, q1.y, C.rad, t, { amp: 2, lam: 8, w: 1.5, alpha: .7 }); if (g) { var q2 = P(75 + i * 90, 46); waveArrow(q1.x, q1.y, q2.x, q2.y, C.rad, t, { amp: 2, lam: 8, w: 1.5, alpha: .5 }); } }
+      plate(g ? 'sunlight in · re-radiated IR reflected back by the glass' : 'sunlight in · the warm plate re-radiates freely to the sky', 400, 578, 11, C.rad, 'center');
     }
-    if (on('cond')) { for (i = 0; i < 6; i++) { var c0 = P(50 + i * 80, 74), c1 = P(50 + i * 80, 58); flowArrow(c0.x + 0, c0.y + 6, c1.x, c1.y, C.cond, t, { w: 2.2 }); } }
+    if (on('cond')) { for (i = 0; i < 6; i++) { var c0 = P(40 + i * 75, 74), c1 = P(40 + i * 75, 58); flowArrow(c0.x, c0.y + 6, c1.x, c1.y, C.cond, t, { w: 2.2 }); } }
     if (on('conv')) {
-      var a0 = P(20, 62), a1 = P(500, 62); flowArrow(a0.x, a0.y, a1.x, a1.y, C.conv, t, { w: 2.5, alpha: .8 });
-      if (g) { for (i = 0; i < 3; i++) { var b0 = P(120 + i * 150, 44); blocked(b0.x, b0.y, C.conv); } plate('still air under the glass: no convection loss', 430, 588, 11, C.conv, 'center'); }
-      else { for (i = 0; i < 3; i++) { var b1 = P(120 + i * 150, 44), b2 = P(110 + i * 150, -30); flowArrow(b1.x, b1.y, b2.x, b2.y, C.conv, t, { w: 2 }); } plate('warm air convects away from the open plate', 430, 588, 11, C.conv, 'center'); }
+      var a0 = P(20, 62), a1 = P(440, 62); flowArrow(a0.x, a0.y, a1.x, a1.y, C.conv, t, { w: 2.5, alpha: .8 });
+      if (g) { for (i = 0; i < 3; i++) { var b0 = P(110 + i * 145, 44); blocked(b0.x, b0.y, C.conv); } plate('still air under the glass: no convection loss', 400, 606, 11, C.conv, 'center'); }
+      else { for (i = 0; i < 3; i++) { var b1 = P(110 + i * 145, 44), b2 = P(100 + i * 145, -30); flowArrow(b1.x, b1.y, b2.x, b2.y, C.conv, t, { w: 2 }); } plate('warm air convects away from the open plate', 400, 606, 11, C.conv, 'center'); }
     }
   }
 });
@@ -2656,10 +2744,10 @@ appScene('fire', {
       sceneTick(this, function (dt) { pb.sm.forEach(function (p) { p.s += p.v * dt; if (p.s > 1) p.s -= 1; }); });
       pb.sm.forEach(function (p, i) { var yy = y + h - 80 - p.s * (h + 30), xx = x + 150 + Math.sin(p.s * 12 + i) * 18; dot(xx, yy, 3 + 4 * p.s, withA(C['text-muted'], .6 - .4 * p.s)); });
       flowArrow(x + 150, y + h - 110, x + 150, y - 50, C.conv, t, { w: 3 });
-      for (i = 0; i < 3; i++) flowArrow(px - 80 - i * 60, y + h - 10 - i * 8, x + w + 10 + i * 10, y + h - 20, C.conv, t, { w: 2.2, alpha: .8 });
+      for (i = 0; i < 2; i++) flowArrow(px - 34 - i * 92, y + h + 8, px - 110 - i * 92, y + h + 8, C.conv, t, { w: 2.4, alpha: .85 });
       plate('hot gases rise up the chimney · cool room air drawn in along the floor', 480, y + h + 76, 11, C.conv, 'center');
     }
-    if (on('cond')) { for (i = 0; i < 3; i++) flowArrow(x + 90 + i * 50, y + h - 50, x + 90 + i * 50, y + h - 24, C.cond, t, { w: 2 }); flowArrow(x + w - 50, y + h - 10, x + w + 20, y + h - 10, C.cond, t, { w: 2, alpha: .7 }); plate('through fuel, grate and hearth', x + w / 2, y + h + 46, 10, C.cond, 'center'); }
+    if (on('cond')) { for (i = 0; i < 3; i++) flowArrow(x + 90 + i * 50, y + h - 50, x + 90 + i * 50, y + h - 24, C.cond, t, { w: 2 }); flowArrow(x + w - 60, y + h - 34, x + w - 60, y + h + 2, C.cond, t, { w: 2, alpha: .7 }); plate('through fuel, grate and hearth', x + w / 2, y + h + 46, 10, C.cond, 'center'); }
   }
 });
 
