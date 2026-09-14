@@ -285,7 +285,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">🌡️ Heat Transfer Lab</span> <span class="badge-top" id="badge">v1.2.1</span></h1>
+    <h1><span class="t">🌡️ Heat Transfer Lab</span> <span class="badge-top" id="badge">v1.2.4</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -2391,46 +2391,115 @@ scene(3, 'emit', {
 });
 
 /* ---------- 3.4 Vacuum flask ------------------------------------------- */
-var FLASK = { x: 250, y: 110, w: 200, h: 400, gap: 26, loss: { gap: [60, 1.5], silver: [30, 1.0], stopper: [40, 1.5] }, m: 0.5, c: 4200 };
+/* the flask, drawn as the real object: a metal thermos with a screw cap,
+   a shoulder and a base — with the front cut away so the section (shell,
+   vacuum gap, silvered inner wall, tea) stays fully visible.            */
+var FLASK = { x: 232, y: 232, w: 136, h: 288, gap: 28,
+  bx: 150, bw: 300, by: 182, bh: 384,        /* the real body            */
+  wx: 172, wy: 210, ww: 256, wh: 330,        /* the cut-away window      */
+  loss: { gap: [60, 1.5], silver: [30, 1.0], stopper: [40, 1.5] }, m: 0.5, c: 4200 };
 function flaskLoss() {
   var L = FLASK.loss; return { cond: V('vac') ? L.gap[1] : L.gap[0], rad: V('silver') ? L.silver[1] : L.silver[0], top: V('stopper') ? L.stopper[1] : L.stopper[0] };
 }
 scene(3, 'flask', {
   label: '🥛 Vacuum Flask',
   title: 'Radiation — the vacuum flask (every mechanism defeated)',
-  sub: 'a double-walled glass vessel · switch each layer off to see which transfer it was stopping',
+  sub: 'a real double-walled flask, cut open · switch each layer off to see which transfer it was stopping',
   ctrl: [{ type: 'toggle', key: 'vac', label: 'Vacuum gap', def: true }, { type: 'toggle', key: 'silver', label: 'Silvered walls', def: true }, { type: 'toggle', key: 'stopper', label: 'Stopper', def: true }],
   hint: 'switch the layers off one at a time · each stops a different mechanism · double-click to zoom ×2',
   draw: function () {
-    var f = FLASK, t = S.t, L = flaskLoss(), P = L.cond + L.rad + L.top;
+    var f = FLASK, t = S.t, L = flaskLoss(), i, y, g;
+    var vac = V('vac'), sil = V('silver'), cap = V('stopper'), P = L.cond + L.rad + L.top;
+    var cx = f.bx + f.bw / 2, BX = f.bx, BW = f.bw, BY = f.by, BH = f.bh;
+    var LBL = 560;
     prog(30);
-    /* outer case, gap, inner vessel */
-    var G = f.gap;
-    fillRR(f.x - G - 16, f.y - 10, f.w + 2 * G + 32, f.h + 30, 18, C['metal-dk'], C.metal);
-    var gapCol = V('vac') ? withA(C['graph-bg'], .9) : withA(C.sky, .9);
-    fillRR(f.x - G, f.y + 10, f.w + 2 * G, f.h, 14, gapCol, V('silver') ? C.shiny : C['glass-edge'], 3);
-    fillRR(f.x, f.y + 24, f.w, f.h - 30, 12, tcol(tu(85), .85), V('silver') ? C.shiny : C['glass-edge'], 3);
-    txt('hot tea', f.x + f.w / 2, f.y + f.h / 2 + 6, 14, C['black-surf'], 'center', 800);
-    mtxt('85 °C', f.x + f.w / 2, f.y + f.h / 2 + 26, 12, C['black-surf'], 'center', 700);
-    /* the stopper */
-    if (V('stopper')) { fillRR(f.x + 20, f.y - 30, f.w - 40, 46, 8, C.wood, withA(C.ink, .7)); lab('stopper (plastic / cork)', f.x + f.w + 70, f.y - 26, 'left', f.x + f.w - 20, f.y - 10); }
-    else { for (var i = 0; i < 3; i++) flowArrow(f.x + 50 + i * 50, f.y + 20, f.x + 50 + i * 50, f.y - 60, C.conv, t, { w: 2.5 }); lab('open top: hot air & steam escape', f.x + f.w + 70, f.y - 26, 'left', f.x + f.w - 20, f.y - 30); }
-    /* gap: vacuum or air */
-    var gy = f.y + f.h / 2;
-    if (V('vac')) { plate('vacuum', f.x - G + 4, gy + 100, 10, C.text, 'left'); lab('vacuum: nothing to conduct or convect', f.x + f.w + 70, gy - 70, 'left', f.x + f.w + G / 2, gy - 50); }
-    else {
-      for (i = 0; i < 6; i++) dot(f.x - G / 2 + Math.sin(t * 2 + i) * 6, f.y + 40 + i * 60, 3, tcol(.6)); for (i = 0; i < 6; i++) dot(f.x + f.w + G / 2 + Math.sin(t * 2 + i + 1) * 6, f.y + 40 + i * 60, 3, tcol(.6));
-      flowArrow(f.x + f.w + G / 2, gy + 60, f.x + f.w + G / 2, gy - 60, C.conv, t, { w: 2 }); flowArrow(f.x - G / 2, gy + 60, f.x - G / 2, gy - 60, C.conv, t, { w: 2 });
-      for (i = 0; i < 4; i++) flowArrow(f.x + f.w - 4, f.y + 80 + i * 80, f.x + f.w + G + 4, f.y + 80 + i * 80, C.cond, t, { w: 2 });
-      lab('air in the gap conducts AND convects', f.x + f.w + 70, gy - 70, 'left', f.x + f.w + G / 2, gy - 50);
+    /* ---- the real outside: shadow, body, shoulder, neck, cap, base ---- */
+    CX.save(); CX.fillStyle = 'rgba(0,0,0,.45)';
+    CX.beginPath(); CX.ellipse(cx + 14, BY + BH + 12, BW * .5, 11, 0, 0, 7); CX.fill(); CX.restore();
+    var shell = function (x, w, y0, h, r) {
+      CX.save();
+      g = CX.createLinearGradient(x, 0, x + w, 0);
+      g.addColorStop(0, mixCol(C['metal-dk'], '#000000', .5)); g.addColorStop(.2, C['metal-dk']);
+      g.addColorStop(.42, mixCol(C.metal, '#ffffff', .35)); g.addColorStop(.72, C['metal-dk']);
+      g.addColorStop(1, mixCol(C['metal-dk'], '#000000', .45));
+      CX.fillStyle = g; rr(x, y0, w, h, r); CX.fill();
+      CX.strokeStyle = withA(C.ink, .7); CX.lineWidth = 1.5; CX.stroke(); CX.restore();
+    };
+    shell(BX, BW, BY, BH, 16);
+    /* the shoulder tapering up to the neck                               */
+    CX.save(); CX.beginPath();
+    CX.moveTo(BX + 2, BY + 6); CX.quadraticCurveTo(BX + 20, 140, cx - 75, 128);
+    CX.lineTo(cx + 75, 128); CX.quadraticCurveTo(BX + BW - 20, 140, BX + BW - 2, BY + 6);
+    CX.closePath();
+    g = CX.createLinearGradient(BX, 0, BX + BW, 0);
+    g.addColorStop(0, mixCol(C['metal-dk'], '#000000', .5)); g.addColorStop(.42, mixCol(C.metal, '#ffffff', .25));
+    g.addColorStop(1, mixCol(C['metal-dk'], '#000000', .45));
+    CX.fillStyle = g; CX.fill(); CX.strokeStyle = withA(C.ink, .7); CX.lineWidth = 1.5; CX.stroke(); CX.restore();
+    shell(cx - 76, 152, 104, 30, 6);                   /* the neck        */
+    fillRR(BX - 6, BY + BH - 22, BW + 12, 26, 8, mixCol(C['metal-dk'], '#000000', .25), withA(C.ink, .7));
+    if (cap) {
+      shell(cx - 92, 184, 44, 62, 12);
+      CX.save(); CX.strokeStyle = withA(C.ink, .35); CX.lineWidth = 1.5;
+      for (i = 0; i < 11; i++) { CX.beginPath(); CX.moveTo(cx - 82 + i * 16, 52); CX.lineTo(cx - 82 + i * 16, 100); CX.stroke(); }
+      CX.restore();
+      fillRR(cx - 46, 34, 92, 16, 7, mixCol(C.metal, '#ffffff', .15), withA(C.ink, .6));
+      lab('screw stopper (plastic / cork)', LBL, 62, 'left', cx + 92, 76);
+    } else {
+      CX.save(); CX.fillStyle = withA(C.ink, .9);
+      CX.beginPath(); CX.ellipse(cx, 104, 74, 13, 0, 0, 7); CX.fill(); CX.restore();
+      for (i = 0; i < 3; i++) flowArrow(cx - 44 + i * 44, 96, cx - 52 + i * 46, 30, C.conv, t, { w: 2.5 });
+      lab('open top: hot air & steam escape', LBL, 62, 'left', cx + 76, 96);
     }
-    /* radiation across the gap */
+    /* ---- the cut-away window: the section through the wall ----------- */
+    var WX = f.wx, WY = f.wy, WW = f.ww, WH = f.wh, G = f.gap;
+    CX.save(); rr(WX, WY, WW, WH, 10); CX.clip();
+    CX.fillStyle = C['metal-dk']; CX.fillRect(WX, WY, WW, WH);
+    CX.strokeStyle = withA(C.shiny, .25); CX.lineWidth = 1;
+    CX.beginPath(); CX.moveTo(WX + 11, WY); CX.lineTo(WX + 11, WY + WH); CX.moveTo(WX + WW - 11, WY); CX.lineTo(WX + WW - 11, WY + WH); CX.stroke();
+    /* the vacuum (or air) gap                                            */
+    CX.fillStyle = vac ? mixCol(C['graph-bg'], '#000000', .65) : withA(C.sky, .8);
+    CX.fillRect(WX + 22, WY + 16, WW - 44, WH - 8);
+    /* the inner vessel wall, silvered or plain                           */
+    CX.fillStyle = sil ? withA(C.shiny, .9) : withA(C['glass-edge'], .9);
+    CX.fillRect(WX + 22 + G, WY + 30, WW - 44 - 2 * G, WH - 8);
+    /* the tea                                                            */
+    CX.fillStyle = tcol(tu(85), .95);
+    CX.fillRect(f.x, f.y, f.w, WY + WH - f.y + 10);
+    CX.restore();
+    /* the cut edge                                                       */
+    CX.save(); CX.strokeStyle = withA(C.shiny, .55); CX.lineWidth = 2;
+    rr(WX, WY, WW, WH, 10); CX.stroke();
+    CX.strokeStyle = withA(C.shiny, .3); CX.lineWidth = 1;
+    for (i = 0; i < 22; i++) { CX.beginPath(); CX.moveTo(WX + 6 + i * 12, WY); CX.lineTo(WX + i * 12, WY - 7); CX.stroke(); }
+    CX.restore();
+    txt('hot tea', f.x + f.w / 2, f.y + 150, 14, C['black-surf'], 'center', 800);
+    mtxt('85 °C', f.x + f.w / 2, f.y + 172, 12.5, C['black-surf'], 'center', 700);
+    /* ---- what happens in the gap ------------------------------------- */
+    var gL = WX + 22 + G / 2, gR = WX + WW - 22 - G / 2, gy = WY + WH / 2;
+    if (vac) {
+      plate('vacuum', gL, WY + WH - 26, 10, C.text, 'center');
+      lab('vacuum: nothing to conduct or convect', LBL, 250, 'left', gR, gy - 60);
+    } else {
+      for (i = 0; i < 5; i++) { dot(gL + Math.sin(t * 2 + i) * 5, WY + 46 + i * 58, 3, tcol(.6)); dot(gR + Math.sin(t * 2 + i + 1) * 5, WY + 46 + i * 58, 3, tcol(.6)); }
+      flowArrow(gR, gy + 56, gR, gy - 56, C.conv, t, { w: 2 }); flowArrow(gL, gy + 56, gL, gy - 56, C.conv, t, { w: 2 });
+      for (i = 0; i < 3; i++) { y = WY + 60 + i * 90; flowArrow(f.x + f.w + 2, y, WX + WW - 24, y, C.cond, t, { w: 2 }); flowArrow(f.x - 2, y, WX + 24, y, C.cond, t, { w: 2 }); }
+      lab('air in the gap conducts AND convects', LBL, 250, 'left', gR, gy - 60);
+    }
+    /* ---- radiation across the gap ------------------------------------ */
     for (i = 0; i < 4; i++) {
-      var yy = f.y + 70 + i * 80;
-      if (V('silver')) { waveArrow(f.x + f.w + 2, yy, f.x + f.w + G - 4, yy - 6, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .9 }); waveArrow(f.x + f.w + G - 4, yy - 8, f.x + f.w + 2, yy - 16, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .6 }); waveArrow(f.x - 2, yy, f.x - G + 4, yy - 6, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .9 }); waveArrow(f.x - G + 4, yy - 8, f.x - 2, yy - 16, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .6 }); }
-      else { waveArrow(f.x + f.w + 2, yy, f.x + f.w + G + 40, yy, C.rad, t, { amp: 2.5, lam: 9, w: 1.8, alpha: .9 }); waveArrow(f.x - 2, yy, f.x - G - 40, yy, C.rad, t, { amp: 2.5, lam: 9, w: 1.8, alpha: .9 }); }
+      y = WY + 56 + i * 72;
+      if (sil) {
+        waveArrow(f.x + f.w + 2, y, gR + G / 2 - 3, y - 7, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .9 });
+        waveArrow(gR + G / 2 - 3, y - 9, f.x + f.w + 2, y - 17, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .6 });
+        waveArrow(f.x - 2, y, gL - G / 2 + 3, y - 7, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .9 });
+        waveArrow(gL - G / 2 + 3, y - 9, f.x - 2, y - 17, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .6 });
+      } else {
+        waveArrow(f.x + f.w + 2, y, BX + BW + 54, y, C.rad, t, { amp: 2.5, lam: 9, w: 1.8, alpha: .9 });
+        waveArrow(f.x - 2, y, BX - 54, y, C.rad, t, { amp: 2.5, lam: 9, w: 1.8, alpha: .9 });
+      }
     }
-    lab(V('silver') ? 'silvered walls reflect IR back in' : 'plain glass: IR radiates straight out', f.x + f.w + 70, gy + 30, 'left', f.x + f.w + G / 2, gy + 50);
+    lab(sil ? 'silvered walls reflect IR back in' : 'plain glass: IR radiates straight out', LBL, 330, 'left', gR + 4, gy + 70);
+    lab('steel outer case', LBL, 410, 'left', BX + 10, BY + BH - 60);
     /* the accounting card */
     var cx = 830, cy = 300;
     dcard('loss', cx, cy, 340, 280, 'ENERGY LOSS RATE', function () {
@@ -2473,6 +2542,24 @@ function ghDirect(a) { return ghEs(a) * (1 - a); }
 function ghBack(a) { return 100 * a / (2 - a); }
 function ghAtmUp(a) { return 100 * a / (2 - a); }
 function ghTemp(a) { return 255 * Math.pow(ghEs(a) / 100, 0.25) - 273; }
+/* the planet is drawn as a curved limb: one big circle centred far below
+   the canvas, so the ground, the air above it and the arrows all follow
+   the same curvature and the picture reads as a globe, not a box.      */
+var GHG = { cx: 380, cy: 2000, R: 1560, band: 168, x0: 22, x1: 744 };
+function ghY(x, r) { var dx = x - GHG.cx; return GHG.cy - Math.sqrt(Math.max(1, r * r - dx * dx)); }
+function ghArc(x0, x1, r, back) {
+  var st = back ? -10 : 10, x;
+  if (back) { for (x = x1; x > x0; x += st) CX.lineTo(x, ghY(x, r)); }
+  else { for (x = x0; x < x1; x += st) CX.lineTo(x, ghY(x, r)); }
+  CX.lineTo(back ? x0 : x1, ghY(back ? x0 : x1, r));
+}
+/* a small CO2 molecule: O = C = O                                       */
+function ghMol(x, y, ang, al) {
+  var d = 4.6, cA = Math.cos(ang) * d, sA = Math.sin(ang) * d;
+  dot(x - cA, y - sA, 2.5, withA(C.green, al));
+  dot(x + cA, y + sA, 2.5, withA(C.green, al));
+  dot(x, y, 2.9, withA(C['text-dim'], al));
+}
 scene(3, 'greenhouse', {
   label: '🌍 Earth\'s Balance',
   title: 'Radiation — Earth\'s radiation balance & the greenhouse effect',
@@ -2483,55 +2570,133 @@ scene(3, 'greenhouse', {
     var t = S.t, lvl = V('level'), a = ghA(lvl);
     var Es = ghEs(a), direct = ghDirect(a), back = ghBack(a), atmUp = ghAtmUp(a), T = ghTemp(a);
     prog(30);
-    var X0 = 30, X1 = 560, spaceY = 30, bandY0 = 108, bandY1 = 218, groundY0 = 232, groundY1 = 298;
-    var CX0 = 760, i;
-    /* space: a few fixed stars */
-    for (i = 0; i < 16; i++) dot(X0 + hash(i, 21) * (X1 - X0), spaceY + 4 + hash(i, 22) * (bandY0 - spaceY - 10), 1.2, withA(C.text, .5));
-    /* the Sun */
-    var sx = 80, sy = spaceY + 34;
-    CX.save(); CX.globalAlpha = .18; CX.fillStyle = C.sun; CX.beginPath(); CX.arc(sx, sy, 30, 0, 7); CX.fill(); CX.restore();
-    dot(sx, sy, 16, C.sun);
-    /* the atmosphere band — invisible with no atmosphere, tinted and
-       seeded with greenhouse-gas molecules in proportion to how much
-       outgoing infrared it absorbs                                       */
+    var X0 = GHG.x0, X1 = GHG.x1, R = GHG.R, RT = R + GHG.band, CX0 = 760, i, x, y, g;
+    var u = clamp(tu(T, -25, 25), 0, 1);
+    /* ---------- space, and its stars ---------- */
+    for (i = 0; i < 38; i++) {
+      x = X0 + hash(i, 21) * (X1 - X0); y = 26 + hash(i, 22) * 260;
+      if (y < ghY(x, RT) - 12) dot(x, y, .8 + hash(i, 23) * 1.3, withA(C.text, .28 + .4 * hash(i, 24)));
+    }
+    /* ---------- the atmosphere, a curved shell over the ground ---------- */
+    CX.save();
+    CX.beginPath(); CX.moveTo(X0, ghY(X0, RT)); ghArc(X0, X1, RT); ghArc(X0, X1, R, true); CX.closePath();
     if (a > 0) {
-      fillRR(X0, bandY0, X1 - X0, bandY1 - bandY0, 8, withA(C.blue, .10 + .32 * a), withA(C.blue, .5));
-      var n = Math.round(46 * a);
-      for (i = 0; i < n; i++) dot(X0 + 14 + hash(i, 1) * (X1 - X0 - 28), bandY0 + 12 + hash(i, 2) * (bandY1 - bandY0 - 24), 2.6, withA(C.green, .8));
+      g = CX.createLinearGradient(0, ghY(GHG.cx, RT), 0, ghY(GHG.cx, R));
+      g.addColorStop(0, withA(C.blue, .05)); g.addColorStop(.55, withA(C.blue, .10 + .18 * a));
+      g.addColorStop(1, withA(C.blue, .16 + .34 * a));
+      CX.fillStyle = g; CX.fill();
+      CX.strokeStyle = withA(C.blue, .55); CX.lineWidth = 1.4; CX.stroke();
     } else {
-      CX.save(); CX.setLineDash([4, 4]); CX.strokeStyle = withA(C['text-dim'], .4); CX.lineWidth = 1;
-      rr(X0, bandY0, X1 - X0, bandY1 - bandY0, 8); CX.stroke(); CX.restore();
+      CX.setLineDash([5, 5]); CX.strokeStyle = withA(C['text-dim'], .35); CX.lineWidth = 1; CX.stroke();
     }
-    /* the ground, coloured by its equilibrium temperature */
-    fillRR(X0, groundY0, X1 - X0, groundY1 - groundY0, 8, tcol(tu(T, -20, 20), .9), withA(C.ink, .6));
-    txt('Earth\'s surface', X0 + 16, groundY0 + 26, 12, C['black-surf'], 'left', 700);
-    mtxt(fmt(T, 0) + ' °C', X1 - 16, groundY0 + 26, 14, C['black-surf'], 'right', 700);
-    /* shortwave sunlight in — always the full 100 %, passing straight
-       through the atmosphere (it is nearly transparent to visible light) */
-    var swX = 150;
-    for (i = 0; i < 4; i++) waveArrow(sx + 12 + i * 5, sy + 26, swX - 30 + i * 24, groundY0 - 2, C.sun, t, { amp: 2.2, lam: 6, w: 1.8, speed: 90 });
-    /* infrared leaving the surface: part escapes straight through the
-       "atmospheric window", part is absorbed by the greenhouse gases     */
-    var dirX = 260, absX = 370, upX = 480;
-    if (direct > 0) for (i = 0; i < 3; i++) waveArrow(dirX - 16 + i * 16, groundY0 - 2, dirX - 16 + i * 16, spaceY + 6, C.rad, t, { amp: 3, lam: 13, w: 1.8, alpha: .3 + .6 * (direct / 100) });
+    CX.restore();
+    /* clouds and greenhouse-gas molecules live inside that shell         */
     if (a > 0) {
-      /* absorbed partway up, inside the band — a visibly different column
-         from where the atmosphere's own re-emission climbs to space, so
-         "absorbed" never looks like it simply passed straight through   */
-      for (i = 0; i < 3; i++) waveArrow(absX - 16 + i * 16, groundY0 - 2, absX - 16 + i * 16, (bandY0 + bandY1) / 2, C.rad, t, { amp: 3, lam: 13, w: 1.8, alpha: .35 + .55 * a });
-      /* the atmosphere re-emits what it absorbed: half up to space,
-         half back down to the surface — the greenhouse effect itself   */
-      for (i = 0; i < 3; i++) waveArrow(upX - 16 + i * 16, bandY0 - 2, upX - 16 + i * 16, spaceY + 6, C.rad, t, { amp: 3, lam: 13, w: 1.8, alpha: .35 + .55 * a });
-      for (i = 0; i < 4; i++) waveArrow(60 + i * 130, bandY1 + 2, 60 + i * 130, groundY0 - 2, C.violet, t, { amp: 2.4, lam: 10, w: 2, alpha: .5 + .45 * a, speed: 90 });
+      [[188, 22], [452, -34], [648, 16]].forEach(function (c, k) {
+        var by = ghY(c[0], R) - 96 + c[1];
+        CX.save(); CX.fillStyle = withA(C['white-surf'], .16); CX.beginPath();
+        CX.ellipse(c[0], by, 44, 13, 0, 0, 7); CX.fill();
+        CX.beginPath(); CX.ellipse(c[0] - 18, by - 7, 24, 11, 0, 0, 7); CX.fill();
+        CX.beginPath(); CX.ellipse(c[0] + 16, by - 5, 20, 10, 0, 0, 7); CX.fill(); CX.restore();
+      });
+      var n = Math.round(30 * a);
+      for (i = 0; i < n; i++) {
+        x = X0 + 18 + hash(i, 1) * (X1 - X0 - 36);
+        y = ghY(x, R) - 18 - hash(i, 2) * (GHG.band - 36);
+        ghMol(x, y, hash(i, 3) * 6.28, .55 + .35 * a);
+      }
     }
-    /* captions, stacked in the gutter between the diagram and the cards
-       so none of them ever crosses the diagram or another caption        */
-    var lx = CX0 - 175, ly0 = 108;
-    lab('sunlight in: 100%', lx, ly0, 'left', swX, (sy + groundY0) / 2, C.sun);
-    lab('direct to space: ' + fmt(direct, 0) + '%', lx, ly0 + 40, 'left', dirX, spaceY + 60, C.rad);
-    lab('absorbed by GHGs: ' + fmt(Es - direct, 0) + '%', lx, ly0 + 80, 'left', absX, (bandY0 + bandY1) / 2, C.rad);
-    lab('atmosphere out: ' + fmt(atmUp, 0) + '%', lx, ly0 + 120, 'left', upX, bandY0 + 4, C.rad);
-    lab('back radiation: ' + fmt(back, 0) + '%', lx, ly0 + 160, 'left', 190, bandY1 + 8, C.violet);
+    /* ---------- the planet: rock below, a warm skin, then the land ------ */
+    CX.save();
+    CX.beginPath(); CX.moveTo(X0, ghY(X0, R)); ghArc(X0, X1, R);
+    CX.lineTo(X1, 641); CX.lineTo(X0, 641); CX.closePath();
+    g = CX.createLinearGradient(0, ghY(GHG.cx, R), 0, 641);
+    g.addColorStop(0, tcol(u, .95)); g.addColorStop(.22, mixCol(C.land, '#000000', .1));
+    g.addColorStop(1, mixCol(C.land, '#000000', .55));
+    CX.fillStyle = g; CX.fill();
+    CX.strokeStyle = withA(C.ink, .7); CX.lineWidth = 1.6;
+    CX.beginPath(); CX.moveTo(X0, ghY(X0, R)); ghArc(X0, X1, R); CX.stroke();
+    CX.restore();
+    /* ---- the sea on the right of the limb: open water, or sea ice when
+       the balance settles below freezing ---- */
+    var frozen = T < 0, S0 = 546, HILLS = [[120, 56, 26], [214, 76, 34], [302, 46, 22]];
+    var hillLift = function (tx) {
+      var m = 0; HILLS.forEach(function (hl) { var d = (tx - hl[0]) / hl[1]; if (Math.abs(d) < 1) m = Math.max(m, hl[2] * Math.sqrt(1 - d * d) - 8); });
+      return m;
+    };
+    CX.save();
+    CX.beginPath(); CX.moveTo(S0, ghY(S0, R)); ghArc(S0, X1, R);
+    CX.lineTo(X1, ghY(X1, R) + 42); ghArc(S0, X1, R - 42, true); CX.closePath();
+    g = CX.createLinearGradient(0, ghY(650, R), 0, ghY(650, R) + 42);
+    if (frozen) { g.addColorStop(0, withA(C['white-surf'], .9)); g.addColorStop(1, withA(mixCol(C['white-surf'], '#5b6b7d', .45), .9)); }
+    else { g.addColorStop(0, withA(C.sea, .92)); g.addColorStop(1, withA(mixCol(C.sea, '#000000', .45), .92)); }
+    CX.fillStyle = g; CX.fill();
+    CX.strokeStyle = withA(C.ink, .5); CX.lineWidth = 1.2; CX.stroke(); CX.restore();
+    for (i = 0; i < 6; i++) { x = 572 + i * 28; line(x, ghY(x, R) + 14, x + 16, ghY(x + 16, R) + 14, withA(frozen ? C.ink : C['white-surf'], .3), 1.4); }
+    /* ---- hills, forest and a small city: scale, and a reason to care ---- */
+    CX.save();
+    HILLS.forEach(function (hl) {
+      CX.beginPath(); CX.ellipse(hl[0], ghY(hl[0], R) + 8, hl[1], hl[2], 0, Math.PI, 0);
+      CX.fillStyle = frozen ? mixCol(C['white-surf'], '#61718a', .4) : mixCol(C.land, '#000000', .34);
+      CX.fill(); CX.strokeStyle = withA(C.ink, .4); CX.lineWidth = 1; CX.stroke();
+    });
+    CX.fillStyle = frozen ? withA(C['white-surf'], .75) : mixCol(C.green, '#000000', .42);
+    [[68, 13], [150, 14], [214, 16], [258, 12], [302, 14], [352, 12], [516, 13]].forEach(function (tr) {
+      var ty = ghY(tr[0], R) + 4 - hillLift(tr[0]), hg = tr[1];
+      CX.fillRect(tr[0] - 1.6, ty - hg * .5, 3.2, hg * .6);
+      CX.beginPath(); CX.moveTo(tr[0], ty - hg * 2); CX.lineTo(tr[0] + hg * .6, ty - hg * .4);
+      CX.lineTo(tr[0] - hg * .6, ty - hg * .4); CX.closePath(); CX.fill();
+    });
+    var CITY = [[392, 16, 38], [414, 14, 54], [434, 18, 30], [458, 15, 46], [480, 13, 34]];
+    CX.fillStyle = mixCol(C.wall, '#000000', .3);
+    CITY.forEach(function (bd) { CX.fillRect(bd[0], ghY(bd[0], R) - bd[2], bd[1], bd[2] + 8); });
+    CX.restore();
+    for (i = 0; i < 16; i++) {
+      var bd = CITY[i % 5];
+      dot(bd[0] + 4 + hash(i, 7) * (bd[1] - 8), ghY(bd[0], R) - 8 - hash(i, 8) * (bd[2] - 12), 1.3, withA(C.sun, .6));
+    }
+    /* the headline the whole scene exists to deliver                      */
+    txt('average surface temperature', GHG.cx, 556, 11.5, withA(C['white-surf'], .72), 'center', 600);
+    mtxt(fmt(T, 0) + ' °C', GHG.cx, 596, 30, mixCol(tcol(u), '#ffffff', .3), 'center', 800);
+    /* ---------- the Sun, and a parallel beam of shortwave sunlight ------ */
+    /* the Sun sits on the line of the MIDDLE ray, so the beam spreads out
+       from its centre rather than from one edge                          */
+    var DX = -0.30, DY = -0.954, L = 250, BX = 180, BS = 42, BN = 4;
+    var qm = { x: BX + (BN - 1) / 2 * BS, y: ghY(BX + (BN - 1) / 2 * BS, R) };
+    var q0 = qm;
+    var sx = q0.x + DX * (L + 60), sy = q0.y + DY * (L + 60);
+    CX.save();
+    var sg = CX.createRadialGradient(sx, sy, 14, sx, sy, 56);
+    sg.addColorStop(0, withA(C.sun, .5)); sg.addColorStop(.45, withA(C.sun, .16)); sg.addColorStop(1, withA(C.sun, 0));
+    CX.fillStyle = sg; CX.beginPath(); CX.arc(sx, sy, 56, 0, 7); CX.fill(); CX.restore();
+    CX.save();
+    var sd = CX.createRadialGradient(sx - 7, sy - 8, 2, sx, sy, 24);
+    sd.addColorStop(0, '#fffbe8'); sd.addColorStop(.55, C.sun); sd.addColorStop(1, mixCol(C.sun, '#c25a00', .45));
+    CX.fillStyle = sd; CX.beginPath(); CX.arc(sx, sy, 22, 0, 7); CX.fill(); CX.restore();
+    for (i = 0; i < BN; i++) {
+      x = BX + i * BS; y = ghY(x, R);
+      waveArrow(x + DX * L, y + DY * L, x, y - 2, C.sun, t, { amp: 2.4, lam: 7, w: 1.9, speed: 90 });
+    }
+    /* ---------- infrared out ---------- */
+    var WX = 326, AX = 440, UX = 536;
+    if (direct > 0) for (i = 0; i < 3; i++) { x = WX - 16 + i * 16; waveArrow(x, ghY(x, R) - 2, x, 72, C.rad, t, { amp: 3, lam: 13, w: 1.8, alpha: .3 + .6 * (direct / 100) }); }
+    if (a > 0) {
+      for (i = 0; i < 3; i++) { x = AX - 16 + i * 16; waveArrow(x, ghY(x, R) - 2, x, ghY(x, R) - GHG.band * .55, C.rad, t, { amp: 3, lam: 13, w: 1.8, alpha: .35 + .55 * a }); }
+      for (i = 0; i < 3; i++) { x = UX - 16 + i * 16; waveArrow(x, ghY(x, RT) - 2, x, 72, C.rad, t, { amp: 3, lam: 13, w: 1.8, alpha: .35 + .55 * a }); }
+      [120, 250, 400, 560, 700].forEach(function (bx) {
+        waveArrow(bx, ghY(bx, R) - GHG.band * .52, bx, ghY(bx, R) - 4, C.violet, t, { amp: 2.4, lam: 10, w: 2, alpha: .5 + .45 * a, speed: 90 });
+      });
+    }
+    /* ---------- short tags, sitting in the gaps between the beams ------- */
+    plate('sunlight in · 100%', X0 + 8, 44, 11, C.sun, 'left');
+    if (direct > 0) plate('escapes directly · ' + fmt(direct, 0) + '%', WX, 44, 11, C.rad, 'center');
+    if (a > 0) {
+      plate('atmosphere → space · ' + fmt(atmUp, 0) + '%', UX, 44, 11, C.rad, 'center');
+      plate('absorbed by CO₂ · ' + fmt(Es - direct, 0) + '%', AX, ghY(AX, R) - GHG.band * .68, 11, C.rad, 'center');
+      plate('back radiation · ' + fmt(back, 0) + '%', 660, ghY(660, R) - GHG.band * .70, 11, C.violet, 'center');
+    } else {
+      plate('nothing absorbs the outgoing infrared', 560, 150, 11, C['text-dim'], 'center');
+    }
     /* the energy budget, as a bar chart, and the plain-English "why" —
        both draggable cards, so nothing is fixed on top of the diagram   */
     dcard('budget', CX0, 60, 380, 272, null, function () {
@@ -2662,6 +2827,17 @@ function appScene(key, o) {
 }
 
 /* ---------- 4.1 Double-layer glass ------------------------------------- */
+/* the real object: a tapered double-walled tumbler. Because it IS glass,
+   the inner vessel, the sealed gap and the drink all stay visible.      */
+var DWG = { cx: 330, yT: 146, yB: 502, wT: 300, wB: 252, iT: 158, iB: 458, iwT: 236, iwB: 196 };
+function dwgX(y, side) {                      /* the outer wall at height y */
+  var f = clamp((y - DWG.yT) / (DWG.yB - DWG.yT), 0, 1), w = DWG.wT + (DWG.wB - DWG.wT) * f;
+  return DWG.cx + side * w / 2;
+}
+function dwgI(y, side) {                      /* the inner wall at height y */
+  var f = clamp((y - DWG.iT) / (DWG.iB - DWG.iT), 0, 1), w = DWG.iwT + (DWG.iwB - DWG.iwT) * f;
+  return DWG.cx + side * w / 2;
+}
 appScene('glass', {
   label: '🥃 Double-layer Glass', title: 'Application — a double-walled glass',
   sub: 'a hot drink stays hot: trapped air blocks conduction and convection, silvering blocks radiation',
@@ -2669,31 +2845,91 @@ appScene('glass', {
   desc: { cond: 'Heat conducts through the thin inner glass, then meets the air gap. Air is a very poor conductor, so conduction almost stops there.', conv: 'The air is trapped in a narrow sealed gap, so it cannot circulate — no convection current can carry energy across.', rad: 'The hot inner wall emits infrared across the gap. A silvered (shiny) surface reflects it back in; plain glass lets most of it through.' },
   share: function () { var s = V('silver'); return { cond: s ? 30 : 15, conv: s ? 20 : 10, rad: s ? 50 : 75 }; },
   draw: function (t) {
-    var x = 220, y = 130, w = 280, h = 350, s = V('silver'), G = 34;
-    /* outer wall, gap, inner wall, drink */
-    fillRR(x, y, w, h, 16, withA(C.glass, 1), C['glass-edge'], 3);
-    fillRR(x + G, y + G, w - 2 * G, h - G - 8, 12, withA(C['graph-bg'], .6), s ? C.shiny : C['glass-edge'], 3);
-    fillRR(x + G + 8, y + G + 18, w - 2 * G - 16, h - G - 34, 10, tcol(tu(80), .85));
-    txt('hot drink 80 °C', x + w / 2, y + h / 2, 13, C['black-surf'], 'center', 800);
-    lab('outer glass', x + w + 50, y + 20, 'left', x + w, y + 40);
-    lab(s ? 'inner glass, silvered' : 'inner glass, plain', x + w + 50, y + 54, 'left', x + w - G, y + 70);
-    lab('sealed air gap', x + w + 50, y + 88, 'left', x + w - G / 2, y + 100);
-    var gy = y + h / 2, gl = x + G / 2, gr = x + w - G / 2;
+    var s = V('silver'), D = DWG, i, g, y;
+    var rxT = D.wT / 2, ryT = 26, rxB = D.wB / 2, ryB = 20;
+    /* the shadow it sits in */
+    CX.save(); CX.fillStyle = withA(C.ink, .3);
+    CX.beginPath(); CX.ellipse(D.cx + 10, D.yB + 6, rxB * 1.05, ryB * .75, 0, 0, 7); CX.fill(); CX.restore();
+    /* ---- the outer glass: one tapered body, lit from the left -------- */
+    CX.save();
+    CX.beginPath();
+    CX.moveTo(dwgX(D.yT, -1), D.yT); CX.lineTo(dwgX(D.yB, -1), D.yB);
+    CX.ellipse(D.cx, D.yB, rxB, ryB, 0, Math.PI, 0, true);
+    CX.lineTo(dwgX(D.yT, 1), D.yT);
+    CX.ellipse(D.cx, D.yT, rxT, ryT, 0, 0, Math.PI, true);
+    CX.closePath();
+    g = CX.createLinearGradient(D.cx - rxT, 0, D.cx + rxT, 0);
+    g.addColorStop(0, withA(C.glass, .55)); g.addColorStop(.12, withA(C.glass, .22));
+    g.addColorStop(.5, withA(C.glass, .10)); g.addColorStop(.88, withA(C.glass, .26));
+    g.addColorStop(1, withA(C.glass, .6));
+    CX.fillStyle = g; CX.fill();
+    CX.strokeStyle = withA(C['glass-edge'], .95); CX.lineWidth = 2.4; CX.stroke();
+    CX.restore();
+    /* the thick glass base, seen through the front wall                  */
+    CX.save(); CX.beginPath(); CX.ellipse(D.cx, D.yB - 12, rxB - 8, ryB - 5, 0, 0, 7);
+    CX.fillStyle = withA(C.glass, .5); CX.fill();
+    CX.strokeStyle = withA(C['glass-edge'], .7); CX.lineWidth = 1.4; CX.stroke(); CX.restore();
+    /* ---- the inner vessel, hung from the rim, holding the drink ------ */
+    CX.save();
+    CX.beginPath();
+    CX.moveTo(dwgI(D.iT, -1), D.iT); CX.lineTo(dwgI(D.iB, -1), D.iB);
+    CX.ellipse(D.cx, D.iB, D.iwB / 2, 22, 0, Math.PI, 0, true);
+    CX.lineTo(dwgI(D.iT, 1), D.iT); CX.closePath();
+    CX.fillStyle = tcol(tu(80), .92); CX.fill();
+    CX.strokeStyle = s ? withA(C.shiny, .95) : withA(C['glass-edge'], .9); CX.lineWidth = s ? 4 : 2.6;
+    CX.stroke(); CX.restore();
+    txt('hot drink 80 °C', D.cx, D.iT + 140, 13.5, C['black-surf'], 'center', 800);
+    /* ---- the double rim: the signature of a double-walled glass ------ */
+    CX.save();
+    CX.beginPath(); CX.ellipse(D.cx, D.yT, rxT, ryT, 0, 0, 7);
+    CX.fillStyle = withA(C.glass, .5); CX.fill();
+    CX.strokeStyle = withA(C['glass-edge'], .95); CX.lineWidth = 2.4; CX.stroke();
+    CX.beginPath(); CX.ellipse(D.cx, D.yT + 10, D.iwT / 2, 20, 0, 0, 7);
+    CX.fillStyle = tcol(tu(80)); CX.fill();
+    CX.strokeStyle = s ? withA(C.shiny, .9) : withA(C['glass-edge'], .9); CX.lineWidth = 2.4; CX.stroke();
+    CX.globalAlpha = .28; CX.fillStyle = C.shiny;
+    CX.beginPath(); CX.ellipse(D.cx - 40, D.yT + 8, 30, 6, -.2, 0, 7); CX.fill();
+    CX.restore();
+    /* specular streaks — what makes it read as glass                     */
+    CX.save(); CX.globalAlpha = .5; CX.fillStyle = C.shiny;
+    rr(D.cx - rxT + 13, D.yT + 40, 9, 250, 5); CX.fill();
+    CX.globalAlpha = .22; rr(D.cx + rxT - 26, D.yT + 70, 6, 190, 4); CX.fill(); CX.restore();
+    /* ---- captions, to the right of the glass ------------------------- */
+    lab('outer glass', 606, 178, 'left', dwgX(232, 1) - 4, 236);
+    lab(s ? 'inner glass, silvered' : 'inner glass, plain', 606, 216, 'left', dwgI(276, 1) + 2, 280);
+    lab('sealed air gap', 606, 254, 'left', (dwgX(318, 1) + dwgI(318, 1)) / 2, 320);
+    /* ---- the three mechanisms, across the gap ------------------------ */
+    var gy = (D.yT + D.yB) / 2;
     if (on('cond')) {
-      for (var i = 0; i < 3; i++) { flowArrow(x + G + 30, gy - 70 + i * 60, x + G + 2, gy - 70 + i * 60, C.cond, t, { w: 2.5 }); flowArrow(x + w - G - 30, gy - 70 + i * 60, x + w - G - 2, gy - 70 + i * 60, C.cond, t, { w: 2.5 }); }
-      blocked(gl, gy - 100, C.cond); blocked(gr, gy - 100, C.cond, 'air: poor conductor');
+      for (i = 0; i < 3; i++) {
+        y = gy - 70 + i * 62;
+        flowArrow(dwgI(y, -1) - 2, y, dwgX(y, -1) + 6, y, C.cond, t, { w: 2.5 });
+        flowArrow(dwgI(y, 1) + 2, y, dwgX(y, 1) - 6, y, C.cond, t, { w: 2.5 });
+      }
+      blocked((dwgX(gy - 118, -1) + dwgI(gy - 118, -1)) / 2, gy - 118, C.cond);
+      blocked((dwgX(gy - 118, 1) + dwgI(gy - 118, 1)) / 2, gy - 118, C.cond, 'air: poor conductor');
     }
     if (on('conv')) {
-      CX.save(); CX.strokeStyle = C.conv; CX.lineWidth = 2; CX.setLineDash([4, 4]); CX.beginPath(); CX.arc(gl, gy + 40, 9, 0, 6.28); CX.stroke(); CX.beginPath(); CX.arc(gr, gy + 40, 9, 0, 6.28); CX.stroke(); CX.restore();
-      blocked(gr, gy + 80, C.conv, 'trapped: cannot circulate'); blocked(gl, gy + 80, C.conv);
+      [-1, 1].forEach(function (sd) {
+        var mx = (dwgX(gy + 74, sd) + dwgI(gy + 74, sd)) / 2;
+        CX.save(); CX.strokeStyle = C.conv; CX.lineWidth = 2; CX.setLineDash([4, 4]);
+        CX.beginPath(); CX.arc(mx, gy + 74, 9, 0, 6.28); CX.stroke(); CX.restore();
+      });
+      blocked((dwgX(gy + 128, 1) + dwgI(gy + 128, 1)) / 2, gy + 128, C.conv, 'trapped: cannot circulate');
+      blocked((dwgX(gy + 128, -1) + dwgI(gy + 128, -1)) / 2, gy + 128, C.conv);
     }
     if (on('rad')) {
       for (i = 0; i < 3; i++) {
-        var yy = gy - 40 + i * 50;
-        if (s) { waveArrow(x + w - G + 2, yy, x + w - 4, yy - 6, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .9 }); waveArrow(x + w - 4, yy - 8, x + w - G + 2, yy - 16, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .6 }); waveArrow(x + G - 2, yy, x + 4, yy - 6, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .9 }); waveArrow(x + 4, yy - 8, x + G - 2, yy - 16, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .6 }); }
-        else { waveArrow(x + w - G + 2, yy, x + w + 40, yy, C.rad, t, { amp: 2.5, lam: 9, w: 1.8, alpha: .9 }); waveArrow(x + G - 2, yy, x - 40, yy, C.rad, t, { amp: 2.5, lam: 9, w: 1.8, alpha: .9 }); }
+        y = gy - 44 + i * 52;
+        [-1, 1].forEach(function (sd) {
+          var xi = dwgI(y, sd) + sd * 2, xo = dwgX(y, sd) - sd * 5;
+          if (s) {
+            waveArrow(xi, y, xo, y - 7, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .9 });
+            waveArrow(xo, y - 9, xi, y - 17, C.rad, t, { amp: 2, lam: 8, w: 1.6, alpha: .6 });
+          } else waveArrow(xi, y, xo + sd * 46, y, C.rad, t, { amp: 2.5, lam: 9, w: 1.8, alpha: .9 });
+        });
       }
-      plate(s ? 'silvering reflects IR back into the drink' : 'plain glass: IR escapes', x + w / 2, y + h + 36, 11, C.rad, 'center');
+      plate(s ? 'silvering reflects IR back into the drink' : 'plain glass: IR escapes', D.cx, D.yB + 60, 11, C.rad, 'center');
     }
   }
 });
@@ -2891,6 +3127,32 @@ appScene('fire', {
 });
 
 /* ---------- 4.7 Car radiator ------------------------------------------- */
+/* a shaded box: the workhorse for tanks, blocks and covers               */
+function tank(x, y, w, h, base, horiz, rad) {
+  var g = horiz ? CX.createLinearGradient(0, y, 0, y + h) : CX.createLinearGradient(x, 0, x + w, 0);
+  g.addColorStop(0, mixCol(base, '#000000', .45)); g.addColorStop(.32, base);
+  g.addColorStop(.52, mixCol(base, '#ffffff', .3)); g.addColorStop(.78, base);
+  g.addColorStop(1, mixCol(base, '#000000', .42));
+  CX.save(); CX.fillStyle = g; rr(x, y, w, h, rad == null ? Math.min(8, h / 2) : rad); CX.fill();
+  CX.strokeStyle = withA(C.ink, .65); CX.lineWidth = 1.3; CX.stroke(); CX.restore();
+}
+/* a moulded rubber hose with two clamps                                  */
+function hose(x1, y1, cx1, cy1, x2, y2, col) {
+  CX.save(); CX.lineCap = 'round';
+  CX.strokeStyle = mixCol(C.ink, '#000000', .15); CX.lineWidth = 17;
+  CX.beginPath(); CX.moveTo(x1, y1); CX.quadraticCurveTo(cx1, cy1, x2, y2); CX.stroke();
+  CX.strokeStyle = col; CX.lineWidth = 10;
+  CX.beginPath(); CX.moveTo(x1, y1); CX.quadraticCurveTo(cx1, cy1, x2, y2); CX.stroke();
+  CX.strokeStyle = withA(C.shiny, .35); CX.lineWidth = 2.5;
+  CX.beginPath(); CX.moveTo(x1, y1 - 3); CX.quadraticCurveTo(cx1, cy1 - 3, x2, y2 - 3); CX.stroke();
+  CX.restore();
+  [[x1, y1, cx1, cy1], [x2, y2, cx1, cy1]].forEach(function (e) {
+    var dx = e[2] - e[0], dy = e[3] - e[1], L = Math.hypot(dx, dy) || 1, ux = dx / L, uy = dy / L;
+    CX.save(); CX.strokeStyle = C.metal; CX.lineWidth = 3.5; CX.lineCap = 'butt';
+    CX.beginPath(); CX.moveTo(e[0] + ux * 12 - uy * 9, e[1] + uy * 12 + ux * 9);
+    CX.lineTo(e[0] + ux * 12 + uy * 9, e[1] + uy * 12 - ux * 9); CX.stroke(); CX.restore();
+  });
+}
 appScene('car', {
   label: '🚗 Car Radiator', title: 'Application — a car engine\'s cooling system',
   sub: 'a pump drives coolant round a loop; a finned radiator and a fan dump the energy to the air',
@@ -2899,33 +3161,97 @@ appScene('car', {
   share: function () { var f = V('fan'); return { cond: null, conv: f ? 90 : 70, rad: f ? 10 : 30 }; },
   shareLabel: 'share of the energy leaving the radiator by each route',
   draw: function (t) {
-    var fan = V('fan');
-    /* engine block */
-    fillRR(420, 200, 220, 220, 10, C['metal-dk'], C.metal); CX.fillStyle = tcol(.85, .3); CX.fillRect(424, 204, 212, 212);
-    txt('ENGINE 95 °C', 530, 316, 13, C['white-surf'], 'center', 800);
-    /* radiator */
-    fillRR(120, 180, 160, 260, 6, C['metal-dk'], C.metal);
-    for (var i = 0; i < 14; i++) line(128, 190 + i * 18, 272, 190 + i * 18, C.metal, 2.5);
-    for (i = 0; i < 4; i++) line(140 + i * 36, 184, 140 + i * 36, 436, tcol(.7), 4);
-    lab('radiator: thin tubes + fins', 200, 150, 'center');
-    /* pipes: top hot (engine→rad), bottom cool (rad→engine) */
-    line(280, 200, 420, 200, C.rad, 6); line(280, 420, 420, 420, C.conv, 6);
-    fillRR(330, 405, 34, 30, 15, C.metal, C.ink); txt('pump', 347, 456, 10, C['text-dim'], 'center', 700);
-    if (fan) { fillRR(60, 260, 40, 100, 6, C['metal-dk'], C.metal); for (i = 0; i < 4; i++) { var a = t * 14 + i * 1.571; line(80, 310, 80 + Math.cos(a) * 26, 310 + Math.sin(a) * 26, C.shiny, 4); } lab('fan', 80, 236, 'center'); }
+    var fan = V('fan'), i, a;
+    var RX = 150, RY = 210, RW = 176, RH = 220;          /* the radiator core */
+    var EX = 452, EY = 226, EW = 226, EH = 196;          /* the engine block  */
+    /* ---------------- radiator: frame, core, tubes, tanks -------------- */
+    fillRR(RX - 11, RY - 34, 11, RH + 68, 3, mixCol(C['metal-dk'], '#000000', .2), withA(C.ink, .6));
+    fillRR(RX + RW, RY - 34, 11, RH + 68, 3, mixCol(C['metal-dk'], '#000000', .2), withA(C.ink, .6));
+    CX.save();
+    var cg = CX.createLinearGradient(RX, 0, RX + RW, 0);
+    cg.addColorStop(0, mixCol(C['metal-dk'], '#000000', .45)); cg.addColorStop(.45, C['metal-dk']);
+    cg.addColorStop(1, mixCol(C['metal-dk'], '#000000', .35));
+    CX.fillStyle = cg; CX.fillRect(RX, RY, RW, RH); CX.restore();
+    for (i = 0; i < 42; i++) line(RX + 2, RY + 5 + i * 5.2, RX + RW - 2, RY + 5 + i * 5.2, withA(C.metal, .38), 1);
+    for (i = 0; i < 6; i++) {
+      var tx = RX + 11 + i * 29;
+      CX.save();
+      var tg = CX.createLinearGradient(tx, 0, tx + 11, 0);
+      tg.addColorStop(0, tcol(.52, .95)); tg.addColorStop(.4, tcol(.78, .95)); tg.addColorStop(1, tcol(.5, .95));
+      CX.fillStyle = tg; rr(tx, RY, 11, RH, 2); CX.fill();
+      CX.strokeStyle = withA(C.ink, .5); CX.lineWidth = 1; CX.stroke(); CX.restore();
+    }
+    tank(RX - 11, RY - 34, RW + 22, 34, C['metal-dk'], true, 6);
+    tank(RX - 11, RY + RH, RW + 22, 34, C['metal-dk'], true, 6);
+    /* the filler cap on the top tank */
+    tank(RX + RW - 54, RY - 50, 34, 18, C.metal, true, 5);
+    dot(RX + RW - 37, RY - 41, 5, mixCol(C.metal, '#ffffff', .3), withA(C.ink, .5));
+    lab('radiator: thin tubes + fins', RX + RW / 2, 150, 'center', RX + RW / 2, RY - 52);
+    /* ---------------- the cooling fan in its shroud -------------------- */
+    if (fan) {
+      var FX = 74, FY = RY + RH / 2;
+      CX.save(); CX.strokeStyle = C['metal-dk']; CX.lineWidth = 9;
+      CX.beginPath(); CX.arc(FX, FY, 44, 0, 7); CX.stroke();
+      CX.strokeStyle = withA(C.ink, .5); CX.lineWidth = 1.2;
+      CX.beginPath(); CX.arc(FX, FY, 48.5, 0, 7); CX.stroke();
+      CX.beginPath(); CX.arc(FX, FY, 39.5, 0, 7); CX.stroke(); CX.restore();
+      CX.save();
+      for (i = 0; i < 5; i++) {
+        a = t * 9 + i * 1.257;
+        CX.fillStyle = withA(C.metal, .85);
+        CX.beginPath(); CX.moveTo(FX, FY);
+        CX.quadraticCurveTo(FX + Math.cos(a - .35) * 30, FY + Math.sin(a - .35) * 30, FX + Math.cos(a) * 39, FY + Math.sin(a) * 39);
+        CX.quadraticCurveTo(FX + Math.cos(a + .3) * 26, FY + Math.sin(a + .3) * 26, FX, FY);
+        CX.closePath(); CX.fill();
+      }
+      CX.restore();
+      dot(FX, FY, 9, C['metal-dk'], C.metal);
+      lab('fan', FX, FY - 72, 'center', FX, FY - 52);
+    }
+    /* ---------------- the engine: pan, block, head, exhaust ------------ */
+    CX.save(); CX.beginPath();
+    CX.moveTo(EX + 6, EY + EH); CX.lineTo(EX + EW - 6, EY + EH);
+    CX.lineTo(EX + EW - 34, EY + EH + 42); CX.lineTo(EX + 34, EY + EH + 42); CX.closePath();
+    CX.fillStyle = mixCol(C['metal-dk'], '#000000', .35); CX.fill();
+    CX.strokeStyle = withA(C.ink, .6); CX.lineWidth = 1.3; CX.stroke(); CX.restore();
+    txt('sump', EX + EW / 2, EY + EH + 30, 9.5, withA(C['white-surf'], .5), 'center', 600);
+    tank(EX, EY, EW, EH, C.metal, false, 8);
+    CX.save(); CX.fillStyle = tcol(.82, .3); rr(EX + 2, EY + 2, EW - 4, EH - 4, 7); CX.fill(); CX.restore();
+    for (i = 0; i < 6; i++) line(EX + 22 + i * 32, EY + 16, EX + 22 + i * 32, EY + EH - 16, withA(C.ink, .28), 4);
+    tank(EX + 14, EY - 38, EW - 28, 40, C['metal-dk'], true, 7);
+    for (i = 0; i < 6; i++) dot(EX + 34 + i * 32, EY - 30, 3, withA(C.shiny, .45));
+    for (i = 0; i < 4; i++) { var px = EX + 48 + i * 44; fillRR(px - 5, EY - 56, 10, 20, 3, C['metal-dk'], C.metal); }
+    CX.save(); CX.strokeStyle = mixCol(C['metal-dk'], '#000000', .15); CX.lineWidth = 12; CX.lineCap = 'round';
+    for (i = 0; i < 3; i++) { CX.beginPath(); CX.moveTo(EX + EW - 6, EY + 26 + i * 40); CX.quadraticCurveTo(EX + EW + 38, EY + 36 + i * 40, EX + EW + 42, EY + 120); CX.stroke(); }
+    CX.beginPath(); CX.moveTo(EX + EW + 42, EY + 116); CX.lineTo(EX + EW + 42, EY + 178); CX.stroke(); CX.restore();
+    lab('exhaust manifold', EX + EW + 42, EY + 202, 'center', EX + EW + 42, EY + 182);
+    dot(EX - 1, EY + EH - 40, 21, C['metal-dk'], withA(C.ink, .6)); dot(EX - 1, EY + EH - 40, 8, C.metal);
+    txt('ENGINE', EX + EW / 2, EY + EH / 2 - 2, 14, C['white-surf'], 'center', 800);
+    mtxt('95 °C', EX + EW / 2, EY + EH / 2 + 22, 13, C['white-surf'], 'center', 700);
+    /* ---------------- hoses and the water pump ------------------------- */
+    hose(RX + RW + 6, RY - 17, 400, RY - 40, EX + 8, EY - 18, mixCol(C.rad, '#000000', .25));
+    hose(RX + RW + 6, RY + RH + 17, 396, RY + RH + 34, EX + 4, EY + EH - 16, mixCol(C.conv, '#000000', .3));
+    dot(410, EY + EH - 4, 23, C['metal-dk'], withA(C.ink, .6)); dot(410, EY + EH - 4, 9, C.metal);
+    for (i = 0; i < 6; i++) { a = i * 1.047 + t * 4; line(410, EY + EH - 4, 410 + Math.cos(a) * 17, EY + EH - 4 + Math.sin(a) * 17, withA(C.shiny, .4), 2); }
+    lab('water pump', 410, EY + EH + 56, 'center', 410, EY + EH + 22);
+    lab('hot coolant →', 400, RY - 66, 'center', 400, RY - 44);
+    lab('← cooled coolant', 372, RY + RH + 66, 'center', 372, RY + RH + 38);
+    /* ---------------- the three mechanisms ----------------------------- */
     if (on('cond')) {
-      for (i = 0; i < 3; i++) flowArrow(470 + i * 50, 300, 470 + i * 50, 250, C.cond, t, { w: 2.2 });
-      for (i = 0; i < 4; i++) flowArrow(142 + i * 36, 300, 160 + i * 36, 300, C.cond, t, { w: 2 });
-      plate('engine → coolant · tube → fins', 530, 470, 10, C.cond, 'center');
+      for (i = 0; i < 3; i++) flowArrow(EX + 46 + i * 62, EY + EH - 34, EX + 46 + i * 62, EY + 26, C.cond, t, { w: 2.2 });
+      for (i = 0; i < 5; i++) flowArrow(RX + 22 + i * 29, RY + 40 + i * 34, RX + 22 + i * 29 + 22, RY + 40 + i * 34, C.cond, t, { w: 2 });
+      plate('engine → coolant · tube → fins', EX + EW / 2, EY + EH + 96, 10, C.cond, 'center');
     }
     if (on('conv')) {
-      flowArrow(300, 200, 400, 200, C.conv, t, { w: 3 }); flowArrow(400, 420, 300, 420, C.conv, t, { w: 3 });
-      flowArrow(430, 400, 430, 220, C.conv, t, { w: 2.2, alpha: .7 }); flowArrow(268, 210, 268, 410, C.conv, t, { w: 2.2, alpha: .7 });
+      flowArrow(RX + RW + 22, RY - 17, 430, RY - 17, C.conv, t, { w: 3 });
+      flowArrow(430, RY + RH + 17, RX + RW + 22, RY + RH + 17, C.conv, t, { w: 3 });
+      flowArrow(EX + 16, EY + EH - 28, EX + 16, EY + 10, C.conv, t, { w: 2.2, alpha: .7 });
+      flowArrow(RX + RW - 8, RY + 16, RX + RW - 8, RY + RH - 16, C.conv, t, { w: 2.2, alpha: .7 });
       var n = fan ? 5 : 3;
-      for (i = 0; i < n; i++) flowArrow(fan ? 104 : 40, 200 + i * 50, fan ? 310 : 300, 200 + i * 50, C.conv, t, { w: 2, alpha: .75 });
-      plate((fan ? 'fan-forced' : 'moving-car') + ' air through the fins · pumped coolant loop', 300, 500, 11, C.conv, 'center');
+      for (i = 0; i < n; i++) flowArrow(fan ? 128 : 44, RY + 22 + i * 44, RX + RW + 16, RY + 22 + i * 44, C.conv, t, { w: 2, alpha: .75 });
+      plate((fan ? 'fan-forced' : 'moving-car') + ' air through the fins · pumped coolant loop', 330, 560, 11, C.conv, 'center');
     }
-    if (on('rad')) { for (i = 0; i < 3; i++) waveArrow(120, 220 + i * 70, 40, 200 + i * 70, C.rad, t, { amp: 2.5, lam: 10, w: 1.6, alpha: .8 }); }
-    lab('hot coolant →', 350, 186, 'center'); lab('← cooled coolant', 350, 448, 'center');
+    if (on('rad')) { for (i = 0; i < 3; i++) waveArrow(RX - 14, RY + 34 + i * 74, RX - 96, RY + 16 + i * 74, C.rad, t, { amp: 2.5, lam: 10, w: 1.6, alpha: .8 }); }
   }
 });
 
