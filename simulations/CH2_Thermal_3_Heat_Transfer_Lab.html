@@ -285,7 +285,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">🌡️ Heat Transfer Lab</span> <span class="badge-top" id="badge">v1.1.9</span></h1>
+    <h1><span class="t">🌡️ Heat Transfer Lab</span> <span class="badge-top" id="badge">v1.2.1</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -1992,16 +1992,135 @@ function radInfo(extra) {
     '<b>Texture matters as much as colour:</b> shiny black emits less than dull black; and a good absorber is always a good emitter — same surface, two directions.'
   ].concat(extra || [])) + '<div class="note"><b>In words, not a formula:</b> emission rate rises with surface temperature and with surface area; an object at constant temperature emits and absorbs at equal rates.</div>';
 }
-/* a cup with water, surface s, water temperature T                        */
-function cup(x, y, w, h, s, T, label) {
-  surfPatch(x, y, w, h, s, true);
-  /* a cutaway showing the water level and its colour */
-  CX.save(); CX.fillStyle = tcol(tu(T), .9); CX.fillRect(x + 8, y + 14, w - 16, h - 22); CX.restore();
-  CX.save(); CX.strokeStyle = withA(C.ink, .5); CX.lineWidth = 1; CX.strokeRect(x + 8, y + 14, w - 16, h - 22); CX.restore();
-  fillRR(x - 4, y - 4, w + 8, 8, 3, withA(C.shiny, .5), withA(C.ink, .5));
-  mtxt(fmt(T, 1) + ' °C', x + w / 2, y + h / 2 + 4, 12, C['black-surf'], 'center', 700);
-  thermo(x + w + 22, y + h - 16, h - 30, T);
-  plate(label || s.name, x + w / 2, y + h + 22, 11, C.text, 'center');
+/* ── a beaker of water, drawn as a real cylinder seen slightly from above ──
+   painted outside (dull = matte, shiny = a specular streak), an open mouth
+   you can see the water through, a cut-away window so the water colour
+   reads as temperature, and a thermometer dipped through the mouth.
+   lean = −1 / +1 tilts that thermometer away from the lamp's beam.      */
+function cup(x, y, w, h, s, T, label, lean, lid) {
+  var cx = x + w / 2, ry = w * .17, u = clamp(tu(T), 0, 1), i;
+  var base = s.fill(), dk = mixCol(base, '#000000', .58), lt = mixCol(base, '#ffffff', s.shiny ? .85 : .24);
+  lean = lean || -1;
+  /* the shadow it casts on the bench                                     */
+  CX.save(); CX.fillStyle = withA(C.ink, .35);
+  CX.beginPath(); CX.ellipse(cx + 8, y + h + 1, w * .56, ry * .66, 0, 0, 7); CX.fill(); CX.restore();
+  /* the body: one cylinder, shaded across its width                      */
+  var bodyPath = function () {
+    CX.beginPath(); CX.moveTo(x, y); CX.lineTo(x, y + h - ry);
+    CX.ellipse(cx, y + h - ry, w / 2, ry, 0, Math.PI, 0, true);
+    CX.lineTo(x + w, y); CX.closePath();
+  };
+  CX.save(); bodyPath();
+  var g = CX.createLinearGradient(x, 0, x + w, 0);
+  g.addColorStop(0, dk); g.addColorStop(s.shiny ? .18 : .26, base);
+  g.addColorStop(s.shiny ? .30 : .48, lt); g.addColorStop(s.shiny ? .44 : .70, base);
+  g.addColorStop(1, dk);
+  CX.fillStyle = g; CX.fill(); CX.clip();
+  if (s.shiny) { CX.globalAlpha = .45; CX.fillStyle = C.shiny; CX.fillRect(x + w * .62, y, w * .06, h); }
+  else {
+    CX.globalAlpha = .2; CX.fillStyle = base === C['black-surf'] ? C.shiny : C.ink;
+    for (i = 0; i < Math.round(w * h / 110); i++) CX.fillRect(x + hash(i, 1) * w, y + hash(i, 2) * h, 1.5, 1.5);
+  }
+  CX.restore();
+  CX.save(); bodyPath(); CX.strokeStyle = withA(C.ink, .75); CX.lineWidth = 1.4; CX.stroke(); CX.restore();
+  /* the open mouth: rim, inside wall, then the water surface             */
+  CX.save();
+  CX.beginPath(); CX.ellipse(cx, y, w / 2, ry, 0, 0, 7);
+  CX.fillStyle = mixCol(base, '#ffffff', s.shiny ? .5 : .14); CX.fill();
+  CX.strokeStyle = withA(C.ink, .75); CX.lineWidth = 1.4; CX.stroke();
+  CX.beginPath(); CX.ellipse(cx, y + 2, w / 2 - 7, ry - 2.5, 0, 0, 7); CX.fillStyle = withA(C.ink, .85); CX.fill();
+  CX.beginPath(); CX.ellipse(cx, y + 6, w / 2 - 10, ry - 4, 0, 0, 7); CX.fillStyle = tcol(u, .95); CX.fill();
+  CX.globalAlpha = .3; CX.fillStyle = C.shiny;
+  CX.beginPath(); CX.ellipse(cx - w * .15, y + 5, w * .11, ry * .3, -.3, 0, 7); CX.fill();
+  CX.restore();
+  /* an insulating lid: nothing leaves through the top                    */
+  if (lid) {
+    var lr = w / 2 + 6, lry = ry + 2;
+    CX.save();
+    CX.beginPath(); CX.moveTo(cx - lr, y - 7); CX.lineTo(cx - lr, y - 2);
+    CX.ellipse(cx, y - 2, lr, lry, 0, Math.PI, 0, true);
+    CX.lineTo(cx + lr, y - 7); CX.closePath();
+    CX.fillStyle = mixCol(C['metal-dk'], '#000000', .3); CX.fill();
+    CX.strokeStyle = withA(C.ink, .75); CX.lineWidth = 1.2; CX.stroke();
+    CX.beginPath(); CX.ellipse(cx, y - 7, lr, lry, 0, 0, 7);
+    var lg = CX.createLinearGradient(cx - lr, 0, cx + lr, 0);
+    lg.addColorStop(0, mixCol(C.metal, '#000000', .4)); lg.addColorStop(.44, mixCol(C.metal, '#ffffff', .3));
+    lg.addColorStop(1, mixCol(C.metal, '#000000', .4));
+    CX.fillStyle = lg; CX.fill(); CX.stroke();
+    CX.restore();
+    dot(cx - w * .2 * lean, y - 10, 5, mixCol(C.metal, '#ffffff', .18), withA(C.ink, .6));
+  }
+  /* the cut-away window onto the water                                   */
+  var ww = w * .54, wx = cx - ww / 2, wy = y + ry + 18, wh = h - ry - 48;
+  CX.save();
+  var wg = CX.createLinearGradient(0, wy, 0, wy + wh);
+  wg.addColorStop(0, tcol(u, .95)); wg.addColorStop(1, tcol(clamp(u - .1, 0, 1), .95));
+  CX.fillStyle = wg; rr(wx, wy, ww, wh, 5); CX.fill();
+  CX.setLineDash([5, 4]); CX.strokeStyle = withA(C.ink, .8); CX.lineWidth = 1.4; rr(wx, wy, ww, wh, 5); CX.stroke();
+  CX.restore();
+  mtxt(fmt(T, 1) + ' °C', cx, wy + wh / 2 + 4, 12.5, C['black-surf'], 'center', 800);
+  /* the thermometer, dipped through the mouth and leaning clear of the beam */
+  var ang = .18 * lean, tbx = cx + w * .17 * lean, tby = y + 10, tl = 92;
+  CX.save(); CX.translate(tbx, tby); CX.rotate(ang);
+  fillRR(-5, -tl, 10, tl + 7, 5, withA(C.card, .95), withA(C.ink, .8), 1.2);
+  CX.fillStyle = tcol(u);
+  rr(-2.5, -5 - (tl - 18) * u, 5, (tl - 18) * u + 7, 2.5); CX.fill();
+  CX.beginPath(); CX.arc(0, 0, 6, 0, 7); CX.fill();
+  CX.strokeStyle = withA(C.ink, .8); CX.lineWidth = 1; CX.stroke();
+  CX.strokeStyle = withA(C.ink, .45);
+  for (i = 1; i < 5; i++) { CX.beginPath(); CX.moveTo(1.5, -i * (tl - 16) / 5); CX.lineTo(4.5, -i * (tl - 16) / 5); CX.stroke(); }
+  CX.restore();
+  plate(fmt(T, 0) + ' °C', tbx + Math.sin(ang) * (tl + 16), tby - Math.cos(ang) * (tl + 16), 11, tink(u), 'center', true);
+  plate(label || s.name, cx, y + h + 32, 11, C.text, 'center');
+}
+/* ── the heat lamp: a shade with a lit bulb under it, and its light cone ── */
+function heatLamp(x, y) {
+  fillRR(x - 16, y - 132, 32, 8, 3, C['metal-dk'], C.metal);
+  line(x, y - 126, x, y - 74, C.metal, 4);
+  CX.save();
+  CX.beginPath(); CX.moveTo(x - 24, y - 72); CX.lineTo(x + 24, y - 72);
+  CX.lineTo(x + 64, y - 12); CX.lineTo(x - 64, y - 12); CX.closePath();
+  var g = CX.createLinearGradient(x - 64, 0, x + 64, 0);
+  g.addColorStop(0, mixCol(C['metal-dk'], '#000000', .4)); g.addColorStop(.36, C.metal);
+  g.addColorStop(.5, mixCol(C.metal, '#ffffff', .4)); g.addColorStop(.7, C.metal);
+  g.addColorStop(1, mixCol(C['metal-dk'], '#000000', .4));
+  CX.fillStyle = g; CX.fill();
+  CX.strokeStyle = withA(C.ink, .7); CX.lineWidth = 1.4; CX.stroke();
+  CX.beginPath(); CX.ellipse(x, y - 72, 24, 6, 0, 0, 7); CX.fillStyle = mixCol(C.metal, '#ffffff', .25); CX.fill(); CX.stroke();
+  CX.beginPath(); CX.ellipse(x, y - 12, 64, 16, 0, 0, 7); CX.fillStyle = mixCol(C['metal-dk'], '#000000', .5); CX.fill(); CX.stroke();
+  CX.restore();
+  CX.save();
+  var rg = CX.createRadialGradient(x - 4, y - 8, 2, x, y - 2, 32);
+  rg.addColorStop(0, '#fffbe8'); rg.addColorStop(.42, C.sun); rg.addColorStop(1, withA(C.sun, 0));
+  CX.fillStyle = rg; CX.beginPath(); CX.arc(x, y - 2, 32, 0, 7); CX.fill();
+  CX.restore();
+  dot(x, y - 2, 13, C.sun, withA(C.ink, .35));
+}
+function lampCone(x, y, yb) {
+  CX.save();
+  var cg = CX.createLinearGradient(0, y, 0, yb);
+  cg.addColorStop(0, withA(C.sun, .15)); cg.addColorStop(1, withA(C.sun, 0));
+  CX.fillStyle = cg; CX.beginPath();
+  CX.moveTo(x - 58, y); CX.lineTo(x + 58, y); CX.lineTo(x + 205, yb); CX.lineTo(x - 205, yb);
+  CX.closePath(); CX.fill(); CX.restore();
+}
+/* ── the room the experiment sits in: its air temperature is a condition ── */
+function roomT() { var v = V('room'); return (v == null || isNaN(v)) ? RACE.Troom : +v; }
+function roomAir(x, yb) {
+  var Tr = roomT(), u = clamp(tu(Tr), 0, 1), hh = 96, i;
+  fillRR(x - 30, yb - 8, 60, 9, 4, C['metal-dk'], C.metal);
+  line(x, yb - 8, x, yb - 24, C.metal, 4);
+  CX.save();
+  fillRR(x - 7, yb - 24 - hh, 14, hh + 8, 7, withA(C.card, .95), withA(C.ink, .8), 1.2);
+  CX.fillStyle = tcol(u);
+  rr(x - 3, yb - 30 - (hh - 16) * u, 6, (hh - 16) * u + 8, 3); CX.fill();
+  CX.beginPath(); CX.arc(x, yb - 24, 8, 0, 7); CX.fill();
+  CX.strokeStyle = withA(C.ink, .8); CX.lineWidth = 1.1; CX.stroke();
+  CX.strokeStyle = withA(C.ink, .45);
+  for (i = 1; i < 5; i++) { CX.beginPath(); CX.moveTo(x + 2, yb - 26 - i * (hh - 14) / 5); CX.lineTo(x + 5.5, yb - 26 - i * (hh - 14) / 5); CX.stroke(); }
+  CX.restore();
+  plate(fmt(Tr, 0) + ' °C', x, yb - 24 - hh - 14, 11, tink(u), 'center', true);
+  plate('room air', x, yb + 26, 10.5, C['text-dim'], 'center');
 }
 
 /* ---------- 3.1 Leslie's cube ------------------------------------------ */
@@ -2172,41 +2291,61 @@ scene(3, 'leslie', {
 /* ---------- 3.2 Absorption race ---------------------------------------- */
 var RACE = { Troom: 20, P: 1.2, h: 0.03, hc: 0.008, hr: 0.025, Thot: 90 };
 /* absorption: T = T₀ + (aP/h)(1 − e^(−ht)); emission: T = T₀ + (T_hot − T₀) e^(−kt) */
-function absorbT(a, t) { return RACE.Troom + a * RACE.P / RACE.h * (1 - Math.exp(-RACE.h * t)); }
+function absorbT(a, t) { return roomT() + a * RACE.P / RACE.h * (1 - Math.exp(-RACE.h * t)); }
 function emitK(e) { return RACE.hc + e * RACE.hr; }
-function emitT(e, t) { return RACE.Troom + (RACE.Thot - RACE.Troom) * Math.exp(-emitK(e) * t); }
+function emitT(e, t) { return roomT() + (RACE.Thot - roomT()) * Math.exp(-emitK(e) * t); }
 function raceCups(kind, T1, T2, t) {
-  var db = surfBy('db'), sw = surfBy('sw');
-  cup(150, 300, 110, 150, db, T1, 'dull black');
-  cup(360, 300, 110, 150, sw, T2, 'shiny white');
-  if (kind === 'abs') {
-    /* the lamp above both cups */
-    fillRR(240, 80, 140, 34, 8, C['metal-dk'], C.metal); dot(310, 118, 16, C.sun);
-    lab('heat lamp / sunlight', 310, 60, 'center');
-    for (var i = 0; i < 3; i++) { waveArrow(250 + i * 20, 130, 175 + i * 22, 290, C.rad, t, { amp: 3, lam: 12, w: 1.8, alpha: .9 }); }
-    for (i = 0; i < 3; i++) { waveArrow(330 + i * 20, 130, 385 + i * 22, 290, C.rad, t, { amp: 3, lam: 12, w: 1.8, alpha: .9 }); }
-    /* reflection off the shiny cup */
-    for (i = 0; i < 3; i++) waveArrow(478, 330 + i * 30, 540, 300 + i * 30, C.rad, t, { amp: 2.5, lam: 10, w: 1.5, alpha: .55 });
-    plate('reflects most', 560, 300, 10, C['text-dim'], 'left');
-    plate('absorbs most', 120, 290, 10, C.rad, 'right');
+  var db = surfBy('db'), sw = surfBy('sw'), i, k, LX = 322, LY = 150, CY = 330, CH = 175, CW = 125;
+  var abs = kind === 'abs', X1 = abs ? 140 : 108, X2 = abs ? 380 : 432;
+  if (abs) lampCone(LX, LY - 4, CY + 30);
+  ground(512, 50, 760);
+  cup(X1, CY, CW, CH, db, T1, 'dull black', -1, !abs);
+  cup(X2, CY, CW, CH, sw, T2, 'shiny white', +1, !abs);
+  roomAir(abs ? 740 : 706, 505);
+  if (abs) {
+    heatLamp(LX, LY);
+    lab('heat lamp / sunlight', LX, 96, 'center', LX, 132);
+    /* parallel-ordered rays: the ray that leaves furthest left also lands
+       furthest left, so no two beams cross                               */
+    for (i = 0; i < 3; i++) waveArrow(LX - 62 + i * 18, LY + 26, X1 + 35 + i * 22, CY - 8, C.rad, t, { amp: 3, lam: 12, w: 1.8, alpha: .9 });
+    for (i = 0; i < 3; i++) waveArrow(LX + 26 + i * 18, LY + 26, X2 + 10 + i * 22, CY - 8, C.rad, t, { amp: 3, lam: 12, w: 1.8, alpha: .9 });
+    for (i = 0; i < 3; i++) waveArrow(X2 + CW + 3, CY + 34 + i * 30, X2 + CW + 75, CY + 8 + i * 30, C.rad, t, { amp: 2.5, lam: 10, w: 1.5, alpha: .55 });
+    plate('reflects most', 590, CY + 76, 10, C['text-dim'], 'left');
+    plate('absorbs most', 118, CY + 14, 10, C.rad, 'right');
   } else {
-    for (i = 0; i < 5; i++) waveArrow(150, 320 + i * 24, 100 - i * 6, 314 + i * 24, C.rad, t, { amp: 3, lam: 12, w: 1.8, alpha: .9 });
-    for (i = 0; i < 2; i++) waveArrow(470, 340 + i * 40, 520, 334 + i * 40, C.rad, t, { amp: 3, lam: 12, w: 1.8, alpha: .5 });
-    plate('emits most', 150, 290, 10, C.rad, 'center');
-    plate('emits least', 470, 290, 10, C['text-dim'], 'center');
+    /* with the top lidded, the infrared leaves all round the sides       */
+    emitFan(X1, CY, CW, CH, db, t); emitFan(X2, CY, CW, CH, sw, t);
+    plate('both cups start at ' + fmt(RACE.Thot, 0) + ' °C and cool toward the room air', 322, 96, 11, C['text-dim'], 'center');
+    plate('each cup is lidded, so energy leaves only as radiation from the sides', 322, 124, 11, C.rad, 'center');
+    plate('emits most', X1 + CW / 2, 566, 10, C.rad, 'center');
+    plate('emits least', X2 + CW / 2, 566, 10, C['text-dim'], 'center');
   }
-  plate('elapsed ' + fmt(t, 0) + ' s', 310, 520, 12, C.accent, 'center', true);
+  plate('elapsed ' + fmt(t, 0) + ' s', 322, abs ? 570 : 600, 12, C.accent, 'center', true);
+}
+/* infrared streaming out all round one cup — how many arrows, and how
+   strong, is set by that surface's emissivity                           */
+function emitFan(x, y, w, h, s, t) {
+  var cy = y + h * .45, n = Math.max(1, Math.round(4 * s.e)), L = 58, side, k, f, ang, sx, sy;
+  for (side = -1; side <= 1; side += 2) {
+    for (k = 0; k < n; k++) {
+      f = n === 1 ? 0 : (k - (n - 1) / 2) / ((n - 1) / 2);
+      sy = cy + f * 52; sx = side < 0 ? x - 3 : x + w + 3;
+      ang = side < 0 ? Math.PI - f * .52 : f * .52;
+      waveArrow(sx, sy, sx + Math.cos(ang) * L, sy + Math.sin(ang) * L,
+        C.rad, t, { amp: 3, lam: 12, w: 1.8, alpha: .35 + .55 * s.e });
+    }
+  }
 }
 function raceGraph(kind, t, tmax) {
   var p1 = [], p2 = [];
   for (var i = 0; i <= 60; i++) { var tt = i / 60 * t; p1.push([tt, kind === 'abs' ? absorbT(surfBy('db').e, tt) : emitT(surfBy('db').e, tt)]); p2.push([tt, kind === 'abs' ? absorbT(surfBy('sw').e, tt) : emitT(surfBy('sw').e, tt)]); }
-  return { ser: [{ name: 'dull black', col: C.rad, pts: p1 }, { name: 'shiny white', col: C['text-dim'], pts: p2 }], o: { x0: 0, x1: tmax, y0: 20, y1: 100, xl: 'time / s', yl: 'water T / °C', title: kind === 'abs' ? 'absorption race — water warming in the lamp' : 'emission race — hot water cooling' } };
+  return { ser: [{ name: 'dull black', col: C.rad, pts: p1 }, { name: 'shiny white', col: C['text-dim'], pts: p2 }], o: { x0: 0, x1: tmax, y0: Math.min(20, Math.floor(roomT() / 10) * 10), y1: 100, xl: 'time / s', yl: 'water T / °C', title: kind === 'abs' ? 'absorption race — water warming in the lamp' : 'emission race — hot water cooling' } };
 }
 scene(3, 'absorb', {
   label: '☀️ Absorption Race',
   title: 'Radiation — absorption race (room-temperature water in sunlight)',
   sub: 'two identical cups, same water, same lamp — only the outside differs',
-  ctrl: [{ type: 'toggle', key: 'why', label: 'Atomic view', def: false }],
+  ctrl: [{ type: 'slider', key: 'room', label: 'Room air', min: 5, max: 35, step: 1, unit: ' °C', def: 20 }, { type: 'toggle', key: 'why', label: 'Atomic view', def: false }],
   hint: '▶ Play and watch which cup warms faster · the graph runs live · double-click to zoom ×2',
   draw: function () {
     var t = S.t; prog(90);
@@ -2220,7 +2359,7 @@ scene(3, 'absorb', {
     mtxt('dull black ' + fmt(T1, 1) + ' °C · shiny white ' + fmt(T2, 1) + ' °C', 985, 522, 11, C.text, 'center', 700);
     });
   },
-  data: function () { var t = S.t; return [['elapsed', fmt(t, 0) + ' s'], ['dull black water', fmt(absorbT(surfBy('db').e, t), 1) + ' °C'], ['shiny white water', fmt(absorbT(surfBy('sw').e, t), 1) + ' °C'], ['difference', fmt(absorbT(surfBy('db').e, t) - absorbT(surfBy('sw').e, t), 1) + ' °C'], ['lamp', 'same on both — only the surface differs']]; },
+  data: function () { var t = S.t; return [['elapsed', fmt(t, 0) + ' s'], ['dull black water', fmt(absorbT(surfBy('db').e, t), 1) + ' °C'], ['shiny white water', fmt(absorbT(surfBy('sw').e, t), 1) + ' °C'], ['difference', fmt(absorbT(surfBy('db').e, t) - absorbT(surfBy('sw').e, t), 1) + ' °C'], ['lamp', 'same on both — only the surface differs'], ['room air (start T)', fmt(roomT(), 0) + ' °C']]; },
   dataGraph: function () { return panelGraph('pgAbs', function (ctx, box) { var g = raceGraph('abs', S.t, 90); drawGraph(ctx, box, g.ser, g.o); }); },
   info: function () { return radInfo(['<b>Absorption race:</b> same water, same lamp; the dull black cup warms most because its surface absorbs most and reflects least. Reason banner: dull black = best absorber.']); }
 });
@@ -2230,7 +2369,7 @@ scene(3, 'emit', {
   label: '❄️ Emission Race',
   title: 'Radiation — emission race (very hot water cooling)',
   sub: 'two identical cups of hot water left in the room — which cools fastest?',
-  ctrl: [{ type: 'toggle', key: 'why', label: 'Atomic view', def: false }],
+  ctrl: [{ type: 'slider', key: 'room', label: 'Room air', min: 5, max: 35, step: 1, unit: ' °C', def: 20 }, { type: 'toggle', key: 'why', label: 'Atomic view', def: false }],
   hint: '▶ Play and read the cooling rates · a good absorber is a good emitter · double-click to zoom ×2',
   draw: function () {
     var t = S.t; prog(120);
@@ -2239,14 +2378,14 @@ scene(3, 'emit', {
     var g = raceGraph('emit', t, 120);
     if (V('why')) dcard('atomic', 792, 88, 386, 300, 'WHY DULL BLACK BEATS SHINY WHITE', function () { atomicBody(792, 88, 386, 300); });
     else dcard('graph', 792, 88, 386, 300, null, function () { drawGraph(CX, { x: 800, y: 96, w: 370, h: 284 }, g.ser, g.o); });
-    var r1 = emitK(surfBy('db').e) * (T1 - RACE.Troom), r2 = emitK(surfBy('sw').e) * (T2 - RACE.Troom);
+    var r1 = emitK(surfBy('db').e) * (T1 - roomT()), r2 = emitK(surfBy('sw').e) * (T2 - roomT());
     dcard('why', 792, 400, 386, 130, 'COOLING RATE NOW', function () {
     txt('dull black', 806, 440, 11, C['text-dim'], 'left', 700); mtxt('−' + fmt(r1, 2) + ' °C/s', 1166, 440, 12, C.rad, 'right', 700);
     txt('shiny white', 806, 460, 11, C['text-dim'], 'left', 700); mtxt('−' + fmt(r2, 2) + ' °C/s', 1166, 460, 12, C['text-dim'], 'right', 700);
     wrap('Dull black loses energy fastest — the best emitter. Shiny white emits poorly, so its water stays hot longer. A good absorber is a good emitter.', 806, 484, 360, 10.5, C['text-dim'], 14);
     });
   },
-  data: function () { var t = S.t, T1 = emitT(surfBy('db').e, t), T2 = emitT(surfBy('sw').e, t); return [['elapsed', fmt(t, 0) + ' s'], ['dull black water', fmt(T1, 1) + ' °C  ·  cooling ' + fmt(emitK(surfBy('db').e) * (T1 - 20), 2) + ' °C/s'], ['shiny white water', fmt(T2, 1) + ' °C  ·  cooling ' + fmt(emitK(surfBy('sw').e) * (T2 - 20), 2) + ' °C/s'], ['room', '20 °C']]; },
+  data: function () { var t = S.t, T1 = emitT(surfBy('db').e, t), T2 = emitT(surfBy('sw').e, t); return [['elapsed', fmt(t, 0) + ' s'], ['dull black water', fmt(T1, 1) + ' °C  ·  cooling ' + fmt(emitK(surfBy('db').e) * (T1 - roomT()), 2) + ' °C/s'], ['shiny white water', fmt(T2, 1) + ' °C  ·  cooling ' + fmt(emitK(surfBy('sw').e) * (T2 - roomT()), 2) + ' °C/s'], ['room air', fmt(roomT(), 0) + ' °C'], ['started at', fmt(RACE.Thot, 0) + ' °C']]; },
   dataGraph: function () { return panelGraph('pgEmit', function (ctx, box) { var g = raceGraph('emit', S.t, 120); drawGraph(ctx, box, g.ser, g.o); }); },
   info: function () { return radInfo(['<b>Emission race:</b> same hot water; the dull black cup cools fastest because its surface emits most infrared. Shiny white keeps the drink hot — which is why a flask is silvered.']); }
 });
