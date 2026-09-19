@@ -159,12 +159,14 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
 .ctrl-btn{background:var(--card2);border:1px solid var(--border);color:var(--text);padding:0 12px;
   height:28px;line-height:26px;border-radius:8px;cursor:pointer;font-size:11.5px;font-weight:600;
   transition:all .16s;white-space:nowrap}
-#bPlay{display:inline-grid;justify-items:center;align-items:center}
-#bPlay .ppl{grid-area:1/1;visibility:hidden}
-#bPlay .ppl.on{visibility:visible}
-#bSound{display:inline-grid;justify-items:center;align-items:center;min-width:44px}
-#bSound .ppl{grid-area:1/1;visibility:hidden}
-#bSound .ppl.on{visibility:visible}
+/* a button whose label changes stacks every label in ONE grid cell, so it is
+   sized by its widest label once and never reflows the row. Keyed off the
+   .ppl markup itself, not per button id, or a new button silently shows all
+   of its labels at once. */
+.ctrl-btn:has(.ppl){display:inline-grid;justify-items:center;align-items:center}
+.ppl{grid-area:1/1;visibility:hidden}
+.ppl.on{visibility:visible}
+#bSound{min-width:44px}
 .ctrl-btn:hover{border-color:var(--accent);color:var(--accent)}
 .ctrl-btn:disabled{opacity:.4;cursor:default}
 .ctrl-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
@@ -283,7 +285,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">🌊 Introduction to Waves</span> <span class="badge-top" id="badge">v1.1.0</span></h1>
+    <h1><span class="t">🌊 Introduction to Waves</span> <span class="badge-top" id="badge">v1.5.2</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -327,6 +329,13 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
           <button class="pill" data-v="2d">2-D</button>
         </div>
       </div>
+      <div class="tgroup nb" id="gLFAx">
+        <div class="pills" id="gLFAxis">
+          <button class="pill active" data-g="lf" title="wavelength against frequency — a curve">λ–f</button>
+          <button class="pill" data-g="l1f" title="wavelength against 1/f — a straight line whose gradient is the speed">λ–1/f</button>
+          <button class="pill" data-g="vf" title="speed against frequency — flat, because f×λ never changes">v–f</button>
+        </div>
+      </div>
       <div class="tgroup" id="gCtx">
         <button class="ctrl-btn" id="tMeasure" title="drag the two handles of a ruler across the wave">🛠 Measure</button>
         <button class="ctrl-btn" id="tHold" title="keep the wave speed fixed so λ and f trade off against each other">🔗 Hold v</button>
@@ -334,6 +343,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
         <button class="ctrl-btn" id="bSound" title="mute / unmute the real tone (the animation keeps running)"><span class="ppl on" data-pp="on">🔊 Sound</span><span class="ppl" data-pp="off">🔇 Muted</span></button>
         <button class="ctrl-btn on" id="tComp" title="highlight the compressions (dense regions) and their labels">🔴 Compression</button>
         <button class="ctrl-btn on" id="tRare" title="highlight the rarefactions (sparse regions) and their labels">🔵 Rarefaction</button>
+        <button class="ctrl-btn" id="tSnap" title="freeze graph (a) at this instant — a real photograph of the slinky; press again to let it run live"><span class="ppl on" data-pp="take">📷 Snapshot</span><span class="ppl" data-pp="live">📷 Frozen</span></button>
       </div>
       <span class="spacer"></span>
       <div class="sliders" id="gCtrl"></div>
@@ -403,15 +413,22 @@ var V_AIR = 340, V_WATER = 1500, C_LIGHT = 3.0e8;
 var PXM1 = 200;                 /* Mode 1: px per metre along the slinky */
 var PXM2 = 100;                 /* Mode 2: px per metre                  */
 var PXM3 = 250;                 /* Mode 3: px per metre of air column    */
-var N_COIL = 60, COIL_X0 = 120, COIL_DX = 16, TRACK = 18;   /* tracked coil index */
+var N_COIL = 60, COIL_X0 = 120, COIL_DX = 16;
+/* which coil graph (b) plots, and when its sweep started — both live in S so
+   picking a new coil can restart the trace. TRACK() is the single reader. */
+function TRACK() { return S.m1.track; }
+function trackCoil(i) {                     /* pick a coil and restart graph (b) */
+  S.m1.track = clamp(Math.round(i), 0, N_COIL - 1);
+  S.m1.sweep0 = S.t;
+}
 var VIS_DIV = 200;              /* Mode 3: the drawn wave runs at f / VIS_DIV */
 
 var S = {
   md: 1, mode: 'sim', ptab: 'data', theme: 'dark',
   play: true, speed: 1, t: 0, labels: true, formula: false,
   ex: { 1: 'slinky', 2: 'wave', 3: 'tone', 4: 'em3d' },
-  m1: { type: 'T', f: 2, A: 0.6, real: null },
-  m2: { type: 'T', f: 2, A: 0.5, v: 4, holdV: false, measure: false, r1: 2.0, r2: 4.0 },
+  m1: { snap: null, type: 'T', f: 2, A: 0.6, real: null, track: 0, sweep0: 0 },
+  m2: { type: 'T', f: 2, A: 0.5, v: 4, holdV: false, measure: false, r1: 2.0, r2: 4.0, gax: 'lf' },
   m3: { f: 440, A: 0.6, sound: true, d: 85, us: 'medical', echo: null, showComp: true, showRare: true },
   m4: { view: '3d', axes: true, logf: 14.7, region: 'visible' },
   drag: null, secOpen: {}, prac: null, quiz: null, quizLog: []
@@ -476,6 +493,17 @@ function withA(hex, a) {
   if (!m) return hex;
   var n = parseInt(m[1], 16);
   return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + a + ')';
+}
+/* blend two #rrggbb colours: t = 0 → a, t = 1 → b (used by the figure library) */
+function mixCol(a, b, t) {
+  var ma = /^#([0-9a-f]{6})$/i.exec(a), mb = /^#([0-9a-f]{6})$/i.exec(b);
+  if (!ma || !mb) return a;
+  var na = parseInt(ma[1], 16), nb = parseInt(mb[1], 16), o = '#';
+  for (var s = 16; s >= 0; s -= 8) {
+    var v = Math.round((na >> s & 255) * (1 - t) + (nb >> s & 255) * t);
+    o += ('0' + clamp(v, 0, 255).toString(16)).slice(-2);
+  }
+  return o;
 }
 function setTheme(name) {
   document.documentElement.setAttribute('data-theme', name);
@@ -698,6 +726,254 @@ function blip(freq, dur) {
 }
 </script>
 <script>
+/* ═══════════════════════════ THE FIGURE LIBRARY ════════════════════════════
+   One skeleton, three drawing styles, one pose table.
+
+   A cartoon figure does NOT have to be to scale against the apparatus beside
+   it — but it does have to be in proportion WITH ITSELF, and each cartoon
+   style has its own proportions (a doodle has a big round head, a pictogram
+   a small one). So the proportions live here once, in UNIT coordinates: the
+   figure is exactly 1.0 tall, crown at y = 0, feet at y = 1, centre line at
+   x = 0. Every scene draws through figure(x, y, h, o) and gets the same
+   proportions at whatever height h it asks for.
+
+   Angles are degrees measured from straight-DOWN, positive turning towards
+   the figure's facing side, so a pose table reads like a description:
+   shoulder 90 = arm straight out in front, hip 0 = leg straight down.      */
+var FIG_STYLE = {
+  /* thin outline doodle with a big round head and a face — friendly, good
+     when the figure is a character in the scene rather than a symbol       */
+  doodle: {
+    headR: .105, sy: .255, hy: .560, hipW: .045, shoulderW: 0,
+    upper: .155, fore: .150, thigh: .225, shin: .220,
+    lineW: .022, torsoW: 0, headFill: false, face: true
+  },
+  /* the classic signage pictogram: small round head, solid body. The body is
+     a rounded RECTANGLE, not a capsule — a capsule's domed top lets the arm
+     roots poke out as knobs above the shoulders and its domed bottom leaves
+     a notch where the legs join. Flat shoulders and a flat hip line, with a
+     joint capsule at each, give one continuous silhouette. Legs are 41% of
+     the height — shorter than a real figure's, which is what keeps it
+     reading as a sign rather than a person.                                */
+  pictogram: {
+    headR: .082, sy: .192, hy: .5905, hipW: .062, shoulderW: .100,
+    upper: .155, fore: .150, thigh: .207, shin: .2025,
+    lineW: .050, torsoW: .150, headFill: true, face: false
+  },
+  /* the cuddly one: a chubby cartoon is NOT the pictogram at a heavier line
+     weight — a wide body carries a bigger head and SHORT legs. About 4½
+     heads tall with legs only 38% of the height (the pictogram is 6 heads
+     with legs at 45%), which is what reads as "cute" rather than "stocky".
+     Legs are thigh + shin = 1 − hy exactly, so a standing figure is still
+     precisely the height it was asked for.                                 */
+  chunky: {
+    headR: .112, sy: .252, hy: .620, hipW: .074, shoulderW: .125,
+    upper: .165, fore: .160, thigh: .195, shin: .185,
+    lineW: .095, torsoW: .240, headFill: true, face: false
+  },
+  /* the cuddly one with light and shade. A flat silhouette hides which arm
+     is in front: both are the same white. Here every limb is lit from the
+     upper left and the FAR arm and leg are painted darker, so the pose
+     reads in depth. Any style can be shaded with {shade:true}.            */
+  shaded: {
+    headR: .112, sy: .252, hy: .620, hipW: .074, shoulderW: .125,
+    upper: .165, fore: .160, thigh: .195, shin: .185,
+    lineW: .095, torsoW: .240, headFill: true, face: false, shade: true
+  }
+};
+/* the light: a unit vector pointing TOWARDS the light source              */
+var FIG_LIGHT = { x: -0.55, y: -0.84 };
+/* Each pose gives four limbs as [upper-segment angle, lower-segment angle],
+   plus an optional torso lean and head tilt. "near" is the arm/leg on the
+   side the figure faces, "far" the other one.                             */
+var FIG_POSE = {
+  stand:  { armNear: [26, 31], armFar: [-26, -31], legNear: [7, 4], legFar: [-7, -4] },
+  warm:   { armNear: [78, 96], armFar: [66, 88], legNear: [10, 6], legFar: [-8, -4], lean: 4 },
+  reach:  { armNear: [96, 104], armFar: [34, 52], legNear: [13, 8], legFar: [-10, -5], lean: 6 },
+  point:  { armNear: [118, 132], armFar: [-22, -26], legNear: [8, 4], legFar: [-8, -4] },
+  walk:   { armNear: [-28, -36], armFar: [28, 36], legNear: [24, 30], legFar: [-22, -8], lean: 3 },
+  run:    { armNear: [-54, -104], armFar: [58, 112], legNear: [40, 74], legFar: [-36, -16], lean: 14 },
+  sit:    { armNear: [34, 74], armFar: [26, 66], legNear: [88, 4], legFar: [82, 2] },
+  cheer:  { armNear: [152, 168], armFar: [-150, -166], legNear: [11, 6], legFar: [-11, -6] },
+  /* hand at the chin: the elbow angles come from solving the two-link arm
+     for a target beside the jaw, not from guessing                        */
+  think:  { armNearTo: 'chin', armFar: [-20, -26], legNear: [6, 4], legFar: [-6, -4], headTilt: -8 },
+  shield: { armNear: [104, 150], armFar: [88, 132], legNear: [17, 10], legFar: [-13, -6], lean: -6 }
+};
+/* figure(x, y, h, o) — (x, y) is the point on the GROUND the figure stands
+   on, h its height in px. o: {style, pose, col, face:+1|-1, lookAt:{x,y},
+   smile:bool, shade:bool, shadow:bool, alpha, lw}. Whatever the pose does
+   with the legs, the lowest foot is placed on that ground line, so a
+   sitting or running figure never floats. Returns the boxes a scene needs:
+   the whole figure, the head and both hands.                              */
+function figure(x, y, h, o) {
+  o = o || {};
+  var st = FIG_STYLE[o.style] || FIG_STYLE.pictogram;
+  var ps = FIG_POSE[o.pose] || FIG_POSE.stand;
+  var f = o.face === -1 ? -1 : 1;                   /* +1 faces right       */
+  var col = o.col || C.ink, lean = (ps.lean || 0) * Math.PI / 180;
+  var lw = (o.lw || st.lineW) * h;
+  var shade = o.shade != null ? o.shade : !!st.shade;
+  /* local frame: origin at the ground point, y upwards is negative         */
+  var rad = function (a) { return a * Math.PI / 180 + lean; };
+  var seg = function (from, a, len) {
+    return { x: from.x + Math.sin(rad(a)) * len * h * f, y: from.y + Math.cos(rad(a)) * len * h };
+  };
+  var hip = { x: 0, y: (st.hy - 1) * h };
+  var spine = (st.hy - st.sy) * h;
+  var neck = { x: hip.x + Math.sin(lean) * spine * f, y: hip.y - Math.cos(lean) * spine };
+  var toHead = (st.sy - st.headR) * h;
+  var headC = { x: neck.x + Math.sin(lean) * toHead * f, y: neck.y - Math.cos(lean) * toHead };
+  var limb = function (root, angles, lenA, lenB) {
+    var mid = seg(root, angles[0], lenA);
+    return [root, mid, seg(mid, angles[1], lenB)];
+  };
+  /* two-link inverse kinematics: put the hand exactly where the pose asks
+     and let the elbow fall where the geometry says, instead of hand-tuning
+     angles that only look right for one style                            */
+  var ik = function (root, target, l1, l2, side) {
+    var dx = target.x - root.x, dy = target.y - root.y;
+    var d = Math.min(Math.hypot(dx, dy), (l1 + l2) * 0.999) || 1e-6;
+    var base = Math.atan2(dx, dy);
+    var bend = Math.acos(clamp((d * d + l1 * l1 - l2 * l2) / (2 * d * l1), -1, 1));
+    var a1 = base + side * bend;
+    return [root, { x: root.x + Math.sin(a1) * l1, y: root.y + Math.cos(a1) * l1 }, target];
+  };
+  /* the arms hang from a shoulder joint set just below the flat top of the
+     body, computed from the line weight so it is flush in EVERY style     */
+  var joint = lw * 0.62;
+  /* the arms hang from the EDGE of the body, never from its middle: on a
+     wide chunky torso a root set at shoulderW/2 makes both arms lie across
+     the chest and the near/far read is lost whatever the draw order       */
+  var sw = Math.max(st.shoulderW / 2, (st.torsoW || 0) / 2 - (st.lineW || 0) * .35) * h * f;
+  /* a stickman is MINIMAL: the legs come straight out from under the body,
+     with no hip block sticking out of its sides. So the leg roots are
+     tucked in far enough that the round cap of the leg lands exactly on
+     the torso edge, and there is no hip capsule at all                    */
+  var hwU = st.torsoW ? Math.min(st.hipW, st.torsoW / 2 - (st.lineW || 0) * .5) : st.hipW;
+  var hw = hwU * h * f;
+  var down = { x: Math.sin(lean) * f, y: Math.cos(lean) };
+  var shoulder = { x: neck.x + down.x * joint, y: neck.y + down.y * joint };
+  var armRoot = function (sgn) { return { x: shoulder.x + sgn * sw, y: shoulder.y }; };
+  var armF = limb(armRoot(-1), ps.armFar, st.upper, st.fore);
+  var armN;
+  if (ps.armNearTo === 'chin') {
+    var chin = { x: (st.headR * .62) * h * f, y: (st.headR * 2.05 - 1) * h };
+    armN = ik(armRoot(1), chin, st.upper * h, st.fore * h, -1 * f);
+  } else armN = limb(armRoot(1), ps.armNear, st.upper, st.fore);
+  var legF = limb({ x: hip.x - hw, y: hip.y }, ps.legFar, st.thigh, st.shin);
+  var legN = limb({ x: hip.x + hw, y: hip.y }, ps.legNear, st.thigh, st.shin);
+  /* stand the pose on the ground: shift so the lowest foot sits on y = 0   */
+  var dy = -Math.max(legF[2].y, legN[2].y);
+  var all = [hip, neck, headC, shoulder].concat(armF, armN, legF, legN);
+  all.forEach(function (p) { p.x += x; p.y += y + dy; });
+
+  /* ---- paint ---------------------------------------------------------- */
+  /* the far side is painted darker AND with a flatter highlight, so no far
+     limb can ever out-shine a near one and the depth never reads inverted */
+  var farCol = shade ? mixCol(col, '#000000', .42) : col;
+  var segPaint = function (p0, p1, w, base, far) {
+    if (!shade) return base;
+    var vx = p1.x - p0.x, vy = p1.y - p0.y, L = Math.hypot(vx, vy) || 1;
+    var px = -vy / L, py = vx / L;                  /* across the limb      */
+    var s = (px * FIG_LIGHT.x + py * FIG_LIGHT.y) >= 0 ? 1 : -1;
+    var mx = (p0.x + p1.x) / 2, my = (p0.y + p1.y) / 2;
+    var g = CX.createLinearGradient(mx + px * s * w / 2, my + py * s * w / 2,
+      mx - px * s * w / 2, my - py * s * w / 2);
+    g.addColorStop(0, mixCol(base, '#ffffff', far ? .06 : .38));
+    g.addColorStop(.5, base);
+    g.addColorStop(1, mixCol(base, '#000000', far ? .26 : .30));
+    return g;
+  };
+  var strokeLimb = function (pts, w, base, far) {
+    for (var i = 1; i < pts.length; i++) {
+      CX.save();
+      CX.strokeStyle = segPaint(pts[i - 1], pts[i], w, base, far);
+      CX.lineWidth = w; CX.lineCap = 'round'; CX.lineJoin = 'round';
+      CX.beginPath(); CX.moveTo(pts[i - 1].x, pts[i - 1].y); CX.lineTo(pts[i].x, pts[i].y); CX.stroke();
+      CX.restore();
+    }
+  };
+  /* a near limb crossing the body needs an edge or it melts into it       */
+  var rimLimb = function (pts, w) {
+    if (!shade) return;
+    CX.save(); CX.strokeStyle = mixCol(col, '#000000', .52);
+    CX.lineWidth = w * 1.17; CX.lineCap = 'round'; CX.lineJoin = 'round';
+    CX.beginPath(); CX.moveTo(pts[0].x, pts[0].y);
+    for (var i = 1; i < pts.length; i++) CX.lineTo(pts[i].x, pts[i].y);
+    CX.stroke(); CX.restore();
+  };
+  CX.save();
+  if (o.alpha != null) CX.globalAlpha = o.alpha;
+  /* a soft contact shadow sells the light direction                        */
+  if (shade && o.shadow !== false) {
+    CX.save(); CX.fillStyle = 'rgba(0,0,0,' + (LIGHT ? .16 : .30) + ')';
+    CX.beginPath(); CX.ellipse(x + h * .03, y + lw * .18, h * .21, h * .028, 0, 0, 7); CX.fill(); CX.restore();
+  }
+  /* STRICT z-order, so the body always separates the two sides:
+     far leg → far arm → body → near leg → near arm → head.
+     There are no joint capsules: every limb
+     root is tucked inside the torso outline, so a capsule would either be
+     invisible or, worse, stick out of the body as a shoulder knob or a
+     hip block — and a stickman is minimal, a silhouette that reads as a
+     POSE, not a human figure with every part modelled.                    */
+  strokeLimb(legF, lw, farCol, true); strokeLimb(armF, lw, farCol, true);
+  if (st.torsoW) {
+    var tw = st.torsoW * h;
+    CX.save();
+    CX.translate(hip.x, hip.y); CX.rotate(lean * f);
+    if (shade) {
+      var g = CX.createLinearGradient(-tw / 2, 0, tw / 2, 0);
+      g.addColorStop(0, mixCol(col, '#ffffff', .30)); g.addColorStop(.55, col);
+      g.addColorStop(1, mixCol(col, '#000000', .26));
+      CX.fillStyle = g;
+    } else CX.fillStyle = col;
+    rr(-tw / 2, -spine, tw, spine, tw * .34); CX.fill();
+    CX.restore();
+  } else strokeLimb([neck, hip], lw, col);
+  rimLimb(legN, lw); strokeLimb(legN, lw, col);
+  rimLimb(armN, lw); strokeLimb(armN, lw, col);
+  /* the head */
+  var hr = st.headR * h;
+  CX.beginPath(); CX.arc(headC.x, headC.y, hr, 0, 7);
+  if (st.headFill) {
+    if (shade) {
+      var rg = CX.createRadialGradient(headC.x + FIG_LIGHT.x * hr * .45, headC.y + FIG_LIGHT.y * hr * .45,
+        hr * .12, headC.x, headC.y, hr * 1.15);
+      rg.addColorStop(0, mixCol(col, '#ffffff', .40)); rg.addColorStop(.55, col);
+      rg.addColorStop(1, mixCol(col, '#000000', .30));
+      CX.fillStyle = rg;
+    } else CX.fillStyle = col;
+    CX.fill();
+  } else {
+    CX.fillStyle = withA(C['graph-bg'], .92); CX.fill();
+    CX.strokeStyle = col; CX.lineWidth = lw * .95; CX.stroke();
+  }
+  /* a doodle gets a face; the eyes look wherever the scene points them     */
+  if (st.face && o.face !== 'blank') {
+    var tilt = (ps.headTilt || 0) * Math.PI / 180;
+    var ex = hr * .36, ey = -hr * .10, pr = Math.max(1.5, hr * .14), ddx = hr * .10 * f, ddy = 0;
+    if (o.lookAt) {
+      var lx = o.lookAt.x - headC.x, ly = o.lookAt.y - headC.y, LL = Math.hypot(lx, ly) || 1;
+      ddx = lx / LL * hr * .18; ddy = ly / LL * hr * .18;
+    }
+    CX.save(); CX.translate(headC.x, headC.y); CX.rotate(tilt);
+    dot(-ex + ddx, ey + ddy, pr, col); dot(ex + ddx, ey + ddy, pr, col);
+    CX.strokeStyle = col; CX.lineWidth = Math.max(1.3, lw * .6); CX.lineCap = 'round';
+    CX.beginPath();
+    if (o.smile === false) CX.arc(ddx * .4, hr * .92, hr * .45, -Math.PI * .80, -Math.PI * .20);
+    else CX.arc(ddx * .4, hr * .16, hr * .54, Math.PI * .20, Math.PI * .80);
+    CX.stroke(); CX.restore();
+  }
+  CX.restore();
+  var xs = all.map(function (p) { return p.x; }), ys = all.map(function (p) { return p.y; });
+  var x0 = Math.min.apply(null, xs) - lw, x1 = Math.max.apply(null, xs) + lw;
+  return { x: x0, y: headC.y - hr - lw, w: x1 - x0, h: (y + lw) - (headC.y - hr - lw),
+    head: { x: headC.x, y: headC.y, r: hr },
+    handNear: armN[2], handFar: armF[2], neck: neck, hip: hip };
+}
+</script>
+<script>
 /* ============ MODE 1 — Wave types: one slinky, two vibrations ============ */
 var M1 = { axisY: 178, coilH: 34, coilW: 8, ampT: 52, ampLMax: 32 };
 /* longitudinal displacement is drawn exaggerated so the bunching is visible at
@@ -711,8 +987,8 @@ function m1AmpL() {
 /* geometry of every coil this frame — the single source both the picture
    and both graphs read from.  x,y are logical px; s is the displacement
    (in units of A, −1..1) that the graphs plot.                             */
-function coils1() {
-  var p = S.m1, f = p.f, A = p.A, t = S.t, out = [], ampL = m1AmpL();
+function coils1(tAt) {
+  var p = S.m1, f = p.f, A = p.A, t = tAt == null ? S.t : tAt, out = [], ampL = m1AmpL();
   for (var i = 0; i < N_COIL; i++) {
     var rx = COIL_X0 + i * COIL_DX, xm = i * COIL_DX / PXM1;
     var s = disp(1, f, V_SLINKY, xm, t);                /* −1..1 */
@@ -746,7 +1022,7 @@ function drawSlinky(cs, hiIdx) {
 function draw1() {
   var p = S.m1;
   if (S.ex[1] === 'real') { drawRealExamples(); return; }
-  var cs = coils1(), tr = cs[TRACK], isT = p.type === 'T';
+  var cs = coils1(), tr = cs[TRACK()], isT = p.type === 'T';
   var lam = V_SLINKY / p.f, lamPx = lam * PXM1;
   var col = isT ? C['wave-t'] : C['wave-l'];
 
@@ -766,7 +1042,7 @@ function draw1() {
   rr(hxo - 14, hy - 12, 28, 24, 7); CX.fill(); CX.stroke(); CX.restore();
   line(hxo + 14, hy, cs[0].x - 6, cs[0].y, C.coil, 2);
 
-  drawSlinky(cs, TRACK);
+  drawSlinky(cs, TRACK());
 
   /* direction arrows */
   var ay = M1.axisY + 78;
@@ -777,7 +1053,7 @@ function draw1() {
   if (S.labels) {
     if (isT) plate('direction of vibration ⟂ travel', tr.rx + 12, M1.axisY - 84, 10.5, C['coil-hi'], 'left');
     else plate('direction of vibration ∥ travel', tr.rx, M1.axisY - 84, 10.5, C['coil-hi'], 'center');
-    plate('coil #' + (TRACK + 1), tr.rx, M1.axisY + 96, 10, C['coil-hi'], 'center', true);
+    plate('coil #' + (TRACK() + 1), tr.rx, M1.axisY + 96, 10, C['coil-hi'], 'center', true);
   }
   /* crest / trough  or  compression / rarefaction pointers */
   if (S.labels) {
@@ -798,20 +1074,34 @@ function draw1() {
 
   /* ───── the two linked graphs ───── */
   var gy = 318, gh = 300;
-  var ga = graphFrame(36, gy, 560, gh, { title: '(a) displacement vs distance — snapshot now', xl: 'distance x (m)', yl: 'displacement', col: C['graph-a'], ymax: 'A' });
-  var gb = graphFrame(618, gy, 546, gh, { title: '(b) displacement vs time — coil #' + (TRACK + 1), xl: 'time t (s)', yl: 'displacement', col: C['graph-b'], ymax: 'A' });
+  /* graph (a) is a photograph of the whole slinky at ONE instant. Live, it
+     redraws every frame and so appears to scroll; 📷 Snapshot freezes it at
+     the instant it was pressed and shows where the wave has got to since. */
+  var frozen = p.snap != null, ta = frozen ? p.snap : S.t;
+  var ga = graphFrame(36, gy, 560, gh, { title: frozen
+    ? '(a) displacement vs distance — 📷 SNAPSHOT at t = ' + fmt(ta, 2) + ' s'
+    : '(a) displacement vs distance — snapshot now (live)', xl: 'distance x (m)', yl: 'displacement',
+    col: frozen ? C.amber : C['graph-a'], ymax: 'A' });
+  var gb = graphFrame(618, gy, 546, gh, { title: '(b) displacement vs time — coil #' + (TRACK() + 1), xl: 'time t (s)', yl: 'displacement', col: C['graph-b'], ymax: 'A' });
   var xspan = (N_COIL - 1) * COIL_DX / PXM1;                   /* metres on graph a */
   /* graph a: every coil */
-  var pts = [];
-  for (var i = 0; i < cs.length; i++) pts.push([ga.X(cs[i].xm / xspan), ga.Y(cs[i].s)]);
-  poly(pts, C['graph-a'], 2.2);
-  for (var j = 0; j < cs.length; j++) dot(pts[j][0], pts[j][1], 2.2, j === TRACK ? C['coil-hi'] : withA(C['graph-a'], .8));
+  var csA = frozen ? coils1(ta) : cs, pts = [];
+  if (frozen) {                       /* where the wave has reached NOW, behind */
+    var live = [];
+    for (var iv = 0; iv < cs.length; iv++) live.push([ga.X(cs[iv].xm / xspan), ga.Y(cs[iv].s)]);
+    CX.save(); CX.setLineDash([5, 5]); poly(live, withA(C['graph-a'], .45), 1.6); CX.restore();
+    plate('the wave now', ga.X(0.985), ga.y + ga.h - 12, 9, withA(C['graph-a'], .95), 'right');
+  }
+  for (var i = 0; i < csA.length; i++) pts.push([ga.X(csA[i].xm / xspan), ga.Y(csA[i].s)]);
+  M1.gaPts = pts;                     /* what graph (a) actually plotted, for the test */
+  poly(pts, frozen ? C.amber : C['graph-a'], 2.2);
+  for (var j = 0; j < csA.length; j++) dot(pts[j][0], pts[j][1], 2.2, j === TRACK() ? C['coil-hi'] : withA(frozen ? C.amber : C['graph-a'], .8));
   for (var mx = 0; mx <= xspan; mx += 1) { var gx = ga.X(mx / xspan); line(gx, ga.y + ga.h, gx, ga.y + ga.h + 4, C.axis, 1); mtxt(String(mx), gx, ga.y + ga.h + 14, 9, C['text-muted'], 'center'); }
   /* cursor line at the tracked coil, dot moves up and down with it */
-  line(pts[TRACK][0], ga.y, pts[TRACK][0], ga.y + ga.h, withA(C['coil-hi'], .7), 1.2, [4, 4]);
-  dot(pts[TRACK][0], pts[TRACK][1], 5, C['coil-hi']);
+  line(pts[TRACK()][0], ga.y, pts[TRACK()][0], ga.y + ga.h, withA(C['coil-hi'], .7), 1.2, [4, 4]);
+  dot(pts[TRACK()][0], pts[TRACK()][1], 5, C['coil-hi']);
   /* λ marker on graph a between two crests */
-  var c1 = firstCrest(p.f, V_SLINKY, S.t, 0), c2 = c1 + lam;
+  var c1 = firstCrest(p.f, V_SLINKY, ta, 0), c2 = c1 + lam;
   if (c2 <= xspan) {
     var ly = ga.y + 10;
     arrow(ga.X(c1 / xspan), ly, ga.X(c2 / xspan), ly, C['mark-l'], 1.8, { both: true, head: 7 });
@@ -820,7 +1110,9 @@ function draw1() {
     plate('λ = ' + fmt(lam, 2) + ' m', ga.X((c1 + c2) / 2 / xspan), ly - 1, 9.5, C['mark-l'], 'center', true);
   } else plate('λ = ' + fmt(lam, 2) + ' m — longer than the slinky', ga.X(0.02), ga.y + 10, 9.5, C['mark-l'], 'left', true);
   /* graph b: oscilloscope sweep of the tracked coil */
-  var Tw = 4 / p.f, t0 = Math.floor(S.t / Tw) * Tw, pb = [];
+  /* the sweep is anchored to when it last restarted (a new coil, or Reset), so
+     picking a different coil redraws graph (b) from scratch */
+  var Tw = 4 / p.f, t0 = p.sweep0 + Math.max(0, Math.floor((S.t - p.sweep0) / Tw)) * Tw, pb = [];
   var nS = 160, uNow = (S.t - t0) / Tw;
   for (var k = 0; k <= nS; k++) {
     var u = k / nS * uNow, tau = t0 + u * Tw;
@@ -839,19 +1131,21 @@ function draw1() {
     plate('T = ' + fmt(T, 3) + ' s', gb.X(((ta + tb2) / 2 - t0) / Tw), ty - 1, 9.5, C['mark-t'], 'center', true);
   }
   /* the link between the two dots */
-  line(pts[TRACK][0], pts[TRACK][1], pb.length ? pb[pb.length - 1][0] : gb.X(uNow), pb.length ? pb[pb.length - 1][1] : gb.my, withA(C['coil-hi'], .28), 1, [2, 4]);
-  txt('same coil, two views', 607, gy + gh + 12, 9.5, C['text-muted'], 'center');
+  if (!frozen) line(pts[TRACK()][0], pts[TRACK()][1], pb.length ? pb[pb.length - 1][0] : gb.X(uNow), pb.length ? pb[pb.length - 1][1] : gb.my, withA(C['coil-hi'], .28), 1, [2, 4]);
+  txt(frozen ? 'graph (a) is frozen — (b) is still running, so the two no longer share an instant'
+    : 'same coil, two views', 607, gy + gh + 12, 9.5, frozen ? C.amber : C['text-muted'], 'center');
 }
 
 /* ── the real-examples gallery ── */
 var REAL = [
-  { k: 'rope', t: 'T', n: 'Wave on a rope / string', note: 'Flick one end up and down: each part of the rope moves up and down while the wave runs along it.' },
+  { k: 'sound', t: 'L', n: 'Sound in air', note: 'A loudspeaker cone pushes the air back and forth — compressions (air squashed together) and rarefactions (air spread out) travel outward.' },
+  { k: 'spring', t: 'L', n: 'Compression on a spring', note: 'Push the end of a slinky in and out along its length: a bunched-up region (compression) travels along the spring.' },
+  { k: 'us', t: 'L', n: 'Ultrasound (scanning)', note: 'Sound above 20 kHz. The probe sends a short pulse of compressions into the body and listens for the echo from each boundary — same wave, same direction of vibration, just too high to hear.' },
+  { k: 'pwave', t: 'L', n: 'P-waves (seismic primary)', note: 'The fastest earthquake wave — a push-pull compression wave that travels through solids AND liquids.' },
+  { k: 'light', t: 'T', n: 'Light (EM wave)', note: 'Light, radio, X-rays\u2026 the electric (E) and magnetic (B) fields oscillate at right angles to each other and to the direction of travel. No medium needed.' },
+  { k: 'rope', t: 'T', n: 'Wave on a string', note: 'Flick one end up and down: each part of the string moves up and down while the wave runs along it.' },
   { k: 'water', t: 'T', n: 'Water waves (surface)', note: 'A floating cork bobs up and down as the ripples pass — the water does not travel with the wave.' },
-  { k: 'em', t: 'T', n: 'Electromagnetic waves', note: 'Light, radio, X-rays… the electric and magnetic fields oscillate at right angles to the direction of travel. No medium needed.' },
-  { k: 'swave', t: 'T', n: 'S-waves (seismic secondary)', note: 'The ground shakes side-to-side / up-down as the wave passes. They cannot pass through liquids.' },
-  { k: 'sound', t: 'L', n: 'Sound', note: 'A loudspeaker cone pushes the air back and forth — compressions and rarefactions travel outward.' },
-  { k: 'spring', t: 'L', n: 'Compression wave on a spring', note: 'Push the end of a spring in and out: a bunched-up region (compression) travels along it.' },
-  { k: 'pwave', t: 'L', n: 'P-waves (seismic primary)', note: 'The fastest earthquake wave — a push-pull compression wave that travels through solids and liquids.' }
+  { k: 'swave', t: 'T', n: 'S-waves (seismic secondary)', note: 'The ground shakes side-to-side / up-down as the wave passes. They cannot pass through liquids.' }
 ];
 var GAL = { boxes: [] };
 function realByKey(k) { for (var i = 0; i < REAL.length; i++) if (REAL[i].k === k) return REAL[i]; return null; }
@@ -859,12 +1153,12 @@ function drawRealExamples() {
   txt('Real examples of the two wave types', 40, 34, 16, C.text, 'left', 700);
   txt('click a card — the wave type is decided by the direction of vibration compared with the direction of travel', 40, 54, 11.5, C['text-dim']);
   GAL.boxes = [];
-  var rows = [{ t: 'T', y: 80, title: 'TRANSVERSE — vibration at right angles (90°) to travel', col: C['wave-t'] },
-  { t: 'L', y: 322, title: 'LONGITUDINAL — vibration parallel to travel', col: C['wave-l'] }];
+  var rows = [{ t: 'L', y: 80, title: 'LONGITUDINAL — vibration parallel to travel', col: C['wave-l'] },
+  { t: 'T', y: 322, title: 'TRANSVERSE — vibration at right angles (90°) to travel', col: C['wave-t'] }];
   rows.forEach(function (row) {
     txt(row.title, 40, row.y + 12, 11.5, row.col, 'left', 700);
     var items = REAL.filter(function (r) { return r.t === row.t; });
-    var cw = 270, gap = 14.67, x0 = 40;
+    var cw = 270, gap = 14.67, x0 = 40;   /* 4 cards per row: 40 + 4*270 + 3*14.67 = 1164 */
     items.forEach(function (it, i) {
       var x = x0 + i * (cw + gap), y = row.y + 22, h = 208, sel = S.m1.real === it.k;
       card(x, y, cw, h, null, sel ? C.accent : C.border);
@@ -904,14 +1198,60 @@ function drawRealIcon(k, cx, cy, t) {
     CX.fillStyle = C.amber; rr(bx - 9, by - 12, 18, 12, 3); CX.fill();
     arrow(bx + 28, by - 20, bx + 28, by + 4, C['coil-hi'], 2, { both: true });
     arrow(cx + 40, cy + 45, cx + 100, cy + 45, C.travel, 2);
-  } else if (k === 'em') {
-    for (i = 0; i <= 60; i++) { x = cx - 110 + i * 3.6; y = cy - 26 * Math.sin(i / 60 * 4 * Math.PI - ph); pts.push([x, y]); }
-    poly(pts, C.efield, 2.5);
-    var pb = [];
-    for (i = 0; i <= 60; i++) { x = cx - 110 + i * 3.6; y = cy + 12 * Math.sin(i / 60 * 4 * Math.PI - ph); pb.push([x - 8 * Math.sin(i / 60 * 4 * Math.PI - ph), y]); }
-    poly(pb, C.bfield, 2);
-    txt('E', cx - 118, cy - 28, 11, C.efield, 'right', 700); txt('B', cx - 118, cy + 16, 11, C.bfield, 'right', 700);
-    arrow(cx + 40, cy + 55, cx + 100, cy + 55, C.travel, 2);
+  } else if (k === 'light') {
+    /* an abbreviated version of the Mode 4 "3-D wave": E vertical, B into the oblique
+       z-direction, both at 90° to each other and to the direction of travel. */
+    var L3 = 190, aE = 36, aB = 34, zx = -0.5, zy = 0.30, lam3 = L3 / 2;
+    var ox = cx - 90, oy = cy + 4;   /* kept inside the 270-wide card, z-shift included */
+    var pr = function (xx, yy, zz) { return [ox + xx + zz * zx, oy - yy + zz * zy]; };
+    /* the two field planes, faintly */
+    CX.save(); CX.strokeStyle = withA(C.envelope, .9); CX.lineWidth = 1; CX.setLineDash([4, 4]);
+    var q, plane = function (f) {
+      CX.beginPath();
+      [[0, 1], [1, 1], [1, -1], [0, -1]].forEach(function (c, j) { q = f(c[0] * L3, c[1]); j ? CX.lineTo(q[0], q[1]) : CX.moveTo(q[0], q[1]); });
+      CX.closePath(); CX.stroke();
+    };
+    plane(function (xx, sg) { return pr(xx, sg * aE, 0); });
+    plane(function (xx, sg) { return pr(xx, 0, sg * aB); });
+    CX.restore();
+    var o0 = pr(-10, 0, 0), o1 = pr(L3 + 16, 0, 0);
+    arrow(o0[0], o0[1], o1[0], o1[1], C.travel, 2);
+    var eb = [], bb = [], step = Math.round(80 / 10);
+    for (i = 0; i <= 80; i++) {
+      x = i / 80 * L3; var pz = 2 * Math.PI * x / lam3 - ph;
+      q = pr(x, 0, Math.sin(pz) * aB); bb.push(q);
+      if (i % step === 0) { var r0 = pr(x, 0, 0); arrow(r0[0], r0[1], q[0], q[1], withA(C.bfield, .8), 1.2, { head: 5 }); }
+    }
+    poly(bb, C.bfield, 2);
+    for (i = 0; i <= 80; i++) {
+      x = i / 80 * L3; var pe = 2 * Math.PI * x / lam3 - ph;
+      q = pr(x, Math.sin(pe) * aE, 0); eb.push(q);
+      if (i % step === 0) { var r1 = pr(x, 0, 0); arrow(r1[0], r1[1], q[0], q[1], withA(C.efield, .85), 1.2, { head: 5 }); }
+    }
+    poly(eb, C.efield, 2.4);
+    var le = pr(-4, aE + 12, 0), lb = pr(-4, 0, -aB - 10);
+    txt('E', le[0], le[1], 12, C.efield, 'center', 700);
+    txt('B', lb[0], lb[1] + 4, 12, C.bfield, 'center', 700);
+    txt('c = 3.0 × 10⁸ m/s — no medium needed', cx, cy + 66, 9.5, C['text-muted'], 'center');
+  } else if (k === 'us') {
+    /* a pulse of compressions leaves the probe, reflects off a boundary and comes back */
+    var xs = cx - 74, xe = cx + 122, yT = cy - 44, yB = cy + 44, xr = cx + 78;
+    CX.save(); CX.fillStyle = withA(C.rose, .14); rr(xs, yT, xe - xs, yB - yT, 8); CX.fill(); CX.restore();
+    line(xs, yT, xs, yB, withA(C.skin, .9), 2.5);                       /* the skin */
+    CX.fillStyle = C.wall; rr(cx - 124, cy - 20, 50, 40, 7); CX.fill();  /* the probe */
+    CX.fillStyle = C.particle; CX.fillRect(xs - 8, cy - 14, 10, 28);
+    txt('probe', cx - 99, cy + 34, 9, C['text-muted'], 'center');
+    CX.save(); CX.strokeStyle = C.amber; CX.lineWidth = 3;              /* the boundary that echoes */
+    CX.beginPath(); CX.arc(xr, cy, 26, 0, Math.PI * 2); CX.stroke(); CX.restore();
+    txt('boundary', xr, cy + 42, 9, C.amber, 'center');
+    var u = (0.42 * t) % 2, out = u < 1, span = xr - 26 - xs;
+    var xp = out ? xs + u * span : xs + (2 - u) * span;
+    CX.save(); CX.globalAlpha = out ? 1 : .6;
+    for (i = -2; i <= 2; i++) line(xp + i * 4, cy - 32, xp + i * 4, cy + 32, C['wave-l'], 1.8);
+    CX.restore();
+    plate(out ? 'pulse out' : 'echo back', xp, cy - 44, 9, out ? C['wave-l'] : C.amber, 'center');
+    arrow(cx - 30, cy + 58, cx + 30, cy + 58, C.travel, 2);
+    arrow(cx - 30, cy - 58, cx + 10, cy - 58, C['coil-hi'], 2, { both: true });
   } else if (k === 'swave') {
     var gy = cy + 20;
     CX.fillStyle = withA(C.wall, .35); CX.beginPath(); CX.moveTo(cx - 120, gy + 40);
@@ -923,7 +1263,7 @@ function drawRealIcon(k, cx, cy, t) {
     var hy = gy + 14 * Math.sin(24 / 48 * 3 * Math.PI - ph) - 2;
     CX.fillStyle = C.amber; CX.fillRect(cx - 14, hy - 22, 28, 22);
     CX.beginPath(); CX.moveTo(cx - 18, hy - 22); CX.lineTo(cx, hy - 38); CX.lineTo(cx + 18, hy - 22); CX.closePath(); CX.fillStyle = C.rose; CX.fill();
-    arrow(cx + 40, gy + 60, cx + 100, gy + 60, C.travel, 2); arrow(cx + 30, hy - 40, cx + 30, hy - 8, C['coil-hi'], 2, { both: true });
+    arrow(cx + 40, gy + 54, cx + 100, gy + 54, C.travel, 2); arrow(cx + 30, hy - 40, cx + 30, hy - 8, C['coil-hi'], 2, { both: true });
   } else if (k === 'sound') {
     CX.fillStyle = C.wall; rr(cx - 120, cy - 30, 34, 60, 5); CX.fill();
     var cone = cx - 86 + 4 * Math.sin(ph * 2);
@@ -938,10 +1278,10 @@ function drawRealIcon(k, cx, cy, t) {
   } else if (k === 'spring') {
     var n = 26;
     for (i = 0; i < n; i++) {
-      var rx2 = cx - 110 + i * 8.8, sx2 = rx2 + 4 * Math.sin(2 * Math.PI * (i / n * 2) - ph * 1.5);
+      var rx2 = cx - 104 + i * 8.4, sx2 = rx2 + 4 * Math.sin(2 * Math.PI * (i / n * 2) - ph * 1.5);
       CX.strokeStyle = C['wave-l']; CX.lineWidth = 1.8; CX.beginPath(); CX.ellipse(sx2, cy, 3.5, 16, 0, 0, Math.PI * 2); CX.stroke();
     }
-    CX.fillStyle = C.skin; rr(cx - 134, cy - 10, 20, 20, 6); CX.fill();
+    CX.fillStyle = C.skin; rr(cx - 126, cy - 10, 20, 20, 6); CX.fill();
     arrow(cx + 40, cy + 45, cx + 100, cy + 45, C.travel, 2); arrow(cx - 48, cy - 36, cx - 8, cy - 36, C['coil-hi'], 2, { both: true });
   } else if (k === 'pwave') {
     var gy2 = cy + 10;
@@ -954,7 +1294,7 @@ function drawRealIcon(k, cx, cy, t) {
     var hx = cx + 4 * Math.sin(2 * Math.PI * (15 / 30 * 2) - ph * 1.5);
     CX.fillStyle = C.amber; CX.fillRect(hx - 14, gy2 - 22, 28, 22);
     CX.beginPath(); CX.moveTo(hx - 18, gy2 - 22); CX.lineTo(hx, gy2 - 38); CX.lineTo(hx + 18, gy2 - 22); CX.closePath(); CX.fillStyle = C.rose; CX.fill();
-    arrow(cx + 40, gy2 + 68, cx + 100, gy2 + 68, C.travel, 2); arrow(hx - 44, gy2 - 46, hx - 4, gy2 - 46, C['coil-hi'], 2, { both: true });
+    arrow(cx + 40, gy2 + 62, cx + 100, gy2 + 62, C.travel, 2); arrow(hx - 44, gy2 - 46, hx - 4, gy2 - 46, C['coil-hi'], 2, { both: true });
   }
   CX.restore();
 }
@@ -1223,7 +1563,9 @@ function drawTone() {
 }
 
 /* ── echo ── */
-var ECHO = { hold: 1.6 };
+/* the wavefront band: top sits just above the "clap!" plate, bottom just
+   above the knee, and it is centred on the hands that the sound leaves */
+var ECHO = { hold: 1.6, nFront: 4, gap: 22, half: 48, top: 130, bot: 30, clapT: 0.12, trig: 0.18 };
 function echoState() {
   var p = S.m3, d = p.d, tTrip = 2 * d / V_AIR;
   if (!p.echo) p.echo = { t0: S.t, blipped: 0 };
@@ -1232,18 +1574,69 @@ function echoState() {
   var pos = V_AIR * el, x, dir;
   if (pos < d) { x = pos; dir = 1; } else if (pos < 2 * d) { x = 2 * d - pos; dir = -1; } else { x = 0; dir = 0; }
   if (dir === 0 && p.echo.blipped === 0) { p.echo.blipped = 1; blip(500, 0.1); }
-  return { el: Math.min(el, tTrip), x: x, dir: dir, done: dir === 0, tTrip: tTrip, d: d };
+  return { el: Math.min(el, tTrip), x: x, dir: dir, done: dir === 0, tTrip: tTrip, d: d,
+    over: Math.max(0, el - tTrip) };   /* how long ago the echo landed — drives the mic flash */
 }
-function person(x, gy, sc, col) {
-  CX.save(); CX.strokeStyle = col; CX.fillStyle = col; CX.lineWidth = 3 * sc; CX.lineCap = 'round';
-  CX.beginPath(); CX.arc(x, gy - 78 * sc, 9 * sc, 0, Math.PI * 2); CX.fill();
-  CX.beginPath(); CX.moveTo(x, gy - 66 * sc); CX.lineTo(x, gy - 30 * sc); CX.stroke();
-  CX.beginPath(); CX.moveTo(x, gy - 30 * sc); CX.lineTo(x - 12 * sc, gy); CX.moveTo(x, gy - 30 * sc); CX.lineTo(x + 12 * sc, gy); CX.stroke();
-  CX.beginPath(); CX.moveTo(x, gy - 58 * sc); CX.lineTo(x + 18 * sc, gy - 44 * sc); CX.moveTo(x, gy - 58 * sc); CX.lineTo(x - 12 * sc, gy - 40 * sc); CX.stroke();
+/* the clapper: the shared figure library in a hands-together pose whose
+   hands close on the beat the pulse leaves them (u = 1 clap, 0 hands apart) */
+function clapPose(u) {
+  var L = function (a, b) { return a + (b - a) * u; };
+  FIG_POSE.clap = { armNear: [L(96, 84), L(118, 96)], armFar: [L(60, 80), L(74, 100)],
+    legNear: [8, 4], legFar: [-8, -4] };
+}
+/* the microphone that triggers the timer: it hears the clap (start) and the
+   echo (stop), so nothing depends on a human finger. `hot` flashes it on a
+   trigger.                                                                 */
+function micStand(x, gy, h, hot) {
+  var col = hot ? C.green : C['text-dim'], top = gy - h;
+  CX.save();
+  if (hot) {                                  /* a trigger just fired */
+    CX.strokeStyle = withA(C.green, .45 * (1 - hot)); CX.lineWidth = 2;
+    CX.beginPath(); CX.arc(x, top + 10, 14 + 22 * hot, 0, 7); CX.stroke();
+  }
+  CX.fillStyle = withA(C.wall, .85); CX.strokeStyle = withA(C.text, .3); CX.lineWidth = 1;
+  rr(x - 14, gy - 5, 28, 5, 2); CX.fill(); CX.stroke();
+  CX.strokeStyle = withA(C.text, .42); CX.lineWidth = 2.5; CX.lineCap = 'round';
+  CX.beginPath(); CX.moveTo(x, gy - 5); CX.lineTo(x, top + 16); CX.stroke();
+  CX.fillStyle = withA(col, hot ? .85 : .35); CX.strokeStyle = col; CX.lineWidth = 2;
+  rr(x - 7, top, 14, 22, 7); CX.fill(); CX.stroke();
+  CX.strokeStyle = withA(LIGHT ? '#ffffff' : '#000000', .35); CX.lineWidth = 1;
+  for (var i = 0; i < 3; i++) { CX.beginPath(); CX.moveTo(x - 5, top + 5 + i * 4); CX.lineTo(x + 5, top + 5 + i * 4); CX.stroke(); }
+  CX.restore();
+}
+/* One pulse = a few concentric wavefronts sharing ONE centre: the clap point
+   on the way out, and — because a plane surface reflects as though the sound
+   came from the mirror image of the source behind it — that image point on
+   the way back. Each front carries its own path length, so at the moment of
+   reflection the leading front is already returning while the trailing ones
+   are still outbound. Clipped to the hands→wall corridor, so only the
+   out-and-back path is ever drawn.                                        */
+function echoFronts(src, xw, dPx, posPx, gy) {
+  var xImg = 2 * xw - src.x, half = clamp(0.62 * dPx, 24, ECHO.half);
+  CX.save();
+  CX.beginPath(); CX.rect(src.x, gy - ECHO.top, xw - src.x, ECHO.top - ECHO.bot); CX.clip();
+  CX.strokeStyle = C['wave-l']; CX.lineWidth = 3; CX.lineCap = 'round';
+  for (var k = 0; k < ECHO.nFront; k++) {
+    var s = posPx - k * ECHO.gap;
+    if (s <= 1) continue;
+    /* the drawn span narrows as the front grows, so the wavefront keeps a
+       constant height instead of swelling past the corridor: a wide arc near
+       the hands, an almost straight front far away — which is what a small
+       source really looks like at a distance                               */
+    var sp = Math.asin(clamp(half / s, 0, 1));
+    CX.globalAlpha = 1 - k * 0.24;
+    CX.beginPath();
+    if (s <= dPx) CX.arc(src.x, src.y, s, -sp, sp);
+    else CX.arc(xImg, src.y, s, Math.PI - sp, Math.PI + sp);
+    CX.stroke();
+  }
   CX.restore();
 }
 function drawEcho() {
-  var e = echoState(), gy = 330, xs = 120, xw = 160 + e.d / 170 * 940;
+  /* the wall stops short of the stopwatch card: at the far end of the slider
+     it used to slide underneath it and show through */
+  var e = echoState(), gy = 330, xs = 120, xw = 160 + e.d / 170 * 760;
+  ECHO.wall = { x: xw, w: 38 };
   txt('Echo — sound reflected from a hard surface', 40, 30, 15, C['wave-l'], 'left', 700);
   txt('the pulse travels to the wall and back, so the distance to the wall is half of (speed × time)', 40, 48, 11, C['text-dim']);
   /* ground + wall */
@@ -1252,39 +1645,59 @@ function drawEcho() {
   CX.strokeStyle = withA(C.text, .25); CX.lineWidth = 1;
   for (var i = 0; i < 10; i++) { CX.beginPath(); CX.moveTo(xw, gy - 20 - i * 20); CX.lineTo(xw + 38, gy - 20 - i * 20); CX.stroke(); }
   CX.restore();
-  if (S.labels) plate('cliff / wall', xw + 19, gy - 224, 10, C.wall, 'center');
-  person(xs, gy, 1, C.particle);
-  if (S.labels) plate('clap!', xs + 40, gy - 96, 10, C.amber, 'left');
+  /* with the wall far right the label would run into the stopwatch card, so
+     it flips to the corridor side of the wall instead */
+  if (S.labels) { var far = xw > 760;
+    plate('cliff / wall', far ? xw - 6 : xw + 19, gy - 224, 10, C.wall, far ? 'right' : 'center'); }
+  /* the clapper — eyes follow the pulse, hands close as it leaves them */
+  var dir = e.dir, xLook = xs + (xw - xs) * e.x / e.d;
+  clapPose(clamp(1 - e.el / ECHO.clapT, 0, 1));
+  var fg = figure(xs, gy, 100, { style: 'doodle', pose: 'clap', col: C.particle,
+    lookAt: { x: dir === 0 ? xs + 60 : xLook, y: gy - 120 } });
+  var src = { x: fg.handNear.x + 4, y: fg.handNear.y };
+  if (S.labels) plate('clap!', fg.head.x, fg.head.y - fg.head.r - 13, 10, C.amber, 'center');
+  /* the microphone beside the clapper — it hears the clap, then the echo */
+  var trig = e.el < ECHO.trig ? 1 - e.el / ECHO.trig
+    : (e.done && e.over < ECHO.trig) ? 1 - e.over / ECHO.trig : 0;
+  micStand(48, gy, 72, trig);
+  if (S.labels) plate('microphone', 48, gy - 88, 9.5, trig ? C.green : C['text-dim'], 'center');
   /* distance marker */
   arrow(xs, gy + 40, xw, gy + 40, C['mark-l'], 1.8, { both: true, head: 7 });
   plate('d = ' + fmt(e.d, 0) + ' m', (xs + xw) / 2, gy + 40, 10, C['mark-l'], 'center', true);
-  /* pulse: three arcs, fading, moving with the front */
-  var xp = xs + (xw - xs) * e.x / e.d, dir = e.dir;
+  /* the pulse: circular wavefronts about one centre, out along the path and
+     back again (see echoFronts) */
   if (dir !== 0) {
-    CX.save(); CX.strokeStyle = C['wave-l']; CX.lineWidth = 3;
-    for (var a = 0; a < 3; a++) {
-      CX.globalAlpha = 1 - a * 0.3;
-      CX.beginPath(); CX.arc(xp - dir * a * 14, gy - 80, 34, dir > 0 ? -1.1 : Math.PI - 1.1, dir > 0 ? 1.1 : Math.PI + 1.1); CX.stroke();
-    }
-    CX.restore();
-    arrow(xp, gy - 132, xp + dir * 50, gy - 132, C.travel, 2);
-    if (S.labels) txt(dir > 0 ? 'sound out' : 'echo back', xp + dir * 25, gy - 140, 10, C.travel, 'center', 600);
+    /* everything is measured from the hands, so the front meets the wall at
+       exactly the half-way instant and the hands again at t = 2d / v      */
+    var dPx = xw - src.x, posPx = V_AIR * e.el / e.d * dPx;
+    var xp = posPx <= dPx ? src.x + posPx : 2 * xw - src.x - posPx;
+    ECHO.last = { xw: xw, srcX: src.x, srcY: src.y, dPx: dPx, posPx: posPx, xp: xp };
+    echoFronts(src, xw, dPx, posPx, gy);
+    var ax2 = clamp(xp + dir * 50, src.x - 46, xw - 6);   /* never run into the wall */
+    arrow(xp, gy - 150, ax2, gy - 150, C.travel, 2);
+    if (S.labels) txt(dir > 0 ? 'sound out' : 'echo back', (xp + ax2) / 2, gy - 158, 10, C.travel, 'center', 600);
   } else {
+    ECHO.last = null;                    /* nothing in flight — never leave a stale front behind */
     plate('echo heard after t = ' + fmt(e.tTrip, 2) + ' s', xs + 40, gy - 150, 11, C.green, 'left', true);
   }
-  /* stopwatch */
-  card(880, 80, 284, 160, 'STOPWATCH');
-  mtxt(fmt(e.el, 2) + ' s', 1022, 150, 34, e.done ? C.green : C.accent, 'center', 700);
-  txt(e.done ? 'stopped when the echo arrives' : 'running…', 1022, 178, 10.5, C['text-muted'], 'center');
-  txt('total path = 2d = ' + fmt(2 * e.d, 0) + ' m', 1022, 200, 10.5, C['text-dim'], 'center');
-  txt('v = ' + V_AIR + ' m/s in air', 1022, 218, 10.5, C['text-dim'], 'center');
+  /* the timer: a microphone triggers it electronically, because 0.50 s is far
+     too short to catch with a finger on a stopwatch */
+  card(972, 80, 192, 196, 'MICROPHONE + ms TIMER');
+  mtxt(fmt(e.el * 1000, 1) + ' ms', 1068, 146, 26, e.done ? C.green : C.accent, 'center', 700);
+  txt(e.done ? 'stopped by the echo' : e.el < 0.02 ? 'started by the clap' : 'running…', 1068, 172, 10.5, C['text-muted'], 'center');
+  txt('resolution 0.1 ms · no reaction time', 1068, 192, 9.5, C.green, 'center');
+  line(996, 204, 1140, 204, withA(C.border, .9), 1);
+  txt('total path = 2d = ' + fmt(2 * e.d, 0) + ' m', 1068, 222, 10.5, C['text-dim'], 'center');
+  txt('v = ' + V_AIR + ' m/s in air', 1068, 240, 10.5, C['text-dim'], 'center');
+  txt('a hand stopwatch would be ±0.3 s', 1068, 260, 9.5, C.red, 'center');
   /* working */
   card(36, 400, 1128, 232, 'WORKING — how the distance is found from the echo');
   var y0 = 440;
-  txt('1.  Measure the time between the clap and its echo:  t = ' + fmt(e.tTrip, 2) + ' s', 56, y0, 12.5, C.text);
+  txt('1.  The microphone hears the clap and starts the timer, then hears the echo and stops it:  t = ' + fmt(e.tTrip, 2) + ' s', 56, y0, 12.5, C.text);
   txt('2.  The sound travels there AND back, so the total distance is  v × t = ' + V_AIR + ' × ' + fmt(e.tTrip, 2) + ' = ' + fmt(V_AIR * e.tTrip, 0) + ' m', 56, y0 + 30, 12.5, C.text);
   txt('3.  Halve it for the one-way distance:  d = v × t ÷ 2 = ' + fmt(V_AIR * e.tTrip / 2, 0) + ' m', 56, y0 + 60, 12.5, C.accent, 'left', 700);
-  wrap('The same idea measures the depth of the sea (sonar, v ≈ 1500 m/s in water) and finds a baby in an ultrasound scan — see the 🩺 Ultrasound example. Move the slider to change d and watch the time change: t ∝ d.', 56, y0 + 96, 1080, 11.5, C['text-dim'], 17);
+  wrap('Why not a hand-held stopwatch? A reaction time of about 0.2–0.3 s at each press is more than half of the ' + fmt(e.tTrip, 2) + ' s being measured — an error of well over 50%. The microphone triggers the timer electronically, so there is no reaction time at all. (Without one: clap in time with the echoes and time 20 of them, which divides the reaction-time error by 20.)', 56, y0 + 92, 1080, 11.5, C['text-dim'], 17);
+  wrap('The same idea measures the depth of the sea (sonar, v ≈ 1500 m/s in water) and finds a baby in an ultrasound scan — see the 🩺 Ultrasound example. Move the slider to change d and watch the time change: t ∝ d.', 56, y0 + 146, 1080, 11.5, C['text-dim'], 17);
   
 }
 
@@ -1294,11 +1707,216 @@ var US = {
     { k: 'medical', n: 'Medical scanning', ico: '🩺', line: 'pulses reflect from the boundaries between soft tissues — safe for a prenatal scan', v: 1540, vname: 'soft tissue' },
     { k: 'sonar', n: 'Sonar / echo-sounding', ico: '🚢', line: 'a pulse goes down to the seabed and back: depth = v × t ÷ 2', v: 1500, vname: 'water' },
     { k: 'ndt', n: 'Non-destructive testing', ico: '🔩', line: 'a crack inside the metal sends an echo back EARLY — the flaw shows up without cutting the part open', v: 5900, vname: 'steel' }],
-  boxes: []
+  boxes: [], cyc: 4.4, travel: 3.3, bs: { key: '', cv: null }
 };
 function usCard(k) { for (var i = 0; i < US.cards.length; i++) if (US.cards[i].k === k) return US.cards[i]; return US.cards[0]; }
+function usPhase() { var c = US.cyc; return ((S.t % c) + c) % c; }
+
+/* The pulse and its echoes, in fractions of the scene depth. One pulse runs
+   down at a constant drawn speed; every target it passes re-radiates a
+   partial echo, which is back up at depth 2·d − s. A deeper target means a
+   later echo — which is the whole point of the technique.                  */
+function usScan(targets, u) {
+  var dMax = 0, i;
+  for (i = 0; i < targets.length; i++) if (targets[i].d > dMax) dMax = targets[i].d;
+  var s = clamp(u / US.travel, 0, 1) * 2 * dMax, ec = [];
+  for (i = 0; i < targets.length; i++) {
+    var e = 2 * targets[i].d - s;
+    if (s >= targets[i].d && e >= 0) ec.push({ i: i, y: e, r: targets[i].r, born: targets[i].d });
+  }
+  return { s: s, out: s > 0 && s <= dMax, echoes: ec, dMax: dMax, tFrac: clamp(u / US.travel, 0, 1) };
+}
+/* A wavefront is an arc centred where the pulse was BORN — the probe face for
+   the outgoing pulse, the target itself for an echo — so the curvature is the
+   real one and the front flattens out as it travels.                       */
+function usFront(cx, cy, r, halfW, col, a, up) {
+  if (r <= 1.5) return;
+  var sp = Math.asin(clamp(halfW / r, 0, 1)), m = up ? -Math.PI / 2 : Math.PI / 2;
+  CX.save(); CX.strokeStyle = col; CX.lineWidth = 2.6; CX.lineCap = 'round'; CX.globalAlpha = a;
+  CX.beginPath(); CX.arc(cx, cy, r, m - sp, m + sp); CX.stroke(); CX.restore();
+}
+function usTrain(cx, cy, r, halfW, col, up, amp) {
+  for (var k = 0; k < 3; k++) usFront(cx, cy, r - k * 11, halfW, col, amp * (1 - k * 0.3), up);
+}
+/* the beam the probe actually radiates into: a narrow cone, not a ray */
+function usBeam(x, yTop, yBot, halfTop, halfBot, col) {
+  CX.save();
+  var g = CX.createLinearGradient(0, yTop, 0, yBot);
+  g.addColorStop(0, withA(col, .20)); g.addColorStop(1, withA(col, .03));
+  CX.fillStyle = g; CX.beginPath();
+  CX.moveTo(x - halfTop, yTop); CX.lineTo(x + halfTop, yTop);
+  CX.lineTo(x + halfBot, yBot); CX.lineTo(x - halfBot, yBot); CX.closePath(); CX.fill();
+  CX.restore();
+}
+/* the transducer: housing, matching layer, piezo face and its cable */
+function usProbe(x, y, w, h, hot, cable) {
+  CX.save();
+  if (cable) {                                   /* lead away to the machine */
+    CX.strokeStyle = withA(C['text-dim'], .8); CX.lineWidth = 3.5; CX.lineCap = 'round';
+    CX.beginPath(); CX.moveTo(x, y - h); CX.bezierCurveTo(x + 34, y - h - 16, x + 96, y - h + 16, x + 146, y - h - 2); CX.stroke();
+  }
+  var g = CX.createLinearGradient(x - w / 2, 0, x + w / 2, 0);
+  g.addColorStop(0, mixCol(C.wall, '#ffffff', .30)); g.addColorStop(.45, C.wall);
+  g.addColorStop(1, mixCol(C.wall, '#000000', .30));
+  CX.fillStyle = g; CX.strokeStyle = withA(C.text, .35); CX.lineWidth = 1;
+  rr(x - w / 2, y - h, w, h - 7, 6); CX.fill(); CX.stroke();
+  CX.fillStyle = withA(C['text-dim'], .5); rr(x - w / 2 + 4, y - h + 5, w - 8, 5, 2); CX.fill();
+  /* the piezo face — it lights up on the transmit pulse */
+  CX.fillStyle = hot ? C['wave-l'] : withA(C['coil-hi'], .65);
+  CX.strokeStyle = hot ? C['wave-l'] : withA(C.text, .3);
+  rr(x - w / 2 + 3, y - 9, w - 6, 9, 3); CX.fill(); CX.stroke();
+  CX.restore();
+}
+/* the A-scan an ultrasound flaw detector really shows: amplitude against
+   time, one spike per echo. This is what tells a cracked part from a sound
+   one at a glance.                                                         */
+function usAScan(x, y, w, h, spikes, tNow, tMax, col) {
+  card(x, y, w, h, null, withA(C.border, .9));
+  CX.save(); CX.fillStyle = withA(C['graph-bg'], .75); rr(x + 1, y + 1, w - 2, h - 2, 9); CX.fill(); CX.restore();
+  var bx = x + 34, by = y + h - 26, bw = w - 50, bh = h - 46;
+  CX.save(); CX.strokeStyle = withA(C.grid, .55); CX.lineWidth = 1;
+  for (var i = 1; i < 5; i++) { var gx = bx + bw * i / 5; CX.beginPath(); CX.moveTo(gx, by - bh); CX.lineTo(gx, by); CX.stroke(); }
+  CX.restore();
+  line(bx, by, bx + bw, by, C.axis, 1.2);
+  line(bx, by, bx, by - bh, C.axis, 1.2);
+  mtxt('amplitude', bx - 6, by - bh / 2, 8.5, C['text-muted'], 'right');
+  mtxt('time →', bx + bw, by + 13, 8.5, C['text-muted'], 'right');
+  var X = function (t) { return bx + bw * clamp(t / tMax, 0, 1); };
+  /* the trace, drawn only as far as the sweep has reached */
+  var pts = [], n = 260;
+  for (var k = 0; k <= n; k++) {
+    var t = tMax * k / n, v = 0;
+    for (var j = 0; j < spikes.length; j++) {
+      var d = (t - spikes[j].t) / (tMax * 0.018);
+      v += spikes[j].a * Math.exp(-d * d) * Math.cos(d * 2.4);
+    }
+    if (t > tNow) break;
+    pts.push([X(t), by - bh * clamp(v, -1, 1) * 0.92]);
+  }
+  poly(pts, col, 1.8);
+  spikes.forEach(function (sp) {
+    if (tNow < sp.t) return;
+    line(X(sp.t), by, X(sp.t), by - bh * sp.a * 0.92 - 4, withA(sp.col || col, .45), 1, [3, 3]);
+    var al = X(sp.t) <= bx + 14 ? 'left' : X(sp.t) >= bx + bw - 14 ? 'right' : 'center';
+    mtxt(sp.lab, al === 'left' ? bx : al === 'right' ? bx + bw : X(sp.t), by + 13, 8.5, sp.col || C['text-dim'], al);
+  });
+  if (tNow < tMax) line(X(tNow), by - bh - 3, X(tNow), by + 3, withA(C.accent, .75), 1.4);
+}
+/* a small sector B-scan — what the sonographer actually looks at */
+function usBScan(x, y, w, h, sweep) {
+  var key = S.theme + ':' + w + 'x' + h;
+  if (US.bs.key !== key) {
+    var cv = document.createElement('canvas');
+    cv.width = w; cv.height = h;
+    var cx2 = cv.getContext('2d');
+    cx2.fillStyle = '#05070c'; cx2.fillRect(0, 0, w, h);
+    var apx = w / 2, apy = 12, R = h - 26, half = 0.52;
+    /* tissue boundaries, as radius fractions — the same ones the beam meets */
+    var bands = [[0.20, .55], [0.40, .62], [0.70, .95], [0.80, .5]];
+    for (var a = -half; a <= half; a += 0.0055) {
+      for (var rr2 = 16; rr2 < R; rr2 += 2.2) {
+        var u = rr2 / R;
+        var sp = 0.16 + 0.14 * Math.abs(Math.sin(rr2 * 12.9898 + a * 78.233) * 43758.5453 % 1);
+        for (var b = 0; b < bands.length; b++) {
+          var dd = (u - bands[b][0]) / 0.03;
+          sp += bands[b][1] * Math.exp(-dd * dd) * (0.75 + 0.25 * Math.cos(a * 9));
+        }
+        sp *= 1 - 0.45 * u;                                  /* attenuation with depth */
+        cx2.fillStyle = 'rgba(255,246,228,' + clamp(sp, 0, 1).toFixed(3) + ')';
+        cx2.fillRect(apx + Math.sin(a) * rr2 - 1.2, apy + Math.cos(a) * rr2 - 1.2, 2.4, 2.4);
+      }
+    }
+    US.bs = { key: key, cv: cv };
+  }
+  CX.save();
+  CX.fillStyle = '#05070c'; rr(x, y, w, h, 8); CX.fill();
+  CX.drawImage(US.bs.cv, x, y);
+  /* the live sweep line */
+  var apx2 = x + w / 2, apy2 = y + 12, R2 = h - 26, ang = (sweep * 2 - 1) * 0.52;
+  CX.strokeStyle = withA(C.green, .55); CX.lineWidth = 1.5;
+  CX.beginPath(); CX.moveTo(apx2, apy2); CX.lineTo(apx2 + Math.sin(ang) * R2, apy2 + Math.cos(ang) * R2); CX.stroke();
+  CX.strokeStyle = withA(C.text, .25); CX.lineWidth = 1;
+  CX.beginPath(); CX.moveTo(apx2, apy2); CX.lineTo(apx2 + Math.sin(-0.52) * R2, apy2 + Math.cos(-0.52) * R2);
+  CX.arc(apx2, apy2, R2, Math.PI / 2 - 0.52, Math.PI / 2 + 0.52); CX.closePath(); CX.stroke();
+  CX.restore();
+  mtxt('B-scan image', x + w / 2, y + h + 14, 9.5, C['text-muted'], 'center');
+}
+/* A curled fetus, drawn from one size parameter. Fetal proportions, not adult
+   ones: the head is about a third of the whole length, the spine is curled and
+   both limbs are tucked in — that is what makes it read as a baby rather than
+   a blob at this size.                                                       */
+function fetus(cx, cy, s, col, cord) {
+  var U = function (a) { return a * s; };
+  CX.save(); CX.translate(cx, cy); CX.rotate(-0.30);
+  if (cord) {                                        /* umbilical cord */
+    CX.strokeStyle = withA(cord, .8); CX.lineWidth = U(1.5); CX.lineCap = 'round';
+    CX.beginPath(); CX.moveTo(U(1), U(2));
+    CX.bezierCurveTo(U(8), U(3), U(6), U(-6), U(13), U(-7)); CX.stroke();
+  }
+  CX.lineJoin = 'round'; CX.lineCap = 'round';
+  CX.strokeStyle = mixCol(col, '#000000', .35);
+  /* the two limbs go down first, so the body overlaps their roots */
+  CX.lineWidth = U(2.6);
+  CX.beginPath(); CX.moveTo(U(2.4), U(3.6)); CX.quadraticCurveTo(U(5.2), U(7.4), U(1.2), U(8.6)); CX.stroke();   /* leg */
+  CX.lineWidth = U(2.0);
+  CX.beginPath(); CX.moveTo(U(0.6), U(-1.6)); CX.quadraticCurveTo(U(-2.6), U(1.2), U(-4.4), U(-2.2)); CX.stroke(); /* arm */
+  CX.fillStyle = col;
+  CX.beginPath();                                    /* curled torso */
+  CX.moveTo(U(-0.4), U(-3.4));
+  CX.bezierCurveTo(U(4.4), U(-3.0), U(5.4), U(1.6), U(3.4), U(4.8));
+  CX.bezierCurveTo(U(1.6), U(7.6), U(-2.8), U(6.4), U(-3.6), U(3.0));
+  CX.bezierCurveTo(U(-4.2), U(0.4), U(-3.0), U(-2.8), U(-0.4), U(-3.4));
+  CX.closePath(); CX.fill(); CX.lineWidth = U(0.9); CX.stroke();
+  CX.beginPath(); CX.arc(U(-2.4), U(-6.8), U(4.6), 0, 7); CX.fill(); CX.stroke();       /* head */
+  CX.fillStyle = mixCol(col, '#000000', .30);                                            /* ear */
+  CX.beginPath(); CX.arc(U(-0.4), U(-6.2), U(1.1), 0, 7); CX.fill();
+  CX.strokeStyle = mixCol(col, '#000000', .55); CX.lineWidth = U(0.7);                   /* profile */
+  CX.beginPath(); CX.arc(U(-5.0), U(-7.6), U(0.55), 0, 7); CX.stroke();                  /* eye */
+  CX.beginPath(); CX.moveTo(U(-6.4), U(-5.6)); CX.quadraticCurveTo(U(-5.4), U(-4.8), U(-4.2), U(-5.2)); CX.stroke(); /* mouth */
+  CX.restore();
+}
+/* a survey ship seen from the side */
+function ship(x, y, s) {
+  CX.save(); CX.translate(x, y); CX.scale(s, s);
+  var hull = mixCol(C.particle, '#000000', LIGHT ? .25 : .0);
+  CX.fillStyle = mixCol(hull, '#000000', .45);                  /* hull below the line */
+  CX.beginPath(); CX.moveTo(-62, 0); CX.lineTo(62, 0); CX.lineTo(48, 15); CX.lineTo(-46, 15); CX.closePath(); CX.fill();
+  var g = CX.createLinearGradient(0, -14, 0, 2);
+  g.addColorStop(0, mixCol(hull, '#ffffff', .25)); g.addColorStop(1, hull);
+  CX.fillStyle = g;                                             /* hull above the line */
+  CX.beginPath(); CX.moveTo(-66, -14); CX.lineTo(70, -14); CX.lineTo(62, 0); CX.lineTo(-62, 0); CX.closePath(); CX.fill();
+  CX.fillStyle = withA(C.red, .9); CX.fillRect(-62, -3, 124, 3);            /* boot-top stripe */
+  CX.fillStyle = mixCol(hull, '#ffffff', .40);                              /* superstructure */
+  rr(-26, -40, 46, 26, 3); CX.fill();
+  rr(-14, -54, 24, 15, 3); CX.fill();                                       /* bridge */
+  CX.fillStyle = withA(C.accent, .85);                                      /* windows */
+  for (var i = 0; i < 4; i++) CX.fillRect(-11 + i * 6, -50, 4, 5);
+  for (var j = 0; j < 6; j++) CX.fillRect(-22 + j * 7, -33, 4, 5);
+  CX.fillStyle = mixCol(hull, '#000000', .2); rr(26, -38, 14, 24, 2); CX.fill();   /* funnel */
+  CX.fillStyle = withA(C.amber, .9); CX.fillRect(26, -34, 14, 5);
+  CX.strokeStyle = withA(C.text, .6); CX.lineWidth = 1.6;                   /* mast */
+  CX.beginPath(); CX.moveTo(-2, -54); CX.lineTo(-2, -64); CX.moveTo(-9, -60); CX.lineTo(5, -60); CX.stroke();
+  CX.fillStyle = mixCol(C.wall, '#000000', .1);                             /* transducer dome */
+  CX.beginPath(); CX.ellipse(0, 15, 13, 7, 0, 0, Math.PI); CX.fill();
+  CX.restore();
+}
+function fishShoal(cx, cy, t, col) {
+  var P = [[0, 0], [-26, -13], [26, -9], [-44, 8], [16, 14], [44, 4], [-12, 20], [-58, -6], [58, -16], [0, -24]];
+  CX.save();
+  for (var i = 0; i < P.length; i++) {
+    var ph = t * 1.5 + i * 1.7, x = cx + P[i][0] + Math.sin(ph) * 5, y = cy + P[i][1] + Math.cos(ph * .8) * 3;
+    var s = 1 + (i % 3) * 0.16;
+    CX.fillStyle = withA(col, .85);
+    CX.beginPath(); CX.ellipse(x, y, 7.5 * s, 3.4 * s, Math.sin(ph) * .12, 0, 7); CX.fill();
+    CX.beginPath(); CX.moveTo(x - 7 * s, y); CX.lineTo(x - 12 * s, y - 3.4 * s); CX.lineTo(x - 12 * s, y + 3.4 * s); CX.closePath(); CX.fill();
+    CX.fillStyle = withA(mixCol(col, '#000000', .55), .9);
+    CX.beginPath(); CX.arc(x + 4.4 * s, y - 0.7 * s, 0.9 * s, 0, 7); CX.fill();
+  }
+  CX.restore();
+}
+
 function drawUltrasound() {
-  var sel = usCard(S.m3.us);
+  var sel = usCard(S.m3.us), u = usPhase();
   txt('Ultrasound — sound above 20 kHz, too high for us to hear', 40, 30, 15, C['wave-l'], 'left', 700);
   txt('short pulses are sent in, echoes come back, and  distance = v × t ÷ 2  tells how far away the reflecting surface is', 40, 48, 11, C['text-dim']);
   US.boxes = [];
@@ -1310,57 +1928,209 @@ function drawUltrasound() {
     txt(c.ico + '  ' + c.n, x + 14, y + 26, 13, on ? C.accent : C.text, 'left', 700);
     wrap(c.line, x + 14, y + 46, w - 28, 10.5, C['text-dim'], 14);
   });
-  /* animation: a pulse down and back, cycle 3 s of sim time */
-  var cyc = 3.2, u = ((S.t % cyc) + cyc) % cyc, depthPx = 250, top = 216, bot = top + depthPx;
-  var frac = u < 1.2 ? u / 1.2 : u < 2.4 ? (2.4 - u) / 1.2 : 0, going = u < 1.2, back = u >= 1.2 && u < 2.4;
-  var x0 = 40, y = top, w = 700;
-  if (sel.k === 'sonar') {
-    CX.save(); CX.fillStyle = withA(C.sea, .9); CX.fillRect(x0, top, w, depthPx); CX.fillStyle = withA(C.wall, .7); CX.fillRect(x0, bot, w, 40);
-    CX.restore();
-    /* ship */
-    CX.save(); CX.fillStyle = C.particle; CX.beginPath(); CX.moveTo(x0 + 300, top - 4); CX.lineTo(x0 + 420, top - 4); CX.lineTo(x0 + 400, top + 18); CX.lineTo(x0 + 320, top + 18); CX.closePath(); CX.fill();
-    CX.fillRect(x0 + 340, top - 30, 40, 26); CX.restore();
-    if (S.labels) { plate('sea surface', x0 + 90, top - 12, 10, C['text-dim'], 'center'); plate('seabed', x0 + 90, bot + 20, 10, C.wall, 'center'); }
-    var px = x0 + 360;
-    if (going || back) { var py = top + 18 + (depthPx - 18) * frac; usPulse(px, py, going ? 1 : -1); }
-    arrow(x0 + 600, top + 18, x0 + 600, bot, C['mark-l'], 1.8, { both: true, head: 7 });
-    plate('depth = 60 m', x0 + 600, top + depthPx / 2, 10, C['mark-l'], 'center', true);
-  } else if (sel.k === 'medical') {
-    CX.save(); CX.fillStyle = withA(C.skin, .85); CX.fillRect(x0, top, w, depthPx);
-    CX.fillStyle = withA(C.rose, .45); CX.beginPath(); CX.ellipse(x0 + 370, top + 160, 130, 70, 0, 0, Math.PI * 2); CX.fill();
-    CX.restore();
-    /* probe on the skin */
-    CX.save(); CX.fillStyle = C.wall; rr(x0 + 330, top - 34, 60, 34, 6); CX.fill(); CX.restore();
-    if (S.labels) { plate('probe (transmitter + receiver)', x0 + 360, top - 48, 10, C.text, 'center'); plate('skin', x0 + 60, top + 12, 10, C['text-dim'], 'center'); plate('organ boundary reflects the pulse', x0 + 370, top + 160, 10, C.rose, 'center'); }
-    var py2 = top + 90 * frac; if (going || back) usPulse(x0 + 360, py2, going ? 1 : -1);
-  } else {
-    CX.save(); CX.fillStyle = withA(C.wall, .6); CX.fillRect(x0, top, w, depthPx); CX.restore();
-    /* crack */
-    CX.save(); CX.strokeStyle = C.red; CX.lineWidth = 2.5; CX.beginPath(); CX.moveTo(x0 + 330, top + 120); CX.lineTo(x0 + 350, top + 140); CX.lineTo(x0 + 340, top + 160); CX.lineTo(x0 + 365, top + 178); CX.stroke(); CX.restore();
-    CX.save(); CX.fillStyle = C.particle; rr(x0 + 330, top - 34, 60, 34, 6); CX.fill(); CX.restore();
-    if (S.labels) { plate('probe', x0 + 360, top - 48, 10, C.text, 'center'); plate('steel part', x0 + 60, top + 14, 10, C['text-dim'], 'center'); plate('crack — echo returns early', x0 + 480, top + 150, 10, C.red, 'left'); plate('back face', x0 + 60, bot - 10, 10, C['text-dim'], 'center'); }
-    var py3 = top + 130 * frac; if (going || back) usPulse(x0 + 360, py3, going ? 1 : -1);
-  }
-  /* readout on the right */
-  var tOne = sel.k === 'sonar' ? 2 * 60 / sel.v : sel.k === 'medical' ? 2 * 0.09 / sel.v : 2 * 0.06 / sel.v;
-  var dist = sel.k === 'sonar' ? 60 : sel.k === 'medical' ? 0.09 : 0.06;
-  card(770, 180, 394, 300, 'ECHO TIMING');
-  txt('speed in ' + sel.vname, 790, 222, 11.5, C['text-dim']); mtxt(sel.v + ' m/s', 1148, 222, 12.5, C.text, 'right', 700);
-  txt('echo time  t', 790, 252, 11.5, C['text-dim']); mtxt(tOne < 0.01 ? fmtSig(tOne * 1e6, 3) + ' µs' : fmt(tOne, 3) + ' s', 1148, 252, 12.5, C.accent, 'right', 700);
-  txt('distance = v × t ÷ 2', 790, 282, 11.5, C['text-dim']); mtxt(dist >= 1 ? fmt(dist, 0) + ' m' : fmt(dist * 100, 0) + ' cm', 1148, 282, 12.5, C['mark-l'], 'right', 700);
-  wrap(sel.k === 'sonar' ? 'A ship sends a pulse straight down. It hits the seabed and returns. The ÷2 is there because the pulse travels down AND up.'
-    : sel.k === 'medical' ? 'Ultrasound is not ionising, so it is safe to use on an unborn baby. Each boundary between tissues reflects a little of the pulse, and the timing of each echo maps the layers.'
-      : 'A healthy part returns one echo, from the back face. A crack returns an extra, earlier echo — the earlier it arrives, the closer to the surface the crack is.', 790, 318, 350, 11, C['text-dim'], 16);
-  card(36, 500, 1128, 132, 'ULTRASOUND — WHAT IT IS');
-  txt('• Frequency above 20 000 Hz (20 kHz) — the upper limit of human hearing.   • Still a longitudinal sound wave: it needs a medium.', 56, 538, 11.5, C.text);
-  txt('• Short pulses + timing of the echoes → distance = v × t ÷ 2.   • Uses: medical scans · sonar / echo-sounding · non-destructive testing of materials.', 56, 562, 11.5, C.text);
-  txt('• Also: cleaning delicate objects, animal echolocation (bats, dolphins), range finders.', 56, 586, 11.5, C['text-dim']);
-  txt('animation slowed — real echo times are milliseconds (sonar) to microseconds (steel)', 1148, 620, 10, C['text-muted'], 'right');
+  var rows = sel.k === 'medical' ? usMedical(u) : sel.k === 'sonar' ? usSonar(u) : usNDT(u);
+  /* the readout: one row per echo, because the whole method is that a deeper
+     reflector gives a later echo */
+  card(912, 160, 252, 380, 'ECHO TIMING');
+  txt('speed in ' + sel.vname, 932, 196, 11, C['text-dim']);
+  mtxt(sel.v + ' m/s', 1148, 196, 12, C.text, 'right', 700);
+  line(932, 210, 1148, 210, withA(C.border, .9), 1);
+  var yy = 232;
+  rows.forEach(function (r) {
+    txt(r.n, 932, yy, 10.5, r.col || C['text-dim'], 'left', 600);
+    mtxt(usT(2 * r.d / sel.v), 1148, yy + 16, 11.5, C.accent, 'right', 700);
+    txt('t =', 932, yy + 16, 10, C['text-muted']);
+    mtxt(r.d >= 1 ? fmt(r.d, 0) + ' m' : fmt(r.d * 100, 1) + ' cm', 1148, yy + 32, 11.5, C['mark-l'], 'right', 700);
+    txt('d = v × t ÷ 2', 932, yy + 32, 10, C['text-muted']);
+    yy += 52;
+  });
+  line(932, yy - 8, 1148, yy - 8, withA(C.border, .9), 1);
+  wrap(sel.k === 'sonar' ? 'The ship sends one pulse straight down. The shoal returns an echo first because it is nearer; the seabed returns a later one. The ÷2 is there because the pulse travels down AND up.'
+    : sel.k === 'medical' ? 'Ultrasound is not ionising, so it is safe on an unborn baby. Every boundary between tissues reflects a little of the pulse, and the arrival time of each echo places that boundary — which is how the B-scan image is built.'
+      : 'A sound part returns ONE echo, from the back face. A cracked part returns an extra, earlier echo, and the back-wall echo shrinks because the crack has reflected part of the pulse away.', 932, yy + 12, 216, 10.5, C['text-dim'], 15);
+  card(36, 548, 1128, 92, 'ULTRASOUND — WHAT IT IS');
+  txt('• Frequency above 20 000 Hz (20 kHz) — the upper limit of human hearing.   • Still a longitudinal sound wave: it needs a medium.', 56, 584, 11.5, C.text);
+  txt('• Short pulses + timing of the echoes → distance = v × t ÷ 2.   • Uses: medical scans · sonar / echo-sounding · non-destructive testing of materials.', 56, 606, 11.5, C.text);
+  txt('• Also: cleaning delicate objects, animal echolocation (bats, dolphins), range finders.', 56, 628, 11.5, C['text-dim']);
+  txt('animation slowed — real echo times are milliseconds (sonar) to microseconds (steel)', 1148, 660, 10, C['text-muted'], 'right');
 }
-function usPulse(x, y, dir) {
-  CX.save(); CX.strokeStyle = C['wave-l']; CX.lineWidth = 3;
-  for (var a = 0; a < 3; a++) { CX.globalAlpha = 1 - a * .3; CX.beginPath(); CX.arc(x, y - dir * a * 10, 22, dir > 0 ? 0.45 : Math.PI + 0.45, dir > 0 ? Math.PI - 0.45 : 2 * Math.PI - 0.45); CX.stroke(); }
+function usT(t) { return t < 1e-3 ? fmtSig(t * 1e6, 3) + ' µs' : t < 1 ? fmtSig(t * 1e3, 3) + ' ms' : fmt(t, 3) + ' s'; }
+
+/* ---- 1 · medical: probe, tissue layers, baby, live B-scan ---- */
+function usMedical(u) {
+  var x0 = 36, y0 = 190, w = 584, h = 338, bot = y0 + h, px = x0 + 236;
+  var T = [{ d: 0.20, r: .45, n: 'fat / muscle boundary', c: C.rose },
+    { d: 0.40, r: .55, n: 'uterus wall', c: C.rose },
+    { d: 0.72, r: 1.0, n: 'the baby', c: C.rose }];
+  var sc = usScan(T, u);
+  /* the body in cross-section: skin, fat, muscle, uterus, fluid */
+  CX.save();
+  var g = CX.createLinearGradient(0, y0, 0, bot);
+  g.addColorStop(0, mixCol(C.skin, '#ffffff', .18)); g.addColorStop(.25, C.skin);
+  g.addColorStop(1, mixCol(C.skin, '#000000', .22));
+  CX.fillStyle = g; rr(x0, y0, w, h, 8); CX.fill();
+  CX.save(); CX.beginPath(); rr(x0, y0, w, h, 8); CX.clip();
+  CX.fillStyle = withA(mixCol(C.skin, '#ffffff', .35), .9); CX.fillRect(x0, y0, w, 12);   /* skin */
+  CX.fillStyle = withA(mixCol(C.skin, '#000000', .12), .8); CX.fillRect(x0, y0 + 12, w, h * 0.20 - 12);
+  CX.fillStyle = withA(C.rose, .16); CX.fillRect(x0, y0 + h * 0.20, w, h * 0.20);          /* muscle */
+  CX.fillStyle = withA(C.rose, .30);                                                       /* uterus */
+  CX.beginPath(); CX.ellipse(px + 30, y0 + h * 0.72, 210, 128, 0, 0, 7); CX.fill();
+  CX.strokeStyle = withA(C.rose, .75); CX.lineWidth = 3;
+  CX.beginPath(); CX.ellipse(px + 30, y0 + h * 0.72, 210, 128, 0, 0, 7); CX.stroke();
+  CX.fillStyle = withA(C.sea, .22);                                                        /* amniotic fluid */
+  CX.beginPath(); CX.ellipse(px + 30, y0 + h * 0.72, 196, 116, 0, 0, 7); CX.fill();
+  CX.restore(); CX.restore();
+  fetus(px + 16, y0 + h * 0.74, 8.2, withA(mixCol(C.rose, '#ffffff', .34), .96), withA(C.rose, .9));
+  CX.save(); CX.strokeStyle = withA(C.text, .3); CX.lineWidth = 1; rr(x0, y0, w, h, 8); CX.stroke(); CX.restore();
+  /* the beam and the probe */
+  usBeam(px, y0 + 6, y0 + h * 0.80, 26, 66, C['wave-l']);
+  var hot = sc.tFrac < 0.05;
+  usProbe(px, y0 + 4, 56, 40, hot, true);
+  /* coupling gel under the probe face */
+  CX.save(); CX.fillStyle = withA(C.accent, .35);
+  CX.beginPath(); CX.ellipse(px, y0 + 4, 34, 7, 0, 0, 7); CX.fill(); CX.restore();
+  /* boundary markers + the pulse */
+  CX.save(); CX.beginPath(); CX.rect(x0, y0, w, h); CX.clip();
+  T.forEach(function (t, i) {
+    var ty = y0 + 6 + (h - 30) * t.d;
+    if (i < 2) line(px - 50 - i * 8, ty, px + 110 + i * 8, ty, withA(t.c, .55), 1.6, [6, 5]);
+  });
+  if (sc.out) usTrain(px, y0 + 6, (h - 30) * sc.s, 30, C['wave-l'], false, 1);
+  sc.echoes.forEach(function (e) {
+    var by = y0 + 6 + (h - 30) * e.born;
+    usTrain(px, by, (h - 30) * (sc.s - e.born), 30, C.green, true, 0.35 + 0.65 * e.r);
+  });
   CX.restore();
+  if (S.labels) {
+    plate('transducer — transmits + receives', px - 38, y0 - 16, 10, C.text, 'right');
+    plate('skin + coupling gel', x0 + 92, y0 + 26, 9.5, C['text-dim'], 'center');
+    plate('fat / muscle', x0 + 74, y0 + 6 + (h - 30) * 0.20, 9.5, C.rose, 'center');
+    plate('uterus wall', x0 + 70, y0 + 6 + (h - 30) * 0.40, 9.5, C.rose, 'center');
+    plate('baby — the strongest echo', px + 190, y0 + h * 0.73, 9.5, C.rose, 'left');
+    txt('every boundary sends a little of the pulse back — a deeper one arrives later', x0 + 2, bot + 14, 9.5, C['text-muted']);
+  }
+  usBScan(644, y0, 250, 318, clamp(u / US.cyc, 0, 1));
+  return T.map(function (t) { return { n: t.n, d: t.d * 0.125, col: t.c }; });
+}
+
+/* ---- 2 · sonar: ship, beam, shoal of fish, seabed ---- */
+function usSonar(u) {
+  var x0 = 36, y0 = 216, w = 864, h = 312, bot = y0 + h, px = x0 + 300;
+  var T = [{ d: 0.46, r: .45, n: 'shoal of fish', c: C.amber },
+    { d: 1.00, r: 1.0, n: 'seabed', c: C.wall }];
+  var sc = usScan(T, u);
+  var bedTop = y0 + h - 46;
+  CX.save();
+  var g = CX.createLinearGradient(0, y0, 0, bot);
+  g.addColorStop(0, mixCol(C.sea, '#ffffff', .22)); g.addColorStop(.5, C.sea);
+  g.addColorStop(1, mixCol(C.sea, '#000000', .35));
+  CX.fillStyle = g; CX.fillRect(x0, y0, w, h);
+  /* sun shafts */
+  CX.globalAlpha = .07; CX.fillStyle = '#ffffff';
+  for (var i = 0; i < 7; i++) { CX.beginPath(); CX.moveTo(x0 + 60 + i * 120, y0); CX.lineTo(x0 + 96 + i * 120, y0); CX.lineTo(x0 + 150 + i * 120, bot); CX.lineTo(x0 + 100 + i * 120, bot); CX.closePath(); CX.fill(); }
+  CX.restore();
+  /* the seabed, as a profile rather than a flat bar */
+  CX.save(); CX.beginPath(); CX.moveTo(x0, bot);
+  for (var bx = 0; bx <= w; bx += 12) CX.lineTo(x0 + bx, bedTop + 14 * Math.sin(bx / 96) + 7 * Math.sin(bx / 37 + 1.4));
+  CX.lineTo(x0 + w, bot); CX.closePath();
+  var gb = CX.createLinearGradient(0, bedTop - 16, 0, bot);
+  gb.addColorStop(0, mixCol(C.wall, '#ffffff', .22)); gb.addColorStop(1, mixCol(C.wall, '#000000', .3));
+  CX.fillStyle = gb; CX.fill();
+  CX.fillStyle = withA(mixCol(C.wall, '#000000', .45), .8);                 /* rocks */
+  [[120, 9], [300, 6], [520, 11], [700, 7], [800, 9]].forEach(function (r) {
+    CX.beginPath(); CX.ellipse(x0 + r[0], bedTop + 14 * Math.sin(r[0] / 96) + 7 * Math.sin(r[0] / 37 + 1.4) + 3, r[1] * 1.7, r[1], 0, Math.PI, 0); CX.fill();
+  });
+  CX.restore();
+  /* the surface, drawn as a wavy line the ship sits on */
+  CX.save(); CX.strokeStyle = withA(mixCol(C.sea, '#ffffff', .55), .95); CX.lineWidth = 2.4;
+  CX.beginPath();
+  for (var sx = 0; sx <= w; sx += 6) { var sy = y0 + 3 * Math.sin(sx / 26 + S.t * 1.2); if (sx === 0) CX.moveTo(x0, sy); else CX.lineTo(x0 + sx, sy); }
+  CX.stroke(); CX.restore();
+  ship(px, y0 + 2 + 3 * Math.sin(px / 26 + S.t * 1.2), 1);
+  usBeam(px, y0 + 18, bot - 10, 20, 96, C['wave-l']);
+  fishShoal(px + 6, y0 + 18 + (h - 34) * 0.46, S.t, C.amber);
+  /* the pulse and its two echoes */
+  CX.save(); CX.beginPath(); CX.rect(x0, y0, w, h); CX.clip();
+  if (sc.out) usTrain(px, y0 + 18, (h - 34) * sc.s, 34, C['wave-l'], false, 1);
+  sc.echoes.forEach(function (e) {
+    var by = y0 + 18 + (h - 34) * e.born;
+    usTrain(px, by, (h - 34) * (sc.s - e.born), 34, e.i === 0 ? C.amber : C.green, true, 0.4 + 0.6 * e.r);
+  });
+  CX.restore();
+  /* depth markers */
+  var dx = x0 + w - 96;
+  arrow(dx, y0 + 18, dx, y0 + 18 + (h - 34) * 0.46, C.amber, 1.6, { both: true, head: 6 });
+  plate('28 m', dx, y0 + 18 + (h - 34) * 0.23, 9.5, C.amber, 'center', true);
+  arrow(dx + 54, y0 + 18, dx + 54, y0 + 18 + (h - 34), C['mark-l'], 1.8, { both: true, head: 7 });
+  plate('depth = 60 m', dx + 54, y0 + 18 + (h - 34) * 0.72, 10, C['mark-l'], 'center', true);
+  if (S.labels) {
+    plate('survey ship', px - 120, y0 - 26, 10, C.text, 'center');
+    plate('sea surface', x0 + 70, y0 - 12, 9.5, C['text-dim'], 'center');
+    plate('hull transducer', px + 96, y0 + 30, 9.5, C['coil-hi'], 'left');
+    plate('shoal of fish — the first, earlier echo', px + 96, y0 + 18 + (h - 34) * 0.46, 9.5, C.amber, 'left');
+    plate('seabed — the later echo', x0 + 96, bedTop + 30, 9.5, C.wall, 'center');
+  }
+  return [{ n: 'shoal of fish', d: 28, col: C.amber }, { n: 'seabed', d: 60, col: C['mark-l'] }];
+}
+
+/* ---- 3 · NDT: a sound part and a cracked one, side by side ---- */
+function usNDT(u) {
+  var y0 = 186, ph = 170;
+  usNDTPart(36, y0, 426, ph, u, false);
+  usNDTPart(474, y0, 426, ph, u, true);
+  return [{ n: 'crack (cracked part only)', d: 0.06, col: C.red }, { n: 'back face', d: 0.13, col: C['mark-l'] }];
+}
+function usNDTPart(x0, y0, w, h, u, cracked) {
+  var px = x0 + w / 2 - 40, bot = y0 + h;
+  var T = cracked ? [{ d: 0.46, r: .8, n: 'crack', c: C.red }, { d: 1.0, r: .35, n: 'back face', c: C['mark-l'] }]
+    : [{ d: 1.0, r: 1.0, n: 'back face', c: C['mark-l'] }];
+  var sc = usScan(T, u);
+  txt(cracked ? '🔴 CRACKED PART' : '🟢 SOUND PART', x0 + 2, y0 - 12, 11.5, cracked ? C.red : C.green, 'left', 700);
+  /* the steel block */
+  CX.save();
+  var g = CX.createLinearGradient(x0, 0, x0 + w, 0);
+  g.addColorStop(0, mixCol(C.wall, '#ffffff', .28)); g.addColorStop(.35, C.wall);
+  g.addColorStop(.6, mixCol(C.wall, '#ffffff', .16)); g.addColorStop(1, mixCol(C.wall, '#000000', .28));
+  CX.fillStyle = g; rr(x0, y0, w, h, 4); CX.fill();
+  CX.globalAlpha = .18; CX.strokeStyle = LIGHT ? '#000000' : '#ffffff'; CX.lineWidth = 1;   /* brushed metal */
+  for (var i = 0; i < Math.floor(w * h / 900); i++) {
+    var rx = x0 + ((i * 97) % w), ry = y0 + ((i * 53) % h);
+    CX.beginPath(); CX.moveTo(rx, ry); CX.lineTo(rx + 16, ry); CX.stroke();
+  }
+  CX.restore();
+  CX.save(); CX.strokeStyle = withA(C.text, .4); CX.lineWidth = 1.4; rr(x0, y0, w, h, 4); CX.stroke(); CX.restore();
+  usBeam(px, y0 + 2, bot - 2, 16, 30, C['wave-l']);
+  if (cracked) {                                  /* the flaw itself */
+    var cy = y0 + 4 + (h - 12) * 0.46;
+    CX.save(); CX.strokeStyle = C.red; CX.lineWidth = 3; CX.lineCap = 'round'; CX.lineJoin = 'round';
+    CX.beginPath(); CX.moveTo(px - 30, cy - 9); CX.lineTo(px - 8, cy + 2); CX.lineTo(px + 6, cy - 5);
+    CX.lineTo(px + 24, cy + 7); CX.lineTo(px + 40, cy + 1); CX.stroke();
+    CX.strokeStyle = withA(C.red, .3); CX.lineWidth = 9; CX.stroke(); CX.restore();
+  }
+  CX.save(); CX.beginPath(); CX.rect(x0, y0, w, h); CX.clip();
+  if (sc.out) usTrain(px, y0 + 4, (h - 12) * sc.s, 20, C['wave-l'], false, 1);
+  sc.echoes.forEach(function (e) {
+    var by = y0 + 4 + (h - 12) * e.born;
+    usTrain(px, by, (h - 12) * (sc.s - e.born), 20, e.born < 0.9 ? C.red : C.green, true, 0.35 + 0.65 * e.r);
+  });
+  CX.restore();
+  var hot = sc.tFrac < 0.05;
+  usProbe(px, y0 + 2, 50, 34, hot, false);
+  if (S.labels) {
+    plate('probe', px + 34, y0 - 20, 9.5, C.text, 'left');
+    if (cracked) plate('crack', px + 62, y0 + 4 + (h - 12) * 0.46, 9.5, C.red, 'left');
+    plate('back face', x0 + w - 16, bot - 12, 9.5, C['mark-l'], 'right');
+  }
+  /* the A-scan: this is where a sound part and a cracked one differ */
+  var sp = cracked
+    ? [{ t: 0, a: 1, lab: 'transmit', col: C['text-dim'] }, { t: 0.46, a: .74, lab: 'CRACK', col: C.red }, { t: 1, a: .34, lab: 'back face (weaker)', col: C['mark-l'] }]
+    : [{ t: 0, a: 1, lab: 'transmit', col: C['text-dim'] }, { t: 1, a: .9, lab: 'back face', col: C['mark-l'] }];
+  usAScan(x0, bot + 16, w, 130, sp, sc.s, 1.12, cracked ? C.red : C.green);
+  txt(cracked ? 'TWO echoes — the extra one arrives EARLY' : 'ONE echo only, from the back face',
+    x0 + w / 2, bot + 166, 10.5, cracked ? C.red : C.green, 'center', 600);
+}
+function usPulse(x, y, dir) {   /* kept: the practical/quiz code calls it */
+  usTrain(x, y - dir * 40, 40, 22, C['wave-l'], dir < 0, 1);
 }
 </script>
 <script>
@@ -1420,7 +2190,7 @@ function drawEM3D() {
   var ph0 = 2 * Math.PI * 0.6 * S.t;                     /* drawn phase — the real f is far too fast */
   txt('Electromagnetic wave — E and B fields at right angles to each other and to the direction of travel', 40, 30, 15, C.efield, 'left', 700);
   txt('a transverse wave that needs no medium · all EM waves travel at c = 3.0 × 10⁸ m/s in a vacuum', 40, 48, 11, C['text-dim']);
-  var N = 60, i, x, E, B, a, b;
+  var N = 240, ARR_STEP = Math.round(N / 20), i, x, E, B, a, b;
   if (is3) {
     /* the two planes as faint outlines */
     CX.save(); CX.strokeStyle = withA(C.envelope, .9); CX.lineWidth = 1; CX.setLineDash([5, 5]);
@@ -1440,13 +2210,13 @@ function drawEM3D() {
       x = i / N * P3.len; var phz = 2 * Math.PI * x / lamPx - ph0;
       E = Math.sin(phz) * P3.ampE; B = Math.sin(phz) * P3.ampB;
       a = proj(x, 0, 0); b = proj(x, 0, B); bt.push(b);
-      if (i % 3 === 0) arrow(a[0], a[1], b[0], b[1], withA(C.bfield, .85), 1.5, { head: 6 });
+      if (i % ARR_STEP === 0) arrow(a[0], a[1], b[0], b[1], withA(C.bfield, .85), 1.5, { head: 6 });
     }
     poly(bt, C.bfield, 2);
     for (i = 0; i <= N; i++) {
       x = i / N * P3.len; var phe = 2 * Math.PI * x / lamPx - ph0;
       E = Math.sin(phe) * P3.ampE; a = proj(x, 0, 0); b = proj(x, E, 0); et.push(b);
-      if (i % 3 === 0) arrow(a[0], a[1], b[0], b[1], withA(C.efield, .9), 1.5, { head: 6 });
+      if (i % ARR_STEP === 0) arrow(a[0], a[1], b[0], b[1], withA(C.efield, .9), 1.5, { head: 6 });
     }
     poly(et, C.efield, 2.4);
     /* wavefront dots on the axis at each crest */
@@ -1478,8 +2248,8 @@ function drawEM3D() {
     for (i = 0; i <= N; i++) {
       x = i / N * L; var ph2 = 2 * Math.PI * x / lamPx - ph0; E = Math.sin(ph2) * P3.ampE; B = Math.sin(ph2);
       e2d.push([ax + x, ay - E]);
-      if (i % 3 === 0) arrow(ax + x, ay, ax + x, ay - E, withA(C.efield, .9), 1.5, { head: 6 });
-      if (i % 3 === 0 && Math.abs(B) > 0.05) {
+      if (i % ARR_STEP === 0) arrow(ax + x, ay, ax + x, ay - E, withA(C.efield, .9), 1.5, { head: 6 });
+      if (i % ARR_STEP === 0 && Math.abs(B) > 0.05) {
         var r = 4 + 8 * Math.abs(B), yb = ay + 150;
         CX.save(); CX.strokeStyle = C.bfield; CX.fillStyle = C.bfield; CX.lineWidth = 1.5;
         CX.beginPath(); CX.arc(ax + x, yb, r, 0, Math.PI * 2); CX.stroke();
@@ -1615,6 +2385,7 @@ function drawSpectrum() {
 var CTL = {
   f1: { lab: 'Frequency f', min: 0.5, max: 5, step: 0.1, get: function () { return S.m1.f; }, set: function (v) { S.m1.f = v; }, fmt: function (v) { return fmt(v, 1) + ' Hz'; } },
   A1: { lab: 'Amplitude A', min: 0.2, max: 1, step: 0.05, get: function () { return S.m1.A; }, set: function (v) { S.m1.A = v; }, fmt: function (v) { return fmt(v, 2); } },
+  k1: { lab: 'Tracked coil', min: 1, max: N_COIL, step: 1, get: function () { return S.m1.track + 1; }, set: function (v) { trackCoil(v - 1); }, fmt: function (v) { return '#' + fmt(v, 0); }, tip: 'the coil plotted in graph (b) — drag this, or click a coil on the slinky; either one restarts the trace' },
   f2: { lab: 'Frequency f', min: 1, max: 10, step: 0.1, get: function () { return S.m2.f; }, set: function (v) { S.m2.f = v; }, fmt: function (v) { return fmt(v, 1) + ' Hz'; } },
   A2: { lab: 'Amplitude A', min: 0.2, max: 1, step: 0.05, get: function () { return S.m2.A; }, set: function (v) { S.m2.A = v; }, fmt: function (v) { return fmt(v, 2) + ' m'; } },
   v2: { lab: 'Wave speed v', min: 1, max: 10, step: 0.1, get: function () { return S.m2.v; }, set: function (v) { S.m2.v = v; }, fmt: function (v) { return fmt(v, 1) + ' m/s'; }, lock: function () { return S.m2.holdV; } },
@@ -1625,7 +2396,7 @@ var CTL = {
 };
 function ctlsFor() {
   var md = S.md, ex = S.ex[md];
-  if (md === 1) return ex === 'slinky' ? ['f1', 'A1'] : [];
+  if (md === 1) return ex === 'slinky' ? ['f1', 'A1', 'k1'] : [];
   if (md === 2) return ex === 'wave' ? ['f2', 'A2', 'v2'] : ['f2', 'v2'];
   if (md === 3) return ex === 'tone' ? ['f3', 'A3'] : ex === 'echo' ? ['d3'] : [];
   if (md === 4) return ex === 'em3d' ? ['f4'] : [];
@@ -1635,7 +2406,7 @@ function renderCtrls() {
   var box = $('gCtrl'), keys = ctlsFor(), h = '';
   keys.forEach(function (k) {
     var c = CTL[k];
-    h += '<div class="sl" id="sl_' + k + '"><label>' + c.lab + '</label><input type="range" id="in_' + k + '" min="' + c.min + '" max="' + c.max + '" step="' + c.step + '" value="' + c.get() + '"><span class="val" id="val_' + k + '">' + c.fmt(c.get()) + '</span></div>';
+    h += '<div class="sl" id="sl_' + k + '"' + (c.tip ? ' title="' + c.tip + '"' : '') + '><label>' + c.lab + '</label><input type="range" id="in_' + k + '" min="' + c.min + '" max="' + c.max + '" step="' + c.step + '" value="' + c.get() + '"><span class="val" id="val_' + k + '">' + c.fmt(c.get()) + '</span></div>';
   });
   box.innerHTML = h;
   keys.forEach(function (k) {
@@ -1658,7 +2429,7 @@ function refreshCtrlValues() {
 /* ── example pills ── */
 var EXS = {
   1: [['slinky', '🧵 Slinky'], ['real', '🌊 Real examples']],
-  2: [['wave', '〰️ Travelling wave'], ['lamf', '📉 λ vs f']],
+  2: [['wave', '〰️ Travelling wave'], ['lamf', '📐 Where v = fλ comes from']],
   3: [['tone', '🎼 Tone'], ['echo', '🔊 Echo'], ['ultra', '🩺 Ultrasound']],
   4: [['em3d', '🌅 3-D wave'], ['visible', '🌈 Visible'], ['spectrum', '📡 Spectrum']]
 };
@@ -1691,20 +2462,27 @@ function updateChrome() {
   var md = S.md, ex = S.ex[md], sim = S.mode === 'sim';
   $('gType').hidden = !((md === 1 && ex === 'slinky') || (md === 2 && ex === 'wave'));
   $('gView').hidden = !(md === 4 && ex === 'em3d');
+  $('gLFAx').hidden = !(md === 2 && ex === 'lamf');
   $('tMeasure').hidden = !(md === 2 && ex === 'wave');
   $('tHold').hidden = !(md === 2);
   $('tAxes').hidden = !(md === 4 && ex === 'em3d');
   $('bSound').hidden = !(md === 3);
   $('tComp').hidden = $('tRare').hidden = !(md === 3 && ex === 'tone');
-  $('gCtx').hidden = $('tMeasure').hidden && $('tHold').hidden && $('tAxes').hidden && $('bSound').hidden;
+  $('tSnap').hidden = !(md === 1 && ex === 'slinky');
+  /* derive the group's own visibility from its children, so adding a button
+     here can never leave it hidden inside a collapsed group */
+  $('gCtx').hidden = [].every.call($('gCtx').children, function (b) { return b.hidden; });
   var typ = md === 1 ? S.m1.type : S.m2.type;
   [].forEach.call($('gWaveType').children, function (b) { b.classList.toggle('active', b.dataset.w === typ); });
   [].forEach.call($('gEmView').children, function (b) { b.classList.toggle('active', b.dataset.v === S.m4.view); });
+  [].forEach.call($('gLFAxis').children, function (b) { b.classList.toggle('active', b.dataset.g === S.m2.gax); });
   $('tMeasure').classList.toggle('on', S.m2.measure);
   $('tHold').classList.toggle('on', S.m2.holdV);
   $('tAxes').classList.toggle('on', S.m4.axes);
   $('tComp').classList.toggle('on', S.m3.showComp);
   $('tRare').classList.toggle('on', S.m3.showRare);
+  $('tSnap').classList.toggle('on', S.m1.snap != null);
+  [].forEach.call($('tSnap').querySelectorAll('.ppl'), function (x) { x.classList.toggle('on', (x.dataset.pp === 'live') === (S.m1.snap != null)); });
   $('tLabels').classList.toggle('on', S.labels);
   $('tFormula').classList.toggle('on', S.formula);
   [].forEach.call($('bSound').querySelectorAll('.ppl'), function (s) { s.classList.toggle('on', (s.dataset.pp === 'on') === S.m3.sound); });
@@ -1713,7 +2491,7 @@ function updateChrome() {
   $('gSub').classList.toggle('locked', !sim);
   $('gType').classList.toggle('locked', !sim);
   $('tLabels').classList.toggle('locked', S.mode === 'prac' && S.prac && S.prac.task && S.prac.task.hideLabels);
-  $('tbHint').textContent = md === 1 ? (ex === 'slinky' ? 'coil #' + (TRACK + 1) + ' is tracked in graph (b)' : 'click a card') : md === 2 ? (ex === 'wave' ? 'P is the point plotted in graph (b)' : 'drag f: the dot slides along λ = v / f') : md === 3 ? (ex === 'tone' ? 'the tone plays while the animation runs' : ex === 'echo' ? 'the pulse repeats by itself' : 'click a card') : (ex === 'em3d' ? 'slide f to move through the spectrum' : ex === 'spectrum' ? 'click a region' : '');
+  $('tbHint').textContent = md === 1 ? (ex === 'slinky' ? '' : 'click a card') : md === 2 ? (ex === 'wave' ? 'P is the point plotted in graph (b)' : (S.m2.gax === 'l1f' ? 'the gradient of this straight line IS the speed' : S.m2.gax === 'vf' ? 'flat: the speed does not depend on f' : 'pick the axes — λ–f, λ–1/f or v–f')) : md === 3 ? (ex === 'tone' ? 'the tone plays while the animation runs' : ex === 'echo' ? 'the pulse repeats by itself' : 'click a card') : (ex === 'em3d' ? 'slide f to move through the spectrum' : ex === 'spectrum' ? 'click a region' : '');
   syncCtrlLocks(); updatePlayBtn(); updateChips();
   var names = { 1: 'Wave types — transverse and longitudinal', 2: 'Wave properties — λ, f, A, T and v = fλ', 3: 'Sound — a longitudinal wave', 4: 'Electromagnetic waves — transverse, c = 3.0 × 10⁸ m/s' };
   $('bbLeft').textContent = names[md];
@@ -1812,10 +2590,10 @@ function dataHTML() {
   var md = S.md, ex = S.ex[md], h = '';
   if (md === 1) {
     if (ex === 'real') {
-      h += secHead('gal', 'Real examples') + secBody('gal', '<div class="note">Transverse:</div><div class="gal">' +
-        REAL.filter(function (r) { return r.t === 'T'; }).map(function (r) { return '<div class="g' + (S.m1.real === r.k ? ' sel' : '') + '" data-k="' + r.k + '">' + r.n + '</div>'; }).join('') +
-        '</div><div class="note">Longitudinal:</div><div class="gal">' +
-        REAL.filter(function (r) { return r.t === 'L'; }).map(function (r) { return '<div class="g' + (S.m1.real === r.k ? ' sel' : '') + '" data-k="' + r.k + '">' + r.n + '</div>'; }).join('') + '</div>');
+      h += secHead('gal', 'Real examples') + secBody('gal', '<div class="note">Longitudinal:</div><div class="gal">' +
+        REAL.filter(function (r) { return r.t === 'L'; }).map(function (r) { return '<div class="g' + (S.m1.real === r.k ? ' sel' : '') + '" data-k="' + r.k + '">' + r.n + '</div>'; }).join('') +
+        '</div><div class="note">Transverse:</div><div class="gal">' +
+        REAL.filter(function (r) { return r.t === 'T'; }).map(function (r) { return '<div class="g' + (S.m1.real === r.k ? ' sel' : '') + '" data-k="' + r.k + '">' + r.n + '</div>'; }).join('') + '</div>');
       var sel = realByKey(S.m1.real);
       if (sel) h += secHead('galn', 'Selected') + secBody('galn', '<div class="card"><div class="h">' + sel.n + '</div><p>' + sel.note + '</p><p><b>' + (sel.t === 'T' ? 'Transverse — vibration at right angles to travel' : 'Longitudinal — vibration parallel to travel') + '</b></p></div>');
       h += noteEnergy();
@@ -1824,7 +2602,7 @@ function dataHTML() {
     h += secHead('d1', 'Live readings') + secBody('d1',
       kv('Wave type', 'd_type', '', 'hi') + kv('Direction of vibration', 'd_vib', '', 't') + kv('Direction of travel', 'd_trav', 'left → right along the slinky', 't') +
       kv('Wavelength λ (crest to crest)', 'd_lam') + kv('Frequency f', 'd_f') + kv('Amplitude A (relative)', 'd_A') + kv('Period T = 1/f', 'd_T') + kv('Wave speed v = fλ', 'd_v', '', 'hi'));
-    h += secHead('d1b', 'The two graphs') + secBody('d1b', '<div class="note"><b>(a) displacement vs distance</b> — a photograph of the whole slinky at this instant. Crest-to-crest on it is one <b>wavelength λ</b>.</div><div class="note"><b>(b) displacement vs time</b> — the story of ONE coil (#' + (TRACK + 1) + ') as time passes. Peak-to-peak on it is one <b>period T</b>.</div><div class="note">Both are the same shape for a longitudinal wave: plotting each coil\'s displacement <i>along</i> the slinky against its position gives the same sine curve.</div>');
+    h += secHead('d1b', 'The two graphs') + secBody('d1b', '<div class="note"><b>(a) displacement vs distance</b> — a photograph of the whole slinky at this instant. Crest-to-crest on it is one <b>wavelength λ</b>.</div><div class="note"><b>(b) displacement vs time</b> — the story of ONE coil (#' + (TRACK() + 1) + ') as time passes. Peak-to-peak on it is one <b>period T</b>.</div><div class="note">Both are the same shape for a longitudinal wave: plotting each coil\'s displacement <i>along</i> the slinky against its position gives the same sine curve.</div>');
     h += noteEnergy();
   } else if (md === 2) {
     h += secHead('d2', 'Live readings') + secBody('d2',
@@ -1838,8 +2616,9 @@ function dataHTML() {
       kv('Source frequency f', 'd_f', '', 'hi') + kv('Amplitude A (loudness)', 'd_A') + kv('Period T = 1/f', 'd_T') + kv('Speed in air v', 'd_v', '≈ 340 m/s') + kv('Wavelength λ = v / f', 'd_lam', '', 'hi') +
       kv('Pitch', 'd_pitch', '', 't') + kv('Loudness', 'd_loud', '', 't') + kv('Audible range', 'd_aud', '20 Hz – 20 000 Hz', 't') + kv('Ultrasound', 'd_us', 'above 20 kHz', 't'));
     else if (ex === 'echo') h += secHead('d3e', 'Echo') + secBody('d3e',
-      kv('Distance to the wall d', 'd_d', '', 'hi') + kv('Speed of sound v', 'd_v', '340 m/s') + kv('Total path 2d', 'd_2d') + kv('Echo time t = 2d / v', 'd_t', '', 'hi') + kv('Stopwatch now', 'd_now') +
-      '<div class="note">Working back from a measured time: <b>d = v × t ÷ 2</b>. The ÷ 2 is because the sound goes there and back.</div>');
+      kv('Distance to the wall d', 'd_d', '', 'hi') + kv('Speed of sound v', 'd_v', '340 m/s') + kv('Total path 2d', 'd_2d') + kv('Echo time t = 2d / v', 'd_t', '', 'hi') + kv('Timer reading now', 'd_now') +
+      kvt('Timing instrument', 'microphone + millisecond timer') + kvt('Resolution', '0.1 ms — and no reaction time') +
+      '<div class="note">Working back from a measured time: <b>d = v × t ÷ 2</b>. The ÷ 2 is because the sound goes there and back. A hand-held stopwatch cannot measure this: the reaction time at each press is a large fraction of the time itself.</div>');
     else h += secHead('d3u', 'Ultrasound uses') + secBody('d3u',
       US.cards.map(function (c) { return '<div class="card' + (S.m3.us === c.k ? ' sel' : '') + '" data-us="' + c.k + '" style="cursor:pointer"><div class="h">' + c.ico + ' ' + c.n + '</div><p>' + c.line + '</p><p>speed in ' + c.vname + ' ≈ <b>' + c.v + ' m/s</b></p></div>'; }).join('') +
       kvt('Ultrasound', 'sound with frequency above 20 kHz — too high to hear') + kvt('Depth / distance', 'v × t ÷ 2'));
@@ -1857,7 +2636,7 @@ function dataHTML() {
   }
   return h;
 }
-function noteEnergy() { return secHead('en', 'Energy') + secBody('en', '<div class="note"><b>A wave transfers energy without transferring matter.</b> Watch coil #' + (TRACK + 1) + ': it only ever vibrates about its rest mark, yet the wave (and its energy) runs the whole length of the slinky.</div>'); }
+function noteEnergy() { return secHead('en', 'Energy') + secBody('en', '<div class="note"><b>A wave transfers energy without transferring matter.</b> Watch coil #' + (TRACK() + 1) + ': it only ever vibrates about its rest mark, yet the wave (and its energy) runs the whole length of the slinky.</div>'); }
 
 /* ---- Calculate tab ---- */
 function calcHTML() {
@@ -1979,7 +2758,7 @@ function patchLive(force) {
       set('d_loud', S.m3.A < 0.35 ? 'quiet (small A)' : S.m3.A < 0.7 ? 'moderate' : 'loud (large A)');
     } else if (ex === 'echo') {
       var e = echoState();
-      set('d_d', fmt(e.d, 0) + ' m'); set('d_2d', fmt(2 * e.d, 0) + ' m'); set('d_t', fmt(e.tTrip, 2) + ' s'); set('d_now', fmt(e.el, 2) + ' s');
+      set('d_d', fmt(e.d, 0) + ' m'); set('d_2d', fmt(2 * e.d, 0) + ' m'); set('d_t', fmt(e.tTrip, 2) + ' s'); set('d_now', fmt(e.el * 1000, 1) + ' ms');
     }
   } else if (md === 4 && ex === 'em3d') {
     var f4 = m4f();
@@ -2010,41 +2789,148 @@ function drawMiniLF() {
   g.fillStyle = C.text; g.font = '10px JetBrains Mono,monospace'; g.textAlign = 'left'; g.fillText('λ = ' + fmt(v / f, 2) + ' m at ' + fmt(f, 1) + ' Hz', x0 + 8, y0 + 12);
 }
 
-/* the full-canvas λ–f view (Mode 2, example "λ vs f") */
+/* the full-canvas "where v = fλ comes from" view (Mode 2, example "lamf") */
+var LF = { lam: 150, ax: 214, x0: 62, amp: 34, per: 2.4 };   /* per = seconds of animation per period */
+
 function drawLamF() {
-  var p = S.m2, v = p.v;
-  txt('Wavelength against frequency — with the speed held constant', 40, 30, 15, C['wave-t'], 'left', 700);
-  txt('λ = v / f  — the graph is a falling curve (a hyperbola): doubling the frequency halves the wavelength', 40, 48, 11, C['text-dim']);
-  var x0 = 110, y0 = 90, w = 720, h = 500, lmax = v / 1;
-  CX.save(); CX.strokeStyle = C.grid; CX.lineWidth = 1;
-  for (var i = 0; i <= 10; i++) { line(x0, y0 + h * i / 10, x0 + w, y0 + h * i / 10, C.grid, 1); line(x0 + w * i / 10, y0, x0 + w * i / 10, y0 + h, C.grid, 1); }
-  CX.restore();
-  line(x0, y0, x0, y0 + h, C.axis, 1.5); line(x0, y0 + h, x0 + w, y0 + h, C.axis, 1.5);
-  for (var f = 1; f <= 10; f++) { mtxt(f + '', x0 + (f - 1) / 9 * w, y0 + h + 16, 11, C['text-dim'], 'center'); }
-  for (var k = 0; k <= 5; k++) { mtxt(fmt(lmax * k / 5, 1), x0 - 8, y0 + h - h * k / 5 + 4, 11, C['text-dim'], 'right'); }
-  txt('frequency f (Hz)', x0 + w / 2, y0 + h + 38, 12, C['text-dim'], 'center', 600);
-  CX.save(); CX.translate(x0 - 62, y0 + h / 2); CX.rotate(-Math.PI / 2); txt('wavelength λ (m)', 0, 0, 12, C['text-dim'], 'center', 600); CX.restore();
-  var pts = [];
-  for (var j = 0; j <= 180; j++) { var fj = 1 + j / 20, lj = v / fj; pts.push([x0 + (fj - 1) / 9 * w, y0 + h - lj / lmax * h]); }
-  poly(pts, C.amber, 2.6);
-  var X = function (f) { return x0 + (f - 1) / 9 * w; }, Y = function (l) { return y0 + h - l / lmax * h; };
-  dot(X(p.f), Y(v / p.f), 7, C.accent);
-  line(X(p.f), Y(v / p.f), X(p.f), y0 + h, withA(C.accent, .5), 1, [4, 4]); line(x0, Y(v / p.f), X(p.f), Y(v / p.f), withA(C.accent, .5), 1, [4, 4]);
-  plate('f = ' + fmt(p.f, 1) + ' Hz → λ = ' + fmt(v / p.f, 2) + ' m', X(p.f) + 14, Y(v / p.f) - 16, 10.5, C.accent, 'left', true);
-  if (2 * p.f <= 10) {
-    dot(X(2 * p.f), Y(v / (2 * p.f)), 7, C.accent, true);
-    line(X(2 * p.f), Y(v / (2 * p.f)), X(2 * p.f), y0 + h, withA(C.accent, .5), 1, [4, 4]); line(x0, Y(v / (2 * p.f)), X(2 * p.f), Y(v / (2 * p.f)), withA(C.accent, .5), 1, [4, 4]);
-    plate('2f = ' + fmt(2 * p.f, 1) + ' Hz → λ/2 = ' + fmt(v / (2 * p.f), 2) + ' m', X(2 * p.f) + 14, Y(v / (2 * p.f)) - 16, 10.5, C.accent, 'left', true);
+  var p = S.m2, v = p.v, lam = v / p.f, T = 1 / p.f;
+  txt('Where the wave equation v = f λ comes from', 40, 30, 15, C.accent, 'left', 700);
+  txt('a wave moves forward exactly one wavelength in exactly one period — that single fact is the whole derivation', 40, 48, 11, C['text-dim']);
+
+  /* ── (1) one period, one wavelength ── */
+  card(36, 66, 604, 258, 'IN ONE PERIOD T THE PATTERN MOVES ON BY ONE WAVELENGTH λ');
+  var u = (S.t / LF.per) % 1, L = LF.lam, ax = LF.ax, x0 = LF.x0, A = LF.amp, i, x;
+  var wavePts = function (sh) {
+    var q = [];
+    for (i = 0; i <= 198; i++) { x = x0 + i * 2.2; q.push([x, ax - A * Math.sin(2 * Math.PI * (x - x0 - sh) / L)]); }
+    return q;
+  };
+  poly(wavePts(0), withA(C['text-muted'], .55), 1.8, [5, 5]);       /* where it was at t = 0 */
+  poly(wavePts(u * L), C['wave-t'], 2.8);                            /* where it is now */
+  var xcA = x0 + L / 4, xcB = xcA + u * L;                           /* one crest, then and now */
+  dot(xcA, ax - A, 5, withA(C['text-muted'], .8));
+  dot(xcB, ax - A, 6, C.amber);
+  line(xcA, ax - A, xcA, ax - A - 34, withA(C['text-muted'], .6), 1, [3, 3]);
+  line(xcB, ax - A, xcB, ax - A - 34, withA(C.amber, .7), 1, [3, 3]);
+  if (u > 0.04) {
+    arrow(xcA, ax - A - 26, xcB, ax - A - 26, C.amber, 2, { both: true, head: 7 });
+    plate('this crest has moved ' + fmt(u, 2) + ' λ', (xcA + xcB) / 2, ax - A - 27, 10, C.amber, 'center', true);
   }
-  card(870, 90, 294, 500, 'WHAT THE CURVE SAYS');
-  var yy = 130;
-  yy += wrap('v = fλ, so with v fixed at ' + fmt(v, 1) + ' m/s:', 888, yy, 258, 12, C.text, 18) + 10;
-  yy += wrap('λ = v / f — λ is inversely proportional to f.', 888, yy, 258, 12, C.text, 18, 700) + 10;
-  yy += wrap('Halving f doubles λ; doubling f halves λ. The product f × λ is always the same number: the speed.', 888, yy, 258, 11.5, C['text-dim'], 17) + 14;
-  var tbl = [[1, v], [2, v / 2], [4, v / 4], [8, v / 8]];
-  mtxt('f (Hz)     λ (m)     f×λ', 888, yy, 11, C['text-muted']); yy += 20;
-  tbl.forEach(function (r) { mtxt(fmt(r[0], 0).padStart(4) + '      ' + fmt(r[1], 2).padStart(6) + '     ' + fmt(r[0] * r[1], 1), 888, yy, 11.5, C.text); yy += 20; });
-  yy += 10; wrap('Drag the f slider: the solid dot slides along the curve, the hollow dot marks 2f.', 888, yy, 258, 11, C['text-muted'], 16);
+  /* the full λ, as the target */
+  arrow(xcA, ax + A + 34, xcA + L, ax + A + 34, C['mark-l'], 1.8, { both: true, head: 7 });
+  plate('λ = ' + fmt(lam, 2) + ' m', xcA + L / 2, ax + A + 33, 10, C['mark-l'], 'center', true);
+  line(xcA + L, ax - A, xcA + L, ax + A + 34, withA(C['mark-l'], .5), 1, [3, 3]);
+  /* the clock */
+  var cxk = 572, cyk = 196, R = 36;
+  CX.save(); CX.strokeStyle = C['mark-t']; CX.lineWidth = 2; CX.beginPath(); CX.arc(cxk, cyk, R, 0, Math.PI * 2); CX.stroke();
+  CX.fillStyle = withA(C['mark-t'], .18); CX.beginPath(); CX.moveTo(cxk, cyk); CX.arc(cxk, cyk, R, -Math.PI / 2, -Math.PI / 2 + 2 * Math.PI * u); CX.closePath(); CX.fill();
+  CX.restore();
+  line(cxk, cyk, cxk + R * 0.82 * Math.sin(2 * Math.PI * u), cyk - R * 0.82 * Math.cos(2 * Math.PI * u), C['mark-t'], 2.2);
+  mtxt(fmt(u * T, 3) + ' s', cxk, cyk + R + 16, 10.5, C['mark-t'], 'center', 700);
+  mtxt('= ' + fmt(u, 2) + ' T', cxk, cyk + R + 30, 10, C['text-muted'], 'center');
+  txt(u > 0.97 ? 'one whole period — and the wave has moved on by exactly one whole wavelength'
+    : 'watch the amber crest: it reaches the dashed line at the moment the clock completes one period',
+    338, 300, 10.5, u > 0.97 ? C.amber : C['text-muted'], 'center');
+
+  /* ── (2) the algebra ── */
+  card(36, 336, 604, 302, 'THE DERIVATION');
+  var yy = 374, xL = 56, wL = 566;
+  yy += wrap('1.  Speed is always distance travelled ÷ time taken:   v = distance / time', xL, yy, wL, 12.5, C.text, 20) + 6;
+  yy += wrap('2.  Take the time to be one period T. In that time the pattern moves forward by exactly one wavelength λ (the animation above).', xL, yy, wL, 12.5, C.text, 20) + 6;
+  yy += wrap('3.  So   v = λ / T', xL, yy, wL, 12.5, C.accent, 20, 700) + 6;
+  yy += wrap('4.  Frequency is the number of complete waves passing a point each second, so f = 1 / T.', xL, yy, wL, 12.5, C.text, 20) + 6;
+  yy += wrap('5.  Substituting 1/T = f:   v = λ × (1/T) = λ f', xL, yy, wL, 12.5, C.accent, 20, 700) + 10;
+  /* the result */
+  CX.save(); CX.fillStyle = withA(C.accent, .12); rr(56, yy, 250, 40, 8); CX.fill(); CX.restore();
+  txt('v = f λ', 181, yy + 26, 21, C.accent, 'center', 800);
+  mtxt('m/s  =  Hz × m', 322, yy + 20, 11, C['text-dim'], 'left');
+  mtxt('(Hz = s⁻¹, so s⁻¹ × m = m/s ✓)', 322, yy + 34, 10, C['text-muted'], 'left');
+  yy += 54;
+  mtxt('right now:  f = ' + fmt(p.f, 1) + ' Hz,  T = 1/f = ' + fmt(T, 3) + ' s,  λ = ' + fmt(lam, 2) + ' m', 56, yy, 11, C['text-dim']);
+  mtxt('v = λ/T = ' + fmt(lam, 2) + ' / ' + fmt(T, 3) + ' = ' + fmt(v, 1) + ' m/s   =   f λ = ' + fmt(p.f, 1) + ' × ' + fmt(lam, 2) + ' = ' + fmt(v, 1) + ' m/s', 56, yy + 16, 11, C.accent, 'left', 700);
+  txt('A-level: the same result falls out of v = ω/k, with ω = 2πf and k = 2π/λ.', 56, yy + 34, 10.5, C['text-muted']);
+
+  /* ── (3) the graph ── */
+  drawLFGraph(p, v);
+}
+
+/* the three ways of plotting the same relation */
+var LFG = { cfg: null };
+function drawLFGraph(p, v) {
+  var g = S.m2.gax, X0 = 716, Y0 = 112, W = 404, H = 336;
+  var cfg;
+  if (g === 'l1f') {
+    cfg = {
+      title: 'λ against 1 / f', xl: '1 / f   (s)   [ = the period T ]', yl: 'wavelength λ (m)',
+      xmax: 1, ymax: v * 1.05, xs: [0, 0.25, 0.5, 0.75, 1], fx: function (f) { return 1 / f; }, fy: function (f) { return v / f; },
+      curve: function (k) { var xq = k / 200; return [xq, v * xq]; },
+      msg: ['λ = v × (1/f) — a STRAIGHT LINE through the origin.',
+        'Its gradient is the wave speed: gradient = λ ÷ (1/f) = v = ' + fmt(v, 1) + ' m/s.',
+        'This is the plot to draw in an experiment: a straight line is easy to judge, and the gradient hands you v directly.']
+    };
+  } else if (g === 'vf') {
+    cfg = {
+      title: 'v against f', xl: 'frequency f (Hz)', yl: 'wave speed v (m/s)',
+      xmax: 10, x0v: 1, ymax: v * 2, xs: [1, 4, 7, 10], fx: function (f) { return f; }, fy: function () { return v; },
+      curve: function (k) { var fq = 1 + k / 200 * 9; return [fq, v]; },
+      msg: ['v against f is FLAT — the speed does not depend on the frequency at all.',
+        'The speed is set by the medium (the rope, the air, the water), not by the source.',
+        'Change f and λ changes to match, so that the product f λ always comes back to the same ' + fmt(v, 1) + ' m/s.']
+    };
+  } else {
+    cfg = {
+      title: 'λ against f', xl: 'frequency f (Hz)', yl: 'wavelength λ (m)',
+      xmax: 10, x0v: 1, ymax: v * 1.05, xs: [1, 4, 7, 10], fx: function (f) { return f; }, fy: function (f) { return v / f; },
+      curve: function (k) { var fq = 1 + k / 200 * 9; return [fq, v / fq]; },
+      msg: ['λ = v / f — λ is inversely proportional to f, so the graph is a falling CURVE (a hyperbola).',
+        'Doubling f halves λ; the product f λ stays at ' + fmt(v, 1) + ' m/s everywhere on the curve.',
+        'A curve has no single gradient, so you cannot read v off it — plot λ against 1/f instead.']
+    };
+  }
+  LFG.cfg = cfg;                     /* what was actually plotted, for the test */
+  var xa = cfg.x0v || 0, xb = cfg.xmax;
+  card(660, 66, 504, 572, 'GRAPH — ' + cfg.title.toUpperCase());
+  var PX = function (xv) { return X0 + (xv - xa) / (xb - xa) * W; };
+  var PY = function (yv) { return Y0 + H - yv / cfg.ymax * H; };
+  var i;
+  CX.save(); CX.strokeStyle = withA(C.grid, .9); CX.lineWidth = 1;
+  for (i = 0; i <= 5; i++) { line(X0, Y0 + H * i / 5, X0 + W, Y0 + H * i / 5, C.grid, 1); line(X0 + W * i / 5, Y0, X0 + W * i / 5, Y0 + H, C.grid, 1); }
+  CX.restore();
+  line(X0, Y0, X0, Y0 + H, C.axis, 1.5); line(X0, Y0 + H, X0 + W, Y0 + H, C.axis, 1.5);
+  cfg.xs.forEach(function (xv) { line(PX(xv), Y0 + H, PX(xv), Y0 + H + 5, C.axis, 1); mtxt(fmt(xv, xv % 1 ? 2 : 0), PX(xv), Y0 + H + 17, 10.5, C['text-dim'], 'center'); });
+  for (i = 0; i <= 5; i++) mtxt(fmt(cfg.ymax * i / 5, 1), X0 - 8, Y0 + H - H * i / 5 + 4, 10.5, C['text-dim'], 'right');
+  txt(cfg.xl, X0 + W / 2, Y0 + H + 36, 11.5, C['text-dim'], 'center', 600);
+  CX.save(); CX.translate(X0 - 40, Y0 + H / 2); CX.rotate(-Math.PI / 2); txt(cfg.yl, 0, 0, 11.5, C['text-dim'], 'center', 600); CX.restore();
+  /* the curve */
+  var pts = [];
+  for (i = 0; i <= 200; i++) { var c = cfg.curve(i); pts.push([PX(c[0]), PY(c[1])]); }
+  poly(pts, C.amber, 2.8);
+  /* gradient triangle, for the straight line only */
+  if (g === 'l1f') {
+    var xg1 = 0.45, xg2 = 0.92;
+    line(PX(xg1), PY(v * xg1), PX(xg2), PY(v * xg1), withA(C.accent, .8), 1.6, [4, 4]);
+    line(PX(xg2), PY(v * xg1), PX(xg2), PY(v * xg2), withA(C.accent, .8), 1.6, [4, 4]);
+    plate('Δ(1/f) = ' + fmt(xg2 - xg1, 2) + ' s', PX((xg1 + xg2) / 2), PY(v * xg1) + 14, 10, C.accent, 'center', true);
+    plate('Δλ = ' + fmt(v * (xg2 - xg1), 2) + ' m', PX(xg2) + 10, PY(v * (xg1 + xg2) / 2), 10, C.accent, 'left', true);
+    plate('gradient = Δλ / Δ(1/f) = ' + fmt(v, 1) + ' m/s = v', PX(0.04), PY(v * 0.95), 10.5, C.accent, 'left', true);
+  }
+  /* the working point, and 2f */
+  var fx = cfg.fx(p.f), fy = cfg.fy(p.f);
+  line(PX(fx), PY(fy), PX(fx), Y0 + H, withA(C.accent, .5), 1, [4, 4]);
+  line(X0, PY(fy), PX(fx), PY(fy), withA(C.accent, .5), 1, [4, 4]);
+  dot(PX(fx), PY(fy), 7, C.accent);
+  plate('f = ' + fmt(p.f, 1) + ' Hz', PX(fx) + 12, PY(fy) - 16, 10.5, C.accent, 'left', true);
+  var f2 = 2 * p.f;
+  if (f2 <= 10) {
+    var x2 = cfg.fx(f2), y2 = cfg.fy(f2);
+    if (x2 >= xa && x2 <= xb) {
+      dot(PX(x2), PY(y2), 7, C.accent, true);
+      plate('2f = ' + fmt(f2, 1) + ' Hz', PX(x2) + 12, PY(y2) + 16, 10, withA(C.accent, .9), 'left', true);
+    }
+  }
+  /* the reading of it */
+  var yy = 518;
+  cfg.msg.forEach(function (m, i2) { yy += wrap(m, 680, yy, 466, 11.5, i2 ? C['text-dim'] : C.text, 17, i2 ? 400 : 700) + 6; });
 }
 </script>
 <script>
@@ -2265,8 +3151,8 @@ function loop(ts) {
 function setPlay(on) { S.play = on; updatePlayBtn(); audioSync(); }
 function resetMode() {
   var md = S.md;
-  if (md === 1) { S.m1.f = 2; S.m1.A = 0.6; S.m1.real = null; }
-  else if (md === 2) { S.m2.f = 2; S.m2.A = 0.5; S.m2.v = 4; S.m2.r1 = 2; S.m2.r2 = 4; }
+  if (md === 1) { S.m1.f = 2; S.m1.A = 0.6; S.m1.real = null; S.m1.snap = null; S.m1.track = 0; S.m1.sweep0 = S.t; }
+  else if (md === 2) { S.m2.gax = 'lf'; S.m2.f = 2; S.m2.A = 0.5; S.m2.v = 4; S.m2.r1 = 2; S.m2.r2 = 4; }
   else if (md === 3) { S.m3.f = 440; S.m3.A = 0.6; S.m3.d = 85; S.m3.echo = null; S.m3.showComp = S.m3.showRare = true; }
   else { S.m4.logf = 14.7; S.m4.region = 'visible'; }
   S.t = 0; S.speed = 1; zoomOff(); S.drag = null;
@@ -2292,6 +3178,7 @@ function init() {
   [].forEach.call($('gTabs').children, function (b) { b.addEventListener('click', function () { setMode(+b.dataset.md); }); });
   bindPillGroup('gSub', function (d) { setExample(d.ex); });
   bindPillGroup('gWaveType', function (d) { if (S.md === 1) S.m1.type = d.w; else S.m2.type = d.w; updateChrome(); renderPanel(); draw(); });
+  bindPillGroup('gLFAxis', function (d) { S.m2.gax = d.g; updateChrome(); renderPanel(); draw(); });
   bindPillGroup('gEmView', function (d) { S.m4.view = d.v; updateChrome(); renderPanel(); draw(); });
   bindPillGroup('gSpeed', function (d) { S.speed = parseFloat(d.s); });
   [].forEach.call($('gPTabs').children, function (b) { b.addEventListener('click', function () { setPTab(b.dataset.p); }); });
@@ -2302,6 +3189,7 @@ function init() {
   $('tMeasure').addEventListener('click', function () { S.m2.measure = !S.m2.measure; updateChrome(); draw(); });
   $('tHold').addEventListener('click', function () { S.m2.holdV = !S.m2.holdV; updateChrome(); renderPanel(); draw(); });
   $('tAxes').addEventListener('click', function () { S.m4.axes = !S.m4.axes; updateChrome(); draw(); });
+  $('tSnap').addEventListener('click', function () { S.m1.snap = S.m1.snap == null ? S.t : null; updateChrome(); draw(); });
   $('tComp').addEventListener('click', function () { S.m3.showComp = !S.m3.showComp; updateChrome(); draw(); });
   $('tRare').addEventListener('click', function () { S.m3.showRare = !S.m3.showRare; updateChrome(); draw(); });
   $('bSound').addEventListener('click', function () { S.m3.sound = !S.m3.sound; updateChrome(); audioSync(); });
@@ -2316,6 +3204,13 @@ function init() {
       CV.setPointerCapture(ev.pointerId); return;
     }
     if (S.md === 1 && S.ex[1] === 'real') { b = hitBox(pt, GAL.boxes); if (b) { S.m1.real = b.k; renderPanel(); draw(); } return; }
+    if (S.md === 1 && S.ex[1] === 'slinky') {      /* click a coil to track it in graph (b) */
+      var ci = Math.round((pt.x - COIL_X0) / COIL_DX);
+      if (ci >= 0 && ci < N_COIL && Math.abs(pt.y - M1.axisY) < 130) {
+        trackCoil(ci); refreshCtrlValues(); updateChrome(); renderPanel(); draw();
+      }
+      return;
+    }
     if (S.md === 3 && S.ex[3] === 'ultra') { b = hitBox(pt, US.boxes); if (b) { S.m3.us = b.k; renderPanel(); draw(); } return; }
     if (S.md === 4 && S.ex[4] === 'spectrum') { b = hitBox(pt, SPEC.boxes); if (b) { S.m4.region = b.k; renderPanel(); draw(); } return; }
     if (S.md === 2 && S.ex[2] === 'wave' && S.m2.measure && S.mode === 'sim') {
@@ -2328,10 +3223,15 @@ function init() {
   CV.addEventListener('pointermove', function (ev) {
     if (!S.drag) return;
     if (S.drag.k === 'pan') {
-      /* p' = cx(1−k) + k·p, so moving the picture by Δ needs cx to move by −Δ/(k−1) */
+      /* p' = cx(1−k) + k·p, so moving the picture by Δ needs cx to move by −Δ/(k−1).
+         The centre is clamped to [0,W]×[0,H], NOT to a quarter inset: logical
+         x = 0 only comes on screen once cx ≤ 0, and x = W once cx ≥ W, so a
+         tighter clamp makes a margin of the drawing unreachable at every edge.
+         At the limits exactly half the drawing fills the view, so this can
+         never pan onto blank space either. */
       var dx = (ev.clientX - S.drag.sx) / VT.s, dy = (ev.clientY - S.drag.sy) / VT.s;
-      ZOOM.cx = clamp(S.drag.cx - dx / (ZOOM.k - 1), W / 4, 3 * W / 4);
-      ZOOM.cy = clamp(S.drag.cy - dy / (ZOOM.k - 1), H / 4, 3 * H / 4);
+      ZOOM.cx = clamp(S.drag.cx - dx / (ZOOM.k - 1), 0, W);
+      ZOOM.cy = clamp(S.drag.cy - dy / (ZOOM.k - 1), 0, H);
       if (!S.play) draw(); return;
     }
     var pt = toLogical(ev), xm = clamp((pt.x - M2.x0) / PXM2, 0, m2Span());
@@ -2342,7 +3242,7 @@ function init() {
   CV.addEventListener('pointercancel', function () { S.drag = null; });
   CV.addEventListener('dblclick', function (ev) {
     var pt = toLogical(ev);
-    if (ZOOM.k !== 1) zoomOff(); else { ZOOM.k = 2; ZOOM.cx = clamp(pt.x, W / 4, 3 * W / 4); ZOOM.cy = clamp(pt.y, H / 4, 3 * H / 4); updateChips(); }
+    if (ZOOM.k !== 1) zoomOff(); else { ZOOM.k = 2; ZOOM.cx = clamp(pt.x, 0, W); ZOOM.cy = clamp(pt.y, 0, H); updateChips(); }
     draw();
   });
   CV.addEventListener('auxclick', function (ev) { if (ev.button === 1) ev.preventDefault(); });
