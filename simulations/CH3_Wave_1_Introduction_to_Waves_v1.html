@@ -294,7 +294,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">🌊 Introduction to Waves</span> <span class="badge-top" id="badge">v1.8.1</span></h1>
+    <h1><span class="t">🌊 Introduction to Waves</span> <span class="badge-top" id="badge">v1.8.2</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -1253,24 +1253,65 @@ function drawRealIcon(k, cx, cy, t) {
     txt('B', lb[0], lb[1] + 4, 12, C.bfield, 'center', 700);
     txt('c = 3.0 × 10⁸ m/s — no medium needed', cx, cy + 66, 9.5, C['text-muted'], 'center');
   } else if (k === 'us') {
-    /* a pulse of compressions leaves the probe, reflects off a boundary and comes back */
-    var xs = cx - 74, xe = cx + 122, yT = cy - 44, yB = cy + 44, xr = cx + 78;
-    CX.save(); CX.fillStyle = withA(C.rose, .14); rr(xs, yT, xe - xs, yB - yT, 8); CX.fill(); CX.restore();
-    line(xs, yT, xs, yB, withA(C.skin, .9), 2.5);                       /* the skin */
-    CX.fillStyle = C.wall; rr(cx - 124, cy - 20, 50, 40, 7); CX.fill();  /* the probe */
-    CX.fillStyle = C.particle; CX.fillRect(xs - 8, cy - 14, 10, 28);
-    txt('probe', cx - 99, cy + 34, 9, C['text-muted'], 'center');
-    CX.save(); CX.strokeStyle = C.amber; CX.lineWidth = 3;              /* the boundary that echoes */
-    CX.beginPath(); CX.arc(xr, cy, 26, 0, Math.PI * 2); CX.stroke(); CX.restore();
-    txt('boundary', xr, cy + 42, 9, C.amber, 'center');
-    var u = (0.42 * t) % 2, out = u < 1, span = xr - 26 - xs;
-    var xp = out ? xs + u * span : xs + (2 - u) * span;
-    CX.save(); CX.globalAlpha = out ? 1 : .6;
-    for (i = -2; i <= 2; i++) line(xp + i * 4, cy - 32, xp + i * 4, cy + 32, C['wave-l'], 1.8);
+    /* a short pulse of compressions leaves the probe as curved wavefronts,
+       reflects off the front face of an organ and comes back as an echo */
+    var xs = cx - 74, xe = cx + 122, yT = cy - 44, yB = cy + 44;
+    var ox = cx + 72, orx = 30, ory = 34, xf = ox - orx;          /* the reflecting face */
+    CX.save();                                                     /* the tissue, in layers */
+    CX.fillStyle = withA(C.rose, .13); rr(xs, yT, xe - xs, yB - yT, 8); CX.fill();
+    CX.beginPath(); rr(xs, yT, xe - xs, yB - yT, 8); CX.clip();
+    for (i = 0; i < 3; i++) {
+      CX.strokeStyle = withA(C.rose, .16); CX.lineWidth = 7; CX.beginPath();
+      for (var q = 0; q <= 12; q++) CX.lineTo(xs + q * (xe - xs) / 12, yT + 18 + i * 26 + 3 * Math.sin(q * 0.9 + i));
+      CX.stroke();
+    }
     CX.restore();
-    plate(out ? 'pulse out' : 'echo back', xp, cy - 44, 9, out ? C['wave-l'] : C.amber, 'center');
-    arrow(cx - 30, cy + 58, cx + 30, cy + 58, C.travel, 2);
-    arrow(cx - 30, cy - 58, cx + 10, cy - 58, C['coil-hi'], 2, { both: true });
+    line(xs, yT, xs, yB, withA(C.skin, .95), 3);                   /* skin + coupling gel */
+    CX.save();                                                     /* the probe: body, face, cable */
+    CX.fillStyle = C.wall; rr(cx - 126, cy - 21, 52, 42, 8); CX.fill();
+    CX.fillStyle = withA(C['text-dim'], .5); rr(cx - 120, cy - 14, 10, 28, 4); CX.fill();
+    CX.fillStyle = C.particle; rr(xs - 10, cy - 15, 12, 30, 3); CX.fill();
+    CX.strokeStyle = withA(C['text-dim'], .8); CX.lineWidth = 2; CX.beginPath();
+    CX.moveTo(cx - 102, cy - 21); CX.quadraticCurveTo(cx - 118, cy - 36, cx - 108, cy - 52); CX.stroke();
+    CX.restore();
+    txt('probe', cx - 100, cy + 38, 9, C['text-muted'], 'center');
+    /* the organ the pulse reflects from — a shape, not a bare circle */
+    CX.save();
+    CX.fillStyle = withA(C.amber, .16); CX.strokeStyle = C.amber; CX.lineWidth = 2.6;
+    CX.beginPath();
+    CX.moveTo(ox - orx, cy - 6);
+    CX.bezierCurveTo(ox - orx + 2, cy - ory - 6, ox + orx, cy - ory, ox + orx - 2, cy - 4);
+    CX.bezierCurveTo(ox + orx + 4, cy + ory - 4, ox - orx + 6, cy + ory + 4, ox - orx, cy - 6);
+    CX.closePath(); CX.fill(); CX.stroke();
+    CX.strokeStyle = withA(C.amber, .5); CX.lineWidth = 1.4;       /* a little inner texture */
+    CX.beginPath(); CX.moveTo(ox - 12, cy - 14); CX.quadraticCurveTo(ox + 4, cy, ox - 8, cy + 16); CX.stroke();
+    CX.beginPath(); CX.moveTo(ox + 6, cy - 18); CX.quadraticCurveTo(ox + 18, cy - 2, ox + 8, cy + 12); CX.stroke();
+    CX.restore();
+    txt('organ boundary', ox - 6, cy + 54, 9, C.amber, 'center');
+    /* the pulse: a group of curved wavefronts, out and then back */
+    var u = (0.42 * t) % 2, out = u < 1, span = xf - xs;
+    CX.save(); CX.lineCap = 'round';
+    CX.beginPath(); rr(xs, yT, xe - xs, yB - yT, 8); CX.clip();      /* never spill onto the probe */
+    for (i = 0; i < 4; i++) {
+      var r0 = (out ? u : (2 - u)) * span - i * 9;
+      if (r0 <= 2) continue;
+      var aFade = (1 - i * 0.22) * (out ? 1 : 0.7);
+      CX.strokeStyle = withA(out ? C['wave-l'] : C.amber, aFade);
+      CX.lineWidth = 3.2 - i * 0.5;
+      CX.beginPath();
+      if (out) CX.arc(xs, cy, r0, -0.52, 0.52);                     /* opening away from the probe */
+      else CX.arc(xf, cy, r0, Math.PI - 0.52, Math.PI + 0.52);      /* opening back towards it */
+      CX.stroke();
+    }
+    CX.restore();
+    var xp = out ? xs + u * span : xf - (u - 1) * span;
+    plate(out ? 'pulse out' : 'echo back', clamp(xp, cx - 60, cx + 40), cy - 52, 9, out ? C['wave-l'] : C.amber, 'center');
+    if (Math.abs(u - 1) < 0.14) {                                   /* the moment it strikes */
+      CX.save(); CX.strokeStyle = withA(C.amber, 1 - Math.abs(u - 1) / 0.14); CX.lineWidth = 4;
+      CX.beginPath(); CX.arc(ox, cy - 2, orx + 2, Math.PI * 0.62, Math.PI * 1.42); CX.stroke(); CX.restore();
+    }
+    arrow(cx - 34, cy + 66, cx + 26, cy + 66, C.travel, 2);
+    arrow(cx - 34, cy - 66, cx + 6, cy - 66, C['coil-hi'], 2, { both: true });
   } else if (k === 'swave') {
     var gy = cy + 20;
     CX.fillStyle = withA(C.wall, .35); CX.beginPath(); CX.moveTo(cx - 120, gy + 40);
