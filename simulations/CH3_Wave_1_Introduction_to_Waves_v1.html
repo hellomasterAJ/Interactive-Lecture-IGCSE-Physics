@@ -172,6 +172,15 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
 .ctrl-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
 .ctrl-btn.primary:hover{filter:brightness(1.08);color:var(--bg)}
 .ctrl-btn.on{background:var(--accent-glow);border-color:var(--accent);color:var(--accent)}
+.mixrow{display:flex;align-items:center;gap:8px;margin:6px 0}
+.mixsw{width:54px;height:26px;border-radius:6px;border:1px solid var(--border);flex:0 0 auto}
+.mixhex{flex:1;min-width:0;font:600 13px JetBrains Mono,monospace;background:var(--card);color:var(--text);
+  border:1px solid var(--border);border-radius:6px;padding:5px 8px}
+.mixlab{width:14px;font:700 13px JetBrains Mono,monospace;flex:0 0 auto}
+.mxR{color:#ff4d4d}.mxG{color:#3fd06a}.mxB{color:#5a86ff}
+.mixnum{width:64px;flex:0 0 auto;font:600 13px JetBrains Mono,monospace;background:var(--card);color:var(--text);
+  border:1px solid var(--border);border-radius:6px;padding:5px 6px}
+.mixrng{flex:1;min-width:0}
 .hintchip{font-size:10px;color:var(--text-muted);white-space:nowrap}
 .sliders{display:flex;gap:12px;align-items:center;flex-wrap:nowrap;overflow:hidden;min-height:30px}
 .sl{display:flex;align-items:center;gap:6px;white-space:nowrap;flex:0 0 auto}
@@ -285,7 +294,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">🌊 Introduction to Waves</span> <span class="badge-top" id="badge">v1.5.2</span></h1>
+    <h1><span class="t">🌊 Introduction to Waves</span> <span class="badge-top" id="badge">v1.8.1</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -329,11 +338,18 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
           <button class="pill" data-v="2d">2-D</button>
         </div>
       </div>
+      <div class="tgroup nb" id="gSrc">
+        <div class="pills" id="gSrcList">
+          <button class="pill active" data-src="sun" title="the Sun — a hot surface at about 5800 K">☀ Sun</button>
+          <button class="pill" data-src="candle" title="a candle flame — glowing soot at about 1700 K">🕯 Candle</button>
+          <button class="pill" data-src="bulb" title="a filament lamp — tungsten at about 2800 K">💡 Lamp</button>
+          <button class="pill" data-src="led" title="an LED — electrons crossing a band gap, not a hot object">🔦 LED</button>
+        </div>
+      </div>
       <div class="tgroup nb" id="gLFAx">
         <div class="pills" id="gLFAxis">
           <button class="pill active" data-g="lf" title="wavelength against frequency — a curve">λ–f</button>
           <button class="pill" data-g="l1f" title="wavelength against 1/f — a straight line whose gradient is the speed">λ–1/f</button>
-          <button class="pill" data-g="vf" title="speed against frequency — flat, because f×λ never changes">v–f</button>
         </div>
       </div>
       <div class="tgroup" id="gCtx">
@@ -343,6 +359,8 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
         <button class="ctrl-btn" id="bSound" title="mute / unmute the real tone (the animation keeps running)"><span class="ppl on" data-pp="on">🔊 Sound</span><span class="ppl" data-pp="off">🔇 Muted</span></button>
         <button class="ctrl-btn on" id="tComp" title="highlight the compressions (dense regions) and their labels">🔴 Compression</button>
         <button class="ctrl-btn on" id="tRare" title="highlight the rarefactions (sparse regions) and their labels">🔵 Rarefaction</button>
+        <button class="ctrl-btn" id="tEar" title="follow the sound into the ear: eardrum, the three small bones, the cochlea and the nerve"><span class="ppl on" data-pp="in">👂 Inside the ear</span><span class="ppl" data-pp="out">👂 Back to the air</span></button>
+        <button class="ctrl-btn" id="tEye" title="follow the light into the eye: rods, cones and where RGB comes from"><span class="ppl on" data-pp="in">👁 Eye &amp; RGB</span><span class="ppl" data-pp="out">🌈 Back to the spectrum</span></button>
         <button class="ctrl-btn" id="tSnap" title="freeze graph (a) at this instant — a real photograph of the slinky; press again to let it run live"><span class="ppl on" data-pp="take">📷 Snapshot</span><span class="ppl" data-pp="live">📷 Frozen</span></button>
       </div>
       <span class="spacer"></span>
@@ -410,6 +428,7 @@ var VT = { s: 1, ox: 0, oy: 0, dpr: 1, cw: W, ch: H };
 var SLOW = 0.2;                 /* animation slow-motion factor at 1× */
 var V_SLINKY = 4;               /* wave speed on the Mode 1 slinky, m/s */
 var V_AIR = 340, V_WATER = 1500, C_LIGHT = 3.0e8;
+var BT = { f: 2.4e9 };        /* the 2.4 GHz band Bluetooth and Wi-Fi share */
 var PXM1 = 200;                 /* Mode 1: px per metre along the slinky */
 var PXM2 = 100;                 /* Mode 2: px per metre                  */
 var PXM3 = 250;                 /* Mode 3: px per metre of air column    */
@@ -429,8 +448,8 @@ var S = {
   ex: { 1: 'slinky', 2: 'wave', 3: 'tone', 4: 'em3d' },
   m1: { snap: null, type: 'T', f: 2, A: 0.6, real: null, track: 0, sweep0: 0 },
   m2: { type: 'T', f: 2, A: 0.5, v: 4, holdV: false, measure: false, r1: 2.0, r2: 4.0, gax: 'lf' },
-  m3: { f: 440, A: 0.6, sound: true, d: 85, us: 'medical', echo: null, showComp: true, showRare: true },
-  m4: { view: '3d', axes: true, logf: 14.7, region: 'visible' },
+  m3: { f: 440, A: 0.6, sound: true, d: 85, us: 'medical', echo: null, showComp: true, showRare: true, ear: false },
+  m4: { view: '3d', axes: true, logf: 14.7, region: 'visible', src: 'sun', eye: false, rgb: [255, 140, 0] },
   drag: null, secOpen: {}, prac: null, quiz: null, quizLog: []
 };
 window.S = S;
@@ -1466,6 +1485,8 @@ function draw3() {
   var ex = S.ex[3];
   if (ex === 'echo') { drawEcho(); return; }
   if (ex === 'ultra') { drawUltrasound(); return; }
+  if (ex === 'pl') { drawPitchLoud(); return; }
+  if (S.m3.ear) { drawEar(); return; }
   drawTone();
 }
 
@@ -1483,8 +1504,8 @@ function tuningFork(x, y, drive) {
 
 function drawTone() {
   var p = S.m3, lam = m3Lam(), lamPx = lam * PXM3, amp = m3AmpPx();
-  txt('Sound — a vibrating source makes compressions and rarefactions in the air', 40, 30, 15, C['wave-l'], 'left', 700);
-  txt('frequency → pitch · amplitude → loudness · sound needs a medium (air here) — it cannot cross a vacuum', 40, 48, 11, C['text-dim']);
+  txt('Audible range — a vibrating source makes compressions and rarefactions in the air', 40, 30, 15, C['wave-l'], 'left', 700);
+  txt('we hear 20 Hz to 20 000 Hz · frequency → pitch · amplitude → loudness · sound needs a medium — it cannot cross a vacuum', 40, 48, 11, C['text-dim']);
 
   /* source */
   var drive = Math.sin(m3Phase(0)) * p.A;
@@ -1536,7 +1557,7 @@ function drawTone() {
   } else plate('λ = ' + fmtM(lam) + ' — longer than the column', M3.x0 + 40, M3.bot + 20, 9.5, C['mark-l'], 'left', true);
 
   /* pressure graph */
-  var gy = 372, gh = 258;
+  var gy = 352, gh = 180;
   var gp = graphFrame(36, gy, 1128, gh, { title: 'pressure change vs distance  (solid)   ·   particle displacement vs distance  (dashed)', xl: 'distance from the source (m)', yl: 'Δp / s', col: C['wave-l'] });
   var pp = [], pd = [];
   for (var k = 0; k <= 300; k++) {
@@ -1559,7 +1580,8 @@ function drawTone() {
     var r1 = m3Rarefaction(0.1);
     if (sr && r1 <= colSpan) { plate('rarefaction = trough', gp.X(r1 / colSpan), gp.Y(-p.A) + 14, 9.5, C.rare, 'center'); line(gp.X(r1 / colSpan), gp.Y(-p.A), gp.X(r1 / colSpan), M3.bot + 6, withA(C.rare, .35), 1, [2, 4]); }
   }
-  txt('the pressure curve is the picture usually drawn for sound: compressions plot as crests. The displacement curve is a quarter-wavelength behind it.', 600, gy + gh + 22, 9.5, C['text-muted'], 'center');
+  txt('the pressure curve is the picture usually drawn for sound: compressions plot as crests. The displacement curve is a quarter-wavelength behind it.', 600, gy + gh + 18, 9.5, C['text-muted'], 'center');
+  audibleStrip(36, 560, 1128, 104, p.f);
 }
 
 /* ── echo ── */
@@ -2134,12 +2156,259 @@ function usPulse(x, y, dir) {   /* kept: the practical/quiz code calls it */
 }
 </script>
 <script>
+/* ====== MODE 3 extras — the audible range, inside the ear, pitch & loudness ====== */
+
+/* ── the audible-range strip: a log frequency axis with the three bands ── */
+var AUD = { f0: 1, f1: 1e5, lo: 20, hi: 2e4 };
+function audU(f) { return Math.log(f / AUD.f0) / Math.log(AUD.f1 / AUD.f0); }
+function audibleStrip(x, y, w, h, f) {
+  card(x, y, w, h, 'THE AUDIBLE RANGE — 20 Hz to 20 000 Hz');
+  var bx = x + 16, bw = w - 32, by = y + 34, bh = 26;
+  var X = function (fq) { return bx + audU(fq) * bw; };
+  var band = function (f1, f2, col, lab) {
+    var x1 = X(f1), x2 = X(f2);
+    CX.save(); CX.fillStyle = withA(col, .3); CX.strokeStyle = withA(col, .9); CX.lineWidth = 1;
+    rr(x1, by, x2 - x1, bh, 4); CX.fill(); CX.stroke(); CX.restore();
+    txt(lab, (x1 + x2) / 2, by + 17, 10.5, col, 'center', 700);
+  };
+  band(AUD.f0, AUD.lo, C['text-muted'], 'INFRASOUND');
+  band(AUD.lo, AUD.hi, C.accent, 'AUDIBLE — we can hear this');
+  band(AUD.hi, AUD.f1, C.rose, 'ULTRASOUND');
+  [1, 10, 20, 100, 1000, 10000, 20000, 100000].forEach(function (fq) {
+    var gx = X(fq);
+    line(gx, by + bh, gx, by + bh + 5, C.axis, 1);
+    mtxt(fq >= 1000 ? (fq / 1000) + ' k' : String(fq), gx, by + bh + 16, 9, C['text-muted'], 'center');
+  });
+  /* where the tone sits right now */
+  var fx = X(Math.min(Math.max(f, AUD.f0), AUD.f1)), heard = f >= AUD.lo && f <= AUD.hi;
+  CX.save(); CX.fillStyle = heard ? C.amber : C.rose;
+  CX.beginPath(); CX.moveTo(fx, by - 2); CX.lineTo(fx - 7, by - 13); CX.lineTo(fx + 7, by - 13); CX.closePath(); CX.fill(); CX.restore();
+  plate(fmt(f, 0) + ' Hz — ' + (heard ? 'inside the audible range' : f < AUD.lo ? 'too low to hear' : 'ultrasound'),
+    fx, by - 21, 10, heard ? C.amber : C.rose, fx > bx + bw - 140 ? 'right' : 'left', true);
+  mtxt('frequency (Hz, logarithmic)', x + w - 16, y + h - 12, 9.5, C['text-muted'], 'right');
+  txt('the limits are not sharp, and the upper one falls with age · dogs hear to ≈ 45 kHz, bats to ≈ 110 kHz', x + 16, y + h - 12, 9.5, C['text-muted']);
+}
+
+/* ── "inside the ear": how a pressure wave in air becomes a nerve signal ── */
+function cochleaPt(u, cx, cy) {              /* u = 0 at the base, 1 at the apex */
+  var th = u * 2.6 * 2 * Math.PI, r = 74 - 25 * th / (2 * Math.PI);
+  return [cx + r * Math.cos(th - Math.PI / 2), cy + r * Math.sin(th - Math.PI / 2)];
+}
+function drawEar() {
+  var p = S.m3, ph = m3Phase(0), sw = Math.sin(ph), amp = 6 * p.A, i, j;
+  txt('Inside the ear — how a sound wave in the air becomes something you hear', 40, 30, 15, C.accent, 'left', 700);
+  txt('pressure variations → eardrum → three small bones → fluid in the cochlea → nerve impulses to the brain', 40, 48, 11, C['text-dim']);
+
+  card(36, 64, 844, 410, null);
+  var yAx = 250;
+  /* the wave arriving through the air */
+  for (i = 0; i < 5; i++) {
+    var xw = 70 + ((i * 32 + (S.t * 40) % 32) % 160);
+    CX.save(); CX.strokeStyle = withA(C.comp, 0.25 + 0.55 * p.A); CX.lineWidth = 3;
+    CX.beginPath(); CX.arc(xw - 150, yAx, 175, -0.44, 0.44); CX.stroke(); CX.restore();
+  }
+  txt('sound in air', 108, yAx + 124, 10.5, C.comp, 'center', 700);
+
+  /* the pinna — the outer ear, which funnels the sound in */
+  CX.save(); CX.fillStyle = withA(C.skin, .85); CX.strokeStyle = C.skin; CX.lineWidth = 2;
+  CX.beginPath();
+  CX.moveTo(222, yAx - 80); CX.bezierCurveTo(274, yAx - 94, 292, yAx - 20, 274, yAx + 16);
+  CX.bezierCurveTo(266, yAx + 58, 238, yAx + 84, 218, yAx + 62);
+  CX.bezierCurveTo(228, yAx + 28, 212, yAx - 40, 222, yAx - 80);
+  CX.closePath(); CX.fill(); CX.stroke();
+  CX.strokeStyle = withA(C['text-dim'], .5); CX.lineWidth = 1.5;
+  CX.beginPath(); CX.moveTo(242, yAx - 60); CX.bezierCurveTo(268, yAx - 38, 258, yAx + 6, 238, yAx + 18); CX.stroke();
+  CX.restore();
+  if (S.labels) plate('pinna (outer ear)', 244, yAx - 104, 10, C.skin, 'center');
+
+  /* the ear canal */
+  var cx0 = 272, cx1 = 430, ch = 44;
+  CX.save(); CX.fillStyle = withA(C.skin, .35); CX.strokeStyle = withA(C.skin, .9); CX.lineWidth = 2;
+  rr(cx0, yAx - ch / 2, cx1 - cx0, ch, 8); CX.fill(); CX.stroke(); CX.restore();
+  for (i = 0; i < 4; i++) {
+    var xk = cx0 + 14 + ((i * 38 + (S.t * 120) % 38) % (cx1 - cx0 - 22));
+    line(xk, yAx - ch / 2 + 6, xk, yAx + ch / 2 - 6, withA(C.comp, .25 + .5 * p.A), 3);
+  }
+  if (S.labels) plate('ear canal', (cx0 + cx1) / 2, yAx + ch / 2 + 18, 10, C['text-dim'], 'center');
+
+  /* the eardrum — it moves in and out with the pressure in the canal */
+  var dx = cx1 + 6 + sw * amp;
+  CX.save(); CX.strokeStyle = C.amber; CX.lineWidth = 4; CX.lineCap = 'round';
+  CX.beginPath(); CX.moveTo(dx - sw * amp * 0.4, yAx - 34);
+  CX.quadraticCurveTo(dx + sw * amp * 1.6, yAx, dx - sw * amp * 0.4, yAx + 34); CX.stroke(); CX.restore();
+  if (S.labels) { plate('eardrum', 404, yAx - 92, 10, C.amber, 'center'); line(404, yAx - 84, cx1 + 6, yAx - 40, withA(C.amber, .5), 1, [3, 3]); }
+  /* how far it swings, and why */
+  arrow(cx1 + 6 - 10 * p.A - 4, yAx + 96, cx1 + 6 + 10 * p.A + 4, yAx + 96, C['mark-a'], 1.8, { both: true, head: 6 });
+  txt('a bigger amplitude swings it further — a LOUDER sound', 352, yAx + 118, 9.5, C['mark-a'], 'center');
+
+  /* the three small bones, working as a lever */
+  var bx = cx1 + 24, bone = function (x, w2, h2, tilt) {
+    CX.save(); CX.translate(x + sw * amp * 0.6, yAx); CX.rotate(tilt + sw * 0.08);
+    CX.fillStyle = withA(C['text-dim'], .9); rr(-w2 / 2, -h2 / 2, w2, h2, 5); CX.fill(); CX.restore();
+  };
+  bone(bx + 14, 22, 34, 0.2); bone(bx + 44, 24, 30, -0.15); bone(bx + 72, 20, 24, 0.1);
+  line(bx + 14, yAx + sw * 2, bx + 72, yAx + sw * 2, withA(C['text-dim'], .6), 2);
+  if (S.labels) plate('hammer · anvil · stirrup', bx + 44, yAx - 56, 10, C['text-dim'], 'center');
+
+  /* the oval window and the cochlea */
+  var ocx = 700, ocy = 274;
+  line(bx + 84, yAx, ocx, ocy - 74, withA(C['text-dim'], .5), 2, [4, 3]);
+  dot(ocx, ocy - 74, 5, C['text-dim']);
+  if (S.labels) plate('oval window', ocx - 8, ocy - 96, 9.5, C['text-muted'], 'center');
+  var spir = [];
+  for (j = 0; j <= 260; j++) spir.push(cochleaPt(j / 260, ocx, ocy));
+  CX.save(); CX.strokeStyle = withA(C.sea, .95); CX.lineWidth = 13; CX.lineJoin = 'round'; CX.lineCap = 'round';
+  CX.beginPath(); CX.moveTo(spir[0][0], spir[0][1]);
+  for (j = 1; j < spir.length; j++) CX.lineTo(spir[j][0], spir[j][1]);
+  CX.stroke(); CX.restore();
+  poly(spir, withA(C['wave-t'], .85), 2);
+  for (j = 0; j < spir.length; j += 6) {          /* the ripple running through the fluid */
+    var u = j / spir.length, aR = Math.max(0, Math.sin(2 * Math.PI * (u * 3 - S.t * 0.8)));
+    dot(spir[j][0], spir[j][1], 1.6 + 2.2 * aR * p.A, withA(C.particle, .35 + .5 * aR));
+  }
+  /* the place along the cochlea that answers this frequency */
+  var uf = clamp(Math.log(AUD.hi / Math.min(Math.max(p.f, AUD.lo), AUD.hi)) / Math.log(AUD.hi / AUD.lo), 0, 1);
+  var hp = cochleaPt(uf, ocx, ocy);
+  dot(hp[0], hp[1], 8, C.amber);
+  var rightSide = hp[0] >= ocx;
+  plate(fmt(p.f, 0) + ' Hz responds here', hp[0] + (rightSide ? 14 : -14), hp[1] - 16, 10, C.amber, rightSide ? 'left' : 'right', true);
+  if (S.labels) {
+    plate('cochlea — fluid inside', ocx - 104, ocy + 96, 10, C.sea, 'center');
+    plate('high f — the base', ocx + 84, ocy - 66, 9.5, C['text-muted'], 'left');
+    plate('low f — the apex', ocx + 26, ocy + 2, 9.5, C['text-muted'], 'left');
+  }
+  /* the nerve */
+  var np = [];
+  for (j = 0; j <= 40; j++) { var un = j / 40; np.push([ocx + 16 + un * 140, ocy + 74 + 14 * Math.sin(un * 4)]); }
+  poly(np, withA(C.amber, .8), 3);
+  for (j = 0; j < 3; j++) { var idx = Math.floor(((S.t * 0.5 + j / 3) % 1) * 40); dot(np[idx][0], np[idx][1], 4, C.amber); }
+  if (S.labels) plate('auditory nerve → brain', ocx + 158, ocy + 108, 10, C.amber, 'right');
+
+  /* the two cards on the right */
+  card(896, 64, 268, 214, 'THE CHAIN');
+  var yy = 100;
+  ['1 · air — the pressure varies', '2 · eardrum — vibrates with it', '3 · bones — pass it on, magnified',
+    '4 · cochlea — the fluid ripples', '5 · nerve — impulses to the brain'].forEach(function (s2) {
+      txt(s2, 912, yy, 11, C['text-dim']); yy += 26;
+    });
+  card(896, 290, 268, 184, 'WHAT CHANGES WHAT');
+  wrap('A bigger AMPLITUDE moves the eardrum further, and we hear a louder sound.', 912, 326, 236, 11, C.text, 16);
+  wrap('A higher FREQUENCY moves it faster, and the place that responds shifts towards the base of the cochlea — a higher pitch.', 912, 386, 236, 11, C.text, 16);
+
+  audibleStrip(36, 490, 1128, 104, p.f);
+  txt('outside 20 Hz – 20 000 Hz the eardrum still moves, but the ear sends no signal we hear as sound.',
+    600, 620, 10.5, C['text-muted'], 'center');
+}
+
+/* ── pitch & loudness: the two things a listener notices, and what sets them ── */
+var PL = { win: 0.01, refF: 440, refA: 0.6 };      /* a fixed 10 ms window, like a CRO */
+function plTrace(g, f, A, col, dash, wd) {
+  var q = [], i;
+  for (i = 0; i <= 400; i++) { var t = i / 400 * PL.win; q.push([g.X(i / 400), g.Y(A * Math.sin(2 * Math.PI * f * t))]); }
+  CX.save(); if (dash) CX.setLineDash(dash); poly(q, col, wd || 2.4); CX.restore();
+  return q;
+}
+function plMeter(x, y, w, lab, u, loLab, hiLab, val, col) {
+  txt(lab, x, y - 10, 11, C['text-dim'], 'left', 700);
+  mtxt(val, x + w, y - 10, 11.5, col, 'right', 700);
+  CX.save(); CX.fillStyle = withA(col, .18); CX.strokeStyle = withA(C.border, .9); CX.lineWidth = 1;
+  rr(x, y, w, 16, 8); CX.fill(); CX.stroke();
+  CX.fillStyle = withA(col, .85); rr(x, y, Math.max(10, w * clamp(u, 0, 1)), 16, 8); CX.fill(); CX.restore();
+  mtxt(loLab, x, y + 32, 9.5, C['text-muted'], 'left');
+  mtxt(hiLab, x + w, y + 32, 9.5, C['text-muted'], 'right');
+  dot(x + w * clamp(u, 0, 1), y + 8, 6, col);
+}
+function drawPitchLoud() {
+  var p = S.m3, lam = V_AIR / p.f, T = 1 / p.f;
+  txt('Pitch and loudness — what the listener notices, and what the wave is doing', 40, 30, 15, C['wave-l'], 'left', 700);
+  txt('frequency f decides the PITCH (and with v fixed, λ = v/f) · amplitude A decides the LOUDNESS', 40, 48, 11, C['text-dim']);
+
+  /* ── the oscilloscope: a fixed 10 ms window, so a higher f really does pack in more waves ── */
+  var g = graphFrame(36, 68, 648, 244, { title: 'what a microphone + oscilloscope shows — displacement against time (10 ms of it)', xl: 'time (ms)', yl: 'displacement', col: C['graph-b'], ymax: 'A' });
+  plTrace(g, PL.refF, PL.refA, withA(C['text-muted'], .7), [5, 5], 1.6);
+  plTrace(g, p.f, p.A, C['graph-b'], null, 2.6);
+  for (var q2 = 0; q2 <= 10; q2 += 2) { var qx = g.X(q2 / 10); line(qx, g.y + g.h, qx, g.y + g.h + 4, C.axis, 1); mtxt(String(q2), qx, g.y + g.h + 14, 9, C['text-muted'], 'center'); }
+  /* one period, and the amplitude, marked on the live trace */
+  var t1 = 0.25 * T, t2 = t1 + T;
+  if (t2 <= PL.win) {
+    var ty = g.y + 12;
+    arrow(g.X(t1 / PL.win), ty, g.X(t2 / PL.win), ty, C['mark-t'], 1.8, { both: true, head: 7 });
+    plate('T = ' + fmtSig(T * 1000, 3) + ' ms', g.X((t1 + t2) / 2 / PL.win), ty - 1, 9.5, C['mark-t'], 'center', true);
+  }
+  arrow(g.X(t1 / PL.win), g.my, g.X(t1 / PL.win), g.Y(p.A), C['mark-a'], 2, { head: 7 });
+  plate('A', g.X(t1 / PL.win) + 10, (g.my + g.Y(p.A)) / 2, 10.5, C['mark-a'], 'left', true);
+  plate('dashed = the reference tone, 440 Hz at A = 0.60', g.X(0.02), g.Y(-0.88), 9.5, C['text-muted'], 'left');
+
+  /* ── the two things the listener hears ── */
+  card(700, 68, 464, 244, 'WHAT THE LISTENER HEARS');
+  var uf = clamp(Math.log(p.f / 100) / Math.log(2000 / 100), 0, 1);
+  plMeter(724, 126, 416, 'PITCH  — set by the frequency', uf, 'low  (100 Hz)', 'high  (2000 Hz)',
+    fmt(p.f, 0) + ' Hz', C['graph-b']);
+  plMeter(724, 208, 416, 'LOUDNESS — set by the amplitude', (p.A - 0.1) / 0.9, 'quiet', 'loud',
+    'A = ' + fmt(p.A, 2), C['mark-a']);
+  mtxt('T = 1/f = ' + fmtSig(T * 1000, 3) + ' ms      λ = v/f = ' + fmt(lam, 3) + ' m', 932, 278, 10.5, C.accent, 'center', 700);
+  mtxt('v = ' + V_AIR + ' m/s — fixed by the air, whatever the source does', 932, 296, 10, C['text-muted'], 'center');
+
+  /* ── the air itself: the same change, seen as compressions ── */
+  var ax0 = 60, ax1 = 1140, ayT = 340, ayB = 432, spanM = (ax1 - ax0) / PXM3;
+  CX.save(); CX.strokeStyle = withA(C.border, .9); CX.lineWidth = 1; CX.setLineDash([4, 4]);
+  CX.strokeRect(ax0 - 8, ayT - 8, ax1 - ax0 + 16, ayB - ayT + 16); CX.restore();
+  txt('the air at this instant — dense (compression) and sparse (rarefaction) bands', ax0 - 8, ayT - 16, 10.5, C['wave-l'], 'left', 700);
+  var bandA = 0.12 + 0.3 * p.A;
+  for (var bx2 = ax0 - 8; bx2 < ax1 + 8; bx2 += 4) {
+    var cph = Math.cos(m3Phase((bx2 + 2 - ax0) / PXM3));
+    CX.fillStyle = withA(cph > 0 ? C.comp : C.rare, bandA * cph * cph);
+    CX.fillRect(bx2, ayT - 8, 4, ayB - ayT + 16);
+  }
+  var ampPx = m3AmpPx(), rows = 5, rowDY = (ayB - ayT) / (rows - 1);
+  CX.save(); CX.fillStyle = C.particle;
+  for (var ci = 0; ci * M3.colDX < ax1 - ax0; ci++) {
+    var rx = ax0 + ci * M3.colDX, s = Math.sin(m3Phase((rx - ax0) / PXM3)) * ampPx;
+    for (var ri = 0; ri < rows; ri++) {
+      var jit = ((ci * 13 + ri * 7) % 7) - 3;
+      CX.beginPath(); CX.arc(rx + s + ((ri % 2) ? M3.colDX / 3 : 0), ayT + ri * rowDY + jit * 0.8, 2, 0, Math.PI * 2); CX.fill();
+    }
+  }
+  CX.restore();
+  var kk1 = m3Compression(0.1), kk2 = kk1 + lam;
+  if (kk2 <= spanM) {
+    arrow(ax0 + kk1 * PXM3, ayB + 22, ax0 + kk2 * PXM3, ayB + 22, C['mark-l'], 1.8, { both: true, head: 7 });
+    plate('λ = v/f = ' + fmtM(lam) + '  — raise f and this shrinks', ax0 + (kk1 + kk2) / 2 * PXM3, ayB + 10, 9.5, C['mark-l'], 'center', true);
+  } else plate('λ = ' + fmtM(lam) + ' — wider than the box', ax0 + 20, ayB + 12, 9.5, C['mark-l'], 'left', true);
+
+  /* ── the four classic traces, with the live one picked out ── */
+  var cases = [
+    { f: 250, A: 0.3, n: 'low pitch · quiet' }, { f: 250, A: 0.9, n: 'low pitch · loud' },
+    { f: 1200, A: 0.3, n: 'high pitch · quiet' }, { f: 1200, A: 0.9, n: 'high pitch · loud' }];
+  var near = -1, best = 0.9;                 /* only pick one out if it is really close */
+  cases.forEach(function (c, i2) {
+    var d = Math.abs(Math.log(p.f / c.f)) + Math.abs(p.A - c.A) * 1.4;
+    if (d < best) { best = d; near = i2; }
+  });
+  cases.forEach(function (c, i2) {
+    var cw = 268, x = 36 + i2 * (cw + 16), y = 476, h = 152, sel = i2 === near;
+    card(x, y, cw, h, null, sel ? C.accent : C.border);
+    txt(c.n, x + cw / 2, y + 20, 11, sel ? C.accent : C['text-dim'], 'center', 700);
+    var gy2 = y + 34, gh2 = h - 48, my = gy2 + gh2 / 2;
+    line(x + 12, my, x + cw - 12, my, withA(C.axis, .8), 1);
+    var q3 = [];
+    for (var i3 = 0; i3 <= 200; i3++) {
+      var tt = i3 / 200 * PL.win;
+      q3.push([x + 12 + i3 / 200 * (cw - 24), my - c.A * (gh2 / 2 - 4) * Math.sin(2 * Math.PI * c.f * tt)]);
+    }
+    poly(q3, sel ? C.accent : withA(C['graph-b'], .55), sel ? 2.4 : 1.6);
+  });
+  txt('same 10 ms window in all four: LOUDER is taller, HIGHER PITCH is more waves squeezed in (a shorter period, and a shorter wavelength).',
+    600, 650, 10.5, C['text-muted'], 'center');
+}
+</script>
+<script>
 /* ============ MODE 4 — Electromagnetic waves ============ */
 var EM = [
   { k: 'radio', n: 'Radio waves', lamMax: 1e4, lamMin: 1e-1, col: '#e07b39', w: 190,
     uses: ['radio and television broadcasting', 'radio astronomy (telescopes that "see" radio)', 'RFID tags and wireless links'], harm: ['generally regarded as safe at everyday intensities'] },
   { k: 'micro', n: 'Microwaves', lamMax: 1e-1, lamMin: 1e-3, col: '#d9a82e', w: 150,
-    uses: ['satellite television', 'mobile (cell) phones and Wi-Fi', 'microwave ovens — heating food from the water in it'], harm: ['internal heating of body cells with over-exposure'] },
+    uses: ['satellite television', 'mobile (cell) phones and Wi-Fi', 'Bluetooth — short-range links to headphones, keyboards and speakers', 'microwave ovens — heating food from the water in it'], harm: ['internal heating of body cells with over-exposure'] },
   { k: 'ir', n: 'Infrared', lamMax: 1e-3, lamMin: 7e-7, col: '#c94a3a', w: 150,
     uses: ['electric grills and heaters', 'television remote controls', 'intruder alarms', 'thermal imaging (night vision)', 'optical fibres'], harm: ['skin burns from intense sources'] },
   { k: 'visible', n: 'Visible light', lamMax: 7e-7, lamMin: 4e-7, col: null, w: 90,
@@ -2175,13 +2444,13 @@ function rainbow(x, y, w, h, reverse) {
 
 function draw4() {
   var ex = S.ex[4];
-  if (ex === 'visible') { drawVisible(); return; }
+  if (ex === 'visible') { S.m4.eye ? drawEyeRGB() : drawVisible(); return; }
   if (ex === 'spectrum') { drawSpectrum(); return; }
   drawEM3D();
 }
 
 /* oblique projection: x → right, y → up, z → lower-left */
-var P3 = { ox: 150, oy: 300, zx: -0.58, zy: 0.34, len: 900, ampE: 105, ampB: 105 };
+var P3 = { ox: 150, oy: 300, zx: -0.58, zy: 0.34, len: 900, ampE: 96, ampB: 96 };
 function proj(x, y, z) { return [P3.ox + x + z * P3.zx, P3.oy - y + z * P3.zy]; }
 
 function drawEM3D() {
@@ -2232,12 +2501,12 @@ function drawEM3D() {
     }
     /* axis legend triad */
     if (S.m4.axes) {
-      card(36, 418, 250, 96, 'AXES');
-      var o = [104, 488];
+      card(36, 424, 250, 112, 'AXES');
+      var o = [104, 500];
       arrow(o[0], o[1], o[0] + 64, o[1], C.travel, 2.2); txt('travel', o[0] + 70, o[1] + 4, 11, C.travel, 'left', 700);
       arrow(o[0], o[1], o[0], o[1] - 46, C.efield, 2.2); txt('E', o[0] + 7, o[1] - 38, 12, C.efield, 'left', 700);
       arrow(o[0], o[1], o[0] + 44 * P3.zx, o[1] + 44 * P3.zy, C.bfield, 2.2); txt('B', o[0] + 44 * P3.zx - 14, o[1] + 44 * P3.zy + 4, 12, C.bfield, 'left', 700);
-      txt('each at 90° to the other two', 275, 506, 9.5, C['text-muted'], 'right');
+      txt('each at 90° to the other two', 275, 526, 9.5, C['text-muted'], 'right');
     }
   } else {
     /* 2-D: E up/down as a sine; B as ⊙ (out of page) / ⊗ (into page) along the axis */
@@ -2275,7 +2544,8 @@ function drawEM3D() {
     }
   }
   /* the frequency strip: where this wave sits in the spectrum */
-  drawStrip(36, 520, 1128, 112, f, reg, lam);
+  if (is3) drawSourceCard(300, 424, 864, 112);
+  drawStrip(36, is3 ? 546 : 520, 1128, 112, f, reg, lam);
 }
 function xc0b(ph0, lamPx) { return ((ph0 / (2 * Math.PI) + 0.25) % 1 + 1) % 1 * lamPx; }
 
@@ -2364,20 +2634,468 @@ function drawSpectrum() {
   arrow(bx + 300, by - 34, bx + 40, by - 34, C['mark-l'], 2); txt('increasing wavelength', bx + 170, by - 42, 10.5, C['mark-l'], 'center', 600);
   arrow(bx + bw - 300, by - 34, bx + bw - 40, by - 34, C['mark-t'], 2); txt('increasing frequency', bx + bw - 170, by - 42, 10.5, C['mark-t'], 'center', 600);
   arrow(bx + bw - 300, by + bh + 40, bx + bw - 40, by + bh + 40, C.red, 2); txt('increasing energy / more dangerous', bx + bw - 170, by + bh + 58, 10.5, C.red, 'center', 600);
+  /* the 2.4 GHz band that Bluetooth and Wi-Fi use, marked on the bar itself */
+  var btLam = C_LIGHT / BT.f, btReg = emRegionOf(BT.f), btBox = null;
+  SPEC.boxes.forEach(function (bq) { if (bq.k === btReg.k) btBox = bq; });
+  if (btBox) {
+    var ub = (Math.log10(btReg.lamMax) - Math.log10(btLam)) / (Math.log10(btReg.lamMax) - Math.log10(btReg.lamMin));
+    var bxp = btBox.x + clamp(ub, 0, 1) * btBox.w;
+    dot(bxp, by + bh, 4, C.accent);                     /* clear of the frequency labels */
+    line(bxp, by + bh + 24, bxp, by + bh + 44, C.accent, 1.6, [3, 3]);
+    plate('Bluetooth & Wi-Fi · 2.4 GHz', bxp, by + bh + 54, 10, C.accent, bxp > bx + bw - 120 ? 'right' : 'center', true);
+  }
   /* ordered lists both ways */
   txt('Order by wavelength (longest → shortest):  radio · microwave · infrared · visible · ultraviolet · X-ray · gamma', 100, 306, 11, C['text-dim']);
   txt('Order by frequency (lowest → highest):  the SAME order — because f = c / λ, a longer wavelength always means a lower frequency', 100, 326, 11, C['text-dim']);
   /* the info card for the selected region */
   card(36, 352, 560, 280, 'USES', sel.col || C.accent);
   txt(sel.n, 56, 386, 14, sel.col || C.text, 'left', 700);
-  var yy = 412;
-  sel.uses.forEach(function (u) { yy += wrap('• ' + u, 56, yy, 520, 11.5, C.text, 17); yy += 4; });
+  mtxt('λ ' + fmtM(sel.lamMin) + ' – ' + fmtM(sel.lamMax) + '  ·  f ' + fmtHz(C_LIGHT / sel.lamMax) + ' – ' + fmtHz(C_LIGHT / sel.lamMin), 576, 386, 9.5, C['text-muted'], 'right');
+  /* one small picture per use, so the list is not just words */
+  var icol = sel.col || C.accent, ids = USE_IC[sel.k] || [], n = sel.uses.length;
+  var top = 404, bot = 626, rowH = (bot - top) / n, tile = Math.min(50, rowH - 6);
+  sel.uses.forEach(function (u, i) {
+    var cy = top + i * rowH + rowH / 2;
+    CX.save(); CX.fillStyle = withA(icol, .08); CX.strokeStyle = withA(icol, .35); CX.lineWidth = 1;
+    rr(56, cy - tile / 2, tile, tile, 9); CX.fill(); CX.stroke(); CX.restore();
+    useIcon(ids[i], 56 + tile / 2, cy, tile * 0.31, icol);
+    wrap(u, 62 + tile + 12, cy - (u.length > 44 ? 6 : -4), 500 - tile, 11.5, C.text, 17);
+  });
   card(618, 352, 546, 280, 'HARMFUL EFFECTS', C.red);
   txt(sel.n, 638, 386, 14, C.red, 'left', 700);
   var y2 = 412;
   sel.harm.forEach(function (u) { y2 += wrap('• ' + u, 638, y2, 500, 11.5, C.text, 17); y2 += 4; });
   wrap(sel.k === 'radio' || sel.k === 'micro' || sel.k === 'ir' || sel.k === 'visible' ? 'Non-ionising: it can heat tissue but does not knock electrons off atoms.' : 'Ionising (UV partly, X and gamma fully): the photons carry enough energy to break chemical bonds in cells, which can cause mutations and cancer.', 638, y2 + 14, 500, 11, C['text-muted'], 16);
-  txt('λ (m) ' + fmtM(sel.lamMin) + ' – ' + fmtM(sel.lamMax) + '   ·   f ' + fmtHz(C_LIGHT / sel.lamMax) + ' – ' + fmtHz(C_LIGHT / sel.lamMin), 56, 618, 10.5, C['text-muted']);
+}
+</script>
+<script>
+/* ====== MODE 4 extras — where the light comes from, and how we see it ====== */
+
+/* ── an approximate colour for a wavelength, for the swatches ── */
+function nmRGB(nm) {
+  var r = 0, g = 0, b = 0;
+  if (nm < 440) { r = -(nm - 440) / 60; b = 1; }
+  else if (nm < 490) { g = (nm - 440) / 50; b = 1; }
+  else if (nm < 510) { g = 1; b = -(nm - 510) / 20; }
+  else if (nm < 580) { r = (nm - 510) / 70; g = 1; }
+  else if (nm < 645) { r = 1; g = -(nm - 645) / 65; }
+  else { r = 1; }
+  var f = nm < 420 ? 0.3 + 0.7 * (nm - 380) / 40 : nm > 700 ? 0.3 + 0.7 * (780 - nm) / 80 : 1;
+  var q = function (v) { return Math.round(255 * Math.pow(clamp(v * f, 0, 1), 0.8)); };
+  return [q(r), q(g), q(b)];
+}
+function rgbCss(c) { return 'rgb(' + c[0] + ',' + c[1] + ',' + c[2] + ')'; }
+function rgbHex(c) { return '#' + c.map(function (v) { return ('0' + v.toString(16)).slice(-2); }).join('').toUpperCase(); }
+
+/* the three cone types and the rods, as approximate response curves */
+var CONES = [
+  { k: 'S', n: 'S cones — "blue"', pk: 420, sd: 42, col: '#4f7bff' },
+  { k: 'M', n: 'M cones — "green"', pk: 534, sd: 54, col: '#3fc463' },
+  { k: 'L', n: 'L cones — "red"', pk: 564, sd: 62, col: '#ef5a5a' }];
+var ROD = { pk: 498, sd: 56 };
+function gauss(nm, pk, sd) { return Math.exp(-0.5 * Math.pow((nm - pk) / sd, 2)); }
+
+function drawEyeRGB() {
+  var sweep = 400 + 300 * (0.5 - 0.5 * Math.cos(2 * Math.PI * (S.t / 7)));   /* the λ being tested */
+  var col = nmRGB(sweep);
+  txt('How we see colour — rods and cones, and where RGB comes from', 40, 30, 15, C.efield, 'left', 700);
+  txt('the retina has just three kinds of colour sensor, so three numbers are enough to describe any colour we can see', 40, 48, 11, C['text-dim']);
+
+  /* ── the eye, and the two kinds of cell in the retina ── */
+  card(36, 64, 542, 300, 'THE EYE — WHERE THE LIGHT LANDS');
+  var ex = 196, ey = 200, R = 72;
+  CX.save();                                            /* the eyeball */
+  CX.fillStyle = withA(C['graph-bg'], .9); CX.strokeStyle = C['text-dim']; CX.lineWidth = 2;
+  CX.beginPath(); CX.arc(ex, ey, R, 0, Math.PI * 2); CX.fill(); CX.stroke();
+  CX.strokeStyle = withA(C.amber, .95); CX.lineWidth = 5;      /* the retina, at the back */
+  CX.beginPath(); CX.arc(ex, ey, R - 5, -0.72, 0.72); CX.stroke();
+  CX.fillStyle = withA(C.sea, .7); CX.beginPath();             /* cornea + lens at the front */
+  CX.ellipse(ex - R + 10, ey, 16, 34, 0, 0, Math.PI * 2); CX.fill();
+  CX.restore();
+  var i;
+  for (i = -1; i <= 1; i++) {                                  /* light coming to a focus */
+    var y0 = ey + i * 26;
+    line(ex - R - 78, y0, ex - R + 6, y0, withA(col, .95), 2.4);
+    line(ex - R + 6, y0, ex + R - 8, ey + i * 2, withA(col, .6), 1.6, [4, 3]);
+  }
+  if (S.labels) {
+    plate('lens', ex - R + 10, ey + 52, 10, C.sea, 'center');
+    plate('retina', ex + R - 2, ey - 66, 10, C.amber, 'right');
+    plate('light in', ex - R - 78, ey - 40, 10, col, 'left');
+  }
+  /* the callout: what the retina is made of */
+  line(ex + R - 12, ey + 6, 346, 130, withA(C.amber, .5), 1, [3, 3]);
+  line(ex + R - 12, ey + 22, 346, 290, withA(C.amber, .5), 1, [3, 3]);
+  card(346, 122, 216, 176, null, C.amber);
+  txt('in the retina', 454, 146, 11, C.amber, 'center', 700);
+  var cellY = 172;
+  CONES.forEach(function (c, j) {                              /* three cone cells */
+    var cxp = 392 + j * 42;
+    CX.save(); CX.fillStyle = withA(c.col, .9); CX.strokeStyle = c.col; CX.lineWidth = 1.5;
+    CX.beginPath(); CX.moveTo(cxp - 9, cellY + 34); CX.lineTo(cxp - 5, cellY); CX.lineTo(cxp + 5, cellY);
+    CX.lineTo(cxp + 9, cellY + 34); CX.closePath(); CX.fill(); CX.stroke(); CX.restore();
+    txt(c.k, cxp, cellY + 50, 10.5, c.col, 'center', 700);
+  });
+  txt('3 CONES — colour, in bright light', 454, cellY + 68, 9, C['text-dim'], 'center');
+  var rodY = 256;
+  for (i = 0; i < 4; i++) {
+    var rxp = 398 + i * 32;
+    CX.save(); CX.fillStyle = withA(C['text-muted'], .8); rr(rxp - 4, rodY - 14, 8, 26, 4); CX.fill(); CX.restore();
+  }
+  txt('RODS — no colour, but see in the dark', 454, rodY + 26, 9, C['text-dim'], 'center');
+  wrap('About 6 million cones sit near the centre of the retina; about 120 million rods spread around them. That is why colours drain away at night — only the rods are still working.',
+    56, 312, 502, 11, C.text, 16);
+
+  /* ── the response curves, and what this wavelength does to them ── */
+  card(594, 64, 570, 300, 'HOW MUCH EACH CELL RESPONDS');
+  var gx = 636, gy = 100, gw = 486, gh = 150;
+  for (i = 0; i < 60; i++) {                                    /* the spectrum, behind the curves */
+    var nm0 = 400 + i / 60 * 300, c0 = nmRGB(nm0);
+    CX.save(); CX.fillStyle = 'rgba(' + c0[0] + ',' + c0[1] + ',' + c0[2] + ',0.16)';
+    CX.fillRect(gx + i / 60 * gw, gy, gw / 60 + 1, gh); CX.restore();
+  }
+  CX.save(); CX.strokeStyle = C.border; CX.lineWidth = 1; CX.strokeRect(gx, gy, gw, gh); CX.restore();
+  var X = function (nm) { return gx + (nm - 400) / 300 * gw; }, Y = function (v) { return gy + gh - v * (gh - 12); };
+  [[ROD.pk, ROD.sd, C['text-muted'], true]].concat(CONES.map(function (c) { return [c.pk, c.sd, c.col, false]; }))
+    .forEach(function (cv) {
+      var q = [];
+      for (i = 0; i <= 120; i++) { var nm1 = 400 + i / 120 * 300; q.push([X(nm1), Y(gauss(nm1, cv[0], cv[1]))]); }
+      CX.save(); if (cv[3]) CX.setLineDash([5, 4]); poly(q, cv[2], cv[3] ? 1.6 : 2.4); CX.restore();
+    });
+  for (var nm2 = 400; nm2 <= 700; nm2 += 50) { line(X(nm2), gy + gh, X(nm2), gy + gh + 4, C.axis, 1); mtxt(nm2 + '', X(nm2), gy + gh + 15, 9, C['text-muted'], 'center'); }
+  txt('wavelength λ (nm)', gx + gw, gy + gh + 30, 10, C['text-dim'], 'right');
+  txt('response', gx - 6, gy + 8, 10, C['text-dim'], 'right');
+  plate('rods', X(ROD.pk), Y(1) - 12, 9.5, C['text-muted'], 'center');
+  CONES.forEach(function (c) { plate(c.k, X(c.pk), Y(1) - 12, 10, c.col, 'center'); });
+  /* the wavelength under test, and the three numbers it produces */
+  line(X(sweep), gy, X(sweep), gy + gh, withA(C.text, .8), 1.6, [4, 3]);
+  plate(fmt(sweep, 0) + ' nm', X(sweep), gy - 10, 10, C.text, X(sweep) > gx + gw - 60 ? 'right' : 'center', true);
+  var resp = CONES.map(function (c) { return gauss(sweep, c.pk, c.sd); });
+  CONES.forEach(function (c, j) {
+    var bx = 636 + j * 92, by = 296, bw = 62;
+    dot(X(sweep), Y(resp[j]), 5, c.col);
+    CX.save(); CX.fillStyle = withA(c.col, .25); rr(bx, by, bw, 14, 7); CX.fill();
+    CX.fillStyle = withA(c.col, .9); rr(bx, by, Math.max(4, bw * resp[j]), 14, 7); CX.fill(); CX.restore();
+    mtxt(c.k + ' ' + fmt(resp[j] * 100, 0) + '%', bx + bw / 2, by + 30, 9.5, c.col, 'center', 700);
+  });
+  CX.save(); CX.fillStyle = rgbCss(col); CX.strokeStyle = C.border; CX.lineWidth = 1;
+  rr(946, 290, 72, 30, 6); CX.fill(); CX.stroke(); CX.restore();
+  mtxt('the colour you see', 1032, 300, 10, C['text-dim'], 'left');
+  mtxt(rgbHex(col), 1032, 316, 10.5, C.accent, 'left', 700);
+
+  /* ── from three cones to three numbers ── */
+  card(36, 380, 404, 280, 'ADDING THE THREE PRIMARIES');
+  var mx = 238, my = 488, mr = 54, off = 28;
+  CX.save(); CX.globalCompositeOperation = 'lighter';
+  [['#ff2b2b', 0], ['#2bff2b', 1], ['#2b6bff', 2]].forEach(function (c2, j) {
+    var an = -Math.PI / 2 + j * 2 * Math.PI / 3;
+    CX.fillStyle = c2[0];
+    CX.beginPath(); CX.arc(mx + off * Math.cos(an), my + off * Math.sin(an), mr, 0, Math.PI * 2); CX.fill();
+  });
+  CX.restore();
+  ['R', 'G', 'B'].forEach(function (nn, j) {
+    var an2 = -Math.PI / 2 + j * 2 * Math.PI / 3;
+    txt(nn, mx + (off + mr - 22) * Math.cos(an2), my + (off + mr - 22) * Math.sin(an2) + 5, 13, '#000000', 'center', 800);
+  });
+  txt('white', mx, my + 5, 11, '#000000', 'center', 800);
+  wrap('Three lights — red, green and blue — are enough, because they excite the three cones in the same proportions that a real colour would. All three together look white.',
+    56, 580, 364, 11, C.text, 16);
+  txt('this is ADDITIVE mixing — light added to light, not paint mixed with paint', 56, 634, 10, C['text-muted']);
+
+  drawMixer(456, 380, 338, 280);
+
+  /* ── and where those three numbers end up ── */
+  card(810, 380, 354, 280, 'WHERE YOU MEET THE THREE NUMBERS');
+  var yy = 414;
+  [['a screen', 'every pixel is three tiny lamps — red, green and blue — each at a brightness 0–255'],
+  ['the web', 'sRGB hex codes: #FF0000 means R=255, G=0, B=0 — the same three numbers written in base 16'],
+  ['printing', 'ink absorbs light instead of emitting it, so print uses CMYK — the subtractive opposite'],
+  ['Pantone', 'a numbered set of real, pre-mixed inks, for when a brand colour must come out identical everywhere']]
+    .forEach(function (r2) {
+      txt(r2[0], 830, yy, 11.5, C.accent, 'left', 700);
+      yy += wrap(r2[1], 830, yy + 16, 316, 11, C['text-dim'], 15) + 22;
+    });
+  txt('RGB is not a fact about light — it is a fact about our eyes.', 830, 646, 10, C['text-muted']);
+}
+
+/* ── the mixer: three numbers in, one colour out ── */
+var MIX = { sw: [], drag: null };
+function mixCss() { return rgbCss(S.m4.rgb); }
+function drawMixer(x, y, w, h) {
+  var v = S.m4.rgb;
+  card(x, y, w, h, 'MIX YOUR OWN COLOUR');
+  CX.save(); CX.fillStyle = mixCss(); CX.strokeStyle = C.border; CX.lineWidth = 1;
+  rr(x + 20, y + 30, w - 40, 64, 8); CX.fill(); CX.stroke(); CX.restore();
+  mtxt(rgbHex(v), x + 30, y + 114, 13, C.accent, 'left', 700);
+  mtxt('rgb(' + v.join(', ') + ')', x + w - 30, y + 114, 11.5, C['text-dim'], 'right');
+  MIX.bars = [];
+  ['R', 'G', 'B'].forEach(function (nn, j) {
+    var by = y + 138 + j * 34, bx = x + 48, bw = w - 116;
+    var colr = j === 0 ? '#ff4d4d' : j === 1 ? '#3fd06a' : '#5a86ff';
+    txt(nn, x + 26, by + 11, 12, colr, 'left', 700);
+    CX.save(); CX.fillStyle = withA(colr, .18); rr(bx, by, bw, 14, 7); CX.fill();
+    CX.fillStyle = colr; rr(bx, by, Math.max(6, bw * v[j] / 255), 14, 7); CX.fill(); CX.restore();
+    mtxt(fmt(v[j], 0), x + w - 24, by + 11, 11.5, colr, 'right', 700);
+    MIX.bars.push({ x: bx, y: by - 7, w: bw, h: 28, i: j });       /* drag or click to set */
+  });
+  /* a few ready-made colours to try */
+  var pre = [[255, 0, 0], [0, 255, 0], [0, 0, 255], [255, 255, 0], [0, 255, 255], [255, 0, 255], [255, 255, 255], [255, 140, 0]];
+  MIX.sw = [];
+  pre.forEach(function (c, j) {
+    var sx = x + 22 + j * 38, sy = y + 248;
+    CX.save(); CX.fillStyle = rgbCss(c);
+    CX.strokeStyle = c.join(',') === v.join(',') ? C.accent : C.border; CX.lineWidth = c.join(',') === v.join(',') ? 2.5 : 1;
+    rr(sx, sy, 30, 20, 4); CX.fill(); CX.stroke(); CX.restore();
+    MIX.sw.push({ x: sx, y: sy, w: 30, h: 20, c: c });
+  });
+  txt('click a swatch, or drag a bar', x + 20, y + 240, 9.5, C['text-muted']);
+}
+function mixSetFromBar(i, px) {
+  var b = MIX.bars[i];
+  S.m4.rgb[i] = Math.round(clamp((px - b.x) / b.w, 0, 1) * 255);
+}
+
+/* ── the macroscopic sources this wave can come from ── */
+var SRC = [
+  { k: 'sun', n: 'The Sun', ico: '☀',
+    how: 'Nuclear fusion keeps the surface at about 5800 K. Everything that hot glows — a continuous spectrum across the whole visible range, which is why sunlight looks white.',
+    mix: [0.50, 0.42, 0.08], note: 'peak output is in the visible · the atmosphere absorbs most of the harmful UV' },
+  { k: 'candle', n: 'A candle flame', ico: '🕯',
+    how: 'Tiny soot particles in the flame are heated to about 1700 K by burning wax, and glow. Cooler than the Sun, so the light is much redder — and most of the output is heat you cannot see.',
+    mix: [0.88, 0.12, 0.004], note: 'a thermal source too — same physics, lower temperature' },
+  { k: 'bulb', n: 'A filament lamp', ico: '💡',
+    how: 'A current heats a tungsten wire to about 2800 K until it glows. Still a hot object radiating a continuous spectrum, which is why it looks warm and yellow.',
+    mix: [0.90, 0.10, 0.01], note: 'about 90% of the energy leaves as infrared — that is why it is inefficient' },
+  { k: 'led', n: 'An LED', ico: '🔦',
+    how: 'Not hot at all: electrons drop across the band gap of a semiconductor, and each drop emits one photon. The gap sets the frequency, so the light comes out as a narrow band.',
+    mix: [0.05, 0.95, 0.00], note: 'not a thermal source — little infrared, so far more efficient' }];
+function srcByKey(k) { for (var i = 0; i < SRC.length; i++) if (SRC[i].k === k) return SRC[i]; return SRC[0]; }
+
+function drawSrcArt(s, cx, cy) {
+  var i, a, pu = 0.5 + 0.5 * Math.sin(S.t * 3);
+  CX.save();
+  if (s.k === 'sun') {
+    CX.fillStyle = withA(C.amber, .95); CX.beginPath(); CX.arc(cx, cy, 24, 0, Math.PI * 2); CX.fill();
+    CX.fillStyle = withA(C.amber, .18); CX.beginPath(); CX.arc(cx, cy, 30 + 3 * pu, 0, Math.PI * 2); CX.fill();
+    for (i = 0; i < 12; i++) { a = i * Math.PI / 6; line(cx + 30 * Math.cos(a), cy + 30 * Math.sin(a), cx + (40 + 4 * pu) * Math.cos(a), cy + (40 + 4 * pu) * Math.sin(a), withA(C.amber, .8), 2.4); }
+  } else if (s.k === 'candle') {
+    CX.fillStyle = withA(C.skin, .9); rr(cx - 12, cy + 4, 24, 40, 4); CX.fill();
+    CX.strokeStyle = C['text-dim']; CX.lineWidth = 2; CX.beginPath(); CX.moveTo(cx, cy + 4); CX.lineTo(cx, cy - 6); CX.stroke();
+    var fh = 30 + 4 * pu;
+    CX.fillStyle = withA(C.amber, .9); CX.beginPath();
+    CX.moveTo(cx, cy - 6 - fh); CX.quadraticCurveTo(cx + 13, cy - 16, cx, cy - 2); CX.quadraticCurveTo(cx - 13, cy - 16, cx, cy - 6 - fh); CX.fill();
+    CX.fillStyle = withA(C.rose, .75); CX.beginPath();
+    CX.moveTo(cx, cy - 10 - fh * 0.6); CX.quadraticCurveTo(cx + 7, cy - 14, cx, cy - 4); CX.quadraticCurveTo(cx - 7, cy - 14, cx, cy - 10 - fh * 0.6); CX.fill();
+  } else if (s.k === 'bulb') {
+    CX.fillStyle = withA(C.amber, .22); CX.beginPath(); CX.arc(cx, cy - 8, 28, 0, Math.PI * 2); CX.fill();
+    CX.strokeStyle = C['text-dim']; CX.lineWidth = 2;
+    CX.beginPath(); CX.arc(cx, cy - 8, 24, 0, Math.PI * 2); CX.stroke();
+    CX.fillStyle = withA(C['text-dim'], .9); rr(cx - 11, cy + 14, 22, 18, 3); CX.fill();
+    CX.strokeStyle = withA(C.amber, .6 + .4 * pu); CX.lineWidth = 2.6; CX.beginPath();
+    CX.moveTo(cx - 10, cy + 12);
+    for (i = 0; i <= 6; i++) CX.lineTo(cx - 10 + i * 3.4, cy - 4 + (i % 2 ? -8 : 8));
+    CX.lineTo(cx + 10, cy + 12); CX.stroke();
+  } else {
+    CX.fillStyle = withA(C['text-dim'], .9); rr(cx - 16, cy + 8, 32, 24, 4); CX.fill();
+    CX.fillStyle = withA(C.sea, .85); CX.beginPath();
+    CX.moveTo(cx - 14, cy + 8); CX.quadraticCurveTo(cx, cy - 26, cx + 14, cy + 8); CX.closePath(); CX.fill();
+    CX.fillStyle = withA(C.sea, .2 + .25 * pu); CX.beginPath(); CX.arc(cx, cy - 6, 26, 0, Math.PI * 2); CX.fill();
+    line(cx - 8, cy + 32, cx - 8, cy + 42, C['text-dim'], 2); line(cx + 8, cy + 32, cx + 8, cy + 42, C['text-dim'], 2);
+  }
+  CX.restore();
+}
+/* the card under the 3-D wave: which source, and what it actually radiates */
+function drawSourceCard(x, y, w, h) {
+  var s = srcByKey(S.m4.src);
+  card(x, y, w, h, 'PRIMARY SOURCE — WHERE A WAVE LIKE THIS COMES FROM');
+  drawSrcArt(s, x + 62, y + 62);
+  txt(s.n, x + 120, y + 38, 13, C.amber, 'left', 700);
+  wrap(s.how, x + 120, y + 56, 455, 10.5, C.text, 14);
+  txt(s.note, x + 120, y + h - 8, 10, C['text-muted']);
+  /* roughly how its output splits between the invisible and the visible */
+  var bx = x + w - 258, by = y + 32, bw = 238, bh = 40;
+  mtxt('roughly how its energy is shared', bx + bw / 2, y + 22, 9, C['text-muted'], 'center');
+  ['infrared (heat)', 'visible', 'ultraviolet'].forEach(function (nm, j) {
+    var cw = bw / 3, cx2 = bx + j * cw, v = s.mix[j];
+    var colr = j === 0 ? C.rose : j === 1 ? C.accent : '#9b7bff';
+    CX.save(); CX.fillStyle = withA(colr, .22); rr(cx2 + 6, by, cw - 12, bh, 4); CX.fill();
+    CX.fillStyle = withA(colr, .9); rr(cx2 + 6, by + bh * (1 - v), cw - 12, Math.max(3, bh * v), 4); CX.fill(); CX.restore();
+    mtxt(v < 0.01 ? '~0%' : fmt(v * 100, 0) + '%', cx2 + cw / 2, by + bh + 14, 9.5, colr, 'center', 700);
+    txt(nm, cx2 + cw / 2, by + bh + 27, 9, C['text-muted'], 'center');
+  });
+}
+</script>
+<script>
+/* ====== small pictures for the "uses" of each EM region ====== */
+/* one id per use, in the same order as that region's uses array */
+var USE_IC = {
+  radio: ['tower', 'dish', 'tag'],
+  micro: ['sat', 'phone', 'bt', 'oven'],
+  ir: ['heater', 'remote', 'alarm', 'thermal', 'fibre'],
+  visible: ['eye', 'camera', 'fibre'],
+  uv: ['uvmark', 'note', 'water', 'lamp'],
+  xray: ['bone', 'luggage', 'weld'],
+  gamma: ['sterile', 'tracer']
+};
+/* a few shared parts */
+function icWaves(x, y, n, col, sp, a0, a1) {
+  for (var i = 1; i <= n; i++) {
+    CX.save(); CX.strokeStyle = withA(col, 0.9 - i * 0.18); CX.lineWidth = 1.6;
+    CX.beginPath(); CX.arc(x, y, i * sp, a0, a1); CX.stroke(); CX.restore();
+  }
+}
+function icBox(x, y, w, h, col, r) { CX.save(); CX.fillStyle = withA(col, .25); CX.strokeStyle = col; CX.lineWidth = 1.6; rr(x, y, w, h, r || 3); CX.fill(); CX.stroke(); CX.restore(); }
+function icTrefoil(cx, cy, r, col) {
+  CX.save(); CX.fillStyle = col;
+  for (var i = 0; i < 3; i++) {
+    var a = -Math.PI / 2 + i * 2 * Math.PI / 3;
+    CX.beginPath(); CX.moveTo(cx, cy); CX.arc(cx, cy, r, a - 0.5, a + 0.5); CX.closePath(); CX.fill();
+  }
+  CX.fillStyle = C['graph-bg']; CX.beginPath(); CX.arc(cx, cy, r * 0.28, 0, Math.PI * 2); CX.fill(); CX.restore();
+}
+/* draw one use-picture, centred on (cx, cy), about 2s across */
+function useIcon(id, cx, cy, s, col) {
+  var i, a = C.amber, t = C['text-dim'];
+  CX.save();
+  if (id === 'tower') {                                   /* a broadcast mast */
+    CX.strokeStyle = t; CX.lineWidth = 2;
+    CX.beginPath(); CX.moveTo(cx - 9, cy + s); CX.lineTo(cx, cy - 4); CX.lineTo(cx + 9, cy + s); CX.stroke();
+    CX.beginPath(); CX.moveTo(cx - 5, cy + 6); CX.lineTo(cx + 5, cy + 6); CX.stroke();
+    icWaves(cx, cy - 5, 3, col, 5, -2.6, -0.54);
+  } else if (id === 'dish') {                             /* a radio telescope */
+    CX.strokeStyle = t; CX.lineWidth = 2.2;
+    CX.beginPath(); CX.arc(cx, cy + 4, s - 2, -Math.PI * 0.95, -Math.PI * 0.05); CX.stroke();
+    CX.beginPath(); CX.moveTo(cx, cy + 4); CX.lineTo(cx, cy + s); CX.stroke();
+    CX.beginPath(); CX.moveTo(cx - 6, cy + s); CX.lineTo(cx + 6, cy + s); CX.stroke();
+    dot(cx, cy - 4, 3, col);
+    for (i = 0; i < 3; i++) line(cx - 8 + i * 8, cy - s - 4, cx - 8 + i * 8, cy - s + 2, withA(col, .9), 1.6);
+  } else if (id === 'tag') {                              /* an RFID card */
+    icBox(cx - s + 2, cy - 8, s + 4, 18, col, 3);
+    CX.strokeStyle = col; CX.lineWidth = 1.4;
+    CX.strokeRect(cx - s + 6, cy - 4, 7, 7);
+    icWaves(cx - 2, cy + 1, 3, col, 6, -1.1, 1.1);
+  } else if (id === 'sat') {                              /* a satellite */
+    icBox(cx - 5, cy - 8, 10, 14, t, 2);
+    icBox(cx - s - 1, cy - 6, 12, 10, col, 1); icBox(cx + 6, cy - 6, 12, 10, col, 1);
+    icWaves(cx, cy + 6, 3, col, 6, 0.5, 2.64);
+  } else if (id === 'phone') {                            /* a mobile phone */
+    icBox(cx - 7, cy - s + 1, 14, 2 * s - 2, t, 3);
+    CX.fillStyle = withA(col, .5); CX.fillRect(cx - 4, cy - s + 5, 8, 2 * s - 12);
+    icWaves(cx + 6, cy - 7, 3, col, 4, -1.3, 0.2);
+  } else if (id === 'bt') {                               /* the Bluetooth rune, and a link */
+    CX.strokeStyle = col; CX.lineWidth = 2.4; CX.lineJoin = 'round';
+    CX.beginPath();
+    CX.moveTo(cx - 6, cy - 5); CX.lineTo(cx + 4, cy + 5); CX.lineTo(cx - 1, cy + 10);
+    CX.lineTo(cx - 1, cy - 10); CX.lineTo(cx + 4, cy - 5); CX.lineTo(cx - 6, cy + 5); CX.stroke();
+    icWaves(cx + 5, cy, 2, col, 5, -1.0, 1.0);
+    CX.restore(); CX.save();
+  } else if (id === 'oven') {                             /* a microwave oven */
+    icBox(cx - s, cy - 9, 2 * s, 20, t, 3);
+    CX.strokeStyle = withA(col, .9); CX.lineWidth = 1.4;
+    CX.beginPath(); CX.moveTo(cx + 4, cy - 9); CX.lineTo(cx + 4, cy + 11); CX.stroke();
+    for (i = 0; i < 2; i++) {
+      CX.beginPath();
+      for (var q = 0; q <= 10; q++) CX.lineTo(cx - s + 3 + q * 1.4, cy - 4 + i * 8 + 2.4 * Math.sin(q));
+      CX.stroke();
+    }
+    dot(cx + 10, cy - 3, 2, col);
+  } else if (id === 'heater') {                           /* a radiant heater */
+    icBox(cx - s, cy - 2, 2 * s, 14, t, 3);
+    for (i = 0; i < 3; i++) line(cx - 9 + i * 9, cy + 1, cx - 9 + i * 9, cy + 9, withA(col, .95), 2.4);
+    for (i = 0; i < 3; i++) {
+      CX.strokeStyle = withA(col, .8); CX.lineWidth = 1.4; CX.beginPath();
+      for (var w = 0; w <= 8; w++) CX.lineTo(cx - 9 + i * 9 + 2.2 * Math.sin(w), cy - 6 - w);
+      CX.stroke();
+    }
+  } else if (id === 'remote') {                           /* a remote and a TV */
+    icBox(cx - s, cy - 8, 11, 18, t, 3);
+    dot(cx - s + 5.5, cy - 4, 1.6, col); dot(cx - s + 5.5, cy + 1, 1.6, t);
+    icBox(cx + 2, cy - 9, s, 16, t, 2);
+    icWaves(cx - s + 11, cy - 4, 2, col, 5, -0.9, 0.9);
+  } else if (id === 'alarm') {                            /* an intruder alarm */
+    icBox(cx - 4, cy - s + 2, 12, 10, t, 3);
+    icWaves(cx - 4, cy - s + 8, 3, col, 5, 1.9, 3.0);
+    CX.strokeStyle = withA(t, .9); CX.lineWidth = 2;      /* a person in the beam */
+    CX.beginPath(); CX.arc(cx - 9, cy + 4, 3, 0, Math.PI * 2); CX.stroke();
+    CX.beginPath(); CX.moveTo(cx - 9, cy + 7); CX.lineTo(cx - 9, cy + 13); CX.stroke();
+  } else if (id === 'thermal') {                          /* a thermal image */
+    CX.save(); CX.beginPath(); CX.arc(cx, cy - 2, s - 3, 0, Math.PI * 2); CX.clip();
+    ['#3a4fd8', '#2ed37a', '#e8c93a', '#e05a2b'].forEach(function (c2, j) {
+      CX.fillStyle = withA(c2, .85); CX.fillRect(cx - s, cy - s + j * 8, 2 * s, 8);
+    });
+    CX.restore();
+    CX.strokeStyle = t; CX.lineWidth = 1.6; CX.beginPath(); CX.arc(cx, cy - 2, s - 3, 0, Math.PI * 2); CX.stroke();
+    CX.beginPath(); CX.moveTo(cx - 3, cy + s - 4); CX.lineTo(cx + 3, cy + s - 4); CX.stroke();
+  } else if (id === 'fibre') {                            /* light bouncing in a fibre */
+    CX.strokeStyle = withA(t, .9); CX.lineWidth = 1.6;
+    CX.beginPath(); CX.moveTo(cx - s, cy - 8); CX.lineTo(cx + s, cy - 8); CX.moveTo(cx - s, cy + 8); CX.lineTo(cx + s, cy + 8); CX.stroke();
+    CX.strokeStyle = col; CX.lineWidth = 2; CX.beginPath();
+    CX.moveTo(cx - s, cy + 4);
+    for (i = 0; i < 4; i++) CX.lineTo(cx - s + 5 + i * 9, cy + (i % 2 ? 6 : -6));
+    CX.stroke();
+    dot(cx + s - 2, cy - 1, 2.5, col);
+  } else if (id === 'eye') {                              /* an eye */
+    CX.strokeStyle = t; CX.lineWidth = 2; CX.beginPath();
+    CX.moveTo(cx - s, cy); CX.quadraticCurveTo(cx, cy - s + 2, cx + s, cy);
+    CX.quadraticCurveTo(cx, cy + s - 2, cx - s, cy); CX.stroke();
+    dot(cx, cy, 5, col); dot(cx + 1.6, cy - 1.6, 1.6, '#ffffff');
+  } else if (id === 'camera') {                           /* a camera */
+    icBox(cx - s, cy - 7, 2 * s, 17, t, 3);
+    icBox(cx - 6, cy - 11, 9, 5, t, 1);
+    CX.strokeStyle = col; CX.lineWidth = 2; CX.beginPath(); CX.arc(cx + 1, cy + 2, 6, 0, Math.PI * 2); CX.stroke();
+    dot(cx - s + 4, cy - 3, 1.8, col);
+  } else if (id === 'uvmark') {                           /* a hidden security mark */
+    icBox(cx - s, cy - 9, 2 * s, 19, t, 3);
+    CX.strokeStyle = col; CX.lineWidth = 2;
+    CX.beginPath(); CX.moveTo(cx - 6, cy + 4); CX.lineTo(cx - 1, cy - 4); CX.lineTo(cx + 4, cy + 4); CX.stroke();
+    icWaves(cx + s - 2, cy - 12, 2, col, 5, 1.6, 3.0);
+  } else if (id === 'note') {                             /* a banknote under UV */
+    icBox(cx - s, cy - 8, 2 * s, 17, t, 2);
+    CX.strokeStyle = withA(col, .95); CX.lineWidth = 1.6;
+    CX.beginPath(); CX.arc(cx, cy, 5, 0, Math.PI * 2); CX.stroke();
+    line(cx - s + 3, cy - 4, cx - s + 8, cy - 4, withA(col, .8), 1.4);
+    line(cx + s - 8, cy + 4, cx + s - 3, cy + 4, withA(col, .8), 1.4);
+    icWaves(cx - s + 5, cy - 10, 2, col, 4, 0.1, 1.5);
+  } else if (id === 'water') {                            /* sterilising water */
+    CX.strokeStyle = t; CX.lineWidth = 1.8;
+    CX.beginPath(); CX.moveTo(cx - 8, cy - 6); CX.lineTo(cx - 6, cy + s - 2); CX.lineTo(cx + 6, cy + s - 2); CX.lineTo(cx + 8, cy - 6); CX.stroke();
+    CX.fillStyle = withA(C.sea, .7); CX.fillRect(cx - 7, cy + 2, 14, s - 5);
+    line(cx - 10, cy - s + 2, cx + 10, cy - s + 2, col, 3);
+    for (i = 0; i < 3; i++) line(cx - 7 + i * 7, cy - s + 5, cx - 7 + i * 7, cy - 2, withA(col, .7), 1.4);
+  } else if (id === 'lamp') {                             /* a fluorescent tube */
+    CX.save(); CX.fillStyle = withA(col, .3); CX.strokeStyle = col; CX.lineWidth = 1.6;
+    rr(cx - s, cy - 5, 2 * s, 11, 5); CX.fill(); CX.stroke(); CX.restore();
+    for (i = 0; i < 3; i++) line(cx - 8 + i * 8, cy + 9, cx - 8 + i * 8, cy + s, withA(col, .6), 1.4);
+  } else if (id === 'bone') {                             /* an X-ray of a bone */
+    icBox(cx - s + 1, cy - s + 2, 2 * s - 2, 2 * s - 4, t, 3);
+    CX.save(); CX.strokeStyle = '#ffffff'; CX.lineWidth = 3.2; CX.lineCap = 'round';
+    CX.beginPath(); CX.moveTo(cx - 5, cy - 7); CX.lineTo(cx + 3, cy + 7); CX.stroke();
+    CX.lineWidth = 2.2;
+    CX.beginPath(); CX.moveTo(cx - 8, cy - 9); CX.lineTo(cx - 2, cy - 9); CX.moveTo(cx, cy + 9); CX.lineTo(cx + 6, cy + 9); CX.stroke();
+    CX.restore();
+  } else if (id === 'luggage') {                          /* a security scanner */
+    icBox(cx - s, cy - 2, 2 * s, 13, t, 2);
+    icBox(cx - 7, cy - 11, 14, 10, col, 2);
+    line(cx - s, cy + 13, cx + s, cy + 13, withA(t, .8), 2);
+    for (i = 0; i < 3; i++) line(cx - 8 + i * 8, cy - 14, cx - 8 + i * 8, cy - 12, withA(col, .9), 1.6);
+  } else if (id === 'weld') {                             /* checking a weld */
+    icBox(cx - s, cy - 2, 2 * s, 12, t, 2);
+    CX.strokeStyle = C.red; CX.lineWidth = 2; CX.beginPath();
+    CX.moveTo(cx - 2, cy - 2); CX.lineTo(cx + 2, cy + 3); CX.lineTo(cx - 1, cy + 6); CX.lineTo(cx + 2, cy + 10); CX.stroke();
+    for (i = 0; i < 3; i++) line(cx - 8 + i * 8, cy - s + 2, cx - 8 + i * 8, cy - 5, withA(col, .85), 1.6);
+  } else if (id === 'sterile') {                          /* sterilising a package */
+    icBox(cx - s + 2, cy - 4, 2 * s - 4, 15, t, 2);
+    line(cx - s + 2, cy + 1, cx + s - 2, cy + 1, withA(t, .7), 1.2);
+    icTrefoil(cx, cy - 12, 7, col);
+  } else if (id === 'tracer') {                           /* a tracer inside the body */
+    CX.strokeStyle = t; CX.lineWidth = 1.8;
+    CX.beginPath(); CX.arc(cx, cy - s + 5, 4, 0, Math.PI * 2); CX.stroke();
+    CX.beginPath(); CX.moveTo(cx, cy - s + 9); CX.lineTo(cx, cy + 6);
+    CX.moveTo(cx - 7, cy - 2); CX.lineTo(cx + 7, cy - 2);
+    CX.moveTo(cx, cy + 6); CX.lineTo(cx - 5, cy + s); CX.moveTo(cx, cy + 6); CX.lineTo(cx + 5, cy + s); CX.stroke();
+    dot(cx + 4, cy + 1, 4, col); icWaves(cx + 4, cy + 1, 2, col, 5, 0, 6.28);
+  }
+  CX.restore();
 }
 </script>
 <script>
@@ -2398,7 +3116,7 @@ function ctlsFor() {
   var md = S.md, ex = S.ex[md];
   if (md === 1) return ex === 'slinky' ? ['f1', 'A1', 'k1'] : [];
   if (md === 2) return ex === 'wave' ? ['f2', 'A2', 'v2'] : ['f2', 'v2'];
-  if (md === 3) return ex === 'tone' ? ['f3', 'A3'] : ex === 'echo' ? ['d3'] : [];
+  if (md === 3) return (ex === 'tone' || ex === 'pl') ? ['f3', 'A3'] : ex === 'echo' ? ['d3'] : [];
   if (md === 4) return ex === 'em3d' ? ['f4'] : [];
   return [];
 }
@@ -2430,14 +3148,21 @@ function refreshCtrlValues() {
 var EXS = {
   1: [['slinky', '🧵 Slinky'], ['real', '🌊 Real examples']],
   2: [['wave', '〰️ Travelling wave'], ['lamf', '📐 Where v = fλ comes from']],
-  3: [['tone', '🎼 Tone'], ['echo', '🔊 Echo'], ['ultra', '🩺 Ultrasound']],
+  3: [['tone', '🎧 Audible range'], ['pl', '🎚 Pitch & loudness'], ['echo', '🔊 Echo'], ['ultra', '🩺 Ultrasound']],
   4: [['em3d', '🌅 3-D wave'], ['visible', '🌈 Visible'], ['spectrum', '📡 Spectrum']]
 };
 function buildPills() {
   var h = '';
   EXS[S.md].forEach(function (e) { h += '<button class="pill' + (S.ex[S.md] === e[0] ? ' active' : '') + '" data-ex="' + e[0] + '">' + e[1] + '</button>'; });
   $('gSub').innerHTML = h;
-  $('gSub').style.gridColumn = String(S.md);
+  /* sit under this mode's tab; if the pills need more room than one tab column,
+     widen the span (keeping the left edge under the tab) rather than overflow */
+  var g = $('gSub'), row = $('pillrow');
+  g.style.gridColumn = String(S.md);
+  var colW = row.getBoundingClientRect().width / 4, need = g.scrollWidth;
+  var span = Math.min(5 - S.md, Math.max(1, Math.ceil(need / Math.max(colW, 1))));
+  g.style.gridColumn = S.md + ' / span ' + span;
+  g.style.justifySelf = span > 1 ? 'start' : 'center';
 }
 function setExample(k) {
   S.ex[S.md] = k; zoomOff(); S.drag = null; S.m3.echo = null;
@@ -2463,11 +3188,14 @@ function updateChrome() {
   $('gType').hidden = !((md === 1 && ex === 'slinky') || (md === 2 && ex === 'wave'));
   $('gView').hidden = !(md === 4 && ex === 'em3d');
   $('gLFAx').hidden = !(md === 2 && ex === 'lamf');
+  $('gSrc').hidden = !(md === 4 && ex === 'em3d');
   $('tMeasure').hidden = !(md === 2 && ex === 'wave');
   $('tHold').hidden = !(md === 2);
   $('tAxes').hidden = !(md === 4 && ex === 'em3d');
   $('bSound').hidden = !(md === 3);
-  $('tComp').hidden = $('tRare').hidden = !(md === 3 && ex === 'tone');
+  $('tComp').hidden = $('tRare').hidden = !(md === 3 && ex === 'tone' && !S.m3.ear);
+  $('tEar').hidden = !(md === 3 && ex === 'tone');
+  $('tEye').hidden = !(md === 4 && ex === 'visible');
   $('tSnap').hidden = !(md === 1 && ex === 'slinky');
   /* derive the group's own visibility from its children, so adding a button
      here can never leave it hidden inside a collapsed group */
@@ -2476,9 +3204,14 @@ function updateChrome() {
   [].forEach.call($('gWaveType').children, function (b) { b.classList.toggle('active', b.dataset.w === typ); });
   [].forEach.call($('gEmView').children, function (b) { b.classList.toggle('active', b.dataset.v === S.m4.view); });
   [].forEach.call($('gLFAxis').children, function (b) { b.classList.toggle('active', b.dataset.g === S.m2.gax); });
+  [].forEach.call($('gSrcList').children, function (b) { b.classList.toggle('active', b.dataset.src === S.m4.src); });
   $('tMeasure').classList.toggle('on', S.m2.measure);
   $('tHold').classList.toggle('on', S.m2.holdV);
   $('tAxes').classList.toggle('on', S.m4.axes);
+  $('tEye').classList.toggle('on', S.m4.eye);
+  [].forEach.call($('tEye').querySelectorAll('.ppl'), function (s3) { s3.classList.toggle('on', (s3.dataset.pp === 'out') === S.m4.eye); });
+  $('tEar').classList.toggle('on', S.m3.ear);
+  [].forEach.call($('tEar').querySelectorAll('.ppl'), function (s2) { s2.classList.toggle('on', (s2.dataset.pp === 'out') === S.m3.ear); });
   $('tComp').classList.toggle('on', S.m3.showComp);
   $('tRare').classList.toggle('on', S.m3.showRare);
   $('tSnap').classList.toggle('on', S.m1.snap != null);
@@ -2491,7 +3224,7 @@ function updateChrome() {
   $('gSub').classList.toggle('locked', !sim);
   $('gType').classList.toggle('locked', !sim);
   $('tLabels').classList.toggle('locked', S.mode === 'prac' && S.prac && S.prac.task && S.prac.task.hideLabels);
-  $('tbHint').textContent = md === 1 ? (ex === 'slinky' ? '' : 'click a card') : md === 2 ? (ex === 'wave' ? 'P is the point plotted in graph (b)' : (S.m2.gax === 'l1f' ? 'the gradient of this straight line IS the speed' : S.m2.gax === 'vf' ? 'flat: the speed does not depend on f' : 'pick the axes — λ–f, λ–1/f or v–f')) : md === 3 ? (ex === 'tone' ? 'the tone plays while the animation runs' : ex === 'echo' ? 'the pulse repeats by itself' : 'click a card') : (ex === 'em3d' ? 'slide f to move through the spectrum' : ex === 'spectrum' ? 'click a region' : '');
+  $('tbHint').textContent = md === 1 ? (ex === 'slinky' ? '' : 'click a card') : md === 2 ? (ex === 'wave' ? 'P is the point plotted in graph (b)' : '') : md === 3 ? (ex === 'tone' ? (S.m3.ear ? 'the eardrum follows the pressure in the canal' : 'the tone plays while the animation runs') : ex === 'pl' ? 'the dashed trace is the 440 Hz reference' : ex === 'echo' ? 'the pulse repeats by itself' : 'click a card') : (ex === 'em3d' ? 'slide f to move through the spectrum' : ex === 'spectrum' ? 'click a region' : S.m4.eye ? 'the marker sweeps through the spectrum by itself' : '');
   syncCtrlLocks(); updatePlayBtn(); updateChips();
   var names = { 1: 'Wave types — transverse and longitudinal', 2: 'Wave properties — λ, f, A, T and v = fλ', 3: 'Sound — a longitudinal wave', 4: 'Electromagnetic waves — transverse, c = 3.0 × 10⁸ m/s' };
   $('bbLeft').textContent = names[md];
@@ -2499,7 +3232,7 @@ function updateChrome() {
 }
 function timeChipText() {
   var md = S.md, ex = S.ex[md];
-  if (md === 3 && ex === 'tone') return 'animation at 1/' + Math.round(VIS_DIV / SLOW) + ' of real speed · displacement exaggerated';
+  if (md === 3 && (ex === 'tone' || ex === 'pl')) return 'animation at 1/' + Math.round(VIS_DIV / SLOW) + ' of real speed · displacement exaggerated';
   if (md === 3 && ex === 'echo') return 'slow motion ×' + SLOW;
   if (md === 4 && ex === 'em3d') return 'wave drawn in slow motion — λ not to scale';
   if ((md === 1 && ex === 'slinky') || md === 2) return 'slow motion ×' + SLOW + ' · t = ' + fmt(S.t, 2) + ' s';
@@ -2516,7 +3249,7 @@ function updateChips() {
   if (S.formula) {
     if (md === 1) eq = 'v = fλ<br>f = 1/T';
     else if (md === 2) eq = 'v = fλ<br>f = 1/T<br>λ = v/f';
-    else if (md === 3) eq = ex === 'tone' ? 'v = fλ<br>λ = v/f' : 'distance = v × t / 2';
+    else if (md === 3) eq = (ex === 'tone' || ex === 'pl') ? 'v = fλ<br>λ = v/f' : 'distance = v × t / 2';
     else eq = 'c = fλ = 3.0×10⁸ m/s<br>f = c/λ';
   }
   $('chipEq').innerHTML = eq;
@@ -2562,6 +3295,21 @@ function bindPanel() {
   [].forEach.call(pb.querySelectorAll('.gal .g'), function (g) {
     g.addEventListener('click', function () { S.m1.real = g.dataset.k; renderPanel(); draw(); });
   });
+  if ($('mx_hex')) {
+    var push = function () { renderPanel(); draw(); };
+    [0, 1, 2].forEach(function (j) {
+      var n = $('mx_' + j), r = $('mxr_' + j);
+      var set = function (val) { S.m4.rgb[j] = clamp(Math.round(+val || 0), 0, 255); push(); };
+      n.addEventListener('change', function () { set(n.value); });
+      r.addEventListener('input', function () { S.m4.rgb[j] = +r.value; $('mx_' + j).value = r.value; $('mx_sw').style.background = rgbCss(S.m4.rgb); $('mx_hex').value = rgbHex(S.m4.rgb); draw(); });
+    });
+    $('mx_sw').style.background = rgbCss(S.m4.rgb);
+    $('mx_hex').addEventListener('change', function () {
+      var m = /^#?([0-9a-f]{6})$/i.exec($('mx_hex').value.trim());
+      if (m) S.m4.rgb = [parseInt(m[1].slice(0, 2), 16), parseInt(m[1].slice(2, 4), 16), parseInt(m[1].slice(4, 6), 16)];
+      push();
+    });
+  }
   [].forEach.call(pb.querySelectorAll('[data-reg]'), function (g) {
     g.addEventListener('click', function () { S.m4.region = g.dataset.reg; renderPanel(); draw(); });
   });
@@ -2612,7 +3360,7 @@ function dataHTML() {
     h += secHead('d2m', 'Definitions') + secBody('d2m',
       kvt('Wavelength λ', 'distance between two successive identical points, e.g. crest to crest (m)') + kvt('Frequency f', 'number of complete waves passing a point each second (Hz)') + kvt('Amplitude A', 'maximum displacement from the rest position (m)') + kvt('Period T', 'time for one complete wave to pass (s); f = 1/T') + kvt('Wave speed v', 'distance moved by a crest each second (m/s); v = fλ'));
   } else if (md === 3) {
-    if (ex === 'tone') h += secHead('d3', 'Live readings') + secBody('d3',
+    if (ex === 'tone' || ex === 'pl') h += secHead('d3', 'Live readings') + secBody('d3',
       kv('Source frequency f', 'd_f', '', 'hi') + kv('Amplitude A (loudness)', 'd_A') + kv('Period T = 1/f', 'd_T') + kv('Speed in air v', 'd_v', '≈ 340 m/s') + kv('Wavelength λ = v / f', 'd_lam', '', 'hi') +
       kv('Pitch', 'd_pitch', '', 't') + kv('Loudness', 'd_loud', '', 't') + kv('Audible range', 'd_aud', '20 Hz – 20 000 Hz', 't') + kv('Ultrasound', 'd_us', 'above 20 kHz', 't'));
     else if (ex === 'echo') h += secHead('d3e', 'Echo') + secBody('d3e',
@@ -2631,6 +3379,17 @@ function dataHTML() {
       '<div class="card"><div class="h"><span class="sw" style="background:' + (reg.col || 'linear-gradient(90deg,red,yellow,green,blue,violet)') + '"></span>Uses</div>' + reg.uses.map(function (u) { return '<p>• ' + u + '</p>'; }).join('') + '</div>' +
       '<div class="card"><div class="h" style="color:var(--red)">Harmful effects</div>' + reg.harm.map(function (u) { return '<p>• ' + u + '</p>'; }).join('') + '</div>');
     if (ex === 'spectrum') h += secHead('d4l', 'All regions') + secBody('d4l', '<div class="gal">' + EM.map(function (r) { return '<div class="g' + (S.m4.region === r.k ? ' sel' : '') + '" data-reg="' + r.k + '">' + r.n + '</div>'; }).join('') + '</div>');
+    if (ex === 'visible' && S.m4.eye) {
+      var v0 = S.m4.rgb;
+      h += secHead('d4mix', 'Mix your own colour') + secBody('d4mix',
+        '<div class="mixrow"><span class="mixsw" id="mx_sw"></span><input class="mixhex" id="mx_hex" maxlength="7" value="' + rgbHex(v0) + '"></div>' +
+        ['R', 'G', 'B'].map(function (nn, j) {
+          return '<div class="mixrow"><label class="mixlab mx' + nn + '">' + nn + '</label>' +
+            '<input class="mixnum" id="mx_' + j + '" type="number" min="0" max="255" step="1" value="' + v0[j] + '">' +
+            '<input class="mixrng" id="mxr_' + j + '" type="range" min="0" max="255" step="1" value="' + v0[j] + '"></div>';
+        }).join('') +
+        '<div class="note">0–255 in each box, or type a hex code such as <b>#FF8C00</b>. The canvas swatch follows whatever you type.</div>');
+    }
     if (ex === 'visible') h += secHead('d4v', 'Visible light') + secBody('d4v', kvt('Range', 'about 400 nm (violet) to 700 nm (red)') + kvt('Order of increasing frequency', 'red → orange → yellow → green → blue → indigo → violet') + kvt('Speed', 'all colours: c = 3.0 × 10⁸ m/s in a vacuum') + kvt('f = c / λ', 'red ≈ 4.3 × 10¹⁴ Hz · violet ≈ 7.5 × 10¹⁴ Hz'));
     h += secHead('d4s', 'The whole family') + secBody('d4s', '<div class="note">All EM waves are <b>transverse</b>, need <b>no medium</b>, and travel at the <b>same speed c</b> in a vacuum (and almost the same in air). They differ only in frequency and wavelength, which is what sets their region and how they interact with matter.</div>');
   }
@@ -2716,7 +3475,14 @@ function infoHTML() {
     '<li>All EM waves obey <b>c = fλ</b>: a longer wavelength means a lower frequency.</li>' +
     '<li>The spectrum in order of <b>increasing frequency / decreasing wavelength</b>: radio → microwave → infrared → visible → ultraviolet → X-ray → gamma.</li>' +
     '<li>Visible light is a small band, roughly 400 nm (violet) to 700 nm (red), blending continuously.</li>' +
-    '<li>For a use or a hazard, name the region and give one specific example (e.g. microwaves — satellite TV; over-exposure heats body cells).</li></ol>';
+    '<li>For a use or a hazard, name the region and give one specific example (e.g. microwaves — satellite TV; over-exposure heats body cells).</li></ol>' +
+    '<div class="note"><b>Bluetooth — a favourite exam topic</b></div><ol class="steps">' +
+    '<li>Bluetooth is a <b>short-range radio link</b> in the <b>2.4 GHz</b> band, so λ = c/f ≈ <b>0.125 m</b> (about 12 cm). That frequency sits right on the radio/microwave boundary, so different books file it under either name.</li>' +
+    '<li><b>Low power</b> gives it a range of only about <b>10 m</b> — which is the point: it wastes little energy and cannot be picked up far away.</li>' +
+    '<li>It does <b>not need line of sight</b> — the waves pass through clothes, bags and thin walls — so it beats an <b>infrared</b> remote, which must be pointed straight at the receiver and only reaches a few metres.</li>' +
+    '<li>Devices <b>pair</b> first, so one keyboard talks to one computer; the link is encrypted, which is why other people nearby cannot simply listen in.</li>' +
+    '<li>Compared with <b>Wi-Fi</b>: Wi-Fi uses the same 2.4 GHz band (and 5 GHz) but at higher power — longer range (tens of metres) and a much higher data rate, for connecting to a network. Bluetooth is for a few devices close together, at lower data rates, using less battery.</li>' +
+    '<li>Typical uses: wireless headphones and speakers, keyboards and mice, car audio, fitness trackers, sending a file between two phones.</li></ol>';
   return h;
 }
 
@@ -2751,7 +3517,7 @@ function patchLive(force) {
     set('d_chk', fmt(p.f, 1) + ' × ' + fmt(l2, 2) + ' = ' + fmt(p.f * l2, 2) + ' m/s ✓');
     if ($('miniLF')) drawMiniLF();
   } else if (md === 3) {
-    if (ex === 'tone') {
+    if (ex === 'tone' || ex === 'pl') {
       var f3 = S.m3.f;
       set('d_f', fmt(f3, 0) + ' Hz'); set('d_A', fmt(S.m3.A, 2)); set('d_T', fmtSig(1 / f3, 3) + ' s'); set('d_lam', fmt(V_AIR / f3, 3) + ' m');
       set('d_pitch', f3 < 300 ? 'low (f = ' + f3 + ' Hz)' : f3 < 900 ? 'medium (f = ' + f3 + ' Hz)' : 'high (f = ' + f3 + ' Hz)');
@@ -2867,15 +3633,6 @@ function drawLFGraph(p, v) {
       msg: ['λ = v × (1/f) — a STRAIGHT LINE through the origin.',
         'Its gradient is the wave speed: gradient = λ ÷ (1/f) = v = ' + fmt(v, 1) + ' m/s.',
         'This is the plot to draw in an experiment: a straight line is easy to judge, and the gradient hands you v directly.']
-    };
-  } else if (g === 'vf') {
-    cfg = {
-      title: 'v against f', xl: 'frequency f (Hz)', yl: 'wave speed v (m/s)',
-      xmax: 10, x0v: 1, ymax: v * 2, xs: [1, 4, 7, 10], fx: function (f) { return f; }, fy: function () { return v; },
-      curve: function (k) { var fq = 1 + k / 200 * 9; return [fq, v]; },
-      msg: ['v against f is FLAT — the speed does not depend on the frequency at all.',
-        'The speed is set by the medium (the rope, the air, the water), not by the source.',
-        'Change f and λ changes to match, so that the product f λ always comes back to the same ' + fmt(v, 1) + ' m/s.']
     };
   } else {
     cfg = {
@@ -3153,8 +3910,8 @@ function resetMode() {
   var md = S.md;
   if (md === 1) { S.m1.f = 2; S.m1.A = 0.6; S.m1.real = null; S.m1.snap = null; S.m1.track = 0; S.m1.sweep0 = S.t; }
   else if (md === 2) { S.m2.gax = 'lf'; S.m2.f = 2; S.m2.A = 0.5; S.m2.v = 4; S.m2.r1 = 2; S.m2.r2 = 4; }
-  else if (md === 3) { S.m3.f = 440; S.m3.A = 0.6; S.m3.d = 85; S.m3.echo = null; S.m3.showComp = S.m3.showRare = true; }
-  else { S.m4.logf = 14.7; S.m4.region = 'visible'; }
+  else if (md === 3) { S.m3.ear = false; S.m3.f = 440; S.m3.A = 0.6; S.m3.d = 85; S.m3.echo = null; S.m3.showComp = S.m3.showRare = true; }
+  else { S.m4.src = 'sun'; S.m4.eye = false; S.m4.rgb = [255, 140, 0]; S.m4.logf = 14.7; S.m4.region = 'visible'; }
   S.t = 0; S.speed = 1; zoomOff(); S.drag = null;
   [].forEach.call($('gSpeed').children, function (b) { b.classList.toggle('active', b.dataset.s === '1'); });
   if (S.mode === 'prac') { newTask(); }
@@ -3178,6 +3935,7 @@ function init() {
   [].forEach.call($('gTabs').children, function (b) { b.addEventListener('click', function () { setMode(+b.dataset.md); }); });
   bindPillGroup('gSub', function (d) { setExample(d.ex); });
   bindPillGroup('gWaveType', function (d) { if (S.md === 1) S.m1.type = d.w; else S.m2.type = d.w; updateChrome(); renderPanel(); draw(); });
+  bindPillGroup('gSrcList', function (d) { S.m4.src = d.src; updateChrome(); renderPanel(); draw(); });
   bindPillGroup('gLFAxis', function (d) { S.m2.gax = d.g; updateChrome(); renderPanel(); draw(); });
   bindPillGroup('gEmView', function (d) { S.m4.view = d.v; updateChrome(); renderPanel(); draw(); });
   bindPillGroup('gSpeed', function (d) { S.speed = parseFloat(d.s); });
@@ -3190,6 +3948,8 @@ function init() {
   $('tHold').addEventListener('click', function () { S.m2.holdV = !S.m2.holdV; updateChrome(); renderPanel(); draw(); });
   $('tAxes').addEventListener('click', function () { S.m4.axes = !S.m4.axes; updateChrome(); draw(); });
   $('tSnap').addEventListener('click', function () { S.m1.snap = S.m1.snap == null ? S.t : null; updateChrome(); draw(); });
+  $('tEye').addEventListener('click', function () { S.m4.eye = !S.m4.eye; updateChrome(); renderPanel(); draw(); });
+  $('tEar').addEventListener('click', function () { S.m3.ear = !S.m3.ear; updateChrome(); renderPanel(); draw(); });
   $('tComp').addEventListener('click', function () { S.m3.showComp = !S.m3.showComp; updateChrome(); draw(); });
   $('tRare').addEventListener('click', function () { S.m3.showRare = !S.m3.showRare; updateChrome(); draw(); });
   $('bSound').addEventListener('click', function () { S.m3.sound = !S.m3.sound; updateChrome(); audioSync(); });
@@ -3213,6 +3973,12 @@ function init() {
     }
     if (S.md === 3 && S.ex[3] === 'ultra') { b = hitBox(pt, US.boxes); if (b) { S.m3.us = b.k; renderPanel(); draw(); } return; }
     if (S.md === 4 && S.ex[4] === 'spectrum') { b = hitBox(pt, SPEC.boxes); if (b) { S.m4.region = b.k; renderPanel(); draw(); } return; }
+    if (S.md === 4 && S.ex[4] === 'visible' && S.m4.eye) {      /* the RGB mixer */
+      b = hitBox(pt, MIX.sw); if (b) { S.m4.rgb = b.c.slice(); renderPanel(); draw(); return; }
+      b = hitBox(pt, MIX.bars);
+      if (b) { mixSetFromBar(b.i, pt.x); S.drag = { k: 'mix', i: b.i }; CV.setPointerCapture(ev.pointerId); renderPanel(); draw(); }
+      return;
+    }
     if (S.md === 2 && S.ex[2] === 'wave' && S.m2.measure && S.mode === 'sim') {
       for (var i = 0; i < RUL.hit.length; i++) { var hh = RUL.hit[i]; if (Math.hypot(pt.x - hh.x, pt.y - hh.y) <= hh.r) { S.drag = { k: hh.k }; CV.setPointerCapture(ev.pointerId); return; } }
       /* anywhere on a handle's dashed line */
@@ -3234,7 +4000,9 @@ function init() {
       ZOOM.cy = clamp(S.drag.cy - dy / (ZOOM.k - 1), 0, H);
       if (!S.play) draw(); return;
     }
-    var pt = toLogical(ev), xm = clamp((pt.x - M2.x0) / PXM2, 0, m2Span());
+    var pt = toLogical(ev);
+    if (S.drag.k === 'mix') { mixSetFromBar(S.drag.i, pt.x); patchLive(true); draw(); return; }
+    var xm = clamp((pt.x - M2.x0) / PXM2, 0, m2Span());
     S.m2[S.drag.k] = Math.round(xm * 100) / 100;
     if (!S.play) draw();
   });
