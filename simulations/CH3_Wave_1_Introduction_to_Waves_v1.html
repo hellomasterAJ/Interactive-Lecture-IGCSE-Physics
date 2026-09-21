@@ -294,7 +294,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">🌊 Introduction to Waves</span> <span class="badge-top" id="badge">v1.9.4</span></h1>
+    <h1><span class="t">🌊 Introduction to Waves</span> <span class="badge-top" id="badge">v1.9.5</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -1153,6 +1153,7 @@ function draw1() {
   /* graph b: oscilloscope sweep of the tracked coil */
   /* the sweep is anchored to when it last restarted (a new coil, or Reset), so
      picking a different coil redraws graph (b) from scratch */
+  if (p.sweep0 > S.t) p.sweep0 = S.t;     /* the clock went back (Reset, a new task): start the sweep again */
   var Tw = 4 / p.f, t0 = p.sweep0 + Math.max(0, Math.floor((S.t - p.sweep0) / Tw)) * Tw, pb = [];
   var nS = 160, uNow = (S.t - t0) / Tw;
   for (var k = 0; k <= nS; k++) {
@@ -4242,11 +4243,12 @@ function loop(ts) {
 function setPlay(on) { S.play = on; updatePlayBtn(); audioSync(); }
 function resetMode() {
   var md = S.md;
-  if (md === 1) { S.m1.f = 2; S.m1.A = 0.6; S.m1.real = null; S.m1.snap = null; S.m1.track = 0; S.m1.sweep0 = S.t; }
+  if (md === 1) { S.m1.f = 2; S.m1.A = 0.6; S.m1.real = null; S.m1.snap = null; S.m1.track = 0; }
   else if (md === 2) { S.m2.gax = 'lf'; S.m2.phase = 90; S.m2.start = 0; S.m2.pstep = 'circle'; S.m2.scn = 'same'; S.m2.grid = true; S.m2.f = 2; S.m2.A = 0.5; S.m2.v = 4; S.m2.r1 = 2; S.m2.r2 = 4; }
   else if (md === 3) { S.m3.ear = false; S.m3.f = 440; S.m3.A = 0.6; S.m3.d = 85; S.m3.echo = null; S.m3.showComp = S.m3.showRare = true; }
   else { S.m4.src = 'sun'; S.m4.eye = false; S.m4.rgb = [255, 140, 0]; S.m4.logf = 14.7; S.m4.region = 'visible'; }
   S.t = 0; S.speed = 1; zoomOff(); S.drag = null;
+  S.m1.sweep0 = 0;                        /* graph (b) restarts with the clock, never before it */
   [].forEach.call($('gSpeed').children, function (b) { b.classList.toggle('active', b.dataset.s === '1'); });
   if (S.mode === 'prac') { newTask(); }
   refreshCtrlValues(); updateChrome(); renderPanel(); audioSync(); draw();
