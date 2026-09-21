@@ -294,7 +294,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">🌊 Introduction to Waves</span> <span class="badge-top" id="badge">v1.8.2</span></h1>
+    <h1><span class="t">🌊 Introduction to Waves</span> <span class="badge-top" id="badge">v1.9.4</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -346,6 +346,27 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
           <button class="pill" data-src="led" title="an LED — electrons crossing a band gap, not a hot object">🔦 LED</button>
         </div>
       </div>
+      <div class="tgroup nb" id="gPhStep">
+        <div class="pills" id="gPhSteps">
+          <button class="pill active" data-ps="circle" title="phase as an angle: one turn of a circle traces one whole wave">① Circle</button>
+          <button class="pill" data-ps="super" title="wave 1, wave 2, and the two added together">② Superposition</button>
+        </div>
+      </div>
+      <div class="tgroup nb" id="gPhStart">
+        <div class="pills" id="gPhStarts" title="the start angle φ — where on the circle the wave begins">
+          <button class="pill active" data-a="0" title="start at the rest position, moving up">φ 0°</button>
+          <button class="pill" data-a="90" title="start at a crest">90°</button>
+          <button class="pill" data-a="180" title="start at the rest position, moving down">180°</button>
+          <button class="pill" data-a="270" title="start at a trough">270°</button>
+        </div>
+      </div>
+      <div class="tgroup nb" id="gPhScn">
+        <div class="pills" id="gPhScns">
+          <button class="pill active" data-sc="same" title="both waves travel the same way and start together">In phase</button>
+          <button class="pill" data-sc="phi" title="both travel the same way, but one starts φ later">φ apart</button>
+          <button class="pill" data-sc="opp" title="the two waves travel towards each other">Opposite</button>
+        </div>
+      </div>
       <div class="tgroup nb" id="gLFAx">
         <div class="pills" id="gLFAxis">
           <button class="pill active" data-g="lf" title="wavelength against frequency — a curve">λ–f</button>
@@ -361,6 +382,7 @@ table.rt td.ok{color:var(--green)}table.rt td.no{color:var(--red)}
         <button class="ctrl-btn on" id="tRare" title="highlight the rarefactions (sparse regions) and their labels">🔵 Rarefaction</button>
         <button class="ctrl-btn" id="tEar" title="follow the sound into the ear: eardrum, the three small bones, the cochlea and the nerve"><span class="ppl on" data-pp="in">👂 Inside the ear</span><span class="ppl" data-pp="out">👂 Back to the air</span></button>
         <button class="ctrl-btn" id="tEye" title="follow the light into the eye: rods, cones and where RGB comes from"><span class="ppl on" data-pp="in">👁 Eye &amp; RGB</span><span class="ppl" data-pp="out">🌈 Back to the spectrum</span></button>
+        <button class="ctrl-btn on" id="tGrid" title="grid lines at the same positions in every graph, so you can compare them point by point">▦ Grid</button>
         <button class="ctrl-btn" id="tSnap" title="freeze graph (a) at this instant — a real photograph of the slinky; press again to let it run live"><span class="ppl on" data-pp="take">📷 Snapshot</span><span class="ppl" data-pp="live">📷 Frozen</span></button>
       </div>
       <span class="spacer"></span>
@@ -447,7 +469,7 @@ var S = {
   play: true, speed: 1, t: 0, labels: true, formula: false,
   ex: { 1: 'slinky', 2: 'wave', 3: 'tone', 4: 'em3d' },
   m1: { snap: null, type: 'T', f: 2, A: 0.6, real: null, track: 0, sweep0: 0 },
-  m2: { type: 'T', f: 2, A: 0.5, v: 4, holdV: false, measure: false, r1: 2.0, r2: 4.0, gax: 'lf' },
+  m2: { type: 'T', f: 2, A: 0.5, v: 4, holdV: false, measure: false, r1: 2.0, r2: 4.0, gax: 'lf', phase: 90, start: 0, pstep: 'circle', scn: 'same', grid: true },
   m3: { f: 440, A: 0.6, sound: true, d: 85, us: 'medical', echo: null, showComp: true, showRare: true, ear: false },
   m4: { view: '3d', axes: true, logf: 14.7, region: 'visible', src: 'sun', eye: false, rgb: [255, 140, 0] },
   drag: null, secOpen: {}, prac: null, quiz: null, quizLog: []
@@ -1199,6 +1221,14 @@ function drawRealExamples() {
     txt(sel.note + '  Energy moves along; the material only vibrates about its rest position.', 56, 634, 11, C['text-dim']);
   } else txt('Pick a card to read what vibrates, and in which direction, for that example. In every case energy is carried along, but the material only vibrates about its rest position.', 56, 622, 11.5, C['text-dim']);
 }
+/* the pulse on the ultrasound card: out from the probe (u < 1), then the echo
+   back from the organ face (u > 1). r is the radius of the LEADING wavefront,
+   measured from whichever point that front left, so it always grows with time. */
+function usCardPulse(u, xs, xf) {
+  var span = xf - xs, out = u < 1;
+  var r = (out ? u : u - 1) * span;
+  return { out: out, r: r, x: out ? xs + r : xf - r };
+}
 function drawRealIcon(k, cx, cy, t) {
   var ph = 2 * Math.PI * 0.6 * t, i, x, y, pts = [];
   CX.save();
@@ -1289,11 +1319,11 @@ function drawRealIcon(k, cx, cy, t) {
     CX.restore();
     txt('organ boundary', ox - 6, cy + 54, 9, C.amber, 'center');
     /* the pulse: a group of curved wavefronts, out and then back */
-    var u = (0.42 * t) % 2, out = u < 1, span = xf - xs;
+    var u = (0.42 * t) % 2, pu = usCardPulse(u, xs, xf), out = pu.out, span = xf - xs;
     CX.save(); CX.lineCap = 'round';
     CX.beginPath(); rr(xs, yT, xe - xs, yB - yT, 8); CX.clip();      /* never spill onto the probe */
     for (i = 0; i < 4; i++) {
-      var r0 = (out ? u : (2 - u)) * span - i * 9;
+      var r0 = pu.r - i * 9;                                          /* the trailing fronts lag behind */
       if (r0 <= 2) continue;
       var aFade = (1 - i * 0.22) * (out ? 1 : 0.7);
       CX.strokeStyle = withA(out ? C['wave-l'] : C.amber, aFade);
@@ -1304,8 +1334,7 @@ function drawRealIcon(k, cx, cy, t) {
       CX.stroke();
     }
     CX.restore();
-    var xp = out ? xs + u * span : xf - (u - 1) * span;
-    plate(out ? 'pulse out' : 'echo back', clamp(xp, cx - 60, cx + 40), cy - 52, 9, out ? C['wave-l'] : C.amber, 'center');
+    plate(out ? 'pulse out' : 'echo back', clamp(pu.x, cx - 60, cx + 40), cy - 52, 9, out ? C['wave-l'] : C.amber, 'center');
     if (Math.abs(u - 1) < 0.14) {                                   /* the moment it strikes */
       CX.save(); CX.strokeStyle = withA(C.amber, 1 - Math.abs(u - 1) / 0.14); CX.lineWidth = 4;
       CX.beginPath(); CX.arc(ox, cy - 2, orx + 2, Math.PI * 0.62, Math.PI * 1.42); CX.stroke(); CX.restore();
@@ -1505,6 +1534,237 @@ function drawRuler2() {
   /* readouts in the top-right corner, clear of the wave */
   rows.push(note);
   rows.forEach(function (r, i) { mtxt(r, 1160, 112 + i * 17, 10.5, C.ruler, 'right', 600); });
+}
+</script>
+<script>
+/* ====== MODE 2 extra — phase, step by step, then superposition ====== */
+/* Step 1 ties phase to one turn of a circle. Step 2 draws wave 1, wave 2 and
+   their sum on three separate axes, for whichever situation is chosen. */
+var PH = { x0: 70, x1: 1128, px: 200, rev: 1.5 };   /* px per metre · seconds per turn */
+function phY(A, lam, x, t, dirLeft, phiDeg) {
+  var k = 2 * Math.PI / lam, w = 2 * Math.PI * S.m2.f;
+  return A * Math.sin(k * x + (dirLeft ? 1 : -1) * w * t + (phiDeg || 0) * Math.PI / 180);
+}
+function phWave2(x, t, lam, A) {                     /* the second wave of the chosen case */
+  var sc = S.m2.scn;
+  if (sc === 'opp') return phY(A, lam, x, t, true, 0);
+  return phY(A, lam, x, t, false, sc === 'same' ? 0 : S.m2.phase);
+}
+function phCase() {
+  var sc = S.m2.scn;
+  return sc === 'same' ? { n: 'Same direction, same starting phase', k: 'in phase — φ = 0°' }
+    : sc === 'phi' ? { n: 'Same direction, different starting phase', k: 'φ = ' + fmt(S.m2.phase, 0) + '°' }
+      : { n: 'Opposite directions', k: 'one goes right, one goes left' };
+}
+function drawPhase() { if (S.m2.pstep === 'circle') drawPhaseCircle(); else drawSuper(); }
+
+/* ── step 1 · one turn of a circle is one whole wave ── */
+function drawPhaseCircle() {
+  var phi = S.m2.start, R = 116, cx = 272, cy = 300, i;
+  var u = (S.t / PH.rev) % 2, thNow = u * 360;         /* how far round we have gone */
+  txt('Phase — where a point has got to in its cycle', 40, 30, 15, C['wave-t'], 'left', 700);
+  txt('going once round a circle is exactly one whole wave: 360° = 2π rad = one period T = one wavelength λ', 40, 48, 11, C['text-dim']);
+
+  /* the circle, with the angle measured the usual way: 0° to the right, anticlockwise */
+  CX.save(); CX.strokeStyle = C.axis; CX.lineWidth = 2;
+  CX.beginPath(); CX.arc(cx, cy, R, 0, Math.PI * 2); CX.stroke();
+  CX.strokeStyle = withA(C.axis, .5); CX.lineWidth = 1;
+  CX.beginPath(); CX.moveTo(cx - R - 14, cy); CX.lineTo(cx + R + 14, cy);
+  CX.moveTo(cx, cy - R - 14); CX.lineTo(cx, cy + R + 14); CX.stroke(); CX.restore();
+  [[0, '0°', 'left'], [90, '90°', 'center'], [180, '180°', 'right'], [270, '270°', 'center']].forEach(function (m) {
+    var a = m[0] * Math.PI / 180, lx = cx + (R + 18) * Math.cos(a), ly = cy - (R + 18) * Math.sin(a);
+    line(cx + (R - 8) * Math.cos(a), cy - (R - 8) * Math.sin(a), cx + (R + 6) * Math.cos(a), cy - (R + 6) * Math.sin(a), C.axis, 2);
+    mtxt(m[1], m[0] === 0 ? cx + R + 10 : lx, m[0] === 0 ? cy - 6 : ly + (m[0] === 270 ? 14 : m[0] === 90 ? -6 : 4), 10, C['text-muted'], m[2]);
+  });
+  mtxt('360°', cx + R + 10, cy + 15, 10, C['text-muted'], 'left');    /* 0° and 360° are the same place */
+  /* the starting angle φ, and the arm as it is now */
+  var aP = phi * Math.PI / 180;
+  line(cx, cy, cx + R * Math.cos(aP), cy - R * Math.sin(aP), withA(C['graph-b'], .75), 2.5, [5, 4]);
+  if (Math.abs(Math.sin(aP)) < 0.5)                    /* near 0° / 180°: sit just under the arm, clear of the axis labels */
+    plate('start at φ = ' + fmt(phi, 0) + '°', cx + R * 0.5 * Math.cos(aP), cy - R * 0.5 * Math.sin(aP) + 18, 10, C['graph-b'], 'center', true);
+  else plate('start at φ = ' + fmt(phi, 0) + '°', cx + R * 0.66 * Math.cos(aP), cy - R * 0.66 * Math.sin(aP) - 12, 10, C['graph-b'], 'center', true);
+  var aN = (thNow + phi) * Math.PI / 180, tipX = cx + R * Math.cos(aN), tipY = cy - R * Math.sin(aN);
+  CX.save(); CX.strokeStyle = withA(C.amber, .5); CX.lineWidth = 3;   /* how far it has turned */
+  CX.beginPath(); CX.arc(cx, cy, R * 0.3, -aP, -aN, true); CX.stroke(); CX.restore();
+  line(cx, cy, tipX, tipY, C.amber, 3);
+  dot(tipX, tipY, 6, C.amber);
+  /* the height of the arm IS the displacement */
+  line(tipX, tipY, tipX, cy, withA(C.amber, .5), 1.4, [3, 3]);
+  arrow(cx - R - 28, cy, cx - R - 28, tipY, C['mark-a'], 2, { head: 7 });
+  plate('displacement', cx - R - 38, (cy + tipY) / 2, 9.5, C['mark-a'], 'right');
+
+  /* the wave the turning arm traces out */
+  var gx = 462, gw = 618, gy = cy;
+  line(gx - 14, gy, gx + gw + 16, gy, withA(C.axis, .7), 1, [4, 5]);
+  line(gx - 14, gy - R - 20, gx - 14, gy + R + 20, C.axis, 1.5);
+  var X = function (deg) { return gx + deg / 720 * gw; };
+  var Yd = function (deg) { return gy - R * Math.sin((deg + phi) * Math.PI / 180); };
+  if (S.m2.grid) {
+    CX.save(); CX.lineWidth = 1;
+    for (var gd = 0; gd <= 720; gd += 45) { CX.strokeStyle = withA(C.grid, gd % 90 ? .55 : 1); CX.beginPath(); CX.moveTo(X(gd), gy - R); CX.lineTo(X(gd), gy + R); CX.stroke(); }
+    [-1, -0.5, 0.5, 1].forEach(function (f2) { CX.strokeStyle = withA(C.grid, .9); CX.beginPath(); CX.moveTo(X(0), gy - R * f2); CX.lineTo(X(720), gy - R * f2); CX.stroke(); });
+    CX.restore();
+    [[1, '+A'], [0.5, '+A/2'], [-0.5, '−A/2'], [-1, '−A']].forEach(function (lv) { mtxt(lv[1], gx - 20, gy - R * lv[0] + 3, 9, C['text-muted'], 'right'); });
+  }
+  var full = [], live = [];
+  for (i = 0; i <= 360; i++) { var d = i / 360 * 720; full.push([X(d), Yd(d)]); }
+  poly(full, withA(C['wave-t'], .28), 2);
+  for (i = 0; i <= 360 && i / 360 * 720 <= thNow; i++) { var d2 = i / 360 * 720; live.push([X(d2), Yd(d2)]); }
+  live.push([X(thNow), Yd(thNow)]);
+  poly(live, C['wave-t'], 3);
+  line(tipX, tipY, X(thNow), Yd(thNow), withA(C.amber, .45), 1.2, [4, 4]);
+  dot(X(thNow), Yd(thNow), 6, C.amber);
+  for (var dd = 0; dd <= 720; dd += 90) {
+    line(X(dd), gy - 5, X(dd), gy + 5, C.axis, 1);
+    mtxt(dd + '°', X(dd), gy + R + 34, 9.5, C['text-muted'], 'center');
+    var rad = dd / 180;
+    mtxt(rad === 0 ? '0' : rad === 1 ? 'π' : rad === 2 ? '2π' : rad === 3 ? '3π' : rad === 4 ? '4π' : fmt(rad, 1) + 'π',
+      X(dd), gy + R + 50, 9.5, C['graph-b'], 'center');
+  }
+  mtxt('degrees', gx + gw + 22, gy + R + 34, 9.5, C['text-dim'], 'left');
+  mtxt('radians', gx + gw + 22, gy + R + 50, 9.5, C['graph-b'], 'left');
+  line(X(360), gy - R - 12, X(360), gy + R + 12, withA(C['wave-t'], .35), 1, [4, 4]);
+  plate('one turn = one whole wave', X(360), gy - R - 20, 10, C['wave-t'], 'center', true);
+
+  /* what the numbers say right now */
+  card(36, 474, 1128, 168, 'READING IT OFF');
+  var th = ((thNow % 360) + 360) % 360, tot = ((th + phi) % 360 + 360) % 360;
+  mtxt('turned through θ = ' + fmt(th, 0) + '°   ·   start angle φ = ' + fmt(phi, 0) + '°   ·   the arm is now at θ + φ = ' + fmt(tot, 0) + '°',
+    600, 510, 12.5, C.accent, 'center', 700);
+  mtxt('displacement = A sin(θ + φ) = ' + fmt(Math.sin(tot * Math.PI / 180), 2) + ' A', 600, 532, 11.5, C['mark-a'], 'center');
+  [['360° = 2π rad', 'one full turn — one T, one λ'], ['180° = π rad', 'half a turn: crest ↔ trough'],
+  ['90° = π/2 rad', 'a quarter turn'], ['φ', 'where this wave starts in its cycle']].forEach(function (r, j) {
+    var rx = 70 + j * 276;
+    txt(r[0], rx, 570, 11.5, C['wave-t'], 'left', 700);
+    txt(r[1], rx, 588, 10.5, C['text-dim']);
+  });
+  txt('Pick a start angle φ (0°, 90°, 180°, 270° or the slider) to turn the dashed arm: the whole wave slides along, but its height and wavelength never change. That sliding is exactly what a phase difference is.',
+    600, 620, 10.5, C['text-muted'], 'center');
+}
+
+/* the grid: vertical lines at the SAME x in every panel (every λ/4, stronger every λ/2),
+   horizontal lines at the listed levels, labelled at the left edge */
+function phGridStep(lamPx) {
+  var st = lamPx / 4;
+  while (st < 28) st *= 2;                      /* never so dense it turns to hatching */
+  return st;
+}
+function phGrid(yTop, yBot, y0, levels, lamPx) {
+  if (!S.m2.grid) return;
+  var st = phGridStep(lamPx), k = 0, x;
+  CX.save(); CX.lineWidth = 1;
+  for (x = PH.x0; x <= PH.x1 + 0.5; x += st, k++) {
+    var major = Math.abs((x - PH.x0) / (lamPx / 2) - Math.round((x - PH.x0) / (lamPx / 2))) < 1e-6;
+    CX.strokeStyle = withA(C['text-muted'], major ? .42 : .2);
+    CX.beginPath(); CX.moveTo(x, yTop); CX.lineTo(x, yBot); CX.stroke();
+  }
+  levels.forEach(function (lv) {
+    if (lv[0] === 0) return;
+    var yy = y0 - lv[0];
+    if (yy < yTop || yy > yBot) return;
+    CX.strokeStyle = withA(C['text-muted'], .3); CX.setLineDash([4, 4]);
+    CX.beginPath(); CX.moveTo(PH.x0, yy); CX.lineTo(PH.x1, yy); CX.stroke();
+  });
+  CX.restore();
+  levels.forEach(function (lv) { var yy = y0 - lv[0]; if (yy >= yTop - 2 && yy <= yBot + 2) mtxt(lv[1], PH.x0 - 6, yy + 3, 9, C['text-muted'], 'right'); });
+}
+function lamLabel(n) {                          /* n quarter-wavelengths, as a tidy fraction of λ */
+  if (n === 0) return '0';
+  var num = n, den = 4;
+  while (num % 2 === 0 && den > 1) { num /= 2; den /= 2; }
+  return (num === 1 ? '' : num) + 'λ' + (den === 1 ? '' : '/' + den);
+}
+
+/* ── step 2 · wave 1, wave 2, and the two added together ── */
+function phPanel(y, h, title, titleCol) {
+  card(36, y, 1128, h, null);
+  txt(title, 56, y + 20, 11.5, titleCol, 'left', 700);
+}
+function drawSuper() {
+  var p = S.m2, lam = p.v / p.f, A = p.A * 40, t = S.t, lamPx = lam * PH.px, cse = phCase(), i;
+  txt('Superposition — where two waves overlap, their displacements ADD', 40, 28, 15, C['wave-t'], 'left', 700);
+  txt(cse.n + ' · ' + cse.k + '  —  wave 1 and wave 2 are drawn on their own axes, then added on the third',
+    40, 46, 11, C['text-dim']);
+
+  var yA = 148, yB = 328, yC = 538;
+  phPanel(62, 172, 'WAVE 1 — travelling right →', C['graph-a']);
+  phPanel(242, 172, 'WAVE 2' + (p.scn === 'opp' ? ' — travelling left ←' : p.scn === 'phi' ? ' — same way, but starts φ = ' + fmt(p.phase, 0) + '° later' : ' — same way, same start'), C['graph-b']);
+  phPanel(422, 218, 'SUM — WAVE 1 + WAVE 2, added point by point', C.amber);
+  txt('+', 600, 232, 20, C.text, 'center', 800);
+  txt('=', 600, 412, 20, C.text, 'center', 800);
+  phGrid(90, 226, yA, [[A, '+A'], [0, '0'], [-A, '−A']], lamPx);
+  phGrid(270, 406, yB, [[A, '+A'], [0, '0'], [-A, '−A']], lamPx);
+  phGrid(450, 632, yC, [[2 * A, '+2A'], [A, '+A'], [0, '0'], [-A, '−A'], [-2 * A, '−2A']], lamPx);
+  if (S.m2.grid) {                                 /* where along the wave each line is, in λ */
+    var gst = phGridStep(lamPx), gq = Math.round(gst / (lamPx / 4));
+    for (var gx = PH.x0, gn = 0; gx <= PH.x1 + 0.5; gx += gst, gn += gq)
+      if (gn % 2 === 0) mtxt(lamLabel(gn), gx, 224, 9, C['text-muted'], 'center');
+  }
+
+  var q1 = [], q2 = [], q3 = [];
+  for (i = 0; i <= 320; i++) {
+    var xp = PH.x0 + i / 320 * (PH.x1 - PH.x0), xm = (xp - PH.x0) / PH.px;
+    var w1 = phY(A, lam, xm, t, false, 0), w2 = phWave2(xm, t, lam, A);
+    q1.push([xp, yA - w1]); q2.push([xp, yB - w2]); q3.push([xp, yC - (w1 + w2)]);
+  }
+  [[yA, q1, C['graph-a']], [yB, q2, C['graph-b']], [yC, q3, C.amber]].forEach(function (r, j) {
+    line(PH.x0, r[0], PH.x1, r[0], withA(C.axis, .6), 1, [4, 5]);
+    poly(r[1], r[2], j === 2 ? 3.2 : 2.4);
+  });
+
+  if (p.scn === 'opp') {
+    var e1 = [], e2 = [];                        /* the envelope, so 2A and the nodes show */
+    for (i = 0; i <= 320; i++) {
+      var xe = PH.x0 + i / 320 * (PH.x1 - PH.x0), xme = (xe - PH.x0) / PH.px;
+      var ev = 2 * A * Math.abs(Math.sin(2 * Math.PI * xme / lam));
+      e1.push([xe, yC - ev]); e2.push([xe, yC + ev]);
+    }
+    poly(e1, withA(C.envelope, .8), 1.2); poly(e2, withA(C.envelope, .8), 1.2);
+    var nMax = Math.floor((PH.x1 - PH.x0) / (lamPx / 2));
+    for (i = 0; i <= nMax; i++) {
+      var xn = PH.x0 + i * lamPx / 2;
+      dot(xn, yC, 5, C.rose);
+      line(xn, yC - 2 * A - 6, xn, yC + 2 * A + 6, withA(C.rose, .25), 1, [3, 4]);
+      if (S.labels && i < nMax && lamPx / 2 >= 56) {
+        mtxt('N', xn, yC + 2 * A + 20, 10, C.rose, 'center', 700);
+        mtxt('A', xn + lamPx / 4, yC + 2 * A + 20, 10, C.accent, 'center', 700);
+      }
+    }
+    if (nMax >= 2) {
+      var ny = yC - 2 * A - 18;
+      arrow(PH.x0, ny, PH.x0 + lamPx / 2, ny, C['mark-l'], 1.8, { both: true, head: 7 });
+      plate('node to node = λ/2 = ' + fmt(lam / 2, 2) + ' m', PH.x0 + lamPx / 4, ny - 12, 9.5, C['mark-l'], 'center', true);
+    }
+  } else {
+    /* A on each wave, and how tall the sum comes out */
+    var rel = 2 * Math.abs(Math.cos((p.scn === 'same' ? 0 : p.phase) * Math.PI / 360));   /* in units of A */
+    var xm1 = PH.x1 - 52;
+    arrow(xm1, yA, xm1, yA - A, C['mark-a'], 1.8, { head: 6 }); plate('A', xm1 + 10, yA - A / 2, 10, C['mark-a'], 'left');
+    arrow(xm1, yB, xm1, yB - A, C['mark-a'], 1.8, { head: 6 }); plate('A', xm1 + 10, yB - A / 2, 10, C['mark-a'], 'left');
+    if (rel > 0.02) {
+      arrow(xm1, yC, xm1, yC - A * rel, C['mark-a'], 1.8, { head: 6 });
+      plate(fmt(rel, 2) + 'A', xm1 + 10, yC - A * rel / 2, 10, C['mark-a'], 'left');
+    } else plate('0 — they cancel', xm1 + 10, yC - 14, 10, C.rose, 'left');
+    if (p.scn === 'phi') {                        /* how far wave 2 is shifted */
+      var frac = ((p.phase % 360) + 360) % 360 / 360;
+      var xc1 = PH.x0 + (((0.25 + p.f * t) % 1 + 1) % 1) * lamPx, xc2 = xc1 - frac * lamPx;
+      if (xc2 < PH.x0 + 4) { xc1 += lamPx; xc2 += lamPx; }
+      if (frac > 0.01 && xc1 < PH.x1 - 90) {
+        line(xc1, yA - A, xc1, yB + 22, withA(C['graph-a'], .5), 1, [3, 3]);
+        line(xc2, yB - A, xc2, yB + 22, withA(C['graph-b'], .5), 1, [3, 3]);
+        arrow(xc2, yB + 22, xc1, yB + 22, C['mark-l'], 1.8, { both: true, head: 7 });
+        plate('shift = ' + fmt(frac, 2) + ' λ = ' + fmt(frac * lam, 2) + ' m', (xc1 + xc2) / 2, yB + 36, 9.5, C['mark-l'], 'center', true);
+      }
+    }
+  }
+  var note = p.scn === 'same'
+    ? 'Crest lands on crest everywhere, so the sum is twice as tall: CONSTRUCTIVE. Shape and wavelength are unchanged — only the amplitude doubles.'
+    : p.scn === 'phi'
+      ? (Math.abs((((p.phase % 360) + 360) % 360) - 180) < 1
+        ? 'At φ = 180° a crest always lands on a trough, so they cancel completely: DESTRUCTIVE — the sum is a flat line.'
+        : 'With φ = ' + fmt(p.phase, 0) + '° the two are out of step, so the sum is 2A·|cos(φ/2)| = ' + fmt(2 * Math.abs(Math.cos(p.phase * Math.PI / 360)), 2) + 'A tall — between 2A at φ = 0° and zero at φ = 180°.')
+      : 'The two waves pass straight through each other. Their sum does not travel: nodes (N) never move, antinodes (A) swing by 2A. This is a STANDING WAVE.';
+  txt(note, 600, 656, 10.5, C['text-muted'], 'center');
 }
 </script>
 <script>
@@ -3145,6 +3405,8 @@ var CTL = {
   f1: { lab: 'Frequency f', min: 0.5, max: 5, step: 0.1, get: function () { return S.m1.f; }, set: function (v) { S.m1.f = v; }, fmt: function (v) { return fmt(v, 1) + ' Hz'; } },
   A1: { lab: 'Amplitude A', min: 0.2, max: 1, step: 0.05, get: function () { return S.m1.A; }, set: function (v) { S.m1.A = v; }, fmt: function (v) { return fmt(v, 2); } },
   k1: { lab: 'Tracked coil', min: 1, max: N_COIL, step: 1, get: function () { return S.m1.track + 1; }, set: function (v) { trackCoil(v - 1); }, fmt: function (v) { return '#' + fmt(v, 0); }, tip: 'the coil plotted in graph (b) — drag this, or click a coil on the slinky; either one restarts the trace' },
+  ph2: { lab: 'Phase difference φ', min: 0, max: 360, step: 15, get: function () { return S.m2.phase; }, set: function (v) { S.m2.phase = v; }, fmt: function (v) { return fmt(v, 0) + '°'; } },
+  st2: { lab: 'Start angle φ', min: 0, max: 360, step: 15, get: function () { return S.m2.start; }, set: function (v) { S.m2.start = v; syncStartPills(); }, fmt: function (v) { return fmt(v, 0) + '°'; }, tip: 'where on the circle the wave starts — 0° starts at the rest position, going up' },
   f2: { lab: 'Frequency f', min: 1, max: 10, step: 0.1, get: function () { return S.m2.f; }, set: function (v) { S.m2.f = v; }, fmt: function (v) { return fmt(v, 1) + ' Hz'; } },
   A2: { lab: 'Amplitude A', min: 0.2, max: 1, step: 0.05, get: function () { return S.m2.A; }, set: function (v) { S.m2.A = v; }, fmt: function (v) { return fmt(v, 2) + ' m'; } },
   v2: { lab: 'Wave speed v', min: 1, max: 10, step: 0.1, get: function () { return S.m2.v; }, set: function (v) { S.m2.v = v; }, fmt: function (v) { return fmt(v, 1) + ' m/s'; }, lock: function () { return S.m2.holdV; } },
@@ -3153,10 +3415,17 @@ var CTL = {
   d3: { lab: 'Distance d', min: 34, max: 170, step: 1, get: function () { return S.m3.d; }, set: function (v) { S.m3.d = v; S.m3.echo = null; }, fmt: function (v) { return fmt(v, 0) + ' m'; } },
   f4: { lab: 'Frequency f', min: 4, max: 20, step: 0.05, get: function () { return S.m4.logf; }, set: function (v) { S.m4.logf = v; S.m4.region = emRegionOf(m4f()).k; }, fmt: function (v) { return fmtHz(Math.pow(10, v)); } }
 };
+function syncStartPills() {
+  [].forEach.call($('gPhStarts').children, function (b) { b.classList.toggle('active', +b.dataset.a === S.m2.start); });
+}
 function ctlsFor() {
   var md = S.md, ex = S.ex[md];
   if (md === 1) return ex === 'slinky' ? ['f1', 'A1', 'k1'] : [];
-  if (md === 2) return ex === 'wave' ? ['f2', 'A2', 'v2'] : ['f2', 'v2'];
+  if (md === 2) {
+    if (ex === 'wave') return ['f2', 'A2', 'v2'];
+    if (ex === 'phase') return S.m2.pstep === 'circle' ? ['st2'] : S.m2.scn === 'phi' ? ['f2', 'A2', 'ph2'] : ['f2', 'A2'];
+    return ['f2', 'v2'];
+  }
   if (md === 3) return (ex === 'tone' || ex === 'pl') ? ['f3', 'A3'] : ex === 'echo' ? ['d3'] : [];
   if (md === 4) return ex === 'em3d' ? ['f4'] : [];
   return [];
@@ -3188,7 +3457,7 @@ function refreshCtrlValues() {
 /* ── example pills ── */
 var EXS = {
   1: [['slinky', '🧵 Slinky'], ['real', '🌊 Real examples']],
-  2: [['wave', '〰️ Travelling wave'], ['lamf', '📐 Where v = fλ comes from']],
+  2: [['wave', '〰️ Travelling wave'], ['lamf', '📐 v = fλ'], ['phase', '🔀 Phase & superposition']],
   3: [['tone', '🎧 Audible range'], ['pl', '🎚 Pitch & loudness'], ['echo', '🔊 Echo'], ['ultra', '🩺 Ultrasound']],
   4: [['em3d', '🌅 3-D wave'], ['visible', '🌈 Visible'], ['spectrum', '📡 Spectrum']]
 };
@@ -3196,14 +3465,21 @@ function buildPills() {
   var h = '';
   EXS[S.md].forEach(function (e) { h += '<button class="pill' + (S.ex[S.md] === e[0] ? ' active' : '') + '" data-ex="' + e[0] + '">' + e[1] + '</button>'; });
   $('gSub').innerHTML = h;
-  /* sit under this mode's tab; if the pills need more room than one tab column,
-     widen the span (keeping the left edge under the tab) rather than overflow */
-  var g = $('gSub'), row = $('pillrow');
-  g.style.gridColumn = String(S.md);
-  var colW = row.getBoundingClientRect().width / 4, need = g.scrollWidth;
-  var span = Math.min(5 - S.md, Math.max(1, Math.ceil(need / Math.max(colW, 1))));
-  g.style.gridColumn = S.md + ' / span ' + span;
-  g.style.justifySelf = span > 1 ? 'start' : 'center';
+  placePills();
+}
+/* the sub-mode pills are centred under their mode's tab. A row wider than the
+   tab still centres on the tab (spilling equally both sides) and is only
+   nudged in when it would run past either end of the tab row. */
+function placePills() {
+  var g = $('gSub'), row = $('pillrow'), tab = document.querySelector('.tab[data-md="' + S.md + '"]');
+  if (!g || !row || !tab) return;
+  g.style.gridColumn = '1 / -1'; g.style.justifySelf = 'start'; g.style.marginLeft = '0px';
+  var rr = row.getBoundingClientRect(), tr = tab.getBoundingClientRect(), gr = g.getBoundingClientRect();
+  var cs = getComputedStyle(row), padL = parseFloat(cs.paddingLeft) || 0, padR = parseFloat(cs.paddingRight) || 0;
+  var lo = rr.left + padL, hi = rr.right - padR, w = gr.width;
+  var left = (tr.left + tr.right) / 2 - w / 2;
+  left = Math.max(lo, Math.min(left, hi - w));
+  g.style.marginLeft = Math.round(left - gr.left) + 'px';
 }
 function setExample(k) {
   S.ex[S.md] = k; zoomOff(); S.drag = null; S.m3.echo = null;
@@ -3229,6 +3505,9 @@ function updateChrome() {
   $('gType').hidden = !((md === 1 && ex === 'slinky') || (md === 2 && ex === 'wave'));
   $('gView').hidden = !(md === 4 && ex === 'em3d');
   $('gLFAx').hidden = !(md === 2 && ex === 'lamf');
+  $('gPhStep').hidden = !(md === 2 && ex === 'phase');
+  $('gPhStart').hidden = !(md === 2 && ex === 'phase' && S.m2.pstep === 'circle');
+  $('gPhScn').hidden = !(md === 2 && ex === 'phase' && S.m2.pstep === 'super');
   $('gSrc').hidden = !(md === 4 && ex === 'em3d');
   $('tMeasure').hidden = !(md === 2 && ex === 'wave');
   $('tHold').hidden = !(md === 2);
@@ -3238,6 +3517,7 @@ function updateChrome() {
   $('tEar').hidden = !(md === 3 && ex === 'tone');
   $('tEye').hidden = !(md === 4 && ex === 'visible');
   $('tSnap').hidden = !(md === 1 && ex === 'slinky');
+  $('tGrid').hidden = !(md === 2 && ex === 'phase');
   /* derive the group's own visibility from its children, so adding a button
      here can never leave it hidden inside a collapsed group */
   $('gCtx').hidden = [].every.call($('gCtx').children, function (b) { return b.hidden; });
@@ -3245,8 +3525,12 @@ function updateChrome() {
   [].forEach.call($('gWaveType').children, function (b) { b.classList.toggle('active', b.dataset.w === typ); });
   [].forEach.call($('gEmView').children, function (b) { b.classList.toggle('active', b.dataset.v === S.m4.view); });
   [].forEach.call($('gLFAxis').children, function (b) { b.classList.toggle('active', b.dataset.g === S.m2.gax); });
+  [].forEach.call($('gPhSteps').children, function (b) { b.classList.toggle('active', b.dataset.ps === S.m2.pstep); });
+  syncStartPills();
+  [].forEach.call($('gPhScns').children, function (b) { b.classList.toggle('active', b.dataset.sc === S.m2.scn); });
   [].forEach.call($('gSrcList').children, function (b) { b.classList.toggle('active', b.dataset.src === S.m4.src); });
   $('tMeasure').classList.toggle('on', S.m2.measure);
+  $('tGrid').classList.toggle('on', S.m2.grid);
   $('tHold').classList.toggle('on', S.m2.holdV);
   $('tAxes').classList.toggle('on', S.m4.axes);
   $('tEye').classList.toggle('on', S.m4.eye);
@@ -3265,7 +3549,7 @@ function updateChrome() {
   $('gSub').classList.toggle('locked', !sim);
   $('gType').classList.toggle('locked', !sim);
   $('tLabels').classList.toggle('locked', S.mode === 'prac' && S.prac && S.prac.task && S.prac.task.hideLabels);
-  $('tbHint').textContent = md === 1 ? (ex === 'slinky' ? '' : 'click a card') : md === 2 ? (ex === 'wave' ? 'P is the point plotted in graph (b)' : '') : md === 3 ? (ex === 'tone' ? (S.m3.ear ? 'the eardrum follows the pressure in the canal' : 'the tone plays while the animation runs') : ex === 'pl' ? 'the dashed trace is the 440 Hz reference' : ex === 'echo' ? 'the pulse repeats by itself' : 'click a card') : (ex === 'em3d' ? 'slide f to move through the spectrum' : ex === 'spectrum' ? 'click a region' : S.m4.eye ? 'the marker sweeps through the spectrum by itself' : '');
+  $('tbHint').textContent = md === 1 ? (ex === 'slinky' ? '' : 'click a card') : md === 2 ? (ex === 'wave' ? 'P is the point plotted in graph (b)' : ex === 'phase' ? (S.m2.pstep === 'circle' ? 'choose the start angle φ — 0° starts at rest, going up' : S.m2.scn === 'phi' ? 'drag φ: 0° adds, 180° cancels' : '') : '') : md === 3 ? (ex === 'tone' ? (S.m3.ear ? 'the eardrum follows the pressure in the canal' : 'the tone plays while the animation runs') : ex === 'pl' ? 'the dashed trace is the 440 Hz reference' : ex === 'echo' ? 'the pulse repeats by itself' : 'click a card') : (ex === 'em3d' ? 'slide f to move through the spectrum' : ex === 'spectrum' ? 'click a region' : S.m4.eye ? 'the marker sweeps through the spectrum by itself' : '');
   syncCtrlLocks(); updatePlayBtn(); updateChips();
   var names = { 1: 'Wave types — transverse and longitudinal', 2: 'Wave properties — λ, f, A, T and v = fλ', 3: 'Sound — a longitudinal wave', 4: 'Electromagnetic waves — transverse, c = 3.0 × 10⁸ m/s' };
   $('bbLeft').textContent = names[md];
@@ -3397,6 +3681,15 @@ function dataHTML() {
     h += secHead('d2', 'Live readings') + secBody('d2',
       kv('Wave type', 'd_type', '', 'hi') + kv('Wavelength λ = v / f', 'd_lam', '', 'hi') + kv('Frequency f', 'd_f') + kv('Amplitude A', 'd_A') + kv('Period T = 1/f', 'd_T') + kv('Wave speed v', 'd_v') +
       '<div class="note"><b>v = fλ</b> — a quick check: <span id="d_chk" class="mono"></span></div>');
+    if (ex === 'phase') h += secHead('d2p', S.m2.pstep === 'circle' ? 'Phase as an angle' : 'Superposition') + secBody('d2p',
+      (S.m2.pstep === 'circle' ? kvt('Start angle φ', fmt(S.m2.start, 0) + '° = ' + fmt(S.m2.start / 180, 2) + 'π rad — the wave begins at displacement A·sin φ = ' + fmt(Math.sin(S.m2.start * Math.PI / 180), 2) + ' A') :
+      kvt('Phase difference φ', fmt(S.m2.phase, 0) + '° = ' + fmt(S.m2.phase / 180, 2) + 'π rad = ' + fmt(S.m2.phase / 360, 2) + ' λ') +
+      kvt('Resultant amplitude', '2A·|cos(φ/2)| = ' + fmt(2 * S.m2.A * Math.abs(Math.cos(S.m2.phase * Math.PI / 360)), 2) + ' m')) +
+      kvt('In phase', 'φ = 0° (or 360°, 720°…) — crests meet crests, constructive') +
+      kvt('Antiphase', 'φ = 180° — a crest meets a trough, destructive') +
+      kvt('Superposition', 'where waves overlap, add the displacements — then each wave carries on unchanged') +
+      kvt('Standing wave', 'two identical waves going opposite ways: nodes never move, antinodes swing by 2A') +
+      kvt('Node spacing', 'λ/2 = ' + fmt(S.m2.v / S.m2.f / 2, 2) + ' m'));
     if (S.m2.holdV || ex === 'lamf') h += secHead('d2g', 'Wavelength against frequency (v held at ' + fmt(S.m2.v, 1) + ' m/s)') + secBody('d2g', '<canvas class="mini" id="miniLF"></canvas><div class="note">The curve is λ = v / f: <b>doubling f halves λ</b>. The dot is the current frequency; the hollow dot is 2f.</div>');
     h += secHead('d2m', 'Definitions') + secBody('d2m',
       kvt('Wavelength λ', 'distance between two successive identical points, e.g. crest to crest (m)') + kvt('Frequency f', 'number of complete waves passing a point each second (Hz)') + kvt('Amplitude A', 'maximum displacement from the rest position (m)') + kvt('Period T', 'time for one complete wave to pass (s); f = 1/T') + kvt('Wave speed v', 'distance moved by a crest each second (m/s); v = fλ'));
@@ -3931,7 +4224,7 @@ function draw() {
   applyVT();
   CX.save();
   if (S.md === 1) draw1();
-  else if (S.md === 2) { if (S.ex[2] === 'lamf') drawLamF(); else draw2(); }
+  else if (S.md === 2) { if (S.ex[2] === 'lamf') drawLamF(); else if (S.ex[2] === 'phase') drawPhase(); else draw2(); }
   else if (S.md === 3) draw3();
   else draw4();
   CX.restore();
@@ -3950,7 +4243,7 @@ function setPlay(on) { S.play = on; updatePlayBtn(); audioSync(); }
 function resetMode() {
   var md = S.md;
   if (md === 1) { S.m1.f = 2; S.m1.A = 0.6; S.m1.real = null; S.m1.snap = null; S.m1.track = 0; S.m1.sweep0 = S.t; }
-  else if (md === 2) { S.m2.gax = 'lf'; S.m2.f = 2; S.m2.A = 0.5; S.m2.v = 4; S.m2.r1 = 2; S.m2.r2 = 4; }
+  else if (md === 2) { S.m2.gax = 'lf'; S.m2.phase = 90; S.m2.start = 0; S.m2.pstep = 'circle'; S.m2.scn = 'same'; S.m2.grid = true; S.m2.f = 2; S.m2.A = 0.5; S.m2.v = 4; S.m2.r1 = 2; S.m2.r2 = 4; }
   else if (md === 3) { S.m3.ear = false; S.m3.f = 440; S.m3.A = 0.6; S.m3.d = 85; S.m3.echo = null; S.m3.showComp = S.m3.showRare = true; }
   else { S.m4.src = 'sun'; S.m4.eye = false; S.m4.rgb = [255, 140, 0]; S.m4.logf = 14.7; S.m4.region = 'visible'; }
   S.t = 0; S.speed = 1; zoomOff(); S.drag = null;
@@ -3977,6 +4270,9 @@ function init() {
   bindPillGroup('gSub', function (d) { setExample(d.ex); });
   bindPillGroup('gWaveType', function (d) { if (S.md === 1) S.m1.type = d.w; else S.m2.type = d.w; updateChrome(); renderPanel(); draw(); });
   bindPillGroup('gSrcList', function (d) { S.m4.src = d.src; updateChrome(); renderPanel(); draw(); });
+  bindPillGroup('gPhSteps', function (d) { S.m2.pstep = d.ps; renderCtrls(); updateChrome(); renderPanel(); draw(); });
+  bindPillGroup('gPhStarts', function (d) { S.m2.start = +d.a; refreshCtrlValues(); updateChrome(); renderPanel(); draw(); });
+  bindPillGroup('gPhScns', function (d) { S.m2.scn = d.sc; renderCtrls(); updateChrome(); renderPanel(); draw(); });
   bindPillGroup('gLFAxis', function (d) { S.m2.gax = d.g; updateChrome(); renderPanel(); draw(); });
   bindPillGroup('gEmView', function (d) { S.m4.view = d.v; updateChrome(); renderPanel(); draw(); });
   bindPillGroup('gSpeed', function (d) { S.speed = parseFloat(d.s); });
@@ -3989,6 +4285,7 @@ function init() {
   $('tHold').addEventListener('click', function () { S.m2.holdV = !S.m2.holdV; updateChrome(); renderPanel(); draw(); });
   $('tAxes').addEventListener('click', function () { S.m4.axes = !S.m4.axes; updateChrome(); draw(); });
   $('tSnap').addEventListener('click', function () { S.m1.snap = S.m1.snap == null ? S.t : null; updateChrome(); draw(); });
+  $('tGrid').addEventListener('click', function () { S.m2.grid = !S.m2.grid; updateChrome(); draw(); });
   $('tEye').addEventListener('click', function () { S.m4.eye = !S.m4.eye; updateChrome(); renderPanel(); draw(); });
   $('tEar').addEventListener('click', function () { S.m3.ear = !S.m3.ear; updateChrome(); renderPanel(); draw(); });
   $('tComp').addEventListener('click', function () { S.m3.showComp = !S.m3.showComp; updateChrome(); draw(); });
@@ -4061,7 +4358,7 @@ function init() {
     if (tag === 'INPUT' || tag === 'SELECT' || tag === 'TEXTAREA' || tag === 'BUTTON') return;
     if (ev.code === 'Space') { ev.preventDefault(); setPlay(!S.play); }
   });
-  window.addEventListener('resize', function () { resize(); draw(); patchLive(true); });
+  window.addEventListener('resize', function () { resize(); placePills(); draw(); patchLive(true); });
   document.addEventListener('visibilitychange', function () { if (document.hidden) audioStop(); else audioSync(); });
 
   buildPills(); renderCtrls(); updateChrome(); renderPanel(); draw();
