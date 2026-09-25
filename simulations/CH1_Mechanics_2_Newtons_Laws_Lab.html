@@ -160,6 +160,15 @@ body{
 .ovbody{padding:8px 10px 9px;cursor:grab;}
 .ovcard.grabbing .ovbody{cursor:grabbing;}
 #formulaBody{font-size:13px;color:var(--text);line-height:1.9;}
+/* the law in words: the statement a student would write, then the one idea
+   examiners check for, then the law in symbols */
+#cardLaw{border-left:3px solid var(--accent);}
+#lawBody .lawq{font-size:12.5px;line-height:1.5;color:var(--text);font-weight:500;}
+#lawBody .lawq b{color:var(--accent);font-weight:700;}
+#lawBody .lawk{font-size:10.5px;line-height:1.45;color:var(--text-muted);margin-top:6px;}
+#lawBody .lawk b{color:var(--text-dim);font-weight:700;}
+#lawBody .laweq{font-size:12.5px;color:var(--text);margin-top:6px;}
+#lawBody .laweq .katex{font-size:1em;}
 #formulaBody .katex{font-size:1em;}
 #legendBody .lgrow{display:flex;align-items:baseline;gap:7px;
                    font-size:11px;color:var(--text-dim);padding:2px 0;line-height:1.35;}
@@ -254,7 +263,7 @@ input[type=text]:focus{border-color:var(--accent);}
 
   <!-- ============ HEADER ZONE ============ -->
   <div class="top-bar">
-    <h1>⚙️ Newton's Laws <span class="badge-top" id="badge">v1.9.5</span></h1>
+    <h1>⚙️ Newton's Laws <span class="badge-top" id="badge">v1.9.7</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="modeTabs">
         <button class="mode-tab active" data-mode="sim">Simulate</button>
@@ -308,6 +317,7 @@ input[type=text]:focus{border-color:var(--accent);}
       <button class="pill active" id="tFBD">⚖ FBD</button>
       <button class="pill active" id="tLab">🏷 Labels</button>
       <button class="pill" id="tForm">📐 Formula</button>
+      <button class="pill active" id="tLaw" title="Show the law itself, in words, on the canvas.">📜 Law</button>
     </div>
     <div class="tgroup"><span class="tglab">Names</span>
       <button class="pill active" id="nShort">Short</button>
@@ -340,6 +350,10 @@ input[type=text]:focus{border-color:var(--accent);}
       <div class="ovcard" id="cardLegend">
         <div class="ovbar"><span class="grip">⠿</span><span>Force key</span><span class="dragh">drag</span></div>
         <div class="ovbody" id="legendBody"></div>
+      </div>
+      <div class="ovcard" id="cardLaw">
+        <div class="ovbar"><span class="grip">⠿</span><span id="lawTitle">Newton's 1st Law</span><span class="dragh">drag</span></div>
+        <div class="ovbody" id="lawBody"></div>
       </div>
     </div>
     <div class="panel">
@@ -647,7 +661,7 @@ var S = {
   ptab: 'data', theme: 'dark',
   graphPick: {},
   zoom: { k: 1, ox: 0, oy: 0, panning: false, px: 0, py: 0 },
-  cardPos: {}, cardDrag: null, uiCard: {}, uiDrag: null,
+  cardPos: {}, cardDrag: null, uiCard: {}, uiDrag: null, lawCard: true,
   practiceIdx: 0, practiceShown: false,
   quizIdx: 0, quizScore: 0, quizFirst: [], quizDone: false, quizPicked: null
 };
@@ -4067,6 +4081,62 @@ function patchLive(force) {
   $('bSub').textContent = m[1];
 }
 
+/* ================= THE LAWS, IN WORDS =================
+   The statement a student is expected to write, in the wording of their own
+   syllabus: UK papers say "resultant force", US courses say "net force". */
+var LAWTXT = {
+  1: { title: "① Newton's 1st Law",
+       uk: 'An object <b>remains at rest</b>, or <b>continues to move at a constant velocity</b>, unless a <b>resultant force</b> acts on it.',
+       us: 'An object at rest <b>stays at rest</b>, and an object in motion <b>stays in motion at a constant velocity</b>, unless acted on by a <b>net (unbalanced) force</b>.',
+       key: { uk: 'Balanced forces (resultant force = 0) never change the motion — a force is needed only to <i>change</i> the velocity, not to keep it.',
+              us: 'Balanced forces (net force = 0) never change the motion — a force is needed only to <i>change</i> the velocity, not to keep it.' },
+       tex: '\\sum F = 0 \\;\\Longleftrightarrow\\; a = 0' },
+  2: { title: "② Newton's 2nd Law",
+       /* CIE wants the momentum form first; F = ma is only its constant-mass case */
+       uk: 'The <b>resultant force</b> acting on an object is equal to the <b>rate of change of its momentum</b>, and acts in the direction of the change in momentum.',
+       us: 'The <b>net force</b> acting on an object is equal to the <b>rate of change of its momentum</b>, and acts in the direction of the change in momentum.',
+       key: { uk: 'Only when the <b>mass is constant</b>: Δp/Δt = m Δv/Δt = ma, so F = ma — the acceleration is proportional to the resultant force and inversely proportional to the mass.',
+              us: 'Only when the <b>mass is constant</b>: Δp/Δt = m Δv/Δt = ma, so F = ma — the acceleration is proportional to the net force and inversely proportional to the mass.' },
+       tex: 'F = \\dfrac{\\Delta p}{\\Delta t} \\qquad F = ma \\;\\;\\text{(constant } m\\text{)}' },
+  3: { title: "③ Newton's 3rd Law",
+       uk: 'When object A exerts a force on object B, object B exerts a force on object A that is <b>equal in size</b> and <b>opposite in direction</b>.',
+       us: 'For every action there is an equal and opposite reaction: when object A exerts a force on object B, B exerts a force on A that is <b>equal in size</b> and <b>opposite in direction</b>.',
+       key: { uk: 'The pair act on <i>different</i> objects and are the <i>same type</i> of force — so they never cancel each other out.',
+              us: 'The pair act on <i>different</i> objects and are the <i>same type</i> of force — so they never cancel each other out.' },
+       tex: 'F_{A\\,\\text{on}\\,B} = -\\,F_{B\\,\\text{on}\\,A}' }
+};
+var LAWSIG = '';
+function lawCard() {
+  var el = $('cardLaw'), sc = cur();
+  /* a law statement would hand the quiz its answers, so it steps aside there */
+  if (!S.lawCard || S.mode === 'quiz' || !sc) { el.classList.add('empty'); return; }
+  var n = sc.law || S.law, L = LAWTXT[n], cv = S.conv === 'us' ? 'us' : 'uk';
+  el.classList.remove('empty');
+  var sig = n + cv;
+  if (sig === LAWSIG) return;                       /* rebuild only when it changes */
+  LAWSIG = sig;
+  $('lawTitle').textContent = L.title + ' — in words';
+  $('lawBody').innerHTML = '<div class="lawq">' + L[cv] + '</div>' +
+    '<div class="laweq">' + kx(L.tex) + '</div>' +
+    '<div class="lawk">' + L.key[cv] + '</div>';
+}
+/* its home: the empty strip along the bottom of the canvas, centred in the
+   gap between the force key (bottom left) and the hints (bottom right) */
+function lawGap(W2) {
+  var lg = $('cardLegend'), br = $('chipBR');
+  var left = 8 + (lg && !lg.classList.contains('empty') ? lg.offsetWidth + 10 : 0);
+  var right = W2 - 8 - (br && !br.classList.contains('empty') ? br.offsetWidth + 10 : 0);
+  return { left: left, right: right, w: right - left, br: br };
+}
+var LAW_MINW = 300;
+function lawDefault(w, h, W2, H2) {
+  var g = lawGap(W2);
+  if (g.w >= LAW_MINW) return { x: g.left + Math.max(0, (g.w - w) / 2), y: H2 - h - 8 };
+  /* a narrow window leaves no room between them: stack it above the hints instead */
+  var top = g.br && !g.br.classList.contains('empty') ? g.br.offsetTop : H2;
+  return { x: W2 - w - 8, y: top - h - 8 };
+}
+
 /* ================= DRAGGABLE OVERLAY CARDS =================
    The formula box and the force key are HTML so that KaTeX and the colour
    swatches stay crisp, but they behave exactly like the resultant-force card:
@@ -4075,13 +4145,19 @@ var OVERLAYS = [
   { id: 'cardFormula', key: 'formula',
     def: function (w, h, W2) { return { x: W2 - w - 8, y: 54 }; } },
   { id: 'cardLegend', key: 'legend',
-    def: function (w, h, W2, H2) { return { x: 8, y: H2 - h - 8 }; } }
+    def: function (w, h, W2, H2) { return { x: 8, y: H2 - h - 8 }; } },
+  { id: 'cardLaw', key: 'law', def: lawDefault }
 ];
 function layoutOverlays() {
   var wrap = $('cvwrap'), W2 = wrap.clientWidth, H2 = wrap.clientHeight;
   OVERLAYS.forEach(function (o) {
     var el = $(o.id);
     if (el.classList.contains('empty')) return;
+    if (o.key === 'law') {
+      var gw = lawGap(W2).w;
+      var want = Math.round(gw >= LAW_MINW ? Math.min(460, gw) : Math.max(280, Math.min(460, W2 * 0.46))) + 'px';
+      if (el.style.width !== want) { el.style.width = want; el.style.maxWidth = 'none'; }
+    }
     var w = el.offsetWidth, h = el.offsetHeight;
     var p = S.uiCard[o.key] || o.def(w, h, W2, H2);
     var x = Math.min(Math.max(p.x, 4), Math.max(4, W2 - w - 4));
@@ -4143,6 +4219,7 @@ function updateChrome() {
   $('tFBD').classList.toggle('active', S.fbd);
   $('tLab').classList.toggle('active', S.labels);
   $('tForm').classList.toggle('active', S.formula);
+  $('tLaw').classList.toggle('active', S.lawCard);
   $('tUnbal').classList.toggle('active', S.unbalance);
   $('gUnbal').classList.toggle('slot-hidden', S.law !== 1 || S.mode !== 'sim');
   $('gDrag').classList.toggle('slot-hidden', S.ex !== 'skydive');
@@ -4200,6 +4277,7 @@ function draw() {
   } else {
     fc.classList.add('empty');
   }
+  lawCard();
   var hints = 'Double-click the canvas: zoom ×2<br>Drag while zoomed: pan';
   if (S.zoom.k > 1) hints = '🔍 ×2 — drag to pan<br>Double-click to zoom out';
   if (S.law === 3) hints = 'Pair arrows: a PUSH arrives at the body, a PULL leaves it<br>' + hints;
@@ -4276,6 +4354,7 @@ function init() {
   $('tFBD').addEventListener('click', function () { S.fbd = !S.fbd; updateChrome(); });
   $('tLab').addEventListener('click', function () { S.labels = !S.labels; updateChrome(); });
   $('tForm').addEventListener('click', function () { S.formula = !S.formula; updateChrome(); });
+  $('tLaw').addEventListener('click', function () { S.lawCard = !S.lawCard; updateChrome(); });
   $('tUnbal').addEventListener('click', function () { S.unbalance = !S.unbalance; updateChrome(); });
   $('dLin').addEventListener('click', function () { S.dragLaw = 'lin'; SCEN.skydive.reset(); updateChrome(); renderPanel(); });
   $('dQuad').addEventListener('click', function () { S.dragLaw = 'quad'; SCEN.skydive.reset(); updateChrome(); renderPanel(); });
