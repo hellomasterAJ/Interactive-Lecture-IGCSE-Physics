@@ -263,7 +263,7 @@ input[type=text]:focus{border-color:var(--accent);}
 
   <!-- ============ HEADER ZONE ============ -->
   <div class="top-bar">
-    <h1>⚙️ Newton's Laws <span class="badge-top" id="badge">v1.9.7</span></h1>
+    <h1>⚙️ Newton's Laws <span class="badge-top" id="badge">v2.0.1</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="modeTabs">
         <button class="mode-tab active" data-mode="sim">Simulate</button>
@@ -318,6 +318,7 @@ input[type=text]:focus{border-color:var(--accent);}
       <button class="pill active" id="tLab">🏷 Labels</button>
       <button class="pill" id="tForm">📐 Formula</button>
       <button class="pill active" id="tLaw" title="Show the law itself, in words, on the canvas.">📜 Law</button>
+      <button class="pill active" id="tScale" title="Show the force-scale note (how many newtons one pixel of arrow stands for) on the canvas.">📏 Scale</button>
     </div>
     <div class="tgroup"><span class="tglab">Names</span>
       <button class="pill active" id="nShort">Short</button>
@@ -661,7 +662,7 @@ var S = {
   ptab: 'data', theme: 'dark',
   graphPick: {},
   zoom: { k: 1, ox: 0, oy: 0, panning: false, px: 0, py: 0 },
-  cardPos: {}, cardDrag: null, uiCard: {}, uiDrag: null, lawCard: true,
+  cardPos: {}, cardDrag: null, uiCard: {}, uiDrag: null, lawCard: true, scaleChip: true,
   practiceIdx: 0, practiceShown: false,
   quizIdx: 0, quizScore: 0, quizFirst: [], quizDone: false, quizPicked: null
 };
@@ -839,6 +840,140 @@ function grad(x0, y0, x1, y1, stops) {
 function shadowEllipse(x, y, rx, ry) {
   CX.save(); CX.fillStyle = 'rgba(0,0,0,.22)';
   CX.beginPath(); CX.ellipse(x, y, rx, ry, 0, 0, 7); CX.fill(); CX.restore();
+}
+
+/* ---- scenery helpers for the 1st-Law scenes (v1.9.8) ---- */
+function hexRGB(c) {
+  c = String(c).trim().replace('#', '');
+  if (c.length === 3) c = c.split('').map(function (q) { return q + q; }).join('');
+  var n = parseInt(c, 16);
+  if (isNaN(n)) return [128, 128, 128];
+  return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+}
+/* blend two hex colours: t = 0 gives a, t = 1 gives b */
+function mixHex(a, b, t) {
+  var A = hexRGB(a), B = hexRGB(b);
+  return 'rgb(' + A.map(function (v, i) { return Math.round(v + (B[i] - v) * t); }).join(',') + ')';
+}
+function withA(c, a) { return 'rgba(' + hexRGB(c).join(',') + ',' + a + ')'; }
+/* a repeatable pseudo-random number in [0,1) — scenery must not reshuffle every frame */
+function srand(i) { var x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); }
+/* a soft cartoon cloud made of overlapping puffs */
+function cloudPuff(x, y, s, a) {
+  CX.save(); CX.globalAlpha = a === undefined ? 0.8 : a;
+  CX.fillStyle = TH.light ? '#ffffff' : '#9fb0c8';
+  [[-38, 6, 22], [-14, -8, 28], [16, -12, 26], [40, 2, 20], [4, 8, 24]].forEach(function (p) {
+    CX.beginPath(); CX.arc(x + p[0] * s, y + p[1] * s, p[2] * s, 0, 7); CX.fill();
+  });
+  CX.restore();
+}
+/* a sun by day, a crescent moon by night — the light themes are day scenes */
+function sunOrMoon(x, y, r) {
+  CX.save();
+  if (TH.light) {
+    var g = CX.createRadialGradient(x, y, r * 0.3, x, y, r * 3);
+    g.addColorStop(0, 'rgba(255,214,102,.55)'); g.addColorStop(1, 'rgba(255,214,102,0)');
+    CX.fillStyle = g; CX.beginPath(); CX.arc(x, y, r * 3, 0, 7); CX.fill();
+    CX.fillStyle = '#ffd35c'; CX.beginPath(); CX.arc(x, y, r, 0, 7); CX.fill();
+  } else {
+    var g2 = CX.createRadialGradient(x, y, r * 0.5, x, y, r * 2.6);
+    g2.addColorStop(0, 'rgba(220,230,255,.20)'); g2.addColorStop(1, 'rgba(220,230,255,0)');
+    CX.fillStyle = g2; CX.beginPath(); CX.arc(x, y, r * 2.6, 0, 7); CX.fill();
+    CX.fillStyle = '#e8ecf6'; CX.beginPath(); CX.arc(x, y, r, 0, 7); CX.fill();
+    CX.fillStyle = 'rgba(160,170,190,.45)';
+    CX.beginPath(); CX.arc(x - r * 0.3, y - r * 0.2, r * 0.2, 0, 7); CX.fill();
+    CX.beginPath(); CX.arc(x + r * 0.35, y + r * 0.3, r * 0.14, 0, 7); CX.fill();
+  }
+  CX.restore();
+}
+/* a simple rounded tree standing at (x, yBase) */
+function treeShape(x, yBase, h, tone) {
+  var trunk = TH.light ? '#7a5a3a' : '#3a2c22';
+  var leaf = tone || (TH.light ? '#5f9a5a' : '#2f5a48');
+  CX.save();
+  CX.fillStyle = trunk; CX.fillRect(x - h * 0.05, yBase - h * 0.42, h * 0.1, h * 0.42);
+  CX.fillStyle = leaf;
+  CX.beginPath(); CX.arc(x, yBase - h * 0.62, h * 0.28, 0, 7); CX.fill();
+  CX.beginPath(); CX.arc(x - h * 0.18, yBase - h * 0.5, h * 0.2, 0, 7); CX.fill();
+  CX.beginPath(); CX.arc(x + h * 0.18, yBase - h * 0.52, h * 0.21, 0, 7); CX.fill();
+  CX.fillStyle = 'rgba(255,255,255,.10)';
+  CX.beginPath(); CX.arc(x - h * 0.08, yBase - h * 0.72, h * 0.12, 0, 7); CX.fill();
+  CX.restore();
+}
+
+/* ---- scenery helpers for the 2nd/3rd-Law scenes (v1.9.9) ---- */
+/* tiers of fans in an arena; the crowd ripples in a slow Mexican wave */
+function arenaCrowd(top, tiers, tierH, alpha) {
+  var L = TH.light;
+  var pal = ['#e05a4f', '#f2b134', '#3f7fd0', '#f4f4f4', '#2b9d8f', '#8b5cf6', '#e97aa8', '#58585e'];
+  CX.save();
+  for (var t = 0; t < tiers; t++) {
+    var ty0 = top + t * tierH;
+    CX.fillStyle = L ? (t % 2 ? '#8fa9c1' : '#9ab3ca') : (t % 2 ? '#12283c' : '#163049');
+    CX.fillRect(0, ty0, W, tierH);
+    CX.fillStyle = 'rgba(0,0,0,.14)'; CX.fillRect(0, ty0 + tierH - 5, W, 5);
+    for (var sx = 10 + (t % 2) * 13; sx < W; sx += 26) {
+      var id = t * 97 + sx + 5000;
+      if (srand(id) < 0.12) continue;
+      var wave = Math.max(0, Math.sin(S.t * 1.6 - sx / 90));
+      var lift = Math.pow(wave, 6) * 7;
+      var hy = ty0 + 15 - lift + srand(id + 5) * 2;
+      CX.globalAlpha = (L ? 0.85 : 0.7) * (alpha === undefined ? 1 : alpha);
+      CX.fillStyle = pal[Math.floor(srand(id + 1) * pal.length)];
+      CX.beginPath(); CX.ellipse(sx, hy + 14, 9, 8, 0, Math.PI, 0); CX.fill();
+      CX.fillStyle = ['#f1c9a5', '#d7a57c', '#9c6b48', '#f6d3b0'][Math.floor(srand(id + 2) * 4)];
+      CX.beginPath(); CX.arc(sx, hy + 2, 5.5, 0, 7); CX.fill();
+      if (lift > 3) {
+        CX.strokeStyle = CX.fillStyle; CX.lineWidth = 2.4; CX.lineCap = 'round';
+        CX.beginPath(); CX.moveTo(sx - 6, hy + 9); CX.lineTo(sx - 9, hy - 6); CX.moveTo(sx + 6, hy + 9); CX.lineTo(sx + 9, hy - 6); CX.stroke();
+      }
+      CX.globalAlpha = 1;
+    }
+  }
+  CX.restore();
+}
+/* a park bench seen from the side, standing on yBase */
+function parkBench(x, yBase, w) {
+  var L = TH.light;
+  CX.save();
+  CX.fillStyle = L ? '#9b7a55' : '#5a4632';
+  CX.fillRect(x, yBase - 30, w, 6); CX.fillRect(x, yBase - 52, w, 5); CX.fillRect(x, yBase - 62, w, 5);
+  CX.fillStyle = '#3a404b';
+  CX.fillRect(x + 8, yBase - 62, 5, 62); CX.fillRect(x + w - 13, yBase - 62, 5, 62);
+  CX.restore();
+}
+/* an old-fashioned street lamp standing on yBase */
+function streetLamp(x, yBase, h) {
+  var L = TH.light;
+  CX.save();
+  CX.fillStyle = L ? '#4a525e' : '#8a93a3';
+  CX.fillRect(x - 3, yBase - h, 6, h); CX.fillRect(x - 8, yBase - 8, 16, 8);
+  CX.beginPath(); CX.moveTo(x - 12, yBase - h); CX.lineTo(x + 12, yBase - h); CX.lineTo(x + 8, yBase - h - 22); CX.lineTo(x - 8, yBase - h - 22); CX.fill();
+  CX.fillStyle = L ? '#fff6d0' : '#ffd98a'; CX.fillRect(x - 7, yBase - h - 19, 14, 15);
+  if (!L) {
+    var g = CX.createRadialGradient(x, yBase - h - 12, 2, x, yBase - h - 12, 46);
+    g.addColorStop(0, 'rgba(255,220,140,.6)'); g.addColorStop(1, 'rgba(255,220,140,0)');
+    CX.fillStyle = g; CX.beginPath(); CX.arc(x, yBase - h - 12, 46, 0, 7); CX.fill();
+  }
+  CX.restore();
+}
+/* a flock of little "v" birds */
+function birds(x, y, n, t) {
+  CX.save(); CX.strokeStyle = TH.light ? '#3b4452' : '#aab2bf'; CX.lineWidth = 1.8; CX.lineCap = 'round';
+  for (var i = 0; i < n; i++) {
+    var bx = x + i * 26 + Math.sin(t + i) * 4, by = y + (i % 2) * 12, fl = Math.sin(t * 6 + i) * 3;
+    CX.beginPath(); CX.moveTo(bx - 7, by - fl); CX.quadraticCurveTo(bx - 3, by - 5, bx, by); CX.quadraticCurveTo(bx + 3, by - 5, bx + 7, by - fl); CX.stroke();
+  }
+  CX.restore();
+}
+
+/* a body label ("body 1: …") on a dark chip, so the pale pair colours stay
+   readable over a busy or light background */
+function pairTag(str, x, y, col, size) {
+  size = size || 14;
+  var w = textW(str, size, 700) + 16;
+  CX.save(); CX.fillStyle = 'rgba(14,18,26,.72)'; rr(x - w / 2, y - size - 3, w, size + 10, 6); CX.fill(); CX.restore();
+  txt(str, x, y, size, col, 'center', 700);
 }
 
 /* ---- reusable scene furniture ---- */
@@ -1606,24 +1741,79 @@ SCEN.puck = {
     if (this.st.x > W + 60) this.st.x = -60;
   },
   draw: function () {
-    // An ice-hockey rink rather than a dark slab: pale blue-white ice, white
-    // dasher boards behind it and the painted red / blue rink lines, so the
-    // scene reads as a rink at a glance.
+    // An ice-hockey arena: stands full of fans behind the glass, dasher boards,
+    // painted rink lines and a player who has just struck the puck.
+    var L = TH.light;
     CX.save();
-    CX.fillStyle = grad(0, 60, 0, 400, [[0, TH.light ? '#bcd2e4' : '#16334b'],
-                                        [1, TH.light ? '#9dbcd6' : '#20486a']]);
+    CX.fillStyle = grad(0, 60, 0, 400, [[0, L ? '#bcd2e4' : '#16334b'],
+                                        [1, L ? '#9dbcd6' : '#20486a']]);
     CX.fillRect(0, -OV, W, 400 + OV);
-    // dasher boards with their kick-plate stripe
-    CX.fillStyle = TH.light ? '#f0f5fa' : '#dbe8f4';
+    // the stands: tiers of seats with a crowd that ripples in a slow Mexican wave
+    var tierTop = 150, tierH = 36, tiers = 4;
+    for (var t = 0; t < tiers; t++) {
+      var ty0 = tierTop + t * tierH;
+      CX.fillStyle = L ? (t % 2 ? '#8fa9c1' : '#9ab3ca') : (t % 2 ? '#12283c' : '#163049');
+      CX.fillRect(0, ty0, W, tierH);
+      CX.fillStyle = 'rgba(0,0,0,.14)'; CX.fillRect(0, ty0 + tierH - 5, W, 5);
+      var pal = ['#e05a4f', '#f2b134', '#3f7fd0', '#f4f4f4', '#2b9d8f', '#8b5cf6', '#e97aa8', '#58585e'];
+      for (var sx = 10 + (t % 2) * 13; sx < W; sx += 26) {
+        var id = t * 97 + sx;
+        if (srand(id) < 0.12) continue;                            // an empty seat now and then
+        var wave = Math.max(0, Math.sin(S.t * 1.6 - sx / 90)) ;
+        var lift = Math.pow(wave, 6) * 7;
+        var hy = ty0 + 15 - lift + srand(id + 5) * 2;
+        CX.globalAlpha = L ? 0.85 : 0.7;
+        CX.fillStyle = pal[Math.floor(srand(id + 1) * pal.length)];
+        CX.beginPath(); CX.ellipse(sx, hy + 14, 9, 8, 0, Math.PI, 0); CX.fill();
+        CX.fillStyle = ['#f1c9a5', '#d7a57c', '#9c6b48', '#f6d3b0'][Math.floor(srand(id + 2) * 4)];
+        CX.beginPath(); CX.arc(sx, hy + 2, 5.5, 0, 7); CX.fill();
+        if (lift > 3) {                                            // arms up for the wave
+          CX.strokeStyle = CX.fillStyle; CX.lineWidth = 2.4; CX.lineCap = 'round';
+          CX.beginPath(); CX.moveTo(sx - 6, hy + 9); CX.lineTo(sx - 9, hy - 6); CX.moveTo(sx + 6, hy + 9); CX.lineTo(sx + 9, hy - 6); CX.stroke();
+        }
+        CX.globalAlpha = 1;
+      }
+    }
+    // arena lights along the roof
+    for (var li = 0; li < 7; li++) {
+      var lx = 90 + li * 170, gl = CX.createRadialGradient(lx, 128, 2, lx, 128, 46);
+      gl.addColorStop(0, 'rgba(255,250,225,.85)'); gl.addColorStop(1, 'rgba(255,250,225,0)');
+      CX.fillStyle = gl; CX.beginPath(); CX.arc(lx, 128, 46, 0, 7); CX.fill();
+      CX.fillStyle = '#fffbe6'; rr(lx - 14, 124, 28, 7, 3); CX.fill();
+    }
+    // the glass above the boards
+    CX.fillStyle = 'rgba(220,240,255,.10)'; CX.fillRect(0, 296, W, 56);
+    CX.strokeStyle = 'rgba(230,245,255,.45)'; CX.lineWidth = 2;
+    CX.beginPath(); CX.moveTo(0, 296); CX.lineTo(W, 296); CX.stroke();
+    for (var gp = 0; gp < 9; gp++) {
+      CX.strokeStyle = 'rgba(200,220,235,.35)'; CX.lineWidth = 3;
+      CX.beginPath(); CX.moveTo(20 + gp * 145, 296); CX.lineTo(20 + gp * 145, 352); CX.stroke();
+      CX.strokeStyle = 'rgba(255,255,255,.16)'; CX.lineWidth = 7;
+      CX.beginPath(); CX.moveTo(60 + gp * 145, 346); CX.lineTo(88 + gp * 145, 302); CX.stroke();
+    }
+    // dasher boards with their kick-plate stripe and a few painted panels
+    CX.fillStyle = L ? '#f0f5fa' : '#dbe8f4';
     CX.fillRect(0, 352, W, 48);
+    CX.fillStyle = '#e9eef3'; CX.fillRect(0, 350, W, 5);
     CX.fillStyle = 'rgba(200,72,72,.75)'; CX.fillRect(0, 386, W, 6);
-    CX.strokeStyle = TH.light ? 'rgba(70,105,140,.22)' : 'rgba(70,105,140,.30)'; CX.lineWidth = 2;
+    CX.strokeStyle = L ? 'rgba(70,105,140,.22)' : 'rgba(70,105,140,.30)'; CX.lineWidth = 2;
     for (var bd = 0; bd < 9; bd++) { CX.beginPath(); CX.moveTo(20 + bd * 145, 352); CX.lineTo(20 + bd * 145, 392); CX.stroke(); }
+    CX.restore();
+    [[527, 'ΣF = 0'], [817, 'a = 0'], [1107, 'v = constant']].forEach(function (p) {
+      txt(p[1], p[0], 374, 13, 'rgba(40,78,122,.55)', 'center', 800, 'middle');
+    });
+    CX.save();
     // the ice itself — pale, blue-white, brightest just past the boards
-    CX.fillStyle = grad(0, 400, 0, H + OV, [[0, TH.light ? '#fbfeff' : '#c9e4f5'],
-                                            [0.45, TH.light ? '#e3f2fc' : '#8fbfdd'],
-                                            [1, TH.light ? '#bcdcf0' : '#4a7fa3']]);
+    CX.fillStyle = grad(0, 400, 0, H + OV, [[0, L ? '#fbfeff' : '#c9e4f5'],
+                                            [0.45, L ? '#e3f2fc' : '#8fbfdd'],
+                                            [1, L ? '#bcdcf0' : '#4a7fa3']]);
     CX.fillRect(0, 400, W, H + OV - 400);
+    // reflections of the arena lights on the ice
+    for (var rl = 0; rl < 7; rl++) {
+      var rx = 90 + rl * 170 + 30, rg = CX.createRadialGradient(rx, 470, 2, rx, 470, 60);
+      rg.addColorStop(0, 'rgba(255,255,255,.45)'); rg.addColorStop(1, 'rgba(255,255,255,0)');
+      CX.fillStyle = rg; CX.beginPath(); CX.ellipse(rx, 470, 60, 12, 0, 0, 7); CX.fill();
+    }
     // painted rink lines, laid over the ice in perspective
     var band = function (px, wid, col) {
       CX.fillStyle = col;
@@ -1639,6 +1829,9 @@ SCEN.puck = {
     CX.beginPath(); CX.ellipse(772, 546, 104, 30, 0, 0, 7); CX.stroke();
     CX.fillStyle = 'rgba(206,64,64,.42)';
     CX.beginPath(); CX.ellipse(772, 546, 17, 5, 0, 0, 7); CX.fill();
+    // centre-ice logo ring
+    CX.strokeStyle = 'rgba(60,110,190,.30)'; CX.lineWidth = 3;
+    CX.beginPath(); CX.ellipse(602, 610, 150, 34, 0, 0, 7); CX.stroke();
     // gloss streaks left by the skates
     CX.lineWidth = 2;
     for (var i = 0; 420 + i * 26 < H + OV; i++) {
@@ -1646,30 +1839,85 @@ SCEN.puck = {
       CX.strokeStyle = 'rgba(255,255,255,' + Math.max(0.05, 0.34 - i * 0.016).toFixed(3) + ')';
       CX.beginPath(); CX.moveTo(0, yy); CX.lineTo(W, yy + 3); CX.stroke();
     }
+    CX.strokeStyle = 'rgba(120,160,190,.35)'; CX.lineWidth = 1.2;       // skate carvings
+    for (var sk = 0; sk < 6; sk++) {
+      var cx1 = srand(sk + 20) * W, cy1 = 450 + srand(sk + 30) * 160;
+      CX.beginPath(); CX.moveTo(cx1, cy1); CX.quadraticCurveTo(cx1 + 80, cy1 - 18, cx1 + 170, cy1 + 6); CX.stroke();
+    }
     CX.strokeStyle = 'rgba(255,255,255,.75)'; CX.lineWidth = 2.5;
     CX.beginPath(); CX.moveTo(0, 400); CX.lineTo(W, 400); CX.stroke();
     CX.restore();
-    txt('frictionless ice', 16, 380, 12, TH.light ? '#5a7183' : '#3f5f7c', 'left', 700);
-    var x = this.st.x, y = 400;
+    txt(S.unbalance ? 'rough ice · μ = ' + this.p.mu.toFixed(2) : 'frictionless ice', 174, 380, 12,
+        L ? '#5a7183' : '#3f5f7c', 'left', 700);
+
+    // the player who took the shot, holding the follow-through
+    var fx = 92, feet = 450;
+    var pose = { dir: 1, lean: 0.22, bobF: 0, armL: [1.05, 0.35], armR: [0.85, 0.55], legL: [0.34, -0.12], legR: [-0.26, 0.06] };
+    var look = { suit: '#c8343f', limb: '#c8343f', shoe: '#15181d', hair: '#3a2b23', helmet: '#1f2a44' };
+    shadowEllipse(fx + 6, feet + 3, 34, 5);
+    var fig = cartoonFigure(fx, feet, 150, pose, look);
+    CX.save();
+    CX.strokeStyle = '#2a2d33'; CX.lineWidth = 2.6; CX.lineCap = 'round';        // skate blades
+    [fig.footL, fig.footR].forEach(function (ft) {
+      CX.beginPath(); CX.moveTo(ft[0] - 13, feet + 1); CX.lineTo(ft[0] + 15, feet + 1); CX.stroke();
+    });
+    var h1 = fig.handL, h2 = fig.handR, bx0 = h1[0] + 58, by0 = feet - 2;         // the stick
+    CX.strokeStyle = '#6b4a2a'; CX.lineWidth = 5;
+    CX.beginPath(); CX.moveTo(h1[0] - 16, h1[1] - 22); CX.lineTo(bx0, by0); CX.stroke();
+    CX.strokeStyle = '#1b1d22'; CX.lineWidth = 6;
+    CX.beginPath(); CX.moveTo(bx0, by0); CX.lineTo(bx0 + 26, by0 + 1); CX.stroke();
+    CX.fillStyle = '#1f2a44';
+    [h1, h2].forEach(function (hh) { CX.beginPath(); CX.arc(hh[0], hh[1], 5.5, 0, 7); CX.fill(); });   // gloves
+    CX.restore();
+
+    // the puck slides along the second skate line on the ice, drawn at half
+    // size (a real puck is 7.6 cm across) by scaling about its contact point
+    var x = this.st.x, y = 448;
+    var r = PHYS.puck({ m: this.p.m, v: this.st.v, mu: this.p.mu, unbalance: S.unbalance });
+    CX.save(); CX.translate(x, y); CX.scale(0.5, 0.5); CX.translate(-x, -y);
+    // a faint reflection of the puck in the polished ice
+    CX.save(); CX.globalAlpha = 0.14; CX.fillStyle = '#101317';
+    CX.beginPath(); CX.ellipse(x, y + 16, 50, 11, 0, 0, 7); CX.fill(); CX.restore();
     shadowEllipse(x, y + 9, 58, 12);
     // motion streaks
     if (this.st.v > 0.05) {
       CX.save(); CX.strokeStyle = TH['text-muted']; CX.lineWidth = 2; CX.globalAlpha = .55;
       for (var s = 0; s < 3; s++) {
-        var L = 24 + s * 12;
-        CX.beginPath(); CX.moveTo(x - 40 - L, y - 8 - s * 9); CX.lineTo(x - 40, y - 8 - s * 9); CX.stroke();
+        var Ls = 24 + s * 12;
+        CX.beginPath(); CX.moveTo(x - 40 - Ls, y - 8 - s * 9); CX.lineTo(x - 40, y - 8 - s * 9); CX.stroke();
       }
       CX.restore();
     }
-    // puck: black disc in slight perspective
+    // with friction on, the puck kicks up a spray of ice shavings as it slows
+    if (S.unbalance && this.st.v > 0.05 && r.f > 0) {
+      CX.save(); CX.fillStyle = '#ffffff';
+      for (var j = 0; j < 12; j++) {
+        var d = (S.t * 90 + j * 13) % 60, ang = srand(j) * 1.2;
+        CX.globalAlpha = 0.85 * (1 - d / 60);
+        CX.beginPath(); CX.arc(x - 50 - d * Math.cos(ang), y + 4 - d * Math.sin(ang) * 0.5, 2.2 - d / 40, 0, 7); CX.fill();
+      }
+      CX.restore();
+    }
+    // puck: black vulcanised-rubber disc in slight perspective, knurled round the edge
     CX.save();
     CX.fillStyle = '#101317'; CX.beginPath(); CX.ellipse(x, y, 52, 17, 0, 0, 7); CX.fill();
     CX.fillStyle = grad(x - 52, 0, x + 52, 0, [[0, '#2b3038'], [.5, '#4a515c'], [1, '#22262c']]);
     CX.fillRect(x - 52, y - 30, 104, 30);
+    CX.strokeStyle = 'rgba(0,0,0,.35)'; CX.lineWidth = 1;
+    for (var kn = -48; kn <= 48; kn += 6) {
+      var sq = Math.sqrt(1 - (kn / 52) * (kn / 52));
+      CX.beginPath(); CX.moveTo(x + kn, y - 30); CX.lineTo(x + kn, y + 17 * sq - 1.5); CX.stroke();
+    }
+    CX.fillStyle = grad(x - 52, 0, x + 52, 0, [[0, '#2b3038'], [.5, '#4a515c'], [1, '#22262c']]);
     CX.beginPath(); CX.ellipse(x, y - 30, 52, 17, 0, 0, 7); CX.fill();
     CX.strokeStyle = 'rgba(0,0,0,.5)'; CX.lineWidth = 1.2; CX.stroke();
+    CX.strokeStyle = 'rgba(255,255,255,.22)'; CX.lineWidth = 2;
+    CX.beginPath(); CX.ellipse(x, y - 30, 30, 9.5, 0, 0, 7); CX.stroke();
+    CX.fillStyle = 'rgba(255,255,255,.10)';
+    CX.beginPath(); CX.ellipse(x - 14, y - 35, 22, 5, -0.1, 0, 7); CX.fill();
     CX.restore();
-    return { bx: x, by: y - 15 };
+    CX.restore();
+    return { bx: x, by: y - 7.5 };
   },
   fbd: function () {
     var g = PHYS.G, W_ = this.p.m * g;
@@ -1681,7 +1929,7 @@ SCEN.puck = {
     if (S.unbalance && this.st.v > 0.02) f.push({ fx: -r.f, fy: 0, type: 'friction', sym: 'friction', label: 'f', val: r.f });
     return {
       forces: f, scale: 135 / Math.max(W_, 1e-6),
-      cardAt: { x: 110, y: 430 }, accelVal: r.a.toFixed(3) + ' m/s²',
+      cardAt: { x: 110, y: 520 }, accelVal: r.a.toFixed(3) + ' m/s²',
       net: (S.unbalance && r.f > 0 && this.st.v > 0.02) ? { fx: -r.f, fy: 0, label: 'F net' } : null,
       accel: (S.unbalance && r.f > 0 && this.st.v > 0.02) ? { ax: -80, ay: 0, label: 'a' } : null,
       legend: S.unbalance ? ['weight', 'normal', 'friction', 'net', 'accel'] : ['weight', 'normal']
@@ -1735,29 +1983,224 @@ SCEN.book = {
     if (this.st.x > 1040) { this.st.x = 1040; this.st.v = 0; }
   },
   draw: function () {
-    skyBox();
-    groundBand(620, 'floor');
-    // table
-    var tx = 150, tw = 900, ty = 420;   // centred on the canvas: 150 + 900/2 = 600
+    // A study room: a wall with a window and a clock, a skirting board and a
+    // planked floor, so "a book on a table" reads as a real place at a glance.
+    var tx = 150, tw = 900, ty = 420, FL = 620, L = TH.light;
     CX.save();
-    metalBar(tx, ty, tw, 18, 4, '#6b4a2a', '#8f6a3f');
-    CX.fillStyle = '#5a3d22';
-    CX.fillRect(tx + 46, ty + 18, 28, 184); CX.fillRect(tx + tw - 74, ty + 18, 28, 184);
+    CX.fillStyle = grad(0, 134, 0, FL, [[0, TH['sky-1']], [1, TH['sky-2']]]);
+    CX.fillRect(0, -OV, W, FL + OV);
+    CX.globalAlpha = 0.035; CX.fillStyle = TH.ink;              // faint wallpaper stripes
+    for (var sx = 8; sx < W; sx += 38) CX.fillRect(sx, -OV, 13, FL + OV);
     CX.restore();
-    txt('table', tx + 12, ty - 12, 12, TH['text-muted'], 'left', 600);
+
+    // the window — daylight on the light themes, a moonlit night on the dark ones
+    var wx = 820, wy = 212, ww = 220, wh = 158;
+    CX.save();
+    var curt = mixHex(TH.accent, TH['sky-2'], 0.55);
+    CX.fillStyle = L ? grad(0, wy, 0, wy + wh, [[0, '#9fd0f5'], [1, '#dff0fb']])
+                     : grad(0, wy, 0, wy + wh, [[0, '#0b1633'], [1, '#1d3160']]);
+    CX.fillRect(wx, wy, ww, wh);
+    CX.beginPath(); CX.rect(wx, wy, ww, wh); CX.clip();
+    if (L) {
+      sunOrMoon(wx + 170, wy + 46, 20);
+      cloudPuff(wx + 70, wy + 60, 0.7, 0.9); cloudPuff(wx + 190, wy + 120, 0.5, 0.8);
+      CX.fillStyle = '#8cc08a';
+      CX.beginPath(); CX.moveTo(wx, wy + wh);
+      for (var hx = 0; hx <= ww; hx += 10) CX.lineTo(wx + hx, wy + wh - 30 - 14 * Math.sin(hx / 34));
+      CX.lineTo(wx + ww, wy + wh); CX.fill();
+    } else {
+      sunOrMoon(wx + 168, wy + 48, 16);
+      CX.fillStyle = '#ffffff';
+      for (var k = 0; k < 22; k++) {
+        CX.globalAlpha = 0.4 + 0.5 * Math.abs(Math.sin(S.t * 0.8 + k));
+        CX.beginPath(); CX.arc(wx + srand(k) * ww, wy + srand(k + 40) * wh * 0.7, 0.6 + srand(k + 80) * 1.1, 0, 7); CX.fill();
+      }
+      CX.globalAlpha = 1;
+      CX.fillStyle = '#0e1a30';                                   // a far skyline
+      for (var b = 0; b < 9; b++) {
+        var bh = 22 + srand(b + 9) * 46;
+        CX.fillRect(wx + b * 27, wy + wh - bh, 24, bh);
+        CX.fillStyle = 'rgba(255,209,102,.7)';
+        for (var q = 0; q < 3; q++) if (srand(b * 7 + q) > 0.45) CX.fillRect(wx + b * 27 + 5 + (q % 2) * 9, wy + wh - bh + 6 + q * 11, 4, 5);
+        CX.fillStyle = '#0e1a30';
+      }
+    }
+    CX.restore();
+    CX.save();                                                    // frame, cross bars, sill
+    CX.strokeStyle = L ? '#f7f7f4' : '#aab4c4'; CX.lineWidth = 8;
+    CX.strokeRect(wx, wy, ww, wh);
+    CX.lineWidth = 5; CX.beginPath();
+    CX.moveTo(wx + ww / 2, wy); CX.lineTo(wx + ww / 2, wy + wh);
+    CX.moveTo(wx, wy + wh * 0.46); CX.lineTo(wx + ww, wy + wh * 0.46); CX.stroke();
+    CX.fillStyle = L ? '#ecebe6' : '#8e98a8'; rr(wx - 16, wy + wh + 2, ww + 32, 11, 3); CX.fill();
+    CX.fillStyle = 'rgba(255,255,255,.18)';
+    CX.beginPath(); CX.moveTo(wx + 20, wy + 10); CX.lineTo(wx + 52, wy + 10); CX.lineTo(wx + 20, wy + 58); CX.fill();
+    // curtains, gathered at the sides
+    [[wx - 34, 1], [wx + ww + 34, -1]].forEach(function (c) {
+      CX.fillStyle = grad(c[0] - 22, 0, c[0] + 22, 0, [[0, curt], [0.5, mixHex(TH.accent, "#ffffff", 0.35)], [1, curt]]);
+      CX.beginPath(); CX.moveTo(c[0] - 24, wy - 18); CX.lineTo(c[0] + 24, wy - 18);
+      CX.quadraticCurveTo(c[0] + 6 * c[1], wy + wh * 0.6, c[0] + 18, wy + wh + 30);
+      CX.lineTo(c[0] - 18, wy + wh + 30);
+      CX.quadraticCurveTo(c[0] - 6 * c[1], wy + wh * 0.6, c[0] - 24, wy - 18); CX.fill();
+      CX.strokeStyle = 'rgba(0,0,0,.12)'; CX.lineWidth = 1.5;
+      for (var f = -1; f <= 1; f++) { CX.beginPath(); CX.moveTo(c[0] + f * 9, wy - 14); CX.lineTo(c[0] + f * 6, wy + wh + 26); CX.stroke(); }
+    });
+    CX.fillStyle = L ? '#8a6a48' : '#6f7888'; rr(wx - 70, wy - 24, ww + 140, 7, 3); CX.fill();   // curtain rail
+    CX.restore();
+
+    // a wall clock — its second hand keeps turning while the book stays exactly still
+    var kx = 430, ky = 232, kr = 36;
+    CX.save();
+    CX.fillStyle = 'rgba(0,0,0,.18)'; CX.beginPath(); CX.arc(kx + 3, ky + 4, kr + 5, 0, 7); CX.fill();
+    CX.fillStyle = L ? '#3b3f46' : '#c9cfd8'; CX.beginPath(); CX.arc(kx, ky, kr + 5, 0, 7); CX.fill();
+    CX.fillStyle = '#fbfaf5'; CX.beginPath(); CX.arc(kx, ky, kr, 0, 7); CX.fill();
+    CX.strokeStyle = '#2b2f36'; CX.lineCap = 'round';
+    for (var tk = 0; tk < 12; tk++) {
+      var ta = tk * Math.PI / 6, big = tk % 3 === 0;
+      CX.lineWidth = big ? 2.6 : 1.3;
+      CX.beginPath(); CX.moveTo(kx + Math.sin(ta) * (kr - (big ? 9 : 6)), ky - Math.cos(ta) * (kr - (big ? 9 : 6)));
+      CX.lineTo(kx + Math.sin(ta) * (kr - 3), ky - Math.cos(ta) * (kr - 3)); CX.stroke();
+    }
+    var hand = function (ang, len, wid, col) {
+      CX.strokeStyle = col; CX.lineWidth = wid;
+      CX.beginPath(); CX.moveTo(kx - Math.sin(ang) * len * 0.18, ky + Math.cos(ang) * len * 0.18);
+      CX.lineTo(kx + Math.sin(ang) * len, ky - Math.cos(ang) * len); CX.stroke();
+    };
+    hand(Math.PI * 2 * (10.2 / 12), kr * 0.5, 3.4, '#2b2f36');
+    hand(Math.PI * 2 * (0.18 + S.t / 3600), kr * 0.74, 2.4, '#2b2f36');
+    hand(Math.PI * 2 * (S.t % 60) / 60, kr * 0.84, 1.3, '#d64545');
+    CX.fillStyle = '#d64545'; CX.beginPath(); CX.arc(kx, ky, 3, 0, 7); CX.fill();
+    CX.restore();
+
+    // skirting board and a planked wooden floor
+    CX.save();
+    CX.fillStyle = L ? '#f4f1ea' : mixHex(TH['sky-2'], '#ffffff', 0.10);
+    CX.fillRect(0, FL - 20, W, 20);
+    CX.fillStyle = 'rgba(0,0,0,.12)'; CX.fillRect(0, FL - 20, W, 2); CX.fillRect(0, FL - 3, W, 3);
+    var w1 = L ? '#caa276' : '#4a3a2c', w2 = L ? '#a97f55' : '#2c231b';
+    CX.fillStyle = grad(0, FL, 0, FL + 260, [[0, w1], [1, w2]]);
+    CX.fillRect(0, FL, W, H + OV - FL);
+    CX.strokeStyle = 'rgba(0,0,0,.16)'; CX.lineWidth = 1.2;
+    for (var pk = -24; pk <= 24; pk++) {                         // boards run towards the viewer
+      var x0 = 600 + pk * 46;
+      CX.beginPath(); CX.moveTo(x0, FL); CX.lineTo(600 + (x0 - 600) * 4.2, FL + 520); CX.stroke();
+    }
+    var rows = [FL + 26, FL + 60, FL + 104, FL + 160, FL + 230];
+    rows.forEach(function (yy, ri) {                             // staggered board ends
+      CX.globalAlpha = 0.9 - ri * 0.1;
+      CX.beginPath(); CX.moveTo(0, yy); CX.lineTo(W, yy); CX.stroke();
+    });
+    CX.globalAlpha = 1;
+    CX.fillStyle = 'rgba(255,255,255,.045)';                     // light from the window on the floor
+    CX.beginPath(); CX.moveTo(wx - 20, FL); CX.lineTo(wx + ww + 20, FL); CX.lineTo(wx + ww + 150, FL + 200); CX.lineTo(wx + 60, FL + 200); CX.fill();
+    CX.restore();
+    txt('floor', 14, FL + 32, 12, TH['text-muted'], 'left', 600);
+
+    // a pot plant in the corner
+    CX.save();
+    var px = 1128;
+    for (var lf = 0; lf < 9; lf++) {
+      var la = -1.25 + lf * 0.31, ll = 70 + srand(lf + 3) * 45;
+      CX.strokeStyle = L ? '#3f7d4a' : '#2f6a4c'; CX.lineWidth = 2;
+      CX.fillStyle = lf % 2 ? (L ? '#5ea764' : '#3b7f5a') : (L ? '#4b9254' : '#2f6a4c');
+      var ex = px + Math.sin(la) * ll, ey = FL + 8 - Math.cos(la) * ll;
+      CX.beginPath(); CX.moveTo(px, FL - 2);
+      CX.quadraticCurveTo(px + Math.sin(la) * ll * 0.3 - 14, FL - 2 - Math.cos(la) * ll * 0.6, ex, ey);
+      CX.quadraticCurveTo(px + Math.sin(la) * ll * 0.6 + 12, FL - 2 - Math.cos(la) * ll * 0.4, px, FL - 2); CX.fill();
+    }
+    CX.fillStyle = grad(px - 26, 0, px + 26, 0, [[0, '#b0553a'], [0.5, '#d27455'], [1, '#9c4a32']]);
+    CX.beginPath(); CX.moveTo(px - 28, FL - 18); CX.lineTo(px + 28, FL - 18); CX.lineTo(px + 21, FL + 30); CX.lineTo(px - 21, FL + 30); CX.fill();
+    CX.fillStyle = '#c1664a'; rr(px - 31, FL - 24, 62, 9, 3); CX.fill();
+    CX.restore();
+    shadowEllipse(px, FL + 31, 30, 5);
+
+    // the table: far legs first (darker, set back), then top, apron and near legs
+    var wood1 = '#7a5230', wood2 = '#9c6d40';
+    shadowEllipse(tx + tw / 2, FL + 6, tw * 0.5, 12);
+    CX.save();
+    CX.fillStyle = '#4a321d';
+    CX.fillRect(tx + 92, ty + 18, 22, 176); CX.fillRect(tx + tw - 114, ty + 18, 22, 176);
+    CX.fillStyle = grad(0, ty + 14, 0, ty + 40, [[0, '#5e4027'], [1, '#4a321d']]);
+    CX.fillRect(tx + 40, ty + 16, tw - 80, 24);                  // apron under the top
+    CX.fillStyle = 'rgba(0,0,0,.18)'; CX.fillRect(tx + 40, ty + 36, tw - 80, 4);
+    [tx + 46, tx + tw - 74].forEach(function (lx) {              // tapered near legs
+      CX.fillStyle = grad(lx, 0, lx + 28, 0, [[0, '#5a3d22'], [0.45, '#7b5530'], [1, '#4d3420']]);
+      CX.beginPath(); CX.moveTo(lx, ty + 18); CX.lineTo(lx + 28, ty + 18); CX.lineTo(lx + 24, ty + 196); CX.lineTo(lx + 4, ty + 196); CX.fill();
+      CX.fillStyle = '#3b2716'; rr(lx + 1, ty + 194, 26, 8, 2); CX.fill();
+    });
+    CX.restore();
+    CX.save();                                                   // top surface seen slightly from above
+    CX.fillStyle = grad(0, ty - 6, 0, ty, [[0, '#b2825a'], [1, '#9a6c42']]);
+    CX.beginPath(); CX.moveTo(tx + 8, ty - 6); CX.lineTo(tx + tw - 8, ty - 6); CX.lineTo(tx + tw, ty); CX.lineTo(tx, ty); CX.fill();
+    CX.restore();
+    metalBar(tx, ty, tw, 18, 4, wood1, wood2);
+    CX.save(); CX.strokeStyle = 'rgba(60,35,15,.30)'; CX.lineWidth = 1;   // grain on the edge
+    for (var gi = 0; gi < 3; gi++) {
+      CX.beginPath(); CX.moveTo(tx + 6, ty + 5 + gi * 4.5);
+      for (var gx = 0; gx <= tw - 12; gx += 30) CX.lineTo(tx + 6 + gx, ty + 5 + gi * 4.5 + Math.sin(gx / 55 + gi * 2) * 1.2);
+      CX.stroke();
+    }
+    CX.restore();
+    txt('table', tx + 12, ty - 14, 12, TH['text-muted'], 'left', 600);
+
+    // a mug of tea with a wisp of steam, and a pencil — all well clear of the book's path
+    CX.save();
+    var mx = 262;
+    CX.fillStyle = '#f2f2ee'; rr(mx - 16, ty - 38, 32, 38, 5); CX.fill();
+    CX.strokeStyle = '#f2f2ee'; CX.lineWidth = 5; CX.beginPath(); CX.arc(mx + 17, ty - 20, 9, -1.3, 1.3); CX.stroke();
+    CX.fillStyle = TH.accent; CX.fillRect(mx - 16, ty - 26, 32, 6);
+    CX.fillStyle = '#6b3e1f'; CX.beginPath(); CX.ellipse(mx, ty - 37, 14, 3, 0, 0, 7); CX.fill();
+    CX.strokeStyle = withA(TH['text-dim'], 0.45); CX.lineWidth = 2; CX.lineCap = 'round';
+    for (var sm = 0; sm < 2; sm++) {
+      var ph = S.t * 1.4 + sm * 2;
+      CX.beginPath();
+      for (var sy = 0; sy <= 34; sy += 3) {
+        var px2 = mx - 5 + sm * 10 + Math.sin(ph + sy / 7) * 4;
+        if (sy === 0) CX.moveTo(px2, ty - 44 - sy); else CX.lineTo(px2, ty - 44 - sy);
+      }
+      CX.stroke();
+    }
+    CX.translate(350, ty - 4); CX.rotate(-0.06);
+    CX.fillStyle = '#f2c230'; CX.fillRect(0, -4, 74, 7);
+    CX.fillStyle = '#e8b98a'; CX.beginPath(); CX.moveTo(74, -4); CX.lineTo(88, -0.5); CX.lineTo(74, 3); CX.fill();
+    CX.fillStyle = '#2b2b2b'; CX.beginPath(); CX.moveTo(84, -1.6); CX.lineTo(88, -0.5); CX.lineTo(84, 0.8); CX.fill();
+    CX.fillStyle = '#e07a8a'; CX.fillRect(-9, -4, 9, 7);
+    CX.restore();
+
     var x = this.st.x, by = ty;
-    shadowEllipse(x, by + 3, 74, 7);
-    // book: stack of pages + cover
+    var r = PHYS.book({ m: this.p.m, muS: this.p.muS, muK: this.p.muS * 0.8, push: this.p.push, unbalance: S.unbalance });
+    shadowEllipse(x, by + 3, 76, 7);
+    // speed lines once it slides
+    if (this.st.v > 0.05) {
+      CX.save(); CX.strokeStyle = TH['text-muted']; CX.lineWidth = 2; CX.lineCap = 'round'; CX.globalAlpha = .6;
+      for (var s2 = 0; s2 < 3; s2++) {
+        var ln = 16 + Math.min(40, this.st.v * 14) + s2 * 8;
+        CX.beginPath(); CX.moveTo(x - 92 - ln, by - 40 + s2 * 13); CX.lineTo(x - 92, by - 40 + s2 * 13); CX.stroke();
+      }
+      CX.restore();
+    }
+    // the book: back cover, a block of pages, front cover, a rounded spine and a ribbon
     CX.save();
-    CX.fillStyle = '#e8e3d6';
-    CX.fillRect(x - 70, by - 38, 140, 34);
-    CX.strokeStyle = 'rgba(0,0,0,.28)'; CX.lineWidth = 1;
-    for (var i = 1; i < 7; i++) { CX.beginPath(); CX.moveTo(x - 70, by - 38 + i * 4.8); CX.lineTo(x + 70, by - 38 + i * 4.8); CX.stroke(); }
-    CX.fillStyle = grad(x - 70, 0, x + 70, 0, [[0, '#8c2f39'], [.5, '#b8434f'], [1, '#7d2831']]);
-    CX.fillRect(x - 75, by - 46, 150, 10);
-    CX.fillRect(x - 75, by - 46, 10, 42);
-    CX.fillStyle = '#f0d78a'; CX.fillRect(x - 26, by - 42, 54, 4);
+    var cv1 = '#8c2f39', cv2 = '#b8434f', cv3 = '#7d2831';
+    CX.fillStyle = cv3; rr(x - 75, by - 8, 152, 8, 2); CX.fill();
+    CX.fillStyle = grad(0, by - 38, 0, by - 8, [[0, '#f3eee1'], [1, '#ddd6c4']]);
+    CX.fillRect(x - 68, by - 38, 140, 30);
+    CX.strokeStyle = 'rgba(0,0,0,.18)'; CX.lineWidth = 1;
+    for (var i = 1; i < 7; i++) { CX.beginPath(); CX.moveTo(x - 68, by - 38 + i * 4.3); CX.lineTo(x + 72, by - 38 + i * 4.3); CX.stroke(); }
+    CX.fillStyle = '#c23b4a';                                     // ribbon bookmark
+    CX.beginPath(); CX.moveTo(x + 40, by - 24); CX.lineTo(x + 47, by - 24); CX.lineTo(x + 49, by + 8); CX.lineTo(x + 45.5, by + 4); CX.lineTo(x + 42, by + 8); CX.fill();
+    CX.fillStyle = grad(x - 70, 0, x + 70, 0, [[0, cv1], [.5, cv2], [1, cv3]]);
+    rr(x - 75, by - 46, 152, 9, 2); CX.fill();
+    CX.fillStyle = grad(x - 80, 0, x - 64, 0, [[0, '#6e232b'], [0.5, '#a33c47'], [1, '#7a2830']]);
+    rr(x - 80, by - 47, 15, 47, 5); CX.fill();
+    CX.fillStyle = '#f0d78a';
+    CX.fillRect(x - 80, by - 41, 15, 2.5); CX.fillRect(x - 80, by - 8, 15, 2.5);
+    CX.fillRect(x - 26, by - 43, 54, 3);
+    CX.translate(x - 72.5, by - 23); CX.rotate(-Math.PI / 2);
+    CX.font = "800 7px Inter, sans-serif"; CX.textAlign = 'center'; CX.textBaseline = 'middle';
+    CX.fillText('PHYSICS', 0, 0.5);
     CX.restore();
+
     return { bx: x, by: by - 22 };
   },
   fbd: function () {
@@ -1835,31 +2278,125 @@ SCEN.cruise = {
     this.st.wheel += this.st.v * dt * 3;
   },
   draw: function () {
+    // A road out of town, drawn in parallax layers: clouds and a far skyline
+    // creep past, hills and trees go faster, lamp posts and the road itself
+    // stream by at the car's own speed.  Every layer's period divides 67680 so
+    // the wrap of st.road never makes anything jump.
+    var R = this.st.road, L = TH.light;
+    var wrapX = function (base, off, per) { return ((base - off) % per + per) % per; };
     skyBox();
-    // hills
-    CX.save(); CX.fillStyle = TH.light ? 'rgba(90,130,90,.28)' : 'rgba(90,140,120,.18)';
-    CX.beginPath(); CX.moveTo(0, 400);
-    for (var hx = 0; hx <= W; hx += 40) CX.lineTo(hx, 360 - 42 * Math.sin(hx / 190) - 18 * Math.cos(hx / 70));
-    CX.lineTo(W, 400); CX.closePath(); CX.fill(); CX.restore();
-    // roadside poles scrolling
-    for (var i = -1; i < 12; i++) {
-      var px = ((i * 120 - this.st.road) % (W + 240) + W + 240) % (W + 240) - 60;
-      CX.save(); CX.strokeStyle = TH['text-muted']; CX.globalAlpha = .55; CX.lineWidth = 4;
-      CX.beginPath(); CX.moveTo(px, 400); CX.lineTo(px, 322); CX.stroke(); CX.restore();
+    sunOrMoon(700, 226, 22);
+    var oc = (R * 0.05) % 1692;                                   // clouds: 3384 / 2
+    [[80, 222, 0.9], [520, 250, 0.7], [860, 205, 1.0], [1300, 238, 0.8]].forEach(function (c) {
+      cloudPuff(wrapX(c[0], oc, 1692) - 220, c[1], c[2], L ? 0.9 : 0.35);
+    });
+    // far skyline (factor 0.125 → 8460 = 6 × 1410)
+    var os = (R * 0.125) % 1410;
+    CX.save();
+    for (var rep = 0; rep < 2; rep++) {
+      var x0 = -os + rep * 1410;
+      for (var b = 0; b < 30; b++) {
+        var bw = 30 + srand(b) * 26, bh = 36 + srand(b + 50) * 70, bx = x0 + b * 47;
+        if (bx > W || bx + bw < 0) continue;
+        CX.fillStyle = mixHex(TH['sky-2'], TH.ink, L ? 0.14 : 0.10);
+        CX.fillRect(bx, 386 - bh, bw, bh);
+        if (!L) {
+          CX.fillStyle = 'rgba(255,209,102,.45)';
+          for (var wq = 0; wq < 6; wq++) if (srand(b * 13 + wq) > 0.55)
+            CX.fillRect(bx + 5 + (wq % 2) * 12, 386 - bh + 8 + Math.floor(wq / 2) * 14, 5, 6);
+        }
+      }
     }
+    CX.restore();
+    // rolling hills (factor 0.25 → 16920 = 12 × 1410)
+    var oh = (R * 0.25) % 1410, TAU = Math.PI * 2;
+    CX.save(); CX.fillStyle = L ? 'rgba(90,130,90,.34)' : 'rgba(90,140,120,.20)';
+    CX.beginPath(); CX.moveTo(0, 400);
+    for (var hx = 0; hx <= W; hx += 20)
+      CX.lineTo(hx, 366 - 26 * Math.sin(TAU * (hx + oh) / 1410 * 2) - 11 * Math.sin(TAU * (hx + oh) / 1410 * 5 + 1));
+    CX.lineTo(W, 400); CX.closePath(); CX.fill(); CX.restore();
+    // grass verge
+    CX.save();
+    CX.fillStyle = L ? '#9cc48a' : '#26402f'; CX.fillRect(0, 382, W, 18);
+    CX.restore();
+    // roadside trees (factor 0.5 → 33840 = 24 × 1410)
+    var ot = (R * 0.5) % 1410;
+    for (var tr = 0; tr < 10; tr++) {
+      var tx = wrapX(70 + tr * 141, ot, 1410) - 100;
+      if (tx < -60 || tx > W + 60) continue;
+      treeShape(tx, 390, 54 + srand(tr + 7) * 30);
+    }
+    // street lamps every 240 px and a speed-limit sign once per 1440 px (factor 1)
+    for (var i = 0; i < 6; i++) {
+      var px = wrapX(i * 240, R, 1440) - 120;
+      CX.save();
+      CX.strokeStyle = L ? '#6d7684' : '#8a93a3'; CX.lineWidth = 5; CX.lineCap = 'round';
+      CX.beginPath(); CX.moveTo(px, 402); CX.lineTo(px, 304);
+      CX.quadraticCurveTo(px, 292, px + 14, 292); CX.lineTo(px + 26, 292); CX.stroke();
+      CX.fillStyle = L ? '#4a525e' : '#b7bfcc'; rr(px + 20, 288, 22, 8, 3); CX.fill();
+      if (!L) {
+        var gl = CX.createRadialGradient(px + 31, 298, 1, px + 31, 298, 34);
+        gl.addColorStop(0, 'rgba(255,220,140,.75)'); gl.addColorStop(1, 'rgba(255,220,140,0)');
+        CX.fillStyle = gl; CX.beginPath(); CX.arc(px + 31, 298, 34, 0, 7); CX.fill();
+      }
+      CX.restore();
+    }
+    var sgx = wrapX(1320, R, 1440) - 120;
+    CX.save();
+    CX.fillStyle = '#8a93a3'; CX.fillRect(sgx - 2, 330, 4, 72);
+    CX.fillStyle = '#ffffff'; CX.beginPath(); CX.arc(sgx, 326, 19, 0, 7); CX.fill();
+    CX.strokeStyle = '#d33a3a'; CX.lineWidth = 5; CX.beginPath(); CX.arc(sgx, 326, 16, 0, 7); CX.stroke();
+    CX.restore();
+    txt('60', sgx, 327, 14, '#1a1a1a', 'center', 800, 'middle');
+
     // road
     CX.save();
-    CX.fillStyle = TH.light ? '#7d8593' : '#2b3140';
+    CX.fillStyle = L ? '#7d8593' : '#2b3140';
     CX.fillRect(0, 400, W, H + OV - 400);
-    CX.strokeStyle = TH.light ? '#e8e2cf' : '#c8cad2'; CX.lineWidth = 5; CX.setLineDash([54, 40]);
-    CX.lineDashOffset = this.st.road;
+    CX.fillStyle = L ? 'rgba(255,255,255,.10)' : 'rgba(255,255,255,.05)';   // asphalt grit (period 1410)
+    var og = R % 1410;
+    for (var gr = 0; gr < 170; gr++) {
+      var gx = wrapX(srand(gr) * 1410, og, 1410) - 100, gy = 418 + srand(gr + 300) * 330;
+      if (gx < -4 || gx > W + 4) continue;
+      CX.fillRect(gx, gy, 3, 2);
+    }
+    var ok = R % 94;                                               // kerb stones (period 94)
+    for (var kb = 0; kb < 28; kb++) {
+      CX.fillStyle = kb % 2 ? (L ? '#e7e7e2' : '#9aa1ad') : (L ? '#b9bcc2' : '#5d6472');
+      CX.fillRect(kb * 47 - ok, 400, 47, 9);
+    }
+    CX.fillStyle = 'rgba(0,0,0,.18)'; CX.fillRect(0, 409, W, 3);
+    CX.strokeStyle = L ? '#f4f1e6' : '#c8cad2'; CX.lineWidth = 3;          // edge line
+    CX.beginPath(); CX.moveTo(0, 424); CX.lineTo(W, 424); CX.stroke();
+    CX.strokeStyle = L ? '#e8e2cf' : '#c8cad2'; CX.lineWidth = 5; CX.setLineDash([54, 40]);
+    CX.lineDashOffset = R;
     CX.beginPath(); CX.moveTo(0, 545); CX.lineTo(W, 545); CX.stroke();
     CX.setLineDash([]); CX.lineWidth = 3; CX.globalAlpha = .55;
     CX.beginPath(); CX.moveTo(0, 660); CX.lineTo(W, 660); CX.stroke();
     CX.restore();
-    surfaceTexture(700, 34, TH.light ? '#ffffff' : '#9aa3b2');
+    surfaceTexture(700, 34, L ? '#ffffff' : '#9aa3b2');
+
     var x = 560, by = 452;
-    shadowEllipse(x, by + 8, 118, 10);
+    var r = PHYS.cruise({ m: this.p.m, resist: this.p.resist, dF: this.p.dF, unbalance: S.unbalance });
+    var braking = r.Fx < -1, boosting = r.Fx > 1;
+    // headlight beam on the night themes
+    if (!L) {
+      CX.save();
+      CX.fillStyle = grad(x + 130, 0, x + 420, 0, [[0, 'rgba(255,240,190,.30)'], [1, 'rgba(255,240,190,0)']]);
+      CX.beginPath(); CX.moveTo(x + 128, by - 38); CX.lineTo(x + 430, by - 72); CX.lineTo(x + 430, by + 26); CX.lineTo(x + 128, by - 28); CX.fill();
+      CX.restore();
+    }
+    // exhaust: thicker when the engine is pushing harder
+    var puff = Math.min(1.6, r.thrust / Math.max(this.p.resist, 1));
+    CX.save();
+    for (var e = 0; e < 7; e++) {
+      var d = (S.t * 55 + e * 14) % 98;
+      CX.globalAlpha = 0.30 * puff * (1 - d / 98);
+      CX.fillStyle = L ? '#8b929e' : '#aab2bf';
+      CX.beginPath(); CX.arc(x - 136 - d, by - 12 - d * 0.18, 4 + d * 0.13, 0, 7); CX.fill();
+    }
+    CX.restore();
+    shadowEllipse(x, by + 8, 124, 10);
     // car body
     CX.save();
     CX.fillStyle = grad(x - 130, by - 90, x + 130, by, [[0, '#1f4f8f'], [.5, '#3a7fd5'], [1, '#1a3f74']]);
@@ -1868,25 +2405,73 @@ SCEN.cruise = {
     CX.moveTo(x - 78, by - 52); CX.lineTo(x - 50, by - 92);
     CX.lineTo(x + 52, by - 92); CX.lineTo(x + 86, by - 52); CX.closePath();
     CX.fillStyle = grad(0, by - 92, 0, by - 52, [[0, '#2f68ad'], [1, '#24507f']]); CX.fill();
-    CX.fillStyle = TH.light ? '#cfe3f5' : '#9fc6ea';
+    // windows, with the driver inside
+    var glass = L ? '#cfe3f5' : '#7fa6cc';
+    CX.fillStyle = glass;
     CX.beginPath();
     CX.moveTo(x - 70, by - 56); CX.lineTo(x - 46, by - 86);
     CX.lineTo(x + 2, by - 86); CX.lineTo(x + 2, by - 56); CX.closePath(); CX.fill();
     CX.beginPath();
     CX.moveTo(x + 10, by - 56); CX.lineTo(x + 10, by - 86);
     CX.lineTo(x + 48, by - 86); CX.lineTo(x + 76, by - 56); CX.closePath(); CX.fill();
+    CX.save();
+    CX.beginPath(); CX.moveTo(x + 10, by - 56); CX.lineTo(x + 10, by - 86); CX.lineTo(x + 48, by - 86); CX.lineTo(x + 76, by - 56); CX.clip();
+    CX.fillStyle = '#3a2b23'; CX.beginPath(); CX.arc(x + 32, by - 70, 11, 0, 7); CX.fill();
+    CX.fillStyle = '#f1c9a5'; CX.beginPath(); CX.arc(x + 35, by - 67, 9.5, 0, 7); CX.fill();
+    CX.fillStyle = '#3a2b23'; CX.beginPath(); CX.ellipse(x + 32, by - 76, 10, 5, 0, 0, 7); CX.fill();
+    CX.fillStyle = '#4a7fc1'; rr(x + 22, by - 58, 26, 10, 4); CX.fill();
+    CX.strokeStyle = '#1b1d22'; CX.lineWidth = 3;                     // steering wheel
+    CX.beginPath(); CX.moveTo(x + 52, by - 70); CX.lineTo(x + 58, by - 56); CX.stroke();
+    CX.restore();
+    CX.fillStyle = 'rgba(255,255,255,.28)';                           // glass sheen
+    CX.beginPath(); CX.moveTo(x - 40, by - 86); CX.lineTo(x - 26, by - 86); CX.lineTo(x - 50, by - 56); CX.lineTo(x - 64, by - 56); CX.fill();
+    CX.beginPath(); CX.moveTo(x + 38, by - 86); CX.lineTo(x + 46, by - 86); CX.lineTo(x + 30, by - 56); CX.lineTo(x + 22, by - 56); CX.fill();
+    // body shine, door seams, handles, mirror, bumpers
+    CX.fillStyle = 'rgba(255,255,255,.20)'; rr(x - 120, by - 48, 236, 7, 3); CX.fill();
+    CX.strokeStyle = 'rgba(0,0,0,.30)'; CX.lineWidth = 1.4;
+    CX.beginPath(); CX.moveTo(x + 6, by - 54); CX.lineTo(x + 6, by - 12); CX.moveTo(x - 72, by - 52); CX.lineTo(x - 76, by - 14); CX.stroke();
+    CX.fillStyle = 'rgba(0,0,0,.35)'; rr(x - 22, by - 40, 16, 4, 2); CX.fill(); rr(x + 58, by - 40, 16, 4, 2); CX.fill();
+    CX.fillStyle = '#1f4f8f'; rr(x + 76, by - 64, 12, 9, 3); CX.fill();
+    CX.fillStyle = '#20252d'; rr(x - 134, by - 20, 20, 10, 4); CX.fill(); rr(x + 114, by - 20, 20, 10, 4); CX.fill();
     CX.fillStyle = '#ffe9a8'; rr(x + 118, by - 40, 14, 12, 3); CX.fill();
-    CX.fillStyle = '#ff6b6b'; rr(x - 132, by - 40, 12, 12, 3); CX.fill();
+    CX.fillStyle = braking ? '#ff3b3b' : '#c94a4a'; rr(x - 132, by - 40, 12, 12, 3); CX.fill();
+    if (braking) {                                                    // brake lights glow
+      var bg = CX.createRadialGradient(x - 128, by - 34, 1, x - 128, by - 34, 30);
+      bg.addColorStop(0, 'rgba(255,60,60,.8)'); bg.addColorStop(1, 'rgba(255,60,60,0)');
+      CX.fillStyle = bg; CX.beginPath(); CX.arc(x - 128, by - 34, 30, 0, 7); CX.fill();
+    }
+    CX.fillStyle = '#6b7280'; CX.fillRect(x - 134, by - 12, 10, 4);    // tailpipe
+    // wheel arches
+    CX.fillStyle = '#11151b';
+    [-78, 82].forEach(function (dx) { CX.beginPath(); CX.arc(x + dx, by - 4, 29, Math.PI, 0); CX.fill(); });
     CX.restore();
-    wheel(x - 78, by - 4, 24); wheel(x + 82, by - 4, 24);
-    CX.save(); CX.strokeStyle = 'rgba(255,255,255,.55)'; CX.lineWidth = 3;
+    // wheels with turning five-spoke rims
+    var wa = this.st.wheel;
     [-78, 82].forEach(function (dx) {
-      CX.beginPath();
-      CX.moveTo(x + dx + Math.cos(SCEN.cruise.st.wheel) * 14, by - 4 + Math.sin(SCEN.cruise.st.wheel) * 14);
-      CX.lineTo(x + dx - Math.cos(SCEN.cruise.st.wheel) * 14, by - 4 - Math.sin(SCEN.cruise.st.wheel) * 14);
-      CX.stroke();
+      var wx = x + dx, wy = by - 4;
+      CX.save();
+      CX.fillStyle = '#1a1d23'; CX.beginPath(); CX.arc(wx, wy, 24, 0, 7); CX.fill();
+      CX.fillStyle = grad(wx - 14, wy - 14, wx + 14, wy + 14, [[0, '#e3e7ee'], [1, '#8b93a1']]);
+      CX.beginPath(); CX.arc(wx, wy, 14, 0, 7); CX.fill();
+      CX.strokeStyle = '#5b6270'; CX.lineWidth = 3.2; CX.lineCap = 'round';
+      for (var sp = 0; sp < 5; sp++) {
+        var a2 = wa + sp * Math.PI * 2 / 5;
+        CX.beginPath(); CX.moveTo(wx + Math.cos(a2) * 4, wy + Math.sin(a2) * 4); CX.lineTo(wx + Math.cos(a2) * 12.5, wy + Math.sin(a2) * 12.5); CX.stroke();
+      }
+      CX.fillStyle = '#3a404b'; CX.beginPath(); CX.arc(wx, wy, 4, 0, 7); CX.fill();
+      CX.restore();
     });
-    CX.restore();
+    // speed lines when the car is really moving
+    if (this.st.v > 1) {
+      CX.save(); CX.strokeStyle = withA(TH['text-muted'], 0.6); CX.lineWidth = 2; CX.lineCap = 'round';
+      for (var sl = 0; sl < 3; sl++) {
+        var ln = 18 + Math.min(60, this.st.v * 1.8) + sl * 6, yy = by - 70 + sl * 20;
+        CX.beginPath(); CX.moveTo(x - 150 - sl * 10, yy); CX.lineTo(x - 150 - sl * 10 - ln, yy); CX.stroke();
+      }
+      CX.restore();
+    }
+    if (boosting && S.labels) txt('accelerator down', x - 210, by + 44, 12, TH.green, 'center', 700);
+    if (braking && S.labels) txt('brakes on', x - 210, by + 44, 12, TH.rose, 'center', 700);
     // velocity vector
     arrow(x + 140, by - 74, Math.min(150, this.st.v * 6), 0, TH.blue, 3);
     txt('v = ' + this.st.v.toFixed(1) + ' m/s  (' + (this.st.v * 3.6).toFixed(0) + ' km/h)',
@@ -1963,6 +2548,25 @@ SCEN.space = {
   },
   draw: function () {
     CX.save(); CX.fillStyle = TH.light ? '#101426' : '#05070f'; CX.fillRect(0, -OV, W, H + 2 * OV);
+    // faint nebulae and one far-off galaxy: light that set out millions of years
+    // ago, far too distant to pull on the astronaut at all
+    [[900, 360, 300, 'rgba(140,90,220,'], [200, 640, 280, 'rgba(40,160,170,'], [620, 170, 220, 'rgba(220,90,150,']].forEach(function (n, k) {
+      var g = CX.createRadialGradient(n[0], n[1], 10, n[0], n[1], n[2]);
+      g.addColorStop(0, n[3] + (0.16 + 0.02 * Math.sin(S.t * 0.3 + k)) + ')'); g.addColorStop(1, n[3] + '0)');
+      CX.fillStyle = g; CX.beginPath(); CX.arc(n[0], n[1], n[2], 0, 7); CX.fill();
+    });
+    CX.save();
+    CX.translate(1040, 250); CX.rotate(-0.45); CX.scale(1, 0.42);
+    var gc = CX.createRadialGradient(0, 0, 2, 0, 0, 70);
+    gc.addColorStop(0, 'rgba(255,240,215,.85)'); gc.addColorStop(0.25, 'rgba(210,190,255,.35)'); gc.addColorStop(1, 'rgba(160,140,255,0)');
+    CX.fillStyle = gc; CX.beginPath(); CX.arc(0, 0, 70, 0, 7); CX.fill();
+    CX.fillStyle = 'rgba(225,215,255,.55)';
+    for (var arm = 0; arm < 2; arm++) for (var k2 = 0; k2 < 46; k2++) {
+      var th2 = k2 * 0.16 + arm * Math.PI + S.t * 0.02, rad = 8 + k2 * 1.35;
+      CX.globalAlpha = 0.65 * (1 - k2 / 46);
+      CX.beginPath(); CX.arc(Math.cos(th2) * rad, Math.sin(th2) * rad, 1.4, 0, 7); CX.fill();
+    }
+    CX.restore();
     if (!this.st.stars) {
       this.st.stars = [];
       for (var i = 0; i < 190; i++) this.st.stars.push([Math.random() * W, Math.random() * H, Math.random() * 1.6 + 0.4]);
@@ -1972,38 +2576,104 @@ SCEN.space = {
       CX.fillStyle = '#ffffff';
       CX.beginPath(); CX.arc(s[0], s[1], s[2], 0, 7); CX.fill();
     });
+    // a handful of brighter stars with a soft four-point glint
+    for (var b = 0; b < 9; b++) {
+      var sx = 40 + srand(b + 11) * 1120, sy = 110 + srand(b + 31) * 620, tw = 0.55 + 0.45 * Math.sin(S.t * 1.3 + b * 2);
+      CX.globalAlpha = 0.8 * tw; CX.strokeStyle = '#e8f0ff'; CX.lineWidth = 1.2;
+      CX.beginPath(); CX.moveTo(sx - 9, sy); CX.lineTo(sx + 9, sy); CX.moveTo(sx, sy - 9); CX.lineTo(sx, sy + 9); CX.stroke();
+      CX.globalAlpha = tw; CX.fillStyle = '#ffffff'; CX.beginPath(); CX.arc(sx, sy, 2, 0, 7); CX.fill();
+    }
     CX.globalAlpha = 1;
     CX.restore();
     txt('deep space — far from any star or planet', 16, 186, 13, 'rgba(255,255,255,.58)', 'left', 600);
-    // the astronaut sits on the vertical mid-line of the canvas: with nothing else
-    // in the frame there is no reason for him to hug the top edge
-    var x = this.st.x, y = 424, sp = this.st.spin;
+
+    var x = this.st.x, y = 424, sp = this.st.spin, v = this.st.v;
+    var r = PHYS.space({ m: this.p.m, thrust: this.p.thrust, unbalance: S.unbalance });
+    // a strobe track: where the astronaut was 1, 2, 3 and 4 seconds ago.  Equal
+    // gaps mean equal distances in equal times — a constant velocity.
+    if (S.labels && Math.abs(v) > 0.05) {
+      var ty = 262;
+      CX.save();
+      CX.strokeStyle = 'rgba(255,255,255,.22)'; CX.lineWidth = 1.5; CX.setLineDash([4, 6]);
+      CX.beginPath(); CX.moveTo(0, ty); CX.lineTo(W, ty); CX.stroke(); CX.setLineDash([]);
+      for (var gk = 4; gk >= 0; gk--) {
+        var gx = x - (v * gk - 0.5 * r.a * gk * gk) * this.PPM;
+        if (gx < -20 || gx > W + 20) continue;
+        CX.globalAlpha = gk ? 0.75 - gk * 0.13 : 1;
+        CX.fillStyle = gk ? '#9fc6ea' : '#ffffff';
+        CX.beginPath(); CX.arc(gx, ty, gk ? 5 : 6.5, 0, 7); CX.fill();
+        CX.globalAlpha = 1;
+        mono(gk ? '−' + gk + ' s' : 'now', gx, ty - 16, 10.5, gk ? 'rgba(200,220,245,.75)' : '#ffffff', 'center');
+      }
+      CX.restore();
+      txt(r.balanced ? 'position every 1 s — equal gaps: constant velocity' : 'position every 1 s — gaps growing: accelerating',
+          16, ty + 26, 11.5, r.balanced ? 'rgba(160,230,190,.85)' : 'rgba(255,190,150,.9)', 'left', 600);
+    }
+
     CX.save();
     CX.translate(x, y); CX.rotate(Math.sin(sp) * 0.12); CX.scale(1.35, 1.35);
-    // backpack
-    CX.fillStyle = '#9aa3b2'; rr(-46, -30, 26, 62, 7); CX.fill();
-    // torso
-    CX.fillStyle = grad(-30, -50, 40, 50, [[0, '#f2f4f8'], [.55, '#cfd6e2'], [1, '#a9b2c2']]);
-    rr(-26, -34, 62, 72, 18); CX.fill();
-    CX.strokeStyle = 'rgba(0,0,0,.28)'; CX.lineWidth = 1.4; CX.stroke();
-    // helmet
-    CX.fillStyle = '#e8ecf3'; CX.beginPath(); CX.arc(6, -58, 30, 0, 7); CX.fill();
-    CX.fillStyle = grad(-16, -80, 30, -38, [[0, '#3c6a9a'], [1, '#12283f']]);
-    CX.beginPath(); CX.arc(9, -58, 21, 0, 7); CX.fill();
-    CX.fillStyle = 'rgba(255,255,255,.35)';
-    CX.beginPath(); CX.ellipse(1, -66, 8, 5, -0.5, 0, 7); CX.fill();
-    // arms + legs
-    CX.strokeStyle = '#dfe4ec'; CX.lineWidth = 15; CX.lineCap = 'round';
+    var suit = grad(-30, -50, 40, 50, [[0, '#f2f4f8'], [.55, '#cfd6e2'], [1, '#a9b2c2']]);
+    // backpack (life support) with two thruster nozzles
+    CX.fillStyle = grad(-48, 0, -20, 0, [[0, '#7e8796'], [1, '#aeb6c3']]); rr(-48, -32, 28, 66, 7); CX.fill();
+    CX.strokeStyle = 'rgba(0,0,0,.3)'; CX.lineWidth = 1.2; CX.stroke();
+    CX.fillStyle = '#5b6372'; rr(-44, -24, 20, 5, 2); CX.fill(); rr(-44, 20, 20, 5, 2); CX.fill();
+    CX.fillStyle = '#3d434e';
+    [-18, 14].forEach(function (ny) {
+      CX.beginPath(); CX.moveTo(-48, ny - 4); CX.lineTo(-56, ny - 7); CX.lineTo(-56, ny + 7); CX.lineTo(-48, ny + 4); CX.fill();
+    });
+    if (S.unbalance) {
+      var ng = CX.createRadialGradient(-58, 14, 1, -58, 14, 16);
+      ng.addColorStop(0, 'rgba(190,235,255,.95)'); ng.addColorStop(1, 'rgba(190,235,255,0)');
+      CX.fillStyle = ng; CX.beginPath(); CX.arc(-58, 14, 16, 0, 7); CX.fill();
+    }
+    // far arm (behind the torso)
+    CX.lineCap = 'round';
+    CX.strokeStyle = '#c9d0db'; CX.lineWidth = 15;
     CX.beginPath(); CX.moveTo(-18, -18); CX.lineTo(-52, 6); CX.stroke();
+    CX.fillStyle = '#8d97a8'; CX.beginPath(); CX.arc(-54, 8, 8, 0, 7); CX.fill();
+    // legs with knee rings and boots
+    [[-10, 36, -26, 84], [20, 36, 40, 82]].forEach(function (lg) {
+      CX.strokeStyle = '#dfe4ec'; CX.lineWidth = 16;
+      CX.beginPath(); CX.moveTo(lg[0], lg[1]); CX.lineTo(lg[2], lg[3]); CX.stroke();
+      var kx = (lg[0] + lg[2]) / 2, ky = (lg[1] + lg[3]) / 2;
+      CX.strokeStyle = '#aab3c1'; CX.lineWidth = 3;
+      CX.beginPath(); CX.moveTo(kx - 8, ky - 1); CX.lineTo(kx + 8, ky + 2); CX.stroke();
+      CX.fillStyle = '#6b7383'; CX.beginPath(); CX.ellipse(lg[2] + 2, lg[3] + 4, 11, 8, 0.2, 0, 7); CX.fill();
+    });
+    // torso with a chest control panel
+    CX.fillStyle = suit; rr(-26, -34, 62, 72, 18); CX.fill();
+    CX.strokeStyle = 'rgba(0,0,0,.28)'; CX.lineWidth = 1.4; CX.stroke();
+    CX.fillStyle = '#8d97a8'; rr(-4, -8, 30, 20, 4); CX.fill();
+    CX.fillStyle = '#2b313b'; rr(-1, -5, 14, 8, 2); CX.fill();
+    ['#ff5a5a', '#4ade80', '#60a5fa'].forEach(function (c, k) {
+      CX.globalAlpha = 0.35 + 0.65 * (Math.sin(S.t * 3 + k * 2.1) > 0 ? 1 : 0);
+      CX.fillStyle = c; CX.beginPath(); CX.arc(17 + (k % 2) * 5, -3 + k * 4, 1.8, 0, 7); CX.fill();
+    });
+    CX.globalAlpha = 1;
+    CX.fillStyle = '#aab3c1'; CX.fillRect(-26, 20, 62, 5);             // waist ring
+    // near arm with a mission patch on the shoulder
+    CX.strokeStyle = '#e6eaf1'; CX.lineWidth = 15;
     CX.beginPath(); CX.moveTo(30, -18); CX.lineTo(62, -40); CX.stroke();
-    CX.beginPath(); CX.moveTo(-10, 36); CX.lineTo(-26, 84); CX.stroke();
-    CX.beginPath(); CX.moveTo(20, 36); CX.lineTo(40, 82); CX.stroke();
+    CX.fillStyle = '#8d97a8'; CX.beginPath(); CX.arc(64, -42, 8, 0, 7); CX.fill();
+    CX.fillStyle = '#2f5fa8'; CX.beginPath(); CX.arc(33, -20, 5.5, 0, 7); CX.fill();
+    CX.strokeStyle = '#f0d78a'; CX.lineWidth = 1.2; CX.beginPath(); CX.arc(33, -20, 5.5, 0, 7); CX.stroke();
+    // neck ring and helmet with a gold sun visor
+    CX.fillStyle = '#aab3c1'; CX.beginPath(); CX.ellipse(6, -33, 20, 6, 0, 0, 7); CX.fill();
+    CX.fillStyle = '#e8ecf3'; CX.beginPath(); CX.arc(6, -58, 30, 0, 7); CX.fill();
+    CX.strokeStyle = 'rgba(0,0,0,.22)'; CX.lineWidth = 1.2; CX.stroke();
+    CX.fillStyle = grad(-12, -80, 30, -38, [[0, '#f5c65a'], [0.45, '#b9822a'], [1, '#4a3410']]);
+    CX.beginPath(); CX.arc(9, -58, 21, 0, 7); CX.fill();
+    CX.fillStyle = 'rgba(255,255,255,.45)';
+    CX.beginPath(); CX.ellipse(1, -66, 8, 5, -0.5, 0, 7); CX.fill();
+    CX.strokeStyle = 'rgba(255,255,255,.85)'; CX.lineWidth = 1;          // a star caught in the visor
+    CX.beginPath(); CX.moveTo(16, -52); CX.lineTo(22, -52); CX.moveTo(19, -55); CX.lineTo(19, -49); CX.stroke();
+    CX.fillStyle = '#ffe9a8'; rr(-24, -66, 6, 8, 2); CX.fill();          // helmet lamp
     if (S.unbalance) {
       CX.fillStyle = 'rgba(160,220,255,.75)';
       for (var j = 0; j < 8; j++) {
         var d = ((S.t * 240 + j * 22) % 150);
         CX.globalAlpha = 0.7 * (1 - d / 150);
-        CX.beginPath(); CX.arc(-52 - d, 10 + Math.sin(j * 2 + S.t * 8) * 7, 6 - d / 40, 0, 7); CX.fill();
+        CX.beginPath(); CX.arc(-58 - d, 14 + Math.sin(j * 2 + S.t * 8) * 7, 6 - d / 40, 0, 7); CX.fill();
       }
       CX.globalAlpha = 1;
     }
@@ -2081,43 +2751,120 @@ SCEN.incline = {
     if (this.st.d > this.slopeLen() - 44) this.reset();
   },
   draw: function () {
+    var L = TH.light;
     skyBox();
+    // an outdoor workshop yard: sun or moon, drifting clouds, far hills and trees
+    sunOrMoon(150, 104, 26);
+    var drift = (S.t * 8) % 1500;
+    [[260, 150, 0.8], [700, 96, 1.0], [1150, 170, 0.7]].forEach(function (c) {
+      cloudPuff(((c[0] + drift) % 1500) - 150, c[1], c[2], L ? 0.85 : 0.3);
+    });
+    CX.save();
+    CX.fillStyle = mixHex(TH['sky-2'], TH.ink, L ? 0.12 : 0.08);
+    CX.beginPath(); CX.moveTo(0, this.BASE);
+    for (var hx = 0; hx <= W; hx += 20) CX.lineTo(hx, 392 - 34 * Math.sin(hx / 160 + 0.6) - 16 * Math.sin(hx / 61));
+    CX.lineTo(W, this.BASE); CX.fill();
+    CX.fillStyle = mixHex(TH['sky-2'], L ? '#4f8a4a' : '#2f5a48', L ? 0.35 : 0.3);
+    CX.beginPath(); CX.moveTo(0, this.BASE);
+    for (var hx2 = 0; hx2 <= W; hx2 += 20) CX.lineTo(hx2, 438 - 16 * Math.sin(hx2 / 110 + 2) - 8 * Math.sin(hx2 / 43));
+    CX.lineTo(W, this.BASE); CX.fill();
+    CX.restore();
+    [[1010, 64], [1080, 86], [1150, 58], [70, 60], [150, 44]].forEach(function (t) { treeShape(t[0], this.BASE + 2, t[1]); }, this);
     groundBand(this.BASE, 'ground', 760);
     var th = this.p.thetaDeg * Math.PI / 180;
-    var L = this.run(), hgt = L * Math.tan(th);
+    var Lr = this.run(), hgt = Lr * Math.tan(th);
     var ax = this.AX, ay = this.BASE - hgt;          // apex, top left
-    var bx = ax + L, by = this.BASE;                 // foot of the slope, bottom right
-    // the wedge
+    var bx = ax + Lr, by = this.BASE;                // foot of the slope, bottom right
+    var smooth = S.unbalance;
+    shadowEllipse((ax + bx) / 2 + 20, by + 4, Lr * 0.55, 7);
+    // the wedge: a solid wooden ramp with its grain running along the slope
     CX.save();
-    CX.fillStyle = grad(ax, ay, bx, by,
-      [[0, TH.light ? '#b9a487' : '#4a4033'], [1, TH.light ? '#8e7c62' : '#2e2822']]);
     CX.beginPath(); CX.moveTo(ax, ay); CX.lineTo(bx, by); CX.lineTo(ax, by); CX.closePath();
+    CX.fillStyle = grad(ax, ay, bx, by, [[0, L ? '#d2a36a' : '#7a5634'], [1, L ? '#a8773f' : '#4a331e']]);
     CX.fill();
+    CX.clip();
+    var ux0 = Math.cos(th), uy0 = Math.sin(th), nx0 = Math.sin(th), ny0 = -Math.cos(th);
+    CX.strokeStyle = L ? 'rgba(90,55,20,.22)' : 'rgba(20,10,0,.35)'; CX.lineWidth = 1.3;
+    for (var gi = 1; gi < 40; gi++) {                                 // grain lines parallel to the slope
+      var off = gi * 11 + (gi % 3) * 2;
+      var sx = ax - nx0 * off, sy = ay - ny0 * off;
+      CX.beginPath(); CX.moveTo(sx - ux0 * 40, sy - uy0 * 40);
+      for (var s = 0; s <= 1400; s += 40) {
+        var wob = Math.sin(s / 90 + gi) * 1.6;
+        CX.lineTo(sx + ux0 * s - nx0 * wob, sy + uy0 * s - ny0 * wob);
+      }
+      CX.stroke();
+    }
+    CX.fillStyle = 'rgba(0,0,0,.14)'; CX.fillRect(ax, ay, 12, hgt);    // the back face in shade
+    CX.restore();
+    CX.save();
+    CX.beginPath(); CX.moveTo(ax, ay); CX.lineTo(bx, by); CX.lineTo(ax, by); CX.closePath();
     CX.strokeStyle = TH.border; CX.lineWidth = 2; CX.stroke();
     CX.restore();
-    // angle mark at the foot
+    // the running surface: grey-brown sandpaper when rough, a polished glossy strip when smooth
+    var sl = this.slopeLen(), band = 7;
+    CX.save();
+    CX.translate(ax, ay); CX.rotate(th);
+    if (smooth) {
+      CX.fillStyle = grad(0, 0, 0, band, [[0, '#e8f6ff'], [1, '#9cc8e4']]);
+      CX.fillRect(0, 0, sl, band);
+      CX.fillStyle = 'rgba(255,255,255,.75)';
+      for (var gl = 0; gl < sl; gl += 90) CX.fillRect(gl + 20, 1.2, 34, 1.6);
+    } else {
+      CX.fillStyle = L ? '#8c7b66' : '#5a4e40'; CX.fillRect(0, 0, sl, band);
+      CX.fillStyle = L ? 'rgba(40,30,20,.45)' : 'rgba(0,0,0,.45)';
+      for (var gr = 0; gr < sl / 2.2; gr++) CX.fillRect(srand(gr) * sl, srand(gr + 900) * (band - 1.5), 1.5, 1.5);
+      CX.fillStyle = 'rgba(255,255,255,.25)';
+      for (var gr2 = 0; gr2 < sl / 8; gr2++) CX.fillRect(srand(gr2 + 3000) * sl, srand(gr2 + 5000) * (band - 1.5), 1.2, 1.2);
+    }
+    CX.restore();
+    // angle mark at the foot, with protractor ticks every 5°
     CX.save();
     CX.strokeStyle = TH.accent; CX.lineWidth = 2;
     CX.beginPath(); CX.arc(bx, by, 54, Math.PI - th, Math.PI); CX.stroke();
+    CX.lineWidth = 1.2;
+    for (var dg = 5; dg < this.p.thetaDeg; dg += 5) {
+      var ra = Math.PI - dg * Math.PI / 180, big = dg % 10 === 0;
+      CX.beginPath(); CX.moveTo(bx + Math.cos(ra) * 54, by + Math.sin(ra) * 54);
+      CX.lineTo(bx + Math.cos(ra) * (big ? 45 : 49), by + Math.sin(ra) * (big ? 45 : 49)); CX.stroke();
+    }
     CX.setLineDash([6, 5]); CX.globalAlpha = .7; CX.lineWidth = 1.5;
     CX.beginPath(); CX.moveTo(bx, by); CX.lineTo(bx - 130, by); CX.stroke();
     CX.restore();
     mono('θ = ' + this.p.thetaDeg.toFixed(0) + '°', bx - 84, by - 22, 14, TH.accent, 'center');
 
-    // the block, sitting on the slope
+    // the block: a small wooden crate sitting on the slope
     var ux = Math.cos(th), uy = Math.sin(th);        // unit vector down the slope
     var nx = Math.sin(th), ny = -Math.cos(th);       // outward normal
     var d = Math.min(this.st.d, this.slopeLen() - 30);
     var bw = 74, bh = 48;
     var cx0 = ax + ux * d + nx * bh / 2, cy0 = ay + uy * d + ny * bh / 2;
+    if (this.st.v > 0.05) {                          // it is sliding: streaks trail up the slope
+      CX.save(); CX.strokeStyle = withA(TH['text-muted'], 0.7); CX.lineWidth = 2; CX.lineCap = 'round';
+      for (var k = 0; k < 3; k++) {
+        var o2 = -14 + k * 14, ln = 18 + Math.min(50, this.st.v * 10);
+        var sx0 = cx0 - ux * (bw / 2 + 8) + nx * o2, sy0 = cy0 - uy * (bw / 2 + 8) + ny * o2;
+        CX.beginPath(); CX.moveTo(sx0, sy0); CX.lineTo(sx0 - ux * ln, sy0 - uy * ln); CX.stroke();
+      }
+      CX.restore();
+    }
     CX.save();
     CX.translate(cx0, cy0); CX.rotate(th);
-    CX.fillStyle = grad(-bw / 2, -bh / 2, bw / 2, bh / 2, [[0, '#4fa3c7'], [1, '#2b6f92']]);
-    rr(-bw / 2, -bh / 2, bw, bh, 7); CX.fill();
-    CX.strokeStyle = 'rgba(0,0,0,.35)'; CX.lineWidth = 1.6; CX.stroke();
-    CX.fillStyle = 'rgba(255,255,255,.35)';
-    rr(-bw / 2 + 6, -bh / 2 + 5, bw - 12, 7, 3); CX.fill();
-    mono(this.p.m.toFixed(1) + ' kg', 0, 6, 13, '#ffffff', 'center');
+    CX.fillStyle = 'rgba(0,0,0,.2)'; rr(-bw / 2 + 3, -bh / 2 + 4, bw, bh, 5); CX.fill();
+    CX.fillStyle = grad(-bw / 2, -bh / 2, bw / 2, bh / 2, [[0, '#e0a95c'], [1, '#a8702e']]);
+    rr(-bw / 2, -bh / 2, bw, bh, 5); CX.fill();
+    CX.strokeStyle = 'rgba(70,40,10,.35)'; CX.lineWidth = 1;          // plank joints
+    for (var pj = 1; pj < 3; pj++) { CX.beginPath(); CX.moveTo(-bw / 2, -bh / 2 + pj * bh / 3); CX.lineTo(bw / 2, -bh / 2 + pj * bh / 3); CX.stroke(); }
+    CX.strokeStyle = '#8a5a24'; CX.lineWidth = 5;                     // frame and cross brace
+    rr(-bw / 2 + 2.5, -bh / 2 + 2.5, bw - 5, bh - 5, 4); CX.stroke();
+    CX.lineWidth = 4;
+    CX.beginPath(); CX.moveTo(-bw / 2 + 5, bh / 2 - 5); CX.lineTo(bw / 2 - 5, -bh / 2 + 5); CX.stroke();
+    CX.fillStyle = '#5b4a38';
+    [[-1, -1], [1, -1], [-1, 1], [1, 1]].forEach(function (c) { CX.beginPath(); CX.arc(c[0] * (bw / 2 - 5), c[1] * (bh / 2 - 5), 1.8, 0, 7); CX.fill(); });
+    CX.strokeStyle = 'rgba(0,0,0,.4)'; CX.lineWidth = 1.4; rr(-bw / 2, -bh / 2, bw, bh, 5); CX.stroke();
+    CX.fillStyle = 'rgba(255,252,240,.92)'; rr(-25, -9, 50, 18, 4); CX.fill();   // mass label
+    CX.strokeStyle = 'rgba(0,0,0,.25)'; CX.lineWidth = 1; rr(-25, -9, 50, 18, 4); CX.stroke();
+    mono(this.p.m.toFixed(1) + ' kg', 0, 0.5, 12, '#2a2118', 'center');
     CX.restore();
 
     var r = PHYS.incline(this.cfg());
@@ -2204,44 +2951,165 @@ SCEN.trolley = {
     if (this.st.x > 1050) { this.st.x = 150; this.st.v = 0; this.st.t = 0; }
   },
   draw: function () {
+    // A school physics lab: a whiteboard and a shelf of glassware on the wall, an
+    // aluminium dynamics track on a lab bench with a metre rule along its edge,
+    // two light gates that time the trolley, and a hand pushing through a force
+    // sensor so the "F" of F = ma is a number you can read.
+    var L = TH.light, TOP = 444, x = this.st.x, by = 430;
     skyBox();
-    // bench + rail
     CX.save();
-    CX.fillStyle = grad(0, 442, 0, H + OV, [[0, TH.light ? '#c8b393' : '#3a3327'],
-                                            [1, TH.light ? '#a68f6d' : '#221e17']]);
-    CX.fillRect(0, 442, W, H + OV - 442);
-    surfaceTexture(540, 32, TH.light ? '#8a7351' : '#6b5c3f');
-    metalBar(0, 430, W, 14, 0, '#7d8694', '#aeb7c5');
+    CX.globalAlpha = 0.05; CX.fillStyle = TH.ink;                 // painted breeze-block wall
+    for (var ry = 170, row = 0; ry < TOP; ry += 34, row++)
+      for (var rx = (row % 2) * -60; rx < W; rx += 120) { CX.fillRect(rx + 2, ry + 2, 116, 30); }
     CX.restore();
-    txt('smooth (frictionless) track', 16, 414, 12, TH['text-muted'], 'left', 600);
-    // distance ticks — 1 square = 1 m
-    CX.save(); CX.strokeStyle = TH['text-muted']; CX.lineWidth = 1;
+    // whiteboard
+    var wbx = 470, wby = 172, wbw = 300, wbh = 118;
+    CX.save();
+    CX.fillStyle = 'rgba(0,0,0,.18)'; rr(wbx + 4, wby + 5, wbw, wbh, 4); CX.fill();
+    CX.fillStyle = '#b9c0ca'; rr(wbx - 6, wby - 6, wbw + 12, wbh + 12, 5); CX.fill();
+    CX.fillStyle = '#fbfcfd'; CX.fillRect(wbx, wby, wbw, wbh);
+    CX.fillStyle = '#9aa2ad'; rr(wbx + 40, wby + wbh + 6, wbw - 80, 6, 2); CX.fill();   // tray
+    CX.fillStyle = '#2f5fa8'; CX.fillRect(wbx + 70, wby + wbh + 2, 26, 5);
+    CX.fillStyle = '#c0392b'; CX.fillRect(wbx + 104, wby + wbh + 2, 26, 5);
+    CX.restore();
+    txt('F = ma', wbx + 18, wby + 44, 28, '#2f5fa8', 'left', 800);
+    txt('a ∝ F   (m fixed)', wbx + 20, wby + 74, 13, '#3b4452', 'left', 700);
+    txt('a ∝ 1/m (F fixed)', wbx + 20, wby + 96, 13, '#3b4452', 'left', 700);
+    CX.save();                                                      // a sketched a–F graph
+    var gx0 = wbx + 182, gy0 = wby + 100;
+    CX.strokeStyle = '#3b4452'; CX.lineWidth = 2;
+    CX.beginPath(); CX.moveTo(gx0, gy0 - 80); CX.lineTo(gx0, gy0); CX.lineTo(gx0 + 96, gy0); CX.stroke();
+    CX.strokeStyle = '#c0392b'; CX.lineWidth = 2.4;
+    CX.beginPath(); CX.moveTo(gx0, gy0); CX.lineTo(gx0 + 88, gy0 - 70); CX.stroke();
+    CX.fillStyle = '#2f5fa8';
+    [0.25, 0.5, 0.75].forEach(function (f) { CX.beginPath(); CX.arc(gx0 + 88 * f, gy0 - 70 * f, 3, 0, 7); CX.fill(); });
+    CX.restore();
+    txt('a', gx0 - 12, gy0 - 68, 12, '#3b4452', 'center', 700);
+    txt('F', gx0 + 92, gy0 + 14, 12, '#3b4452', 'center', 700);
+    // shelf of glassware
+    CX.save();
+    CX.fillStyle = L ? '#9b7a55' : '#5a4632'; CX.fillRect(930, 292, 240, 8);
+    CX.fillStyle = 'rgba(0,0,0,.2)'; CX.fillRect(930, 300, 240, 3);
+    [[958, 'beaker', '#7fc8e8'], [1006, 'flask', '#9be29b'], [1052, 'cyl', '#f4b36b'], [1092, 'beaker', '#e89bb8'], [1142, 'flask', '#b7a3f0']].forEach(function (g) {
+      var gx = g[0];
+      CX.fillStyle = 'rgba(210,235,250,.35)'; CX.strokeStyle = 'rgba(210,235,250,.8)'; CX.lineWidth = 1.5;
+      CX.beginPath();
+      if (g[1] === 'beaker') { CX.rect(gx - 16, 254, 32, 38); }
+      else if (g[1] === 'cyl') { CX.rect(gx - 7, 238, 14, 54); }
+      else { CX.moveTo(gx - 5, 242); CX.lineTo(gx + 5, 242); CX.lineTo(gx + 5, 260); CX.lineTo(gx + 20, 292); CX.lineTo(gx - 20, 292); CX.lineTo(gx - 5, 260); CX.closePath(); }
+      CX.fill(); CX.stroke();
+      CX.fillStyle = g[2];
+      if (g[1] === 'beaker') CX.fillRect(gx - 14, 272, 28, 18);
+      else if (g[1] === 'cyl') CX.fillRect(gx - 5, 262, 10, 28);
+      else { CX.beginPath(); CX.moveTo(gx - 12, 276); CX.lineTo(gx + 12, 276); CX.lineTo(gx + 18, 290); CX.lineTo(gx - 18, 290); CX.fill(); }
+    });
+    CX.restore();
+
+    // the lab bench: black epoxy top, a metre rule along the edge, cupboards below
+    CX.save();
+    CX.fillStyle = L ? '#3d434d' : '#23272e'; CX.fillRect(0, TOP, W, 26);
+    CX.fillStyle = 'rgba(255,255,255,.10)'; CX.fillRect(0, TOP, W, 3);
+    var cab1 = L ? '#d8c6a4' : '#3a3327', cab2 = L ? '#bfa983' : '#2b261d';
+    CX.fillStyle = grad(0, 524, 0, 800, [[0, cab1], [1, cab2]]); CX.fillRect(0, 470, W, 330);
+    CX.strokeStyle = 'rgba(0,0,0,.25)'; CX.lineWidth = 2;
+    for (var cd = 0; cd < 6; cd++) {                                // doors and drawers
+      var dx = 12 + cd * 198;
+      CX.strokeRect(dx, 540, 186, 56); CX.strokeRect(dx, 606, 186, 180);
+      CX.fillStyle = L ? '#8c7a5c' : '#9aa1ad';
+      rr(dx + 73, 564, 40, 7, 3); CX.fill(); rr(dx + 170, 680, 7, 40, 3); CX.fill();
+    }
+    CX.fillStyle = L ? '#b9bec6' : '#1a1d23'; CX.fillRect(0, 800, W, 16);   // kick board
+    CX.fillStyle = L ? '#dfe3e8' : '#2a2f38'; CX.fillRect(0, 816, W, H + OV - 816);
+    CX.strokeStyle = L ? 'rgba(0,0,0,.08)' : 'rgba(255,255,255,.05)'; CX.lineWidth = 1.5;
+    for (var ft = 0; ft < W; ft += 80) { CX.beginPath(); CX.moveTo(ft, 816); CX.lineTo(ft - 60, H + OV); CX.stroke(); }
+    for (var fy = 850; fy < H + OV; fy += 50) { CX.beginPath(); CX.moveTo(0, fy); CX.lineTo(W, fy); CX.stroke(); }
+    // metre rule
+    CX.fillStyle = grad(0, 472, 0, 526, [[0, '#f3d57a'], [1, '#e2b84a']]); CX.fillRect(0, 472, W, 54);
+    CX.fillStyle = 'rgba(0,0,0,.15)'; CX.fillRect(0, 524, W, 2);
+    CX.restore();
+    CX.save(); CX.strokeStyle = '#3b2f16'; CX.lineWidth = 1;
     for (var i = 0; i <= 40; i++) {
-      var gx = 150 + i * this.PPM;
-      if (gx > W) break;
-      CX.globalAlpha = i % 5 === 0 ? .9 : .4;
-      CX.beginPath(); CX.moveTo(gx, 478); CX.lineTo(gx, i % 5 === 0 ? 500 : 490); CX.stroke();
-      if (i % 5 === 0) { CX.globalAlpha = 1; mono(i + ' m', gx, 516, 10, TH['text-dim'], 'center'); }
+      var gxx = 150 + i * this.PPM;
+      if (gxx > W) break;
+      CX.globalAlpha = i % 5 === 0 ? .95 : .55;
+      CX.beginPath(); CX.moveTo(gxx, 472); CX.lineTo(gxx, i % 5 === 0 ? 496 : 486); CX.stroke();
+      if (i % 5 === 0) { CX.globalAlpha = 1; mono(i + ' m', gxx, 510, 10, '#3b2f16', 'center'); }
     }
     CX.restore();
-    var x = this.st.x, by = 430;
-    shadowEllipse(x, by + 2, 62, 6);
-    // trolley
+    txt('smooth (frictionless) track', 16, 462, 12, 'rgba(255,255,255,.72)', 'left', 600);
+
+    // the track: an aluminium extrusion on two feet, with an end stop and buffer
+    metalBar(0, 430, W, 14, 0, '#7d8694', '#aeb7c5');
     CX.save();
-    var bodyH = 34 + this.p.m * 4.2;
-    metalBar(x - 58, by - 18 - bodyH, 116, bodyH, 6, '#2f6f5f', '#48a189');
-    metalBar(x - 62, by - 22, 124, 10, 4, '#5b6270', '#8b93a2');
-    CX.fillStyle = TH.light ? '#eef2f7' : '#dfe6ef';
-    mono(this.p.m.toFixed(1) + ' kg', x, by - 18 - bodyH / 2, 15, '#ffffff', 'center');
+    CX.fillStyle = '#5b6270'; CX.fillRect(1150, 404, 24, 26);
+    CX.fillStyle = '#1b1d22'; rr(1140, 410, 12, 16, 4); CX.fill();
     CX.restore();
-    wheel(x - 36, by - 6, 15); wheel(x + 36, by - 6, 15);
-    // pusher plate
+
+    // light gates: the trolley breaks the beam and the gate shows the speed it measured
+    var st = this.st, self = this, trolleyHalf = 58;
+    if (!st.gates) st.gates = [null, null];
+    [380, 840].forEach(function (gx, gi) {
+      var blocked = Math.abs(x - gx) < trolleyHalf;
+      if (st.gates[gi] === null && x >= gx) st.gates[gi] = st.v;
+      if (x < 160) st.gates[gi] = null;                       // a fresh run
+      CX.save();
+      CX.fillStyle = '#2b2f36'; CX.fillRect(gx - 4, 300, 8, 144);
+      CX.fillStyle = '#3a404b'; rr(gx - 44, 256, 88, 44, 6); CX.fill();
+      CX.fillStyle = '#0d1a12'; rr(gx - 36, 263, 72, 22, 3); CX.fill();
+      CX.fillStyle = blocked ? '#4ade80' : '#ff5a5a';
+      CX.beginPath(); CX.arc(gx + 30, 292, 3, 0, 7); CX.fill();
+      CX.fillStyle = '#ff3b3b';                                // the beam, seen end-on
+      CX.shadowColor = '#ff3b3b'; CX.shadowBlur = 8;
+      CX.beginPath(); CX.arc(gx, 392, 3.5, 0, 7); CX.fill();
+      CX.restore();
+      var g = st.gates[gi];
+      mono(g === null ? '— . — m/s' : g.toFixed(2) + ' m/s', gx, 274.5, 11, '#7dff9a', 'center');
+      if (S.labels) txt('light gate ' + (gi + 1), gx + 8, 318, 10, TH['text-muted'], 'left', 600);
+    });
+
+    shadowEllipse(x, by + 2, 62, 6);
+    // the dynamics trolley: a painted body, a plunger at the front, turning wheels
+    CX.save();
+    var bodyH = 34 + this.p.m * 4.2, top = by - 18 - bodyH;
+    metalBar(x - 58, top, 116, bodyH, 6, '#2f6f5f', '#48a189');
+    CX.strokeStyle = 'rgba(0,0,0,.18)'; CX.lineWidth = 1;          // slotted masses stacked inside
+    for (var sm = 1; sm * 16 < bodyH - 4; sm++) { CX.beginPath(); CX.moveTo(x - 52, top + sm * 16); CX.lineTo(x + 52, top + sm * 16); CX.stroke(); }
+    metalBar(x - 62, by - 22, 124, 10, 4, '#5b6270', '#8b93a2');
+    CX.fillStyle = '#8b93a2'; CX.fillRect(x + 58, top + bodyH * 0.45, 12, 4);   // spring plunger
+    CX.fillStyle = '#d64545'; rr(x + 68, top + bodyH * 0.45 - 5, 6, 14, 2); CX.fill();
+    mono(this.p.m.toFixed(1) + ' kg', x, top + bodyH / 2, 15, '#ffffff', 'center');
+    CX.restore();
+    var ang = (x - 150) / 15;
+    [-36, 36].forEach(function (dx) {
+      wheel(x + dx, by - 6, 15);
+      CX.save(); CX.strokeStyle = 'rgba(255,255,255,.55)'; CX.lineWidth = 2;
+      for (var k = 0; k < 3; k++) {
+        var a2 = ang + k * Math.PI / 3;
+        CX.beginPath(); CX.moveTo(x + dx - Math.cos(a2) * 11, by - 6 - Math.sin(a2) * 11); CX.lineTo(x + dx + Math.cos(a2) * 11, by - 6 + Math.sin(a2) * 11); CX.stroke();
+      }
+      CX.restore();
+    });
+    // a hand pushes through a force sensor, whose display reads the applied force
     if (this.p.F > 0) {
-      CX.save(); CX.fillStyle = TH.accent;
-      rr(x - 74, by - 18 - bodyH * 0.75, 10, bodyH * 0.6, 3); CX.fill(); CX.restore();
+      var sy = top + bodyH * 0.5, sx = x - 62;
+      CX.save();
+      CX.fillStyle = '#e8b64c'; rr(sx - 30, sy - 13, 30, 26, 4); CX.fill();        // sensor body
+      CX.strokeStyle = 'rgba(0,0,0,.35)'; CX.lineWidth = 1.2; CX.stroke();
+      CX.fillStyle = '#0d1a12'; rr(sx - 27, sy - 8, 24, 11, 2); CX.fill();
+      CX.fillStyle = '#6b7280'; CX.fillRect(sx - 64, sy - 3, 34, 6);                // push rod
+      CX.lineCap = 'round';
+      CX.strokeStyle = 'rgba(0,0,0,.28)'; CX.lineWidth = 23;
+      CX.beginPath(); CX.moveTo(sx - 240, sy - 56); CX.lineTo(sx - 78, sy - 2); CX.stroke();
+      CX.strokeStyle = '#4a7fc1'; CX.lineWidth = 20;
+      CX.beginPath(); CX.moveTo(sx - 240, sy - 56); CX.lineTo(sx - 82, sy - 5); CX.stroke();
+      CX.fillStyle = '#f1c9a5'; CX.strokeStyle = 'rgba(0,0,0,.3)'; CX.lineWidth = 1.4;
+      rr(sx - 84, sy - 12, 22, 24, 9); CX.fill(); CX.stroke();                      // fist round the rod
+      CX.restore();
+      mono(this.p.F.toFixed(0) + 'N', sx - 15, sy - 2.5, 8, '#7dff9a', 'center');
+      if (S.labels) txt('force sensor', sx - 15, sy + 26, 10, TH['text-muted'], 'center', 600);
     }
-    arrow(x + 66, by - 18 - bodyH - 14, Math.min(160, this.st.v * 8), 0, TH.blue, 3);
-    txt('v = ' + this.st.v.toFixed(2) + ' m/s', x + 70, by - 30 - bodyH - 14, 13, TH.blue, 'left', 700);
+    arrow(x + 66, top - 14, Math.min(160, this.st.v * 8), 0, TH.blue, 3);
+    txt('v = ' + this.st.v.toFixed(2) + ' m/s', x + 70, top - 26, 13, TH.blue, 'left', 700);
     return { bx: x, by: by - 18 - bodyH / 2 };
   },
   fbd: function () {
@@ -2337,28 +3205,93 @@ SCEN.rocket = {
     if (this.st.t > tEnd) this.reset();
   },
   draw: function () {
+    // A launch site: a service tower and a concrete pad with its flame trench,
+    // the coast and hills on the horizon, and billowing smoke at lift-off.  As the
+    // rocket climbs the ground slides away, the sky darkens and stars come out.
+    var L = TH.light;
     CX.save();
     var frac = Math.min(1, this.st.alt / 3000);
-    CX.fillStyle = grad(0, 0, 0, H, [[0, TH.light ? '#8fb6e0' : '#0a1024'],
-                                     [1, TH.light ? '#dbe9f7' : '#1b3358']]);
+    CX.fillStyle = grad(0, 0, 0, H, [[0, L ? '#8fb6e0' : '#0a1024'],
+                                     [1, L ? '#dbe9f7' : '#1b3358']]);
     CX.fillRect(0, -OV, W, H + 2 * OV);
     CX.globalAlpha = frac * 0.85; CX.fillStyle = '#05070f'; CX.fillRect(0, -OV, W, H + 2 * OV);
     CX.globalAlpha = 1; CX.restore();
+    // stars come out as the air thins (and are always faintly there at night)
+    var starA = Math.max(L ? 0 : 0.35, frac);
+    if (starA > 0.02) {
+      CX.save(); CX.fillStyle = '#ffffff';
+      for (var si = 0; si < 90; si++) {
+        CX.globalAlpha = starA * (0.35 + 0.5 * srand(si + 7));
+        CX.beginPath(); CX.arc(srand(si) * W, 100 + srand(si + 99) * 640, 0.6 + srand(si + 50), 0, 7); CX.fill();
+      }
+      CX.restore();
+    }
     // scrolling clouds show altitude
     CX.save(); CX.globalAlpha = 0.5 * (1 - frac);
     for (var i = 0; i < 7; i++) {
       var cy = ((i * 130 + this.st.alt * 0.55) % (H + 200)) - 60;
       var cx0 = 120 + ((i * 317) % 900);
-      CX.fillStyle = TH.light ? '#ffffff' : '#93a7c4';
+      CX.fillStyle = L ? '#ffffff' : '#93a7c4';
       CX.beginPath();
       CX.ellipse(cx0, cy, 78, 24, 0, 0, 7); CX.ellipse(cx0 + 52, cy + 8, 52, 18, 0, 0, 7);
       CX.ellipse(cx0 - 48, cy + 10, 44, 16, 0, 0, 7); CX.fill();
     }
     CX.restore();
     var r = PHYS.rocket(this.cfg(), this.st.t);
-    var gy = 560 + Math.min(200, this.st.alt * 0.6);
-    if (gy < 620) groundBand(gy, '');
     var x = 470, by = 372, RS = 1.28;
+    // the ground falls away smoothly (it no longer vanishes at a fixed height)
+    var gy = 514 + this.st.alt * 0.9;
+    if (gy < H + OV) {
+      CX.save();
+      // coast, sea and far hills on the horizon
+      CX.fillStyle = mixHex(TH['sky-2'], TH.ink, L ? 0.16 : 0.12);
+      CX.beginPath(); CX.moveTo(0, gy - 20);
+      for (var hx = 0; hx <= W; hx += 20) CX.lineTo(hx, gy - 38 - 22 * Math.sin(hx / 130 + 1) - 10 * Math.sin(hx / 47));
+      CX.lineTo(W, gy - 20); CX.lineTo(W, gy); CX.lineTo(0, gy); CX.fill();
+      CX.fillStyle = L ? '#6ea8d6' : '#1f4a72'; CX.fillRect(760, gy - 22, W - 760, 22);   // the sea
+      CX.fillStyle = 'rgba(255,255,255,.35)';
+      for (var wv = 0; wv < 8; wv++) CX.fillRect(790 + wv * 52, gy - 12 + (wv % 2) * 5, 22, 2);
+      CX.restore();
+      groundBand(gy, '');
+      // the service tower: a red-and-white lattice with two access arms
+      var tx = 300, tTop = gy - 330;
+      CX.save();
+      CX.strokeStyle = '#c8433a'; CX.lineWidth = 4;
+      CX.strokeRect(tx - 22, tTop, 44, 330);
+      CX.lineWidth = 2;
+      for (var ty = tTop; ty < gy; ty += 30) {
+        CX.beginPath(); CX.moveTo(tx - 22, ty); CX.lineTo(tx + 22, ty + 30); CX.moveTo(tx + 22, ty); CX.lineTo(tx - 22, ty + 30); CX.stroke();
+        CX.beginPath(); CX.moveTo(tx - 22, ty); CX.lineTo(tx + 22, ty); CX.stroke();
+      }
+      CX.fillStyle = '#e8e8e8'; CX.fillRect(tx - 28, tTop - 14, 56, 14);
+      CX.fillStyle = '#ff4040'; CX.beginPath(); CX.arc(tx, tTop - 20, 4 + Math.abs(Math.sin(S.t * 3)) * 1.5, 0, 7); CX.fill();
+      // access arms swing back once the rocket has left
+      var swing = Math.min(1, this.st.t / 1.2);
+      CX.strokeStyle = '#9aa3b2'; CX.lineWidth = 6;
+      [[tTop + 70, 118], [tTop + 190, 110]].forEach(function (a) {
+        var len = a[1] * (1 - 0.75 * swing);
+        CX.beginPath(); CX.moveTo(tx + 22, a[0]); CX.lineTo(tx + 22 + len, a[0]); CX.stroke();
+      });
+      // the concrete pad and its flame trench
+      CX.fillStyle = L ? '#b5b0a6' : '#4a4d55'; CX.fillRect(250, gy - 16, 440, 16);
+      CX.fillStyle = 'rgba(0,0,0,.35)'; CX.fillRect(420, gy - 16, 100, 16);
+      CX.fillStyle = 'rgba(255,255,255,.18)'; CX.fillRect(250, gy - 16, 440, 3);
+      CX.restore();
+      if (S.labels) txt('service tower', tx, gy + 24, 11, TH['text-muted'], 'center', 600);
+      // lift-off smoke rolling out sideways along the ground
+      if (r.burning || this.st.t < 6) {
+        var sa = Math.max(0, 1 - this.st.alt / 160);
+        CX.save();
+        for (var sp = 0; sp < 16; sp++) {
+          var side = sp % 2 ? 1 : -1, grow = Math.min(1, this.st.t / 2.5);
+          var sx = x + side * (40 + srand(sp) * 330 * grow), syy = gy - 14 - srand(sp + 5) * 40 * grow;
+          CX.globalAlpha = 0.55 * sa;
+          CX.fillStyle = L ? '#e9ecf0' : '#8d99ae';
+          CX.beginPath(); CX.arc(sx, syy, 18 + srand(sp + 9) * 30 * grow, 0, 7); CX.fill();
+        }
+        CX.restore();
+      }
+    }
     CX.save(); CX.translate(x, by); CX.scale(RS, RS); CX.translate(-x, -by);
     // exhaust puffs
     CX.save();
@@ -2369,32 +3302,52 @@ SCEN.rocket = {
       CX.beginPath(); CX.arc(x + p.x, by + 96 + p.y, 8 + p.life * 26, 0, 7); CX.fill();
     });
     CX.restore();
-    // flame
+    // flame, with a glow around its root
     if (r.burning) {
       var fl = 60 + 40 * Math.abs(Math.sin(S.t * 22));
       CX.save();
-      CX.fillStyle = grad(0, by + 88, 0, by + 88 + fl, [[0, '#fff3b0'], [.45, '#ff9f45'], [1, 'rgba(255,80,40,0)']]);
-      CX.beginPath(); CX.moveTo(x - 22, by + 88); CX.lineTo(x + 22, by + 88);
-      CX.lineTo(x + 6, by + 88 + fl); CX.lineTo(x - 6, by + 88 + fl); CX.closePath(); CX.fill();
+      var gl = CX.createRadialGradient(x, by + 100, 2, x, by + 100, 70);
+      gl.addColorStop(0, 'rgba(255,200,120,.55)'); gl.addColorStop(1, 'rgba(255,200,120,0)');
+      CX.fillStyle = gl; CX.beginPath(); CX.arc(x, by + 100, 70, 0, 7); CX.fill();
+      CX.fillStyle = grad(0, by + 96, 0, by + 96 + fl, [[0, '#fff3b0'], [.45, '#ff9f45'], [1, 'rgba(255,80,40,0)']]);
+      CX.beginPath(); CX.moveTo(x - 20, by + 96); CX.lineTo(x + 20, by + 96);
+      CX.lineTo(x + 6, by + 96 + fl); CX.lineTo(x - 6, by + 96 + fl); CX.closePath(); CX.fill();
+      CX.fillStyle = 'rgba(255,255,255,.85)';
+      CX.beginPath(); CX.moveTo(x - 8, by + 96); CX.lineTo(x + 8, by + 96); CX.lineTo(x, by + 96 + fl * 0.45); CX.fill();
       CX.restore();
     }
     // rocket body
     CX.save();
+    CX.fillStyle = '#3a404b';                                         // engine bell
+    CX.beginPath(); CX.moveTo(x - 12, by + 86); CX.lineTo(x + 12, by + 86); CX.lineTo(x + 20, by + 98); CX.lineTo(x - 20, by + 98); CX.fill();
     CX.fillStyle = grad(x - 30, 0, x + 30, 0, [[0, '#9aa3b2'], [.45, '#f2f5fa'], [1, '#8d97a7']]);
     rr(x - 28, by - 60, 56, 148, 10); CX.fill();
     CX.strokeStyle = 'rgba(0,0,0,.3)'; CX.lineWidth = 1.3; CX.stroke();
+    CX.fillStyle = 'rgba(30,34,42,.85)';                                // roll-pattern bands
+    CX.fillRect(x - 28, by - 50, 56, 7); CX.fillRect(x - 28, by + 70, 56, 8);
+    CX.strokeStyle = 'rgba(0,0,0,.18)'; CX.lineWidth = 1;
+    CX.beginPath(); CX.moveTo(x - 28, by + 2); CX.lineTo(x + 28, by + 2); CX.stroke();
+    CX.fillStyle = grad(x - 28, 0, x + 28, 0, [[0, '#a83030'], [0.5, '#e05555'], [1, '#a02a2a']]);
+    CX.beginPath(); CX.moveTo(x - 28, by - 60); CX.quadraticCurveTo(x - 24, by - 108, x, by - 128); CX.quadraticCurveTo(x + 24, by - 108, x + 28, by - 60); CX.closePath(); CX.fill();
     CX.fillStyle = '#d64545';
-    CX.beginPath(); CX.moveTo(x - 28, by - 60); CX.lineTo(x, by - 128); CX.lineTo(x + 28, by - 60); CX.closePath(); CX.fill();
     CX.beginPath(); CX.moveTo(x - 28, by + 46); CX.lineTo(x - 58, by + 92); CX.lineTo(x - 28, by + 88); CX.closePath(); CX.fill();
     CX.beginPath(); CX.moveTo(x + 28, by + 46); CX.lineTo(x + 58, by + 92); CX.lineTo(x + 28, by + 88); CX.closePath(); CX.fill();
-    CX.fillStyle = '#2c4a7a'; CX.beginPath(); CX.arc(x, by - 24, 13, 0, 7); CX.fill();
+    CX.fillStyle = 'rgba(0,0,0,.18)';
+    CX.beginPath(); CX.moveTo(x + 28, by + 46); CX.lineTo(x + 58, by + 92); CX.lineTo(x + 44, by + 90); CX.closePath(); CX.fill();
+    CX.fillStyle = '#c9ced6'; CX.beginPath(); CX.arc(x, by - 24, 15.5, 0, 7); CX.fill();   // porthole
+    CX.fillStyle = grad(x - 12, by - 36, x + 12, by - 12, [[0, '#6fa8e0'], [1, '#1c3a66']]);
+    CX.beginPath(); CX.arc(x, by - 24, 12, 0, 7); CX.fill();
+    CX.fillStyle = 'rgba(255,255,255,.5)'; CX.beginPath(); CX.ellipse(x - 4, by - 29, 4, 2.5, -0.5, 0, 7); CX.fill();
     // fuel gauge inside the body
-    var fh = 96, ft = by - 12;
+    var fh = 70, ft = by - 4;
     CX.fillStyle = 'rgba(0,0,0,.35)'; rr(x - 14, ft, 28, fh, 5); CX.fill();
     var lev = Math.max(0, r.fuel / this.p.mFuel);
-    CX.fillStyle = '#4fc3a1'; rr(x - 12, ft + fh * (1 - lev) + 2, 24, fh * lev - 4, 4); CX.fill();
+    CX.fillStyle = lev > 0.2 ? '#4fc3a1' : '#ff8a4c'; rr(x - 12, ft + fh * (1 - lev) + 2, 24, Math.max(0, fh * lev - 4), 4); CX.fill();
+    CX.fillStyle = 'rgba(255,255,255,.7)';
+    for (var tk = 1; tk < 4; tk++) CX.fillRect(x + 8, ft + tk * fh / 4, 4, 1.2);
     CX.restore();
     CX.restore();
+    if (S.labels) txt('fuel', x - 44, by + 44, 11, TH['text-muted'], 'right', 700);
     mono('fuel ' + r.fuel.toFixed(0) + ' kg', x + 152, by + 26, 12, TH['text-dim'], 'left');
     mono('mass ' + r.m.toFixed(0) + ' kg', x + 152, by + 48, 12, TH['text-dim'], 'left');
     mono('altitude ' + this.st.alt.toFixed(0) + ' m', x + 152, by + 70, 12, TH['text-dim'], 'left');
@@ -2483,17 +3436,63 @@ SCEN.brake = {
     if (this.st.skid.length > 900) this.st.skid.shift();
   },
   draw: function () {
+    // A town street: shops and trees behind a pavement, a zebra crossing ahead.
+    // The driver slams on the brakes: tyres smoke and leave skid marks, the brake
+    // lights glow, and the driver lurches forward (their body keeps moving — the
+    // 1st Law — until the seatbelt pulls them back).
+    var L = TH.light;
     skyBox();
+    sunOrMoon(1030, 250, 20);
+    cloudPuff(260, 236, 0.8, L ? 0.85 : 0.3); cloudPuff(640, 214, 0.6, L ? 0.8 : 0.25);
+    CX.save();                                                         // far skyline
+    for (var b = 0; b < 26; b++) {
+      var bw = 34 + srand(b + 3) * 24, bh = 40 + srand(b + 41) * 80, bx = b * 48 - 10;
+      CX.fillStyle = mixHex(TH['sky-2'], TH.ink, L ? 0.14 : 0.10);
+      CX.fillRect(bx, 380 - bh, bw, bh);
+      if (!L) {
+        CX.fillStyle = 'rgba(255,209,102,.45)';
+        for (var wq = 0; wq < 6; wq++) if (srand(b * 11 + wq) > 0.55) CX.fillRect(bx + 6 + (wq % 2) * 13, 380 - bh + 8 + Math.floor(wq / 2) * 15, 5, 6);
+      }
+    }
+    CX.restore();
+    // shop fronts along the pavement
+    var shops = [[40, '#d9776a', 'CAFÉ'], [300, '#6aa3d9', 'BOOKS'], [560, '#7cc28a', 'MARKET'], [840, '#d9b36a', 'BAKERY']];
+    shops.forEach(function (sh) {
+      var sx = sh[0], sw = 220, top = 300;
+      CX.save();
+      CX.fillStyle = L ? '#efe6d6' : '#3a3f4a'; CX.fillRect(sx, top, sw, 86);
+      CX.fillStyle = sh[1];                                          // striped awning
+      CX.beginPath(); CX.moveTo(sx - 6, top + 22); CX.lineTo(sx + sw + 6, top + 22); CX.lineTo(sx + sw - 4, top + 6); CX.lineTo(sx + 4, top + 6); CX.fill();
+      CX.fillStyle = 'rgba(255,255,255,.35)';
+      for (var st2 = 0; st2 < 11; st2++) CX.fillRect(sx + st2 * 20 + 4, top + 7, 9, 15);
+      CX.fillStyle = L ? '#9fc3dd' : '#243a55'; CX.fillRect(sx + 14, top + 34, 120, 44);   // window
+      CX.fillStyle = L ? '#7a5a3a' : '#5a4632'; CX.fillRect(sx + 150, top + 32, 50, 54);   // door
+      CX.fillStyle = 'rgba(255,255,255,.25)'; CX.fillRect(sx + 24, top + 38, 18, 36);
+      CX.restore();
+      txt(sh[2], sx + sw / 2, top - 4, 12, L ? '#5a5048' : '#aab2bf', 'center', 800);
+    });
+    [[270, 64], [530, 58], [810, 66], [1080, 60]].forEach(function (t) { treeShape(t[0], 392, t[1]); });
+    // pavement and kerb
     CX.save();
-    CX.fillStyle = TH.light ? '#7d8593' : '#2b3140'; CX.fillRect(0, 400, W, H + OV - 400);
-    CX.strokeStyle = TH.light ? '#e8e2cf' : '#c8cad2'; CX.lineWidth = 4; CX.setLineDash([46, 34]);
+    CX.fillStyle = L ? '#c9c4b8' : '#4a4f5a'; CX.fillRect(0, 386, W, 14);
+    CX.fillStyle = L ? '#e7e3da' : '#6b7280'; CX.fillRect(0, 398, W, 6);
+    CX.restore();
+    // the road
+    CX.save();
+    CX.fillStyle = L ? '#7d8593' : '#2b3140'; CX.fillRect(0, 404, W, H + OV - 404);
+    CX.fillStyle = L ? 'rgba(255,255,255,.08)' : 'rgba(255,255,255,.04)';
+    for (var gr = 0; gr < 160; gr++) CX.fillRect(srand(gr) * W, 414 + srand(gr + 300) * 340, 3, 2);
+    CX.strokeStyle = L ? '#e8e2cf' : '#c8cad2'; CX.lineWidth = 4; CX.setLineDash([46, 34]);
     CX.beginPath(); CX.moveTo(0, 560); CX.lineTo(W, 560); CX.stroke();
     CX.setLineDash([]); CX.lineWidth = 3; CX.globalAlpha = .55;
     CX.beginPath(); CX.moveTo(0, 672); CX.lineTo(W, 672); CX.stroke();
+    CX.globalAlpha = 1;
+    CX.fillStyle = L ? 'rgba(255,255,255,.85)' : 'rgba(230,232,238,.75)';   // zebra crossing ahead
+    for (var zb = 0; zb < 8; zb++) CX.fillRect(1122, 414 + zb * 36, 60, 18);
     CX.restore();
-    surfaceTexture(710, 34, TH.light ? '#ffffff' : '#9aa3b2');
+    surfaceTexture(710, 34, L ? '#ffffff' : '#9aa3b2');
     var r = PHYS.brake(this.p, this.st.t);
-    var x = Math.min(1080, this.st.x), by = 452;
+    var x = Math.min(1080, this.st.x), by = 452, braking = r.v > 0.05;
     // skid marks
     CX.save(); CX.strokeStyle = 'rgba(20,20,20,.55)'; CX.lineWidth = 7; CX.lineCap = 'round';
     if (this.st.skid.length > 1) {
@@ -2504,23 +3503,78 @@ SCEN.brake = {
       });
     }
     CX.restore();
-    shadowEllipse(x, by + 8, 108, 9);
+    // tyre smoke while the wheels are skidding
+    if (r.v > 0.3) {
+      CX.save();
+      for (var sp = 0; sp < 10; sp++) {
+        var d = (S.t * 70 + sp * 11) % 70, wx0 = sp % 2 ? x - 70 : x + 74;
+        CX.globalAlpha = 0.35 * (1 - d / 70) * Math.min(1, r.v / 6);
+        CX.fillStyle = L ? '#d5d9df' : '#9aa3b2';
+        CX.beginPath(); CX.arc(wx0 - 20 - d, by - 6 - d * 0.35, 6 + d * 0.25, 0, 7); CX.fill();
+      }
+      CX.restore();
+    }
+    shadowEllipse(x, by + 8, 112, 9);
     CX.save();
     CX.fillStyle = grad(0, by - 84, 0, by, [[0, '#b03a3a'], [.6, '#e05555'], [1, '#8d2c2c']]);
     rr(x - 118, by - 48, 236, 44, 11); CX.fill();
     CX.beginPath(); CX.moveTo(x - 68, by - 48); CX.lineTo(x - 42, by - 84);
     CX.lineTo(x + 46, by - 84); CX.lineTo(x + 76, by - 48); CX.closePath();
     CX.fillStyle = '#a83535'; CX.fill();
-    CX.fillStyle = TH.light ? '#cfe3f5' : '#9fc6ea';
+    var glass = L ? '#cfe3f5' : '#7fa6cc';
+    CX.fillStyle = glass;
     CX.beginPath(); CX.moveTo(x - 60, by - 52); CX.lineTo(x - 38, by - 79);
     CX.lineTo(x + 2, by - 79); CX.lineTo(x + 2, by - 52); CX.closePath(); CX.fill();
     CX.beginPath(); CX.moveTo(x + 10, by - 52); CX.lineTo(x + 10, by - 79);
     CX.lineTo(x + 42, by - 79); CX.lineTo(x + 66, by - 52); CX.closePath(); CX.fill();
-    var glow = r.v > 0.05 ? 1 : 0.35;
+    // the driver lurches forward while the car decelerates
+    var lurch = braking ? Math.min(9, 3 + Math.abs(r.a) * 0.9) : 0;
+    CX.save();
+    CX.beginPath(); CX.moveTo(x + 10, by - 52); CX.lineTo(x + 10, by - 79); CX.lineTo(x + 42, by - 79); CX.lineTo(x + 66, by - 52); CX.clip();
+    CX.fillStyle = '#3a2b23'; CX.beginPath(); CX.arc(x + 28 + lurch, by - 64, 10.5, 0, 7); CX.fill();
+    CX.fillStyle = '#f1c9a5'; CX.beginPath(); CX.arc(x + 31 + lurch, by - 62, 9, 0, 7); CX.fill();
+    CX.fillStyle = '#3a2b23'; CX.beginPath(); CX.ellipse(x + 28 + lurch, by - 70, 9.5, 4.5, 0, 0, 7); CX.fill();
+    CX.fillStyle = '#4a7fc1'; rr(x + 16 + lurch * 0.6, by - 54, 26, 10, 4); CX.fill();
+    CX.strokeStyle = '#1b1d22'; CX.lineWidth = 3;
+    CX.beginPath(); CX.moveTo(x + 50, by - 66); CX.lineTo(x + 56, by - 52); CX.stroke();
+    CX.strokeStyle = '#8a8f99'; CX.lineWidth = 2;                          // seatbelt
+    CX.beginPath(); CX.moveTo(x + 20 + lurch * 0.6, by - 72); CX.lineTo(x + 38 + lurch * 0.6, by - 50); CX.stroke();
+    CX.restore();
+    CX.fillStyle = 'rgba(255,255,255,.28)';
+    CX.beginPath(); CX.moveTo(x - 30, by - 79); CX.lineTo(x - 18, by - 79); CX.lineTo(x - 40, by - 52); CX.lineTo(x - 52, by - 52); CX.fill();
+    CX.fillStyle = 'rgba(255,255,255,.2)'; rr(x - 108, by - 44, 214, 6, 3); CX.fill();
+    CX.strokeStyle = 'rgba(0,0,0,.30)'; CX.lineWidth = 1.4;
+    CX.beginPath(); CX.moveTo(x + 6, by - 50); CX.lineTo(x + 6, by - 12); CX.stroke();
+    CX.fillStyle = 'rgba(0,0,0,.35)'; rr(x - 20, by - 38, 14, 4, 2); CX.fill(); rr(x + 50, by - 38, 14, 4, 2); CX.fill();
+    CX.fillStyle = '#20252d'; rr(x - 122, by - 18, 18, 9, 4); CX.fill(); rr(x + 104, by - 18, 18, 9, 4); CX.fill();
+    CX.fillStyle = '#ffe9a8'; rr(x + 106, by - 38, 13, 11, 3); CX.fill();
+    var glow = braking ? 1 : 0.35;
     CX.globalAlpha = glow; CX.fillStyle = '#ff3b30';
     rr(x - 122, by - 38, 12, 14, 3); CX.fill(); CX.globalAlpha = 1;
+    if (braking) {
+      var bg = CX.createRadialGradient(x - 118, by - 31, 1, x - 118, by - 31, 32);
+      bg.addColorStop(0, 'rgba(255,60,60,.8)'); bg.addColorStop(1, 'rgba(255,60,60,0)');
+      CX.fillStyle = bg; CX.beginPath(); CX.arc(x - 118, by - 31, 32, 0, 7); CX.fill();
+    }
+    CX.fillStyle = '#11151b';
+    [-70, 74].forEach(function (dx) { CX.beginPath(); CX.arc(x + dx, by - 4, 27, Math.PI, 0); CX.fill(); });
     CX.restore();
-    wheel(x - 70, by - 4, 22); wheel(x + 74, by - 4, 22);
+    var wa = (x - 120) / 22;
+    [-70, 74].forEach(function (dx) {
+      var wx = x + dx, wy = by - 4;
+      CX.save();
+      CX.fillStyle = '#1a1d23'; CX.beginPath(); CX.arc(wx, wy, 22, 0, 7); CX.fill();
+      CX.fillStyle = grad(wx - 13, wy - 13, wx + 13, wy + 13, [[0, '#e3e7ee'], [1, '#8b93a1']]);
+      CX.beginPath(); CX.arc(wx, wy, 13, 0, 7); CX.fill();
+      CX.strokeStyle = '#5b6270'; CX.lineWidth = 3; CX.lineCap = 'round';
+      for (var k = 0; k < 5; k++) {
+        var a2 = wa + k * Math.PI * 2 / 5;
+        CX.beginPath(); CX.moveTo(wx + Math.cos(a2) * 4, wy + Math.sin(a2) * 4); CX.lineTo(wx + Math.cos(a2) * 11.5, wy + Math.sin(a2) * 11.5); CX.stroke();
+      }
+      CX.fillStyle = '#3a404b'; CX.beginPath(); CX.arc(wx, wy, 3.6, 0, 7); CX.fill();
+      CX.restore();
+    });
+    if (braking && S.labels) txt('driver lurches forward', x + 40, by - 96, 11, TH['text-dim'], 'center', 700);
     arrow(x + 130, by - 70, Math.max(0, Math.min(150, r.v * 5)), 0, TH.blue, 3);
     txt('v = ' + r.v.toFixed(1) + ' m/s', x + 134, by - 82, 13, TH.blue, 'left', 700);
     if (r.v <= 0.02) txt('STOPPED', x, by - 108, 18, TH.green, 'center', 800);
@@ -2632,30 +3686,69 @@ SCEN.skydive = {
     if (this.st.t > lim) this.reset();
   },
   draw: function () {
+    // A skydive from 3000 m: the jump plane pulls away, the patchwork of fields
+    // lies far below the haze, and a wrist-style altimeter unwinds as the
+    // skydiver falls.
+    var L = TH.light;
     CX.save();
-    CX.fillStyle = grad(0, 0, 0, H, [[0, TH.light ? '#bcd9f2' : '#12274a'], [1, TH.light ? '#e8f2fb' : '#2c4e7d']]);
+    CX.fillStyle = grad(0, 0, 0, H, [[0, L ? '#bcd9f2' : '#12274a'], [1, L ? '#e8f2fb' : '#2c4e7d']]);
     CX.fillRect(0, -OV, W, H + 2 * OV); CX.restore();
+    // the ground far below: a hazy horizon over a patchwork of fields
+    var hz = 596 - Math.min(40, this.st.y * 0.03);
+    CX.save();
+    CX.fillStyle = L ? '#9dbf8a' : '#2d4a3a'; CX.fillRect(0, hz, W, H + OV - hz);
+    var fieldC = L ? ['#b7cf8f', '#8fb574', '#d8c98a', '#a8c47e', '#c9b77a'] : ['#34523f', '#2a4636', '#4a4a33', '#3a5a40', '#46442f'];
+    for (var fr = 0; fr < 6; fr++) {
+      var rowY = hz + 6 + fr * (10 + fr * 8), rowH = 8 + fr * 8;
+      for (var fc = 0; fc < 14; fc++) {
+        var fw = 90 + srand(fr * 20 + fc) * 70, fxx = fc * 100 - 40 + srand(fr * 7 + fc) * 30;
+        CX.fillStyle = fieldC[Math.floor(srand(fr * 31 + fc) * fieldC.length)];
+        CX.fillRect(fxx, rowY, fw, rowH);
+      }
+    }
+    CX.fillStyle = L ? 'rgba(90,140,200,.55)' : 'rgba(40,90,140,.6)';        // a river
+    CX.beginPath(); CX.moveTo(780, hz); CX.quadraticCurveTo(700, hz + 60, 820, hz + 120); CX.quadraticCurveTo(900, hz + 190, 760, H + OV);
+    CX.lineTo(790, H + OV); CX.quadraticCurveTo(930, hz + 190, 836, hz + 118); CX.quadraticCurveTo(724, hz + 60, 790, hz); CX.fill();
+    CX.fillStyle = grad(0, hz - 40, 0, hz + 60, [[0, L ? 'rgba(232,242,251,0)' : 'rgba(44,78,125,0)'], [0.45, L ? 'rgba(232,242,251,.85)' : 'rgba(44,78,125,.8)'], [1, L ? 'rgba(232,242,251,0)' : 'rgba(44,78,125,0)']]);
+    CX.fillRect(0, hz - 40, W, 100);
+    CX.restore();
     // clouds rise past at the fall speed
     CX.save(); CX.globalAlpha = .55;
     for (var i = 0; i < 9; i++) {
       var cy = (((i * 112) - this.st.y * 2.2) % (H + 240) + H + 240) % (H + 240) - 80;
       var cx0 = 90 + ((i * 421) % 1000);
-      CX.fillStyle = TH.light ? '#ffffff' : '#8fa6c8';
+      CX.fillStyle = L ? '#ffffff' : '#8fa6c8';
       CX.beginPath(); CX.ellipse(cx0, cy, 84, 22, 0, 0, 7);
       CX.ellipse(cx0 + 58, cy + 9, 54, 17, 0, 0, 7);
       CX.ellipse(cx0 - 54, cy + 11, 46, 15, 0, 0, 7); CX.fill();
     }
     CX.restore();
+    // the jump plane flies on and is left behind above
+    if (this.st.t < 6) {
+      var px = 520 + this.st.t * 150, py = 118 - this.st.y * 2.2 - this.st.t * 4;
+      if (py > -80) {
+        CX.save(); CX.translate(px, py);
+        CX.fillStyle = '#eef1f5';
+        CX.beginPath(); CX.ellipse(0, 0, 70, 13, 0, 0, 7); CX.fill();
+        CX.beginPath(); CX.moveTo(-58, -4); CX.lineTo(-78, -30); CX.lineTo(-64, -30); CX.lineTo(-40, -6); CX.fill();   // tail fin
+        CX.fillStyle = '#c9ced6';
+        CX.beginPath(); CX.moveTo(-10, 2); CX.lineTo(30, 2); CX.lineTo(-2, 22); CX.lineTo(-22, 22); CX.fill();           // wing
+        CX.fillStyle = '#2f5d9e'; CX.fillRect(-60, 2, 118, 4);
+        CX.fillStyle = '#1c2a3e'; CX.fillRect(-18, -6, 14, 12);                                                  // open door
+        CX.fillStyle = '#5a7fae';
+        for (var wn = 0; wn < 4; wn++) CX.beginPath(), CX.arc(10 + wn * 12, -3, 2.6, 0, 7), CX.fill();
+        CX.fillStyle = '#3a404b'; CX.beginPath(); CX.ellipse(70, 0, 4, 14 * Math.abs(Math.sin(S.t * 40)) + 2, 0, 0, 7); CX.fill();
+        CX.restore();
+      }
+    }
 
     var r = PHYS.skydive(this.cfg(), this.st.v, this.st.t);
     var u = this.inflation();
     var lerp = function (a, b, t) { return a + (b - a) * t; };
-    // low enough that the drag arrow (up to 130 px, plus its label) and the open
-    // canopy both stay clear of the top edge and of the title chip
     var fx = 372, feet = 400 + 150 * u, hgt = 176;
 
     // rushing-air streaks, shorter once the canopy has slowed the fall
-    CX.save(); CX.strokeStyle = TH.light ? 'rgba(40,60,90,.32)' : 'rgba(255,255,255,.30)';
+    CX.save(); CX.strokeStyle = L ? 'rgba(40,60,90,.32)' : 'rgba(255,255,255,.30)';
     CX.lineWidth = 2;
     for (var s2 = 0; s2 < 16; s2++) {
       var sx = 110 + ((s2 * 137) % 980);
@@ -2664,7 +3757,6 @@ SCEN.skydive = {
     }
     CX.restore();
 
-    // the pose morphs from a free-fall arch to hanging under the canopy
     var pose = {
       dir: 1, lean: 0,
       armL: [lerp(-2.30, -2.96, u), lerp(-0.50, 0.14, u)],
@@ -2672,12 +3764,45 @@ SCEN.skydive = {
       legL: [lerp(-0.44, -0.10, u), lerp(-0.34, 0.06, u)],
       legR: [lerp(0.44, 0.10, u), lerp(0.34, -0.06, u)]
     };
+    // the container (the pack holding the parachute) on the skydiver's back
+    if (u < 0.001) {
+      CX.save(); CX.fillStyle = '#2b3340';
+      rr(fx - 22, feet - hgt * 0.64, 44, hgt * 0.28, 8); CX.fill();
+      CX.fillStyle = '#d94f4f'; CX.fillRect(fx - 22, feet - hgt * 0.64 + 8, 44, 4);
+      CX.restore();
+    }
     var fig = cartoonFigure(fx, feet, hgt, pose,
       { suit: '#2f5d9e', limb: '#3c73bd', shoe: '#22283a', helmet: '#d94f4f',
         skin: '#f6d3b0',
-        // wind in the face on the way down, then a grin the moment the canopy grabs
         mouth: u > 0.35 ? 'grin' : (this.st.v > 12 ? 'o' : 'smile') });
     if (u > 0.001) drawCanopy(fx, feet - hgt - 66, 240, u, fig.shL, fig.shR);
+
+    // the altimeter: one turn of the needle is 4000 m, the red zone is below 1000 m
+    var alt = Math.max(0, 3000 - this.st.y), ax = 150, ay = 336, aR = 50;
+    CX.save();
+    CX.fillStyle = 'rgba(0,0,0,.25)'; CX.beginPath(); CX.arc(ax + 3, ay + 4, aR + 7, 0, 7); CX.fill();
+    CX.fillStyle = '#2b2f36'; CX.beginPath(); CX.arc(ax, ay, aR + 7, 0, 7); CX.fill();
+    CX.fillStyle = '#10141a'; CX.beginPath(); CX.arc(ax, ay, aR, 0, 7); CX.fill();
+    CX.strokeStyle = 'rgba(255,70,70,.85)'; CX.lineWidth = 7;
+    CX.beginPath(); CX.arc(ax, ay, aR - 5, -Math.PI / 2, -Math.PI / 2 + Math.PI / 2); CX.stroke();
+    CX.strokeStyle = '#e8ecf3'; CX.lineWidth = 1.4;
+    for (var tk = 0; tk < 40; tk++) {
+      var ta = -Math.PI / 2 + tk * Math.PI * 2 / 40, big = tk % 10 === 0;
+      CX.beginPath(); CX.moveTo(ax + Math.cos(ta) * (aR - (big ? 12 : 7)), ay + Math.sin(ta) * (aR - (big ? 12 : 7)));
+      CX.lineTo(ax + Math.cos(ta) * (aR - 2), ay + Math.sin(ta) * (aR - 2)); CX.stroke();
+    }
+    CX.restore();
+    for (var n = 0; n < 4; n++) {
+      var na = -Math.PI / 2 + n * Math.PI / 2;
+      txt(String(n), ax + Math.cos(na) * (aR - 21), ay + Math.sin(na) * (aR - 21) + 1, 11, '#e8ecf3', 'center', 800, 'middle');
+    }
+    var nd = -Math.PI / 2 + (alt / 4000) * Math.PI * 2;
+    CX.save(); CX.strokeStyle = '#ffd166'; CX.lineWidth = 3; CX.lineCap = 'round';
+    CX.beginPath(); CX.moveTo(ax - Math.cos(nd) * 8, ay - Math.sin(nd) * 8); CX.lineTo(ax + Math.cos(nd) * (aR - 10), ay + Math.sin(nd) * (aR - 10)); CX.stroke();
+    CX.fillStyle = '#ffd166'; CX.beginPath(); CX.arc(ax, ay, 4, 0, 7); CX.fill();
+    CX.restore();
+    txt('× 1000 m', ax, ay + 20, 8.5, '#aab2bf', 'center', 700);
+    mono('altimeter ' + alt.toFixed(0) + ' m', ax, ay + aR + 22, 12, TH['text-dim'], 'center');
 
     mono('fallen ' + this.st.y.toFixed(0) + ' m', 60, 200, 13, TH['text-dim'], 'left');
     mono('t = ' + this.st.t.toFixed(1) + ' s', 60, 222, 13, TH['text-dim'], 'left');
@@ -2695,8 +3820,6 @@ SCEN.skydive = {
     var frac = Math.min(1, this.st.v / Math.max(vt, 1e-6));
     CX.save(); CX.fillStyle = TH.grid; rr(700, 490, 430, 16, 5); CX.fill();
     CX.fillStyle = TH.accent; rr(700, 490, 430 * frac, 16, 5); CX.fill(); CX.restore();
-    // the speed is the headline number here, so it is drawn larger and in the
-    // accent colour that already fills the bar; the % of vt stays a quiet aside
     var vLab = 'v = ' + this.st.v.toFixed(1) + ' m/s';
     mono(vLab, 700, 526, 16, TH.accent, 'left');
     CX.save(); CX.font = "600 16px 'JetBrains Mono', monospace";
@@ -2823,36 +3946,77 @@ SCEN.orbit = {
     if (this.st.th > 1e6) this.st.th = 0;
   },
   draw: function () {
+    // Seen from above: a paved courtyard (each paving slab is 0.25 m), a person
+    // standing in the middle whirling a tennis ball round on a string held above
+    // their head, a tree and a bench at the edges for scale.
+    var L = TH.light, cx = 590, cy = 330, R = this.p.r * this.PPM;
     skyBox();
-    var cx = 590, cy = 330, R = this.p.r * this.PPM;
-    // top-view floor grid, 1 square = 0.25 m
-    CX.save(); CX.strokeStyle = TH.grid; CX.lineWidth = 1; CX.globalAlpha = .8;
     var GS = this.PPM / 4;
-    for (var gx = cx % GS; gx < W; gx += GS) { CX.beginPath(); CX.moveTo(gx, -OV); CX.lineTo(gx, H + OV); CX.stroke(); }
-    for (var gy = cy % GS - OV; gy < H + OV; gy += GS) { CX.beginPath(); CX.moveTo(0, gy); CX.lineTo(W, gy); CX.stroke(); }
+    CX.save();
+    var t0 = L ? '#ddd6c6' : '#232a36';
+    CX.fillStyle = t0; CX.fillRect(0, -OV, W, H + 2 * OV);
+    for (var gx = cx % GS - GS, ix = 0; gx < W; gx += GS, ix++)
+      for (var gy = cy % GS - GS * 3, iy = 0; gy < H + 700; gy += GS, iy++) {
+        CX.fillStyle = mixHex(t0, L ? '#b9ae97' : '#3a4354', srand(ix * 57 + iy * 13) * 0.45);
+        CX.fillRect(gx, gy, GS, GS);
+      }
+    CX.strokeStyle = L ? 'rgba(90,80,60,.28)' : 'rgba(0,0,0,.45)'; CX.lineWidth = 1.5;
+    for (var lx = cx % GS; lx < W; lx += GS) { CX.beginPath(); CX.moveTo(lx, -OV); CX.lineTo(lx, H + OV); CX.stroke(); }
+    for (var ly = cy % GS - OV; ly < H + OV; ly += GS) { CX.beginPath(); CX.moveTo(0, ly); CX.lineTo(W, ly); CX.stroke(); }
     CX.restore();
-    txt('view from above · 1 square = 0.25 m', 16, 40, 12, TH['text-muted'], 'left', 600);
+    // a tree canopy (top view) and a bench, well outside the largest circle
+    CX.save();
+    CX.fillStyle = 'rgba(0,0,0,.25)'; CX.beginPath(); CX.arc(1086, 150, 78, 0, 7); CX.fill();
+    [[1070, 132, 58, '#3f7d4a'], [1110, 150, 44, '#4f9254'], [1060, 176, 40, '#467f4c'], [1090, 112, 34, '#5ea764']].forEach(function (c) {
+      CX.fillStyle = L ? c[3] : mixHex(c[3], '#0b1120', 0.45); CX.beginPath(); CX.arc(c[0], c[1], c[2], 0, 7); CX.fill();
+    });
+    CX.fillStyle = 'rgba(0,0,0,.25)'; CX.fillRect(1004, 506, 140, 46);
+    CX.fillStyle = L ? '#9b7a55' : '#5a4632';
+    for (var sl = 0; sl < 4; sl++) CX.fillRect(1000, 500 + sl * 11, 140, 8);
+    CX.fillStyle = '#3a404b'; CX.fillRect(1012, 496, 8, 48); CX.fillRect(1120, 496, 8, 48);
+    CX.restore();
+    txt('view from above · 1 paving slab = 0.25 m', 16, 40, 12, TH['text-muted'], 'left', 600);
     // circular path
-    CX.save(); CX.strokeStyle = TH['text-muted']; CX.globalAlpha = .55; CX.lineWidth = 1.6;
+    CX.save(); CX.strokeStyle = L ? 'rgba(60,50,40,.55)' : 'rgba(220,230,245,.45)'; CX.lineWidth = 1.6;
     CX.setLineDash([7, 7]); CX.beginPath(); CX.arc(cx, cy, R, 0, 7); CX.stroke(); CX.restore();
     var th = this.st.th, bx = cx + Math.cos(th) * R, by = cy + Math.sin(th) * R;
-    // string
-    CX.save(); CX.strokeStyle = TH.light ? '#6b6255' : '#cdbfa4'; CX.lineWidth = 3;
+    // the person, from above: shoulders, head, and the arm raised over the head
+    CX.save();
+    CX.fillStyle = 'rgba(0,0,0,.22)'; CX.beginPath(); CX.ellipse(cx + 10, cy + 34, 44, 24, 0, 0, 7); CX.fill();
+    CX.fillStyle = '#4a7fc1'; CX.beginPath(); CX.ellipse(cx, cy + 26, 40, 19, 0, 0, 7); CX.fill();
+    CX.strokeStyle = 'rgba(0,0,0,.3)'; CX.lineWidth = 1.5; CX.stroke();
+    CX.fillStyle = '#3a2b23'; CX.beginPath(); CX.arc(cx - 2, cy + 26, 17, 0, 7); CX.fill();
+    CX.fillStyle = 'rgba(255,255,255,.12)'; CX.beginPath(); CX.arc(cx - 7, cy + 20, 7, 0, 7); CX.fill();
+    CX.strokeStyle = '#5d92d1'; CX.lineWidth = 12; CX.lineCap = 'round';
+    CX.beginPath(); CX.moveTo(cx + 30, cy + 24); CX.quadraticCurveTo(cx + 18, cy + 6, cx + 4, cy + 3); CX.stroke();
+    CX.restore();
+    // a faint blur of where the ball has just been
+    CX.save();
+    for (var k = 8; k >= 1; k--) {
+      var tk = th - k * 0.07;
+      CX.globalAlpha = 0.12 * (1 - k / 9);
+      CX.fillStyle = '#d8f06a';
+      CX.beginPath(); CX.arc(cx + Math.cos(tk) * R, cy + Math.sin(tk) * R, 16, 0, 7); CX.fill();
+    }
+    CX.restore();
+    // string, and the hand gripping it (the pivot)
+    CX.save(); CX.strokeStyle = L ? '#6b6255' : '#cdbfa4'; CX.lineWidth = 3;
     CX.beginPath(); CX.moveTo(cx, cy); CX.lineTo(bx, by); CX.stroke(); CX.restore();
-    // hand / pivot
-    CX.save(); CX.fillStyle = TH['text-dim'];
-    CX.beginPath(); CX.arc(cx, cy, 13, 0, 7); CX.fill();
-    CX.fillStyle = TH.card; CX.beginPath(); CX.arc(cx, cy, 6, 0, 7); CX.fill(); CX.restore();
-    txt('pivot', cx - 4, cy + 32, 12, TH['text-muted'], 'center', 600);
+    CX.save(); CX.fillStyle = '#f1c9a5'; CX.strokeStyle = 'rgba(0,0,0,.35)'; CX.lineWidth = 1.5;
+    CX.beginPath(); CX.arc(cx, cy, 10, 0, 7); CX.fill(); CX.stroke(); CX.restore();
+    if (S.labels) txt('hand = centre of the circle', cx, cy + 66, 11.5, TH['text-dim'], 'center', 600);
     // radius annotation
     dashLine(cx, cy, cx + R, cy, TH['text-muted'], 1.4, [5, 5]);
-    mono('r = ' + this.p.r.toFixed(2) + ' m', cx + R / 2, cy - 12, 12, TH['text-muted'], 'center');
-    // ball
+    mono('r = ' + this.p.r.toFixed(2) + ' m', cx + R / 2, cy - 12, 12, TH['text-dim'], 'center');
+    // the ball: a tennis ball with its seam, and its shadow on the paving
     CX.save();
-    CX.fillStyle = grad(bx - 18, by - 18, bx + 18, by + 18, [[0, '#d8f06a'], [1, '#8fae1f']]);
+    CX.fillStyle = 'rgba(0,0,0,.25)'; CX.beginPath(); CX.ellipse(bx + 9, by + 11, 16, 13, 0, 0, 7); CX.fill();
+    CX.fillStyle = grad(bx - 18, by - 18, bx + 18, by + 18, [[0, '#e6f88a'], [1, '#8fae1f']]);
     CX.beginPath(); CX.arc(bx, by, 17, 0, 7); CX.fill();
-    CX.strokeStyle = 'rgba(255,255,255,.7)'; CX.lineWidth = 1.6;
-    CX.beginPath(); CX.arc(bx, by, 17, th + 0.6, th + 2.5); CX.stroke();
+    CX.beginPath(); CX.arc(bx, by, 17, 0, 7); CX.clip();
+    CX.strokeStyle = 'rgba(255,255,255,.85)'; CX.lineWidth = 2;
+    CX.beginPath(); CX.arc(bx - 17, by, 13, -1.1, 1.1); CX.stroke();
+    CX.beginPath(); CX.arc(bx + 17, by, 13, Math.PI - 1.1, Math.PI + 1.1); CX.stroke();
     CX.restore();
     // tangential velocity vector
     var tvx = -Math.sin(th), tvy = Math.cos(th);
@@ -2970,18 +4134,66 @@ SCEN.walk = {
     if (this.st.x > W - 150) { this.st.x = 420; this.st.v = 0; }
   },
   draw: function () {
+    // A walk through the park.  The path is drawn as a slice through the ground —
+    // paving on top, then soil and rock going down — to make the point that the
+    // "ground" the walker pushes on is part of the whole Earth.
+    var L = TH.light, y = 452;
     skyBox();
-    groundBand(452, 'ground (attached to the Earth)', 900);
-    var x = this.st.x, y = 452;
+    sunOrMoon(1040, 170, 22);
+    cloudPuff(300, 160, 0.9, L ? 0.85 : 0.3); cloudPuff(760, 132, 0.7, L ? 0.8 : 0.25);
+    birds(560, 200, 4, S.t);
+    // a far line of hills and trees, then the grass behind the path
+    CX.save();
+    CX.fillStyle = mixHex(TH['sky-2'], L ? '#4f8a4a' : '#2f5a48', L ? 0.35 : 0.3);
+    CX.beginPath(); CX.moveTo(0, y);
+    for (var hx = 0; hx <= W; hx += 20) CX.lineTo(hx, 392 - 18 * Math.sin(hx / 150 + 1) - 8 * Math.sin(hx / 53));
+    CX.lineTo(W, y); CX.fill();
+    CX.fillStyle = L ? '#9cc48a' : '#26402f'; CX.fillRect(0, 420, W, 32);
+    CX.restore();
+    [[70, 120], [180, 96], [700, 130], [860, 104], [1150, 118]].forEach(function (t) { treeShape(t[0], 428, t[1]); });
+    streetLamp(300, 436, 120);
+    parkBench(960, 438, 120);
+    CX.save();                                                        // bushes along the verge
+    for (var bu = 0; bu < 9; bu++) {
+      var bx = 40 + bu * 140 + srand(bu) * 40;
+      CX.fillStyle = L ? (bu % 2 ? '#6fae6a' : '#5f9a5a') : (bu % 2 ? '#2f5a48' : '#28503f');
+      CX.beginPath(); CX.arc(bx, 440, 16, 0, 7); CX.arc(bx + 16, 436, 19, 0, 7); CX.arc(bx + 34, 442, 14, 0, 7); CX.fill();
+    }
+    CX.restore();
+    // the ground in cross-section: paving slabs, soil, then rock
+    CX.save();
+    CX.fillStyle = L ? '#d9cdb4' : '#4a4f5a'; CX.fillRect(0, y, W, 18);
+    CX.fillStyle = 'rgba(255,255,255,.18)'; CX.fillRect(0, y, W, 2);
+    CX.strokeStyle = 'rgba(0,0,0,.22)'; CX.lineWidth = 1.5;
+    for (var ps = 0; ps < W; ps += 96) { CX.beginPath(); CX.moveTo(ps, y); CX.lineTo(ps, y + 18); CX.stroke(); }
+    var s1 = L ? '#b08d62' : '#3d3027', s2 = L ? '#8a6a48' : '#2a211b';
+    CX.fillStyle = grad(0, y + 18, 0, y + 260, [[0, s1], [1, s2]]); CX.fillRect(0, y + 18, W, H + OV - y - 18);
+    for (var pb = 0; pb < 90; pb++) {                                 // pebbles in the soil
+      CX.fillStyle = L ? 'rgba(90,70,50,.35)' : 'rgba(0,0,0,.35)';
+      CX.beginPath(); CX.ellipse(srand(pb) * W, y + 30 + srand(pb + 200) * 230, 3 + srand(pb + 400) * 6, 2 + srand(pb + 600) * 3, 0, 0, 7); CX.fill();
+    }
+    CX.fillStyle = L ? '#7d756c' : '#22252c';                         // bedrock
+    CX.beginPath(); CX.moveTo(0, y + 290);
+    for (var rx = 0; rx <= W; rx += 40) CX.lineTo(rx, y + 280 + 16 * Math.sin(rx / 70) + 8 * srand(rx));
+    CX.lineTo(W, H + OV); CX.lineTo(0, H + OV); CX.fill();
+    CX.strokeStyle = 'rgba(0,0,0,.18)'; CX.lineWidth = 1;
+    for (var cr = 0; cr < 14; cr++) {
+      var cx1 = srand(cr + 900) * W, cy1 = y + 320 + srand(cr + 950) * 150;
+      CX.beginPath(); CX.moveTo(cx1, cy1); CX.lineTo(cx1 + 30, cy1 + 12); CX.lineTo(cx1 + 52, cy1 + 4); CX.stroke();
+    }
+    CX.restore();
+    txt('ground (attached to the Earth)', 900, y + 40, 12, L ? '#4a3a28' : '#b9a58c', 'left', 600);
+    txt('↓ soil and rock — all one body: the Earth', 900, y + 300 - 26, 11, L ? '#3a2e20' : '#8f7f6a', 'left', 600);
+
+    var x = this.st.x;
     shadowEllipse(x, y + 4, 40, 7);
     var fig = cartoonFigure(x, y, 214, cartoonWalk(this.st.stride, 1),
       { suit: '#4a7fc1', limb: '#5d92d1', shoe: '#28303c', hair: '#33261f' });
-    txt('body 1: the person', x, y - 258, 14, PAIR_A, 'center', 700);
-    txt('body 2: the ground / Earth', 760, y + 78, 14, PAIR_B, 'left', 700);
+    pairTag('body 1: the person', x, y - 258, PAIR_A);
+    pairTag('body 2: the ground / Earth', 760 + textW('body 2: the ground / Earth', 14, 700) / 2, y + 78, PAIR_B);
     if (S.deep) {
       var ph = stancePhase(this.st.stride);
       var ft = ph.left ? fig.footL : fig.footR;
-      // ring the foot the inset is talking about
       CX.save();
       CX.strokeStyle = TH.accent; CX.lineWidth = 2.4; CX.globalAlpha = 0.9;
       CX.setLineDash([5, 4]);
@@ -3152,20 +4364,62 @@ SCEN.bounce = {
     st.trail.push([st.x, 300]); if (st.trail.length > 26) st.trail.shift();
   },
   draw: function () {
+    // A tennis practice wall: a player on a hard court hits the ball at a
+    // concrete wall with a painted net line and target, behind a wire fence.
+    var L = TH.light, GR = 500, WX = this.WALLX;
     skyBox();
-    groundBand(500, '');
-    // wall
+    sunOrMoon(150, 90, 22);
+    cloudPuff(480, 110, 0.8, L ? 0.85 : 0.3);
+    [[40, 110], [620, 130], [720, 100], [1120, 124]].forEach(function (t) { treeShape(t[0], 250, t[1]); });
+    // chain-link fence behind the court
     CX.save();
-    CX.fillStyle = grad(this.WALLX, 0, this.WALLX + 120, 0, [[0, '#8a8378'], [.4, '#b3aa9c'], [1, '#777066']]);
-    CX.fillRect(this.WALLX, 70, 120, 430);
-    CX.strokeStyle = 'rgba(0,0,0,.28)'; CX.lineWidth = 1;
-    for (var r0 = 0; r0 < 9; r0++)
-      for (var c0 = 0; c0 < 2; c0++) {
-        var bx0 = this.WALLX + c0 * 60 + (r0 % 2 ? 30 : 0);
-        CX.strokeRect(bx0, 70 + r0 * 48, 60, 48);
-      }
+    CX.fillStyle = L ? 'rgba(60,110,80,.18)' : 'rgba(20,60,40,.35)'; CX.fillRect(0, 170, W, GR - 170);
+    CX.strokeStyle = L ? 'rgba(70,80,90,.35)' : 'rgba(160,170,185,.22)'; CX.lineWidth = 1;
+    for (var fx = -400; fx < W + 400; fx += 18) {
+      CX.beginPath(); CX.moveTo(fx, 170); CX.lineTo(fx + (GR - 170), GR); CX.stroke();
+      CX.beginPath(); CX.moveTo(fx, 170); CX.lineTo(fx - (GR - 170), GR); CX.stroke();
+    }
+    CX.fillStyle = L ? '#6b7483' : '#8a93a3';
+    for (var fp = 0; fp < W; fp += 200) CX.fillRect(fp + 20, 162, 6, GR - 162);
+    CX.fillRect(0, 164, W, 5);
     CX.restore();
-    txt('body 2: the wall', this.WALLX + 60, 54, 14, PAIR_B, 'center', 700);
+    // the hard court
+    CX.save();
+    var c1 = L ? '#5f8fbf' : '#2a4a6e', c2 = L ? '#4a78a8' : '#1d3552';
+    CX.fillStyle = grad(0, GR, 0, GR + 300, [[0, c1], [1, c2]]); CX.fillRect(0, GR, W, H + OV - GR);
+    CX.fillStyle = L ? '#7fae6e' : '#2f5a48'; CX.fillRect(0, GR, W, 6);          // court surround edge
+    CX.fillStyle = 'rgba(255,255,255,.85)'; CX.fillRect(0, GR + 34, WX, 4);        // baseline
+    CX.fillRect(0, GR + 110, WX, 3);
+    CX.restore();
+    // the practice wall: concrete panels, a painted net line and a target square
+    CX.save();
+    CX.fillStyle = grad(WX, 0, WX + 120, 0, [[0, L ? '#b9b4aa' : '#6f6b64'], [.4, L ? '#d6d1c6' : '#8c877e'], [1, L ? '#a39e94' : '#5d5952']]);
+    CX.fillRect(WX, 70, 120, GR - 70);
+    CX.strokeStyle = 'rgba(0,0,0,.18)'; CX.lineWidth = 1;
+    for (var pr = 0; pr < 4; pr++) { CX.beginPath(); CX.moveTo(WX, 70 + pr * 108); CX.lineTo(WX + 120, 70 + pr * 108); CX.stroke(); }
+    CX.fillStyle = 'rgba(255,255,255,.9)'; CX.fillRect(WX, 392, 120, 6);          // net-height line
+    CX.strokeStyle = 'rgba(255,255,255,.75)'; CX.lineWidth = 3;
+    CX.strokeRect(WX + 4, 240, 30, 110);                                         // target (seen edge-on)
+    CX.fillStyle = 'rgba(0,0,0,.12)'; CX.fillRect(WX + 110, 70, 10, GR - 70);
+    CX.fillStyle = 'rgba(0,0,0,.25)'; CX.fillRect(WX - 6, GR, 140, 6);
+    CX.restore();
+    pairTag('body 2: the wall', WX + 60, 54, PAIR_B);
+
+    // the player who hit it, holding a forehand follow-through
+    var px = 70, pose = { dir: 1, lean: 0.08, bobF: 0, armL: [0.5, 0.4], armR: [2.05, -0.25], legL: [0.32, -0.14], legR: [-0.24, 0.06] };
+    shadowEllipse(px + 4, GR + 3, 34, 5);
+    var fig = cartoonFigure(px, GR, 230, pose, { suit: '#f2f2ee', limb: '#f1c9a5', shoe: '#e8e8e8', hair: '#3a2b23' });
+    var hd = fig.handR, ra = -0.9, rl = 46;
+    CX.save();
+    CX.translate(hd[0], hd[1]); CX.rotate(ra);
+    CX.fillStyle = '#2b2f36'; CX.fillRect(0, -3, 26, 6);                          // handle
+    CX.strokeStyle = '#c0392b'; CX.lineWidth = 4;
+    CX.beginPath(); CX.ellipse(26 + rl / 2, 0, rl / 2, 17, 0, 0, 7); CX.stroke();
+    CX.strokeStyle = 'rgba(240,240,240,.55)'; CX.lineWidth = 1;
+    for (var sg = -12; sg <= 12; sg += 6) { CX.beginPath(); CX.moveTo(26 + 4, sg); CX.lineTo(26 + rl - 4, sg); CX.stroke(); }
+    for (var sh = 6; sh < rl; sh += 7) { CX.beginPath(); CX.moveTo(26 + sh, -15); CX.lineTo(26 + sh, 15); CX.stroke(); }
+    CX.restore();
+
     var st = this.st, x = st.x, y = 300, sq = st.squash, R = this.R;
     // trail
     CX.save();
@@ -3175,36 +4429,40 @@ SCEN.bounce = {
       CX.beginPath(); CX.arc(p[0], p[1], 20, 0, 7); CX.fill();
     });
     CX.restore();
-    // The ball keeps its own radius and bulges sideways; the part that would be
-    // inside the brick is clipped away, so the contact patch is genuinely flat
-    // against the wall instead of the ball shrinking away from it.
+    // the ball's shadow on the court
+    shadowEllipse(x, GR + 60, 22 - Math.min(8, Math.abs(WX - x) / 120), 5);
     var ry = R * (1 + 0.28 * sq), rx = R * (1 + 0.03 * sq);
     CX.save();
-    CX.beginPath(); CX.rect(0, -OV, this.WALLX, H + 2 * OV); CX.clip();
+    CX.beginPath(); CX.rect(0, -OV, WX, H + 2 * OV); CX.clip();
     CX.fillStyle = grad(x - R, y - R, x + R, y + R, [[0, '#e6f88a'], [1, '#93b423']]);
     CX.beginPath(); CX.ellipse(x, y, rx, ry, 0, 0, 7); CX.fill();
-    CX.strokeStyle = 'rgba(255,255,255,.75)'; CX.lineWidth = 2;
-    CX.beginPath(); CX.ellipse(x, y, rx * 0.99, ry * 0.99, 0, 3.6, 5.0); CX.stroke();
+    CX.save();
+    CX.beginPath(); CX.ellipse(x, y, rx, ry, 0, 0, 7); CX.clip();
+    var spin = st.phase === 'out' ? -x / 18 : x / 18;
+    CX.translate(x, y); CX.rotate(spin); CX.scale(rx / R, ry / R);
+    CX.strokeStyle = 'rgba(255,255,255,.9)'; CX.lineWidth = 2.4;                 // the seam
+    CX.beginPath(); CX.arc(-R, 0, R * 0.78, -1.05, 1.05); CX.stroke();
+    CX.beginPath(); CX.arc(R, 0, R * 0.78, Math.PI - 1.05, Math.PI + 1.05); CX.stroke();
+    CX.restore();
+    CX.fillStyle = 'rgba(255,255,255,.28)'; CX.beginPath(); CX.ellipse(x - 8, y - 10, 8, 5, -0.5, 0, 7); CX.fill();
     CX.restore();
     if (sq > 0.02) {
-      // the squeezed rubber flares a little where it meets the brick
       CX.save(); CX.strokeStyle = 'rgba(255,255,255,.30)'; CX.lineWidth = 2.5; CX.lineCap = 'round';
-      var half = ry * Math.sqrt(Math.max(0, 1 - Math.pow((this.WALLX - x) / rx, 2)));
-      CX.beginPath(); CX.moveTo(this.WALLX - 1, y - half); CX.lineTo(this.WALLX - 1, y + half);
+      var half = ry * Math.sqrt(Math.max(0, 1 - Math.pow((WX - x) / rx, 2)));
+      CX.beginPath(); CX.moveTo(WX - 1, y - half); CX.lineTo(WX - 1, y + half);
       CX.stroke(); CX.restore();
     }
-    txt('body 1: the ball', x - 150, y - 78, 14, PAIR_A, 'center', 700);
+    pairTag('body 1: the ball', Math.max(90, x - 150), y - 78, PAIR_A);
     var vNow = st.phase === 'hit' ? 0 : st.v * (st.phase === 'out' ? -1 : 1);
     if (st.phase !== 'hit') {
       arrow(x, y + 62, vNow * 9, 0, TH.blue, 3);
       txt('v = ' + Math.abs(vNow).toFixed(1) + ' m/s ' + (vNow > 0 ? '→' : '←'), x, y + 96, 13, TH.blue, 'center', 700);
     } else {
-      // parked well to the left of both arrows so nothing is written over them
       txt('IN CONTACT — the pair of forces acts now', 350, y + 122, 15, TH.accent, 'center', 800);
       txt('contact replayed in slow motion · real Δt = ' + this.p.dt.toFixed(3) + ' s',
           350, y + 148, 12, TH['text-muted'], 'center', 600);
     }
-    return { bx: x, by: y, wx: this.WALLX + 6, wy: y + 74, contact: st.phase === 'hit' };
+    return { bx: x, by: y, wx: WX + 6, wy: y + 74, contact: st.phase === 'hit' };
   },
   fbd: function (a) {
     var r = PHYS.bounce(this.p);
@@ -3279,15 +4537,56 @@ SCEN.balloon = {
     if (this.st.alt > 520) this.reset();
   },
   draw: function () {
+    // A child lets go of a blown-up balloon in the garden: the air rushing out
+    // of the neck drives it up past the house and trees, and the garden falls
+    // away below as it climbs.
+    var L = TH.light, alt = this.st.alt;
     skyBox();
-    var gy = 560 + this.st.alt;
-    if (gy < H + 40) groundBand(gy, '');
+    sunOrMoon(1030, 150, 24);
+    // clouds and birds drift down past the rising balloon
+    CX.save();
+    for (var ci = 0; ci < 5; ci++) {
+      var cyy = ((ci * 150 + alt * 0.9) % 760) + 60;
+      cloudPuff(120 + ((ci * 347) % 1000), cyy, 0.7 + (ci % 3) * 0.15, L ? 0.8 : 0.28);
+    }
+    CX.restore();
+    birds(760, 250 + (alt * 0.7) % 500, 3, S.t);
+    var gy = 560 + alt;
+    if (gy < H + OV) {
+      // a house, a fence and a tree in the garden
+      CX.save();
+      var hx = 780, hw = 250, hh = 150;
+      CX.fillStyle = L ? '#f1e3cf' : '#4a4f5a'; CX.fillRect(hx, gy - hh, hw, hh);
+      CX.fillStyle = L ? '#b5503a' : '#7a3a30';
+      CX.beginPath(); CX.moveTo(hx - 20, gy - hh); CX.lineTo(hx + hw / 2, gy - hh - 90); CX.lineTo(hx + hw + 20, gy - hh); CX.fill();
+      CX.fillStyle = L ? '#9fc3dd' : '#ffd98a';
+      CX.fillRect(hx + 30, gy - hh + 34, 50, 44); CX.fillRect(hx + 170, gy - hh + 34, 50, 44);
+      CX.strokeStyle = L ? '#f7f7f4' : '#3a3f4a'; CX.lineWidth = 3;
+      [hx + 30, hx + 170].forEach(function (wx) { CX.strokeRect(wx, gy - hh + 34, 50, 44); CX.beginPath(); CX.moveTo(wx + 25, gy - hh + 34); CX.lineTo(wx + 25, gy - hh + 78); CX.stroke(); });
+      CX.fillStyle = L ? '#7a5a3a' : '#5a4632'; CX.fillRect(hx + 104, gy - 72, 42, 72);
+      CX.fillStyle = L ? '#8a93a3' : '#6b7280'; CX.fillRect(hx + 180, gy - hh - 70, 22, 40);   // chimney
+      CX.fillStyle = L ? '#ffffff' : '#c9ced6';                                          // picket fence
+      for (var pk = 0; pk < 22; pk++) {
+        var px = 40 + pk * 30;
+        CX.beginPath(); CX.moveTo(px, gy); CX.lineTo(px, gy - 38); CX.lineTo(px + 6, gy - 46); CX.lineTo(px + 12, gy - 38); CX.lineTo(px + 12, gy); CX.fill();
+      }
+      CX.fillRect(30, gy - 32, 670, 5); CX.fillRect(30, gy - 16, 670, 5);
+      CX.restore();
+      treeShape(1120, gy + 2, 150);
+      groundBand(gy, '');
+      CX.save(); CX.fillStyle = L ? '#8fbf7a' : '#2f5a48'; CX.fillRect(0, gy, W, 10); CX.restore();
+      // the child who let go, arms up
+      var kx = 330;
+      shadowEllipse(kx, gy + 3, 26, 5);
+      cartoonFigure(kx, gy, 120, { dir: 1, lean: 0, armL: [-2.6, 0.2], armR: [2.6, -0.2], legL: [0.12, 0], legR: [-0.12, 0] },
+        { suit: '#e97aa8', limb: '#e97aa8', shoe: '#3a2f3a', hair: '#4a3315', mouth: 'grin' });
+    }
     // wisps of air slipping downwards give the rise a visible speed
     CX.save(); CX.strokeStyle = TH['text-muted']; CX.globalAlpha = .35; CX.lineWidth = 2;
     for (var w = 0; w < 12; w++) {
-      var wx = 90 + ((w * 397) % 1020);
-      var wy = ((w * 73 + this.st.alt * 1.4) % (H - 120) + (H - 120)) % (H - 120) + 70;
-      CX.beginPath(); CX.moveTo(wx, wy); CX.lineTo(wx, wy + 22); CX.stroke();
+      var wx2 = 90 + ((w * 397) % 1020);
+      var wy = ((w * 73 + alt * 1.4) % (H - 120) + (H - 120)) % (H - 120) + 70;
+      CX.beginPath(); CX.moveTo(wx2, wy); CX.lineTo(wx2, wy + 22); CX.stroke();
     }
     CX.restore();
     var x = 520, y = this.st.y;
@@ -3295,24 +4594,28 @@ SCEN.balloon = {
     CX.save();
     this.st.puffs.forEach(function (p) {
       CX.globalAlpha = (1 - p.life / p.max) * 0.55;
-      CX.fillStyle = TH.light ? '#7fa8cf' : '#9fd3ea';
+      CX.fillStyle = L ? '#7fa8cf' : '#9fd3ea';
       CX.beginPath(); CX.arc(x + p.x, y + 74 + p.y, Math.max(0.5, 5 + p.life * 16), 0, 7); CX.fill();
     });
     CX.restore();
-    // balloon
+    // balloon: glossy latex with a soft inner glow, a stretched neck and a rolled rim
     CX.save();
     CX.fillStyle = grad(x - 44, y - 60, x + 44, y + 50, [[0, '#ff9aa8'], [.5, '#e0475f'], [1, '#a82b3f']]);
     CX.beginPath(); CX.ellipse(x, y, 44, 56, 0, 0, 7); CX.fill();
-    CX.fillStyle = 'rgba(255,255,255,.4)';
+    var gl = CX.createRadialGradient(x + 10, y + 16, 4, x + 10, y + 16, 40);
+    gl.addColorStop(0, 'rgba(255,160,170,.35)'); gl.addColorStop(1, 'rgba(255,160,170,0)');
+    CX.fillStyle = gl; CX.beginPath(); CX.ellipse(x, y, 44, 56, 0, 0, 7); CX.fill();
+    CX.fillStyle = 'rgba(255,255,255,.45)';
     CX.beginPath(); CX.ellipse(x - 16, y - 22, 11, 17, -0.4, 0, 7); CX.fill();
+    CX.fillStyle = 'rgba(255,255,255,.7)'; CX.beginPath(); CX.arc(x - 20, y - 34, 3.5, 0, 7); CX.fill();
     CX.fillStyle = '#a82b3f';
     CX.beginPath(); CX.moveTo(x - 11, y + 50); CX.lineTo(x + 11, y + 50);
     CX.lineTo(x + 6, y + 76); CX.lineTo(x - 6, y + 76); CX.closePath(); CX.fill();
+    CX.fillStyle = '#c23b4f'; rr(x - 8, y + 72, 16, 6, 3); CX.fill();
     CX.restore();
-    txt('body 1: the balloon', x, y - 84, 14, PAIR_A, 'center', 700);
-    txt('body 2: the escaping air', x + 196, y + 262, 14, PAIR_B, 'center', 700);
-    // the balloon is gripped at the bottom of its skin, the escaping air well
-    // below the neck, leaving a clear gap between the two arrows
+    if (S.labels) txt('open neck — air rushes out', x + 22, y + 82, 11, TH['text-muted'], 'left', 600);
+    pairTag('body 1: the balloon', x, y - 84, PAIR_A);
+    pairTag('body 2: the escaping air', x + 196, y + 262, PAIR_B);
     return { bx: x, by: y + 58, gx: x, gy: y + 262 };
   },
   fbd: function (a) {
@@ -3376,35 +4679,55 @@ SCEN.gravity = {
   step: function (dt) { this.st.spin += dt * 0.16; },
   draw: function () {
     CX.save(); CX.fillStyle = TH.light ? '#0d1830' : '#04060e'; CX.fillRect(0, -OV, W, H + 2 * OV);
+    // a faint band of the Milky Way across the background
+    CX.save();
+    CX.translate(W / 2, H / 2); CX.rotate(-0.35);
+    var mw = CX.createLinearGradient(0, -120, 0, 120);
+    mw.addColorStop(0, 'rgba(170,180,255,0)'); mw.addColorStop(0.5, 'rgba(190,190,255,.10)'); mw.addColorStop(1, 'rgba(170,180,255,0)');
+    CX.fillStyle = mw; CX.fillRect(-W, -120, 2 * W, 240);
+    CX.fillStyle = 'rgba(230,230,255,.5)';
+    for (var d = 0; d < 160; d++) { CX.globalAlpha = 0.2 + 0.5 * srand(d + 70); CX.fillRect((srand(d) - 0.5) * 2 * W, (srand(d + 30) - 0.5) * 150 * srand(d + 60), 1.3, 1.3); }
+    CX.restore();
     for (var i = 0; i < 120; i++) {
       var sx = (i * 613) % W, sy = (i * 271) % H;
-      CX.globalAlpha = .25 + .4 * ((i * 37) % 10) / 10;
+      CX.globalAlpha = (.25 + .4 * ((i * 37) % 10) / 10) * (0.75 + 0.25 * Math.sin(S.t * 1.1 + i));
       CX.fillStyle = '#fff'; CX.beginPath(); CX.arc(sx, sy, ((i * 7) % 3) * 0.5 + 0.6, 0, 7); CX.fill();
     }
     CX.globalAlpha = 1; CX.restore();
-    // The pair is centred on the canvas at the default separation, and the Earth is
-    // drawn large enough to read as a planet.  Both centres of mass stay on screen
-    // with a clear corridor between them, because both force arrows start there.
     var ex = 500, ey = 350, ER = 170;
     var frac = (this.p.r - 6.371) / (42 - 6.371);
     var ax = ex + ER + 160 + frac * 300, ay = ey;
+    // sunlight from the left: a soft glow off the edge of the frame
+    var sg = CX.createRadialGradient(-160, ey, 20, -160, ey, 420);
+    sg.addColorStop(0, 'rgba(255,230,170,.22)'); sg.addColorStop(1, 'rgba(255,230,170,0)');
+    CX.save(); CX.fillStyle = sg; CX.fillRect(0, -OV, 420, H + 2 * OV); CX.restore();
     drawGlobe(ex, ey, ER, this.st.spin * 180 / Math.PI);
     txt('body 2: the Earth', ex, ey + ER + 34, 14, PAIR_B, 'center', 700);
     mono('m₂ = ' + this.p.m2e.toFixed(1) + ' × 10²⁴ kg', ex, ey + ER + 58, 12, TH['text-dim'], 'center');
-    // apple
+    // apple, with a highlight, a dimple round the stalk and a veined leaf
     CX.save();
     CX.fillStyle = grad(ax - 20, ay - 20, ax + 20, ay + 20, [[0, '#ff8080'], [1, '#b3232f']]);
-    CX.beginPath(); CX.arc(ax, ay, 21, 0, 7); CX.fill();
-    CX.strokeStyle = '#6b4a2a'; CX.lineWidth = 3;
-    CX.beginPath(); CX.moveTo(ax, ay - 20); CX.quadraticCurveTo(ax + 5, ay - 33, ax + 13, ay - 35); CX.stroke();
+    CX.beginPath(); CX.moveTo(ax, ay - 16);
+    CX.bezierCurveTo(ax + 14, ay - 26, ax + 28, ay - 8, ax + 20, ay + 10);
+    CX.bezierCurveTo(ax + 14, ay + 24, ax + 4, ay + 22, ax, ay + 19);
+    CX.bezierCurveTo(ax - 4, ay + 22, ax - 14, ay + 24, ax - 20, ay + 10);
+    CX.bezierCurveTo(ax - 28, ay - 8, ax - 14, ay - 26, ax, ay - 16); CX.fill();
+    CX.fillStyle = 'rgba(255,230,120,.35)'; CX.beginPath(); CX.ellipse(ax + 9, ay + 6, 7, 10, 0.3, 0, 7); CX.fill();
+    CX.fillStyle = 'rgba(255,255,255,.55)'; CX.beginPath(); CX.ellipse(ax - 9, ay - 7, 4, 6.5, 0.4, 0, 7); CX.fill();
+    CX.strokeStyle = '#6b4a2a'; CX.lineWidth = 3; CX.lineCap = 'round';
+    CX.beginPath(); CX.moveTo(ax, ay - 15); CX.quadraticCurveTo(ax + 4, ay - 28, ax + 11, ay - 32); CX.stroke();
     CX.fillStyle = '#4e8a3f';
-    CX.beginPath(); CX.ellipse(ax + 20, ay - 37, 10, 5, -0.5, 0, 7); CX.fill();
+    CX.beginPath(); CX.ellipse(ax + 20, ay - 35, 11, 5, -0.5, 0, 7); CX.fill();
+    CX.strokeStyle = '#2f5f2a'; CX.lineWidth = 1;
+    CX.beginPath(); CX.moveTo(ax + 11, ay - 30); CX.lineTo(ax + 29, ay - 40); CX.stroke();
     CX.restore();
     txt('body 1: the apple', ax, ay - 84, 14, PAIR_A, 'center', 700);
     mono('m₁ = ' + this.p.m1.toFixed(2) + ' kg', ax, ay + 100, 12, TH['text-dim'], 'center');
-    // separation annotation
     dashLine(ex, ey, ax, ay, 'rgba(255,255,255,.28)', 1.4, [6, 6]);
+    CX.save(); CX.fillStyle = 'rgba(255,255,255,.7)';                    // the two centres of mass
+    CX.beginPath(); CX.arc(ex, ey, 3.5, 0, 7); CX.fill(); CX.restore();
     mono('r = ' + this.p.r.toFixed(2) + ' × 10⁶ m', (ex + ax) / 2, ey - 208, 13, TH['text-dim'], 'center');
+    if (S.labels) txt('not to scale — the apple is drawn enormous', 16, ey + ER + 120, 11, 'rgba(255,255,255,.45)', 'left', 600);
     return { bx: ax, by: ay, ex: ex, ey: ey };
   },
   fbd: function (a) {
@@ -3523,6 +4846,19 @@ SCEN.pair = {
     CX.fillStyle = grad(0, ICE - 300, 0, ICE, [[0, TH.light ? '#bcd2e4' : '#16334b'],
                                                [1, TH.light ? '#9dbcd6' : '#20486a']]);
     CX.fillRect(0, -OV, W, ICE + OV);
+    CX.restore();
+    // an arena: fans in the stands and the glass above the boards
+    arenaCrowd(ICE - 210, 4, 36, 0.45);
+    CX.save();
+    CX.fillStyle = 'rgba(220,240,255,.10)'; CX.fillRect(0, ICE - 66, W, 36);
+    CX.strokeStyle = 'rgba(230,245,255,.45)'; CX.lineWidth = 2;
+    CX.beginPath(); CX.moveTo(0, ICE - 66); CX.lineTo(W, ICE - 66); CX.stroke();
+    for (var gp = 0; gp < 9; gp++) {
+      CX.strokeStyle = 'rgba(200,220,235,.35)'; CX.lineWidth = 3;
+      CX.beginPath(); CX.moveTo(30 + gp * 145, ICE - 66); CX.lineTo(30 + gp * 145, ICE - 30); CX.stroke();
+      CX.strokeStyle = 'rgba(255,255,255,.14)'; CX.lineWidth = 6;
+      CX.beginPath(); CX.moveTo(70 + gp * 145, ICE - 34); CX.lineTo(90 + gp * 145, ICE - 62); CX.stroke();
+    }
     // a low kick-board runs along the back of the rink, behind the skates only,
     // so no line crosses the figures themselves
     CX.fillStyle = TH.light ? '#f0f5fa' : '#dbe8f4';
@@ -3538,6 +4874,15 @@ SCEN.pair = {
                                             [0.45, TH.light ? '#e3f2fc' : '#8fbfdd'],
                                             [1, TH.light ? '#bcdcf0' : '#4a7fa3']]);
     CX.fillRect(0, ICE, W, H + OV - ICE);
+    for (var rl = 0; rl < 7; rl++) {
+      var rx = 120 + rl * 170, rg = CX.createRadialGradient(rx, ICE + 60, 2, rx, ICE + 60, 60);
+      rg.addColorStop(0, 'rgba(255,255,255,.40)'); rg.addColorStop(1, 'rgba(255,255,255,0)');
+      CX.fillStyle = rg; CX.beginPath(); CX.ellipse(rx, ICE + 60, 60, 11, 0, 0, 7); CX.fill();
+    }
+    CX.strokeStyle = 'rgba(206,64,64,.40)'; CX.lineWidth = 4;              // centre line and faceoff circle
+    CX.beginPath(); CX.moveTo(596, ICE); CX.lineTo(622, H + OV); CX.stroke();
+    CX.strokeStyle = 'rgba(60,110,190,.30)'; CX.lineWidth = 3;
+    CX.beginPath(); CX.ellipse(606, ICE + 150, 170, 36, 0, 0, 7); CX.stroke();
     CX.strokeStyle = 'rgba(255,255,255,.60)'; CX.lineWidth = 2.5;
     CX.beginPath(); CX.moveTo(0, ICE); CX.lineTo(W, ICE); CX.stroke();
     CX.restore();
@@ -3574,8 +4919,8 @@ SCEN.pair = {
     });
     CX.restore();
 
-    txt('A', ax, figA.head[1] - figA.headR - 18, 16, PAIR_A, 'center', 800);
-    txt('B', bx, figB.head[1] - figB.headR - 18, 16, PAIR_B, 'center', 800);
+    pairTag('A', ax, figA.head[1] - figA.headR - 18, PAIR_A, 16);
+    pairTag('B', bx, figB.head[1] - figB.headR - 18, PAIR_B, 16);
     // everything printed on the ice takes a dark slate colour: the pale surface
     // would swallow the panel's usual muted greys
     var onIce = TH.light ? '#4a6577' : '#1f4257';
@@ -4220,6 +5565,7 @@ function updateChrome() {
   $('tLab').classList.toggle('active', S.labels);
   $('tForm').classList.toggle('active', S.formula);
   $('tLaw').classList.toggle('active', S.lawCard);
+  $('tScale').classList.toggle('active', S.scaleChip);
   $('tUnbal').classList.toggle('active', S.unbalance);
   $('gUnbal').classList.toggle('slot-hidden', S.law !== 1 || S.mode !== 'sim');
   $('gDrag').classList.toggle('slot-hidden', S.ex !== 'skydive');
@@ -4286,7 +5632,7 @@ function draw() {
   // the force scale now lives on the canvas, top right
   var sp0 = spec.multi ? spec.multi[0] : spec;
   var sch = $('chipScale');
-  if (S.fbd && sp0 && sp0.scale) {
+  if (S.fbd && S.scaleChip && sp0 && sp0.scale) {
     var perPx = 1 / sp0.scale;
     sch.className = 'chip';
     sch.innerHTML = '<b>Force scale</b>&nbsp; 1 px = ' +
@@ -4355,6 +5701,7 @@ function init() {
   $('tLab').addEventListener('click', function () { S.labels = !S.labels; updateChrome(); });
   $('tForm').addEventListener('click', function () { S.formula = !S.formula; updateChrome(); });
   $('tLaw').addEventListener('click', function () { S.lawCard = !S.lawCard; updateChrome(); });
+  $('tScale').addEventListener('click', function () { S.scaleChip = !S.scaleChip; updateChrome(); draw(); });
   $('tUnbal').addEventListener('click', function () { S.unbalance = !S.unbalance; updateChrome(); });
   $('dLin').addEventListener('click', function () { S.dragLaw = 'lin'; SCEN.skydive.reset(); updateChrome(); renderPanel(); });
   $('dQuad').addEventListener('click', function () { S.dragLaw = 'quad'; SCEN.skydive.reset(); updateChrome(); renderPanel(); });
