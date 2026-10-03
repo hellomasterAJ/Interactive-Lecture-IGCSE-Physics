@@ -217,7 +217,7 @@ input[type=range]::-moz-range-thumb{
 
 <div class="top-bar">
   <h1>🌊 Diffraction of Waves <span class="sub">Ripple tank · Sound</span></h1>
-  <span class="badge-top">v1.2.4</span>
+  <span class="badge-top">v1.2.6</span>
   <span class="spacer"></span>
   <div class="top-right">
     <select class="theme-select" id="themeSel">
@@ -298,6 +298,7 @@ input[type=range]::-moz-range-thumb{
         <button class="pill" data-i="flute">🎵 Flute</button>
         <button class="pill" data-i="custom">Custom</button>
       </div>
+      <button class="tbtn" id="btnSound" title="play the note through your speakers — what you hear follows the listener: muffled and quieter inside the sound shadow, silent once past the bending angle">🔊 Sound</button>
     </div>
     <div class="tsep"></div>
     <div class="tgroup">
@@ -369,7 +370,7 @@ function mkS(){
     /* sound */
     freq:DEF_FREQ, instrument:"drum", listener:null,
     /* show toggles */
-    labels:true, calc:false, grid:true, rays:false,
+    labels:true, calc:false, grid:true, rays:false, sound:false,
     /* animation */
     playing:true, phase:0, speed:0.5,
     /* view */
@@ -884,13 +885,63 @@ function drawListener(p, c, smiling){
   ctx.restore();
 }
 
+/* ---------- what the listener actually hears ----------
+   ONE model feeds the picture, the readouts and the loudspeakers, so the tone can
+   never disagree with the "✓ Heard / ✗ Not heard" on the canvas. Beyond the corner
+   the level falls as the listener goes deeper into the shadow and dies at the
+   bending angle θ; the sound also goes dull, because only the long (bass) part of
+   the note bends round — which is exactly the point of this scene. */
+function hearing(){
+  const L = listenerPt(), thP = penetAngle(), depth = shadowDepth(L);
+  const inShadow = depth > 0 && L.x > BLD.x0;
+  const heard = !inShadow || depth <= thP;
+  const rM = Math.hypot(L.x-SRC.x, L.y-SRC.y) / PX_PER_M;
+  let open = 1;                                    // 1 = straight line to the source
+  if(inShadow) open = thP > 1e-3 ? clamp(1 - depth/thP, 0, 1) : 0;
+  const near = 0.45 + 0.55*clamp(8/(8+rM), 0, 1);     // quieter further off, never a whisper
+  const level = heard ? near * Math.pow(open, 0.7) : 0;
+  return { heard, inShadow, open, level,
+           cutoff: 240 + 7600*Math.pow(inShadow ? open : 1, 2) };
+}
+
+/* ---------- the tone itself ---------- */
+const OSC_OF = { drum:"sine", guitar:"sawtooth", flute:"triangle", custom:"square" };
+let AU = null;
+function audioStart(){
+  if(AU) return AU;
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if(!AC) return null;
+  const ac = new AC();
+  const osc = ac.createOscillator(), filt = ac.createBiquadFilter(), gain = ac.createGain();
+  filt.type = "lowpass"; filt.frequency.value = 8000;
+  gain.gain.value = 0;
+  osc.type = OSC_OF[S.instrument] || "sine";
+  osc.frequency.value = S.freq;
+  osc.connect(filt); filt.connect(gain); gain.connect(ac.destination);
+  osc.start();
+  AU = { ac, osc, filt, gain, want:0 };
+  return AU;
+}
+function audioSync(){
+  const on = S.sound && S.section === "sound" && S.playing;
+  if(!AU){ if(!on) return; if(!audioStart()) return; }
+  const h = on ? hearing() : { level:0, cutoff:8000 };
+  AU.want = on ? 0.26 * h.level : 0;
+  if(AU.ac.state === "suspended" && on) AU.ac.resume();
+  const t = AU.ac.currentTime;
+  AU.osc.type = OSC_OF[S.instrument] || "sine";
+  AU.osc.frequency.setTargetAtTime(S.freq, t, 0.02);
+  AU.filt.frequency.setTargetAtTime(h.cutoff, t, 0.05);
+  AU.gain.gain.setTargetAtTime(AU.want, t, 0.05);
+}
+
 function renderSound(){
   const WAVE = col("--wave");
   const lam = lambdaPx(), thP = penetAngle();
   const L = listenerPt();
   const depth = shadowDepth(L);
-  const inShadow = depth > 0 && L.x > BLD.x0;
-  const heard = !inShadow || depth <= thP;
+  const HEAR = hearing();
+  const inShadow = HEAR.inShadow, heard = HEAR.heard;
 
   /* ---- sound shadow region ---- */
   const bEdgeY = CORNER.y + (W - CORNER.x)*Math.tan(A_CORNER);
@@ -947,15 +998,15 @@ function renderSound(){
     ctx.save();
     ctx.beginPath(); ctx.rect(0,0,W,H);                     // never draw through the building
     ctx.rect(BLD.x0, BLD.y0, BLD_W, BLD.y1-BLD.y0); ctx.clip("evenodd");
-    /* the direct sound: straight rays, so the sound shadow is the part they miss */
+    /* the direct sound only — straight rays out of the loudspeaker; the sound shadow
+       is simply the part of the picture they never reach */
     for(let k=0;k<9;k++){
       const a = A_CORNER + (A_TOPLEFT + 2*Math.PI - A_CORNER) * (k+0.5)/9;
       ray(SRC, a, 150, alpha(RAY,0.5), 1.3);
     }
-    /* the diffracted sound: new rays leaving the corner, out to the bending angle θ */
-    if(thP > 0.02) for(const fr of [1/3, 2/3, 1]){
-      ray(CORNER, A_CORNER - thP*fr, 190, alpha(RAY, 1-0.28*fr), 1.6);
-    }
+    /* NO rays are drawn at the corner: a ray from there would have to start inside
+       the building to reach the open air, which reads as sound going through it. The
+       bending round the corner is told by the wavefronts and the θ angle instead. */
     ctx.restore();
     if(S.labels) label("rays ⟂ wavefronts", 108, 22, RAY, {size:10, bg:true});
   }
@@ -1068,6 +1119,7 @@ function draw(){
   try { LAST = render(); }
   catch(err){ console.error(err); LAST = null; }
   ctx.restore();
+  if(AU || S.sound) audioSync();          /* the tone follows whatever was just drawn */
 }
 
 /* ---------------- DOM ---------------- */
@@ -1240,6 +1292,12 @@ window.addEventListener("keydown", e => {
 [["btnLabels","labels"],["btnCalc","calc"],["btnGrid","grid"],["btnRays","rays"]].forEach(([id,key]) => {
   $(id).onclick = () => { S[key] = !S[key]; $(id).classList.toggle("on", S[key]); updateUI(); };
 });
+$("btnSound").onclick = () => {
+  S.sound = !S.sound;
+  $("btnSound").classList.toggle("on", S.sound);
+  if(S.sound) audioStart();
+  audioSync(); updateUI();
+};
 $("btnCompare").onclick = () => { S.compare = !S.compare; updateUI(); };
 $("btnCmpBy").onclick   = () => { S.cmpBy = (S.cmpBy === "gap") ? "lam" : "gap"; updateUI(); };
 
@@ -1276,13 +1334,13 @@ $("btnReset").onclick = () => {
     S.gap = DEF_GAP; S.gap2 = DEF_GAP2; S.lambda = DEF_LAMBDA; S.lam2 = DEF_LAMBDA*2;
     S.amp = DEF_AMP; S.compare = false; S.cmpBy = "gap";
   } else {
-    S.freq = DEF_FREQ; S.instrument = "drum"; S.listener = null;
+    S.freq = DEF_FREQ; S.instrument = "drum"; S.listener = null; S.sound = false;
   }
   S.labels = true; S.calc = false; S.grid = true; S.rays = false;
   S.playing = true; S.speed = 0.5; S.phase = 0;
   S.zoom = false; S.pan = {x:0,y:0}; S.drag = null;
   $("btnLabels").classList.add("on"); $("btnGrid").classList.add("on");
-  $("btnCalc").classList.remove("on"); $("btnRays").classList.remove("on");
+  $("btnCalc").classList.remove("on"); $("btnRays").classList.remove("on"); $("btnSound").classList.remove("on");
   $("btnPlay").textContent = "⏸ Pause";
   document.querySelectorAll("#speedPills .pill").forEach(p => p.classList.toggle("active", p.dataset.s==="0.5"));
   updateUI();
