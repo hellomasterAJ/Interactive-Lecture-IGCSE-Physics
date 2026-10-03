@@ -183,6 +183,10 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
 #bPlay{display:inline-grid;justify-items:center;align-items:center}
 #bPlay .ppl{grid-area:1/1;visibility:hidden}
 #bPlay .ppl.on{visibility:visible}
+#bG{display:inline-grid;justify-items:center;align-items:center;font-variant-numeric:tabular-nums}
+#bG .ppl{grid-area:1/1;visibility:hidden}
+#bG .ppl.on{visibility:visible}
+#bG sup{font-size:.68em;line-height:0;vertical-align:.5em}
 .ctrl-btn:hover{border-color:var(--accent);color:var(--accent)}
 .ctrl-btn:disabled{opacity:.4;cursor:default;border-color:var(--border);color:var(--text-muted)}
 .ctrl-btn.primary{background:var(--accent);color:var(--bg);border-color:var(--accent)}
@@ -413,7 +417,7 @@ table.rt td{font-size:10.5px}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">📏 Pressure</span> <span class="badge-top" id="badge">v1.0.1</span></h1>
+    <h1><span class="t">📏 Pressure</span> <span class="badge-top" id="badge">v1.0.5</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -461,12 +465,9 @@ table.rt td{font-size:10.5px}
         <button class="ctrl-btn on" id="tNums" title="the numbers on the diagram">🔢 Numbers</button>
         <button class="ctrl-btn on" id="tCons" title="construction: guide lines, scales, comparison drawings">📐 Construction</button>
       </div>
-      <div class="tgroup">
-        <span class="tlabel">g</span>
-        <div class="pills" id="gG">
-          <button class="pill active" data-g="9.8" title="syllabus value: g = 9.8 N/kg">9.8 syllabus</button>
-          <button class="pill" data-g="10" title="simple value: g = 10 N/kg">10 simple</button>
-        </div>
+      <span class="spacer"></span>
+      <div class="tgroup nb">
+        <button class="ctrl-btn" id="bG" title="switch between g = 9.8 m/s² (syllabus) and g = 10 m/s² (simple)"><span class="ppl on" data-g="9.8">g = 9.8 m/s<sup>2</sup></span><span class="ppl" data-g="10">g = 10 m/s<sup>2</sup></span></button>
       </div>
       <div class="tgroup">
         <span class="tlabel">Notation</span>
@@ -475,7 +476,6 @@ table.rt td{font-size:10.5px}
           <button class="pill" data-n="us">US</button>
         </div>
       </div>
-      <span class="spacer"></span>
       <div class="tgroup nb">
         <button class="ctrl-btn" id="bReset" title="restore this example's defaults (this scene only)">↺ Reset</button>
       </div>
@@ -1359,7 +1359,7 @@ function groundLine(y, x0, x1) {
    is a printed-reference silver in every theme                            */
 function liqCol(kind, frac) {
   if (kind === 'mercury') return mixCol('#d7dde3', '#6b7580', clamp(frac, 0, 1) * .8);
-  var base = kind === 'sea' ? mixCol(C.liq, '#1e5a78', .35) : kind === 'oil' ? mixCol(C.liq, '#c9a227', .55) : C.liq;
+  var base = kind === 'sea' ? mixCol(C.liq, '#1e5a78', .35) : kind === 'oil' ? '#d68a1a' : C.liq;
   return mixCol(mixCol(base, '#ffffff', LIGHT ? .35 : .05), '#04121c', clamp(frac, 0, 1) * (LIGHT ? .55 : .7));
 }
 /* fill a region with liquid shaded smoothly by depth below the surface y0 */
@@ -1436,6 +1436,104 @@ function sci(x, d) {
 /* 101 000 — thousands separated by a thin space, as printed in textbooks */
 function thou(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
 
+/* ---------- realistic glassware and liquids --------------------------------- */
+/* a glass outline: a pale thick band (the glass) with a fine bright edge   */
+function glassStroke(pathFn, w) {
+  CX.save(); pathFn(); CX.lineJoin = 'round'; CX.lineCap = 'round';
+  CX.strokeStyle = LIGHT ? 'rgba(100,140,170,.35)' : 'rgba(190,225,245,.28)'; CX.lineWidth = w || 5; CX.stroke();
+  CX.strokeStyle = LIGHT ? 'rgba(71,85,105,.9)' : 'rgba(226,240,250,.85)'; CX.lineWidth = 1.2; CX.stroke();
+  CX.restore();
+}
+/* a vertical highlight streak on a glass wall */
+function glassGlint(x, y0, y1) {
+  var g = CX.createLinearGradient(0, y0, 0, y1);
+  g.addColorStop(0, 'rgba(255,255,255,0)'); g.addColorStop(.3, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+  CX.save(); CX.strokeStyle = g; CX.lineWidth = 3; CX.lineCap = 'round'; CX.beginPath(); CX.moveTo(x, y0); CX.lineTo(x, y1); CX.stroke(); CX.restore();
+}
+/* the curved water surface where it meets the glass (a concave meniscus) */
+function meniscus(x0, x1, y, kind) {
+  var up = kind === 'mercury' ? -3 : 3, d = Math.min(5, (x1 - x0) * .12);
+  CX.save(); CX.strokeStyle = kind === 'mercury' ? 'rgba(255,255,255,.9)' : 'rgba(255,255,255,.7)'; CX.lineWidth = 1.6;
+  CX.beginPath(); CX.moveTo(x0, y - up); CX.quadraticCurveTo(x0 + d, y, x0 + d * 2, y); CX.lineTo(x1 - d * 2, y); CX.quadraticCurveTo(x1 - d, y, x1, y - up); CX.stroke();
+  CX.restore();
+}
+/* graduation marks up the side of a vessel */
+function gradMarks(x, yb, yt, step, labelEvery, side, lab) {
+  CX.save(); CX.strokeStyle = LIGHT ? 'rgba(51,65,85,.7)' : 'rgba(226,240,250,.6)'; CX.lineWidth = 1;
+  var i = 0;
+  for (var y = yb - step; y >= yt; y -= step) {
+    i++;
+    var major = i % labelEvery === 0, L = major ? 9 : 5;
+    CX.beginPath(); CX.moveTo(x, y); CX.lineTo(x + side * L, y); CX.stroke();
+    if (major && lab) mtxt(lab(i), x + side * 12, y + 3, 8.5, LIGHT ? 'rgba(51,65,85,.8)' : 'rgba(226,240,250,.7)', side > 0 ? 'left' : 'right', 600);
+  }
+  CX.restore();
+}
+/* bubbles rising through a liquid; they drift up with the scene clock      */
+function bubbles(x0, x1, yb, yt, n, seed) {
+  var span = yb - yt;
+  CX.save();
+  for (var i = 0; i < n; i++) {
+    var a = Math.abs(Math.sin((i + seed) * 12.99)) % 1, r = 1.5 + (i % 3);
+    var y = yb - ((a * span + S.t * (26 + 8 * (i % 4))) % span), x = x0 + ((a * 7.3) % 1) * (x1 - x0) + Math.sin(y * .06 + i) * 3;
+    CX.strokeStyle = 'rgba(255,255,255,.55)'; CX.lineWidth = 1; CX.beginPath(); CX.arc(x, y, r, 0, 7); CX.stroke();
+    CX.fillStyle = 'rgba(255,255,255,.35)'; CX.beginPath(); CX.arc(x - r * .3, y - r * .3, r * .35, 0, 7); CX.fill();
+  }
+  CX.restore();
+}
+/* soft shafts of light coming down from the surface                      */
+function lightShafts(x0, x1, y0, y1, n) {
+  CX.save(); CX.beginPath(); CX.rect(x0, y0, x1 - x0, y1 - y0); CX.clip();
+  for (var i = 0; i < n; i++) {
+    var cx = x0 + (i + .5) * (x1 - x0) / n + 10, w = 10 + (i % 2) * 8;
+    var g = CX.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, 'rgba(255,255,255,.16)'); g.addColorStop(1, 'rgba(255,255,255,0)');
+    CX.fillStyle = g; CX.beginPath(); CX.moveTo(cx - w / 2, y0); CX.lineTo(cx + w / 2, y0); CX.lineTo(cx + w * 1.6 - 30, y1); CX.lineTo(cx - w - 30, y1); CX.closePath(); CX.fill();
+  }
+  CX.restore();
+}
+/* a digital meter on a small stand: a reading and a caption               */
+function digitalMeter(x, y, reading, caption) {
+  CX.save(); shadowOn(6); CX.fillStyle = '#1f2937'; rr(x - 58, y, 116, 48, 8); CX.fill(); CX.restore();
+  CX.save(); CX.fillStyle = '#0b1220'; rr(x - 50, y + 8, 100, 24, 4); CX.fill(); CX.restore();
+  mtxt(reading, x + 44, y + 26, 14, '#34d399', 'right', 800);
+  dot(x - 40, y + 40, 2.5, '#ef4444'); dot(x - 30, y + 40, 2.5, '#9ca3af');
+  if (caption) txt(caption, x, y + 64, 10.5, C['text-muted'], 'center', 600);
+}
+/* a saloon car in side view, facing right, wheels on y, centred on x      */
+function sedan(x, y, L, col) {
+  var s = L / 190, bx = x - L / 2;
+  var P = function (px, py) { return [bx + px * s, y - py * s]; };
+  CX.save(); shadowOn(8);
+  var g = CX.createLinearGradient(0, y - 62 * s, 0, y);
+  g.addColorStop(0, mixCol(col, '#ffffff', .25)); g.addColorStop(.55, col); g.addColorStop(1, mixCol(col, '#000000', .35));
+  CX.fillStyle = g; CX.beginPath();
+  [[4, 14], [2, 30], [14, 36], [52, 40], [72, 60], [128, 62], [152, 42], [182, 36], [190, 26], [188, 12], [176, 8], [14, 8]].forEach(function (q, i) {
+    var p = P(q[0], q[1]); if (i) CX.lineTo(p[0], p[1]); else CX.moveTo(p[0], p[1]);
+  });
+  CX.closePath(); CX.fill(); CX.restore();
+  /* windows with a B-pillar */
+  CX.save(); CX.fillStyle = 'rgba(190,220,240,.9)';
+  var win = function (pts) { CX.beginPath(); pts.forEach(function (q, i) { var p = P(q[0], q[1]); if (i) CX.lineTo(p[0], p[1]); else CX.moveTo(p[0], p[1]); }); CX.closePath(); CX.fill(); };
+  win([[60, 40], [76, 56], [100, 57], [100, 40]]); win([[105, 40], [105, 57], [126, 57], [144, 40]]);
+  CX.restore();
+  /* door line, handle, lights */
+  CX.save(); CX.strokeStyle = 'rgba(0,0,0,.35)'; CX.lineWidth = 1;
+  var d0 = P(102, 38), d1 = P(102, 12); CX.beginPath(); CX.moveTo(d0[0], d0[1]); CX.lineTo(d1[0], d1[1]); CX.stroke();
+  var h = P(116, 32); CX.fillStyle = 'rgba(0,0,0,.4)'; CX.fillRect(h[0], h[1], 8 * s, 2 * s);
+  var hl = P(184, 30); CX.fillStyle = '#fde68a'; rr(hl[0] - 6 * s, hl[1], 7 * s, 5 * s, 2); CX.fill();
+  var tl = P(2, 30); CX.fillStyle = '#ef4444'; rr(tl[0], tl[1], 5 * s, 5 * s, 2); CX.fill();
+  CX.restore();
+  /* wheels with rims */
+  [38, 150].forEach(function (wx) {
+    var c = P(wx, 12), R = 13 * s;
+    CX.save(); CX.fillStyle = '#111827'; CX.beginPath(); CX.arc(c[0], c[1], R, 0, 7); CX.fill();
+    CX.fillStyle = '#cbd5e1'; CX.beginPath(); CX.arc(c[0], c[1], R * .55, 0, 7); CX.fill();
+    CX.strokeStyle = '#64748b'; CX.lineWidth = 1.2;
+    for (var k = 0; k < 5; k++) { var a = k * 1.2566; CX.beginPath(); CX.moveTo(c[0], c[1]); CX.lineTo(c[0] + Math.cos(a) * R * .5, c[1] + Math.sin(a) * R * .5); CX.stroke(); }
+    CX.restore();
+  });
+}
+
 
 /* ==========================================================================
    MODE 1 — pressure in solids, p = F / A
@@ -1468,6 +1566,52 @@ function block3D(x, y, w, h, top) {
   CX.strokeStyle = '#2f363d'; CX.lineWidth = 1; CX.strokeRect(x, y, w, h);
   CX.restore();
 }
+/* ---------- the Define scene is drawn in 3-D: a slightly turned view from
+   above, so the footprint on the floor can actually be SEEN and counted  */
+var DEFV = { cx: 335, cy: 372, k: 12, yaw: 30 * Math.PI / 180, pitch: 36 * Math.PI / 180, W: 36, D: 36, T: 2.5, H: 8 };
+/* every 3-D scene in this mode shares one camera model; a scene picks its
+   own view with view3(...) at the start of its draw                       */
+var CUR3 = null;
+function view3(v) { CUR3 = v; }
+function dp(x, y, z) {                       /* world cm → screen; y up, z away from us */
+  var V3 = CUR3 || DEFV;
+  var c = Math.cos(V3.yaw), s = Math.sin(V3.yaw), xr = x * c - z * s, zr = x * s + z * c;
+  return { x: V3.cx + xr * V3.k, y: V3.cy - y * V3.k * Math.cos(V3.pitch) - zr * V3.k * Math.sin(V3.pitch) };
+}
+/* a solid box seen from the front-left-above: left, front and top faces   */
+function box3(x0, x1, y0, y1, z0, z1, col, o) {
+  o = o || {};
+  var st = o.stroke || mixCol(col, '#000000', .45), w = o.w || 1;
+  dPoly([[x0, y0, z0], [x0, y0, z1], [x0, y1, z1], [x0, y1, z0]], o.left || mixCol(col, '#000000', .28), st, w);
+  dPoly([[x0, y0, z0], [x1, y0, z0], [x1, y1, z0], [x0, y1, z0]], o.front || col, st, w);
+  dPoly([[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]], o.top || mixCol(col, '#ffffff', .22), st, w);
+}
+/* a seeded speckle field inside a projected face (sand grains, brick grit) */
+function speckle(pts, n, col, seed, sz) {
+  CX.save(); CX.beginPath();
+  pts.forEach(function (q, i) { var P = dp(q[0], q[1], q[2]); if (i) CX.lineTo(P.x, P.y); else CX.moveTo(P.x, P.y); });
+  CX.closePath(); CX.clip();
+  var xs = pts.map(function (q) { return dp(q[0], q[1], q[2]).x; }), ys = pts.map(function (q) { return dp(q[0], q[1], q[2]).y; });
+  var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+  CX.fillStyle = col;
+  for (var i = 0; i < n; i++) {
+    var a = Math.abs(Math.sin((i + seed) * 12.9898) * 43758.5453) % 1, b = Math.abs(Math.sin((i + seed) * 78.233) * 12345.678) % 1;
+    CX.fillRect(x0 + a * (x1 - x0), y0 + b * (y1 - y0), sz || 1.5, sz || 1.5);
+  }
+  CX.restore();
+}
+function dPoly(pts, fill, stroke, w) {
+  CX.save(); CX.beginPath();
+  pts.forEach(function (q, i) { var P = dp(q[0], q[1], q[2]); if (i) CX.lineTo(P.x, P.y); else CX.moveTo(P.x, P.y); });
+  CX.closePath();
+  if (fill) { CX.fillStyle = fill; CX.fill(); }
+  if (stroke) { CX.strokeStyle = stroke; CX.lineWidth = w || 1.2; CX.lineJoin = 'round'; CX.stroke(); }
+  CX.restore();
+}
+function dLine(a, b, col, w) { var P = dp(a[0], a[1], a[2]), Q = dp(b[0], b[1], b[2]); line(P.x, P.y, Q.x, Q.y, col, w); }
+/* pressure-sensitive film: 1 kPa (faint) … 10 MPa (deep magenta), log scale */
+function filmLevel(p) { return clamp((Math.log10(Math.max(p, 1)) - 3) / 4, 0, 1); }
+function filmCol(f) { return mixCol('#f3e8ef', '#9d174d', clamp(.08 + .92 * f, 0, 1)); }
 /* ---------- 1.1  DEFINE PRESSURE ---------------------------------------- */
 scene(1, 'define', {
   label: '📖 Define Pressure',
@@ -1480,37 +1624,119 @@ scene(1, 'define', {
   run: function () { return Math.max(1, Math.round(1000 * Math.pow(1 / 1000, Math.min(1, S.t / 5.5)))); },
   extra: areaPills, bind: bindAreaPills,
   draw: function () {
-    var F = V('F'), A = V('A'), p = pSolid(F, cm2(A)), y0 = 400, cx = 330;
-    var w = 18 + 14 * Math.sqrt(A);
-    CX.save(); CX.fillStyle = withA(C['text-muted'], .18); CX.fillRect(40, y0, 580, 40); CX.restore();
-    groundLine(y0, 40, 620);
-    block3D(cx - w / 2, y0 - 110, w, 110, 10);
-    if (F > 0) fArrow(cx, y0 - 110 - 20 - Math.min(120, F / 1000 * 110) - 4, Math.min(120, F / 1000 * 110) + 20, S.nums ? 'F = ' + fmt(F, 0) + ' N' : 'F');
-    /* the SAME twelve arrows, spread over the footprint: crowded = high pressure */
-    if (F > 0) for (var i = 0; i < 12; i++) {
-      var x = cx - w / 2 + (i + 0.5) * w / 12;
-      pArrow(x, y0 + 4, x, y0 + 34, w / 12 < 6 ? 1.6 : 2.4);
+    view3(DEFV);
+    var F = V('F'), A = V('A'), p = pSolid(F, cm2(A)), s = Math.sqrt(A), H = DEFV.H;
+    var f = F > 0 ? filmLevel(p) : 0;
+    /* the foam base and the pressure-sensitive film on top of it */
+    var mx = DEFV.W / 2, mz = DEFV.D / 2, T = DEFV.T;
+    dPoly([[-mx, -T, -mz], [mx, -T, -mz], [mx, 0, -mz], [-mx, 0, -mz]], LIGHT ? '#6b7280' : '#3b4250');     /* front */
+    dPoly([[-mx, -T, -mz], [-mx, -T, mz], [-mx, 0, mz], [-mx, 0, -mz]], LIGHT ? '#4b5563' : '#2b313c');     /* left  */
+    dPoly([[-mx, 0, -mz], [mx, 0, -mz], [mx, 0, mz], [-mx, 0, mz]], '#eef0f3');
+    /* 1 cm grid, darker every 5 cm, so the area can be COUNTED in squares */
+    CX.save(); CX.lineWidth = 1;
+    for (var gx = -Math.floor(mx); gx <= mx; gx++) {
+      CX.strokeStyle = gx % 5 === 0 ? 'rgba(80,90,105,.45)' : 'rgba(80,90,105,.16)';
+      var a = dp(gx, 0, -mz), b = dp(gx, 0, mz); CX.beginPath(); CX.moveTo(a.x, a.y); CX.lineTo(b.x, b.y); CX.stroke();
     }
+    for (var gz = -Math.floor(mz); gz <= mz; gz++) {
+      CX.strokeStyle = gz % 5 === 0 ? 'rgba(80,90,105,.45)' : 'rgba(80,90,105,.16)';
+      var c = dp(-mx, 0, gz), d = dp(mx, 0, gz); CX.beginPath(); CX.moveTo(c.x, c.y); CX.lineTo(d.x, d.y); CX.stroke();
+    }
+    CX.restore();
+    /* the print on the film: the darker the magenta, the bigger the pressure */
+    var h = s / 2, fp = [[-h, 0, -h], [h, 0, -h], [h, 0, h], [-h, 0, h]];
+    if (f > 0) dPoly(fp, filmCol(f), null);
+    /* the acrylic block: back edges first (you can see them through it) */
+    var ac = LIGHT ? 'rgba(14,116,144,' : 'rgba(186,230,253,';
+    CX.save(); CX.setLineDash([3, 3]);
+    dLine([h, 0, h], [-h, 0, h], ac + '.35)', 1); dLine([h, 0, h], [h, 0, -h], ac + '.35)', 1); dLine([h, 0, h], [h, H, h], ac + '.35)', 1);
+    CX.restore();
+    /* pressure arrows pushing down on the film, spread evenly over the footprint */
+    if (F > 0) {
+      var m = clamp(Math.round(s / 3), 1, 6), L = 1.4 + 4.4 * f;
+      for (var i = 0; i < m; i++) for (var j = 0; j < m; j++) {
+        var ax = -h + (i + .5) * s / m, az = -h + (j + .5) * s / m, top = dp(ax, .25 + L, az), bot = dp(ax, .25, az);
+        pArrow(top.x, top.y, bot.x, bot.y, m > 4 ? 1.8 : 2.2);
+      }
+    }
+    /* front faces of the block, see-through */
+    dPoly([[-h, 0, -h], [h, 0, -h], [h, H, -h], [-h, H, -h]], ac + '.16)', ac + '.95)', 1.6);
+    dPoly([[-h, 0, -h], [-h, 0, h], [-h, H, h], [-h, H, -h]], ac + '.26)', ac + '.95)', 1.6);
+    /* a glint on the front face sells it as clear acrylic */
+    if (s > 3) { CX.save(); CX.globalAlpha = .5; dPoly([[-h + s * .12, H * .15, -h], [-h + s * .2, H * .15, -h], [-h + s * .42, H * .85, -h], [-h + s * .34, H * .85, -h]], 'rgba(255,255,255,.55)'); CX.restore(); }
+
+    /* the press: a steel platen on the block, a rod up to the frame, a force gauge */
+    var pt = .8;
+    dPoly([[-h, H, -h], [h, H, -h], [h, H + pt, -h], [-h, H + pt, -h]], '#8a949f', '#4b5563');
+    dPoly([[-h, H, -h], [-h, H, h], [-h, H + pt, h], [-h, H + pt, -h]], '#6b7480', '#4b5563');
+    dPoly([[-h, H + pt, -h], [h, H + pt, -h], [h, H + pt, h], [-h, H + pt, h]], '#c3cbd3', '#4b5563');
+    var rc = dp(0, H + pt, 0), rw = Math.max(8, Math.min(22, s * DEFV.k * .5));
+    CX.save(); CX.fillStyle = steelGrad(rc.x - rw / 2, 0, rc.x + rw / 2, 0); CX.fillRect(rc.x - rw / 2, 62, rw, rc.y - 62); CX.restore();
+    CX.save(); CX.fillStyle = LIGHT ? '#475569' : '#64748b'; rr(rc.x - 120, 50, 240, 14, 4); CX.fill(); CX.restore();
+    txt('press', rc.x + 126, 61, 10.5, C['text-muted'], 'left', 600);
+    /* the digital force gauge on the rod */
+    var gy = 150;
+    CX.save(); shadowOn(6); CX.fillStyle = '#1f2937'; rr(rc.x - 56, gy, 112, 44, 7); CX.fill(); CX.restore();
+    CX.save(); CX.fillStyle = '#0b1220'; rr(rc.x - 48, gy + 7, 96, 26, 4); CX.fill(); CX.restore();
+    mtxt(fmt(F, 0) + ' N', rc.x + 42, gy + 26, 16, '#34d399', 'right', 800);
+    txt('force gauge', rc.x - 62, gy + 26, 10.5, C['text-muted'], 'right', 600);
+    if (F > 0) fArrow(rc.x + 78, 206, Math.min(90, 26 + F / 1000 * 64), S.nums ? 'F = ' + fmt(F, 0) + ' N' : 'F');
+    /* dimensions of the footprint and one highlighted square centimetre */
     if (S.cons) {
-      line(cx - w / 2, y0 + 50, cx + w / 2, y0 + 50, C['text-dim'], 1.4);
-      line(cx - w / 2, y0 + 44, cx - w / 2, y0 + 56, C['text-dim'], 1.4); line(cx + w / 2, y0 + 44, cx + w / 2, y0 + 56, C['text-dim'], 1.4);
-      mtxt('A = ' + fmt(A, 0) + ' cm²', cx, y0 + 70, 12, C['text-dim'], 'center', 700);
+      var e0 = dp(-h, 0, -h - 1.8), e1 = dp(h, 0, -h - 1.8);
+      line(e0.x, e0.y, e1.x, e1.y, C['text-dim'], 1.3);
+      var mid = dp(0, 0, -h - 3.6);
+      plate(fmt(s, 1) + ' cm × ' + fmt(s, 1) + ' cm = ' + fmt(A, 0) + ' cm²', mid.x, mid.y + 12, 11.5, C.text, 'center', true);
     }
-    txt('the same force, shared by ' + (w / 12 < 8 ? 'a crowded' : 'a spread-out') + ' footprint', cx, y0 + 96, 12, C['text-dim'], 'center', 600);
+    if (F > 0) {
+      var cell = [[-h, 0, -h], [-h + 1, 0, -h], [-h + 1, 0, -h + 1], [-h, 0, -h + 1]];
+      CX.save(); CX.setLineDash([]); dPoly(cell, null, C.pr, 2); CX.restore();
+      var cc = dp(-h + .5, 0, -h + .5), lx = 104, ly = 146, R = 60;
+      line(cc.x, cc.y, lx + R * .72, ly + R * .69, withA(C.pr, .85), 1.4, [4, 3]);
+      /* the magnifier: one square centimetre of the film and the force on it */
+      var q = function (u, v) { return { x: lx + (u - v * .5) * 30, y: ly + 26 - v * 13 + u * 3 }; };
+      CX.save(); CX.beginPath(); CX.arc(lx, ly, R, 0, 7); CX.fillStyle = '#eef0f3'; CX.fill(); CX.clip();
+      for (var gi = -3; gi <= 3; gi++) {
+        var p0 = q(gi - .5, -3.5), p1 = q(gi - .5, 3.5), p2 = q(-3.5, gi - .5), p3 = q(3.5, gi - .5);
+        line(p0.x, p0.y, p1.x, p1.y, 'rgba(80,90,105,.35)', 1); line(p2.x, p2.y, p3.x, p3.y, 'rgba(80,90,105,.35)', 1);
+      }
+      var c0 = q(-.5, -.5), c1 = q(.5, -.5), c2 = q(.5, .5), c3 = q(-.5, .5);
+      CX.beginPath(); CX.moveTo(c0.x, c0.y); CX.lineTo(c1.x, c1.y); CX.lineTo(c2.x, c2.y); CX.lineTo(c3.x, c3.y); CX.closePath();
+      CX.fillStyle = filmCol(f); CX.fill(); CX.strokeStyle = C.pr; CX.lineWidth = 2.4; CX.stroke();
+      var tipc = q(0, 0);
+      arrow(tipc.x, tipc.y - 62, tipc.x, tipc.y - 2, C.pr, 3, { head: 10 });
+      mtxt('1 cm', (c0.x + c1.x) / 2, (c0.y + c1.y) / 2 + 13, 10, '#374151', 'center', 700);
+      CX.restore();
+      CX.save(); CX.strokeStyle = LIGHT ? '#475569' : '#cbd5e1'; CX.lineWidth = 3.5; CX.beginPath(); CX.arc(lx, ly, R, 0, 7); CX.stroke(); CX.restore();
+      txt('one square centimetre', lx, ly - R - 8, 10.5, C['text-muted'], 'center', 700);
+      if (S.nums) {
+        plate('push on each cm² = ' + fmt(F / A, F / A < 10 ? 2 : 1) + ' N', lx, ly + R + 20, 11.5, C.pr, 'center', true);
+        mtxt('= ' + thou(F / A * 1e4) + ' N on each m²', lx, ly + R + 42, 11, C['text-dim'], 'center', 700);
+      }
+    }
+    /* the film's colour key */
+    var kx = 150, ky = 600, kw = 340;
+    for (var ki = 0; ki < 60; ki++) { CX.fillStyle = filmCol(ki / 59); CX.fillRect(kx + ki * kw / 60, ky, kw / 60 + .5, 10); }
+    CX.save(); CX.strokeStyle = C['text-muted']; CX.lineWidth = 1; CX.strokeRect(kx, ky, kw, 10); CX.restore();
+    txt('pressure film:', kx - 8, ky + 9, 11, C['text-dim'], 'right', 700);
+    txt('a clear acrylic block pressed onto pressure-sensitive film printed with a 1 cm grid', 40, ky - 16, 11, C['text-muted'], 'left', 600);
+    mtxt('1 kPa', kx, ky + 24, 10, C['text-muted'], 'left', 600); mtxt('10 MPa', kx + kw, ky + 24, 10, C['text-muted'], 'right', 600);
+    if (F > 0) { var kxp = kx + kw * f; CX.save(); CX.fillStyle = C.pr; CX.beginPath(); CX.moveTo(kxp, ky - 2); CX.lineTo(kxp - 6, ky - 10); CX.lineTo(kxp + 6, ky - 10); CX.closePath(); CX.fill(); CX.restore(); }
+    txt('the darker the print, the bigger the pressure', kx + kw + 12, ky + 9, 11, C['text-dim'], 'left', 600);
     withCard('pc', 650, 50, 510, 510, function () {
       card(650, 50, 510, 510, 'PRESSURE = FORCE ÷ AREA');
-      var y = 104, L = function (s, col, sz) { mtxt(s, 674, y, sz || 14, col || C.text, 'left', 700); y += 28; };
-      L('F = ' + fmt(F, 0) + ' N', C.pr);
-      L('A = ' + fmt(A, 0) + ' cm² = ' + String(+(A / 1e4).toFixed(4)) + ' m²', C.text);
+      var y = 104, Lr = function (s2, col, sz) { mtxt(s2, 674, y, sz || 14, col || C.text, 'left', 700); y += 28; };
+      Lr('F = ' + fmt(F, 0) + ' N', C.pr);
+      Lr('A = ' + fmt(A, 0) + ' cm² = ' + String(+(A / 1e4).toFixed(4)) + ' m²', C.text);
       txt('(1 m² = 10 000 cm², so divide by 10 000)', 674, y - 8, 11.5, C['text-muted'], 'left', 600); y += 16;
-      L('p = F ÷ A = ' + fmt(F, 0) + ' ÷ ' + String(+(A / 1e4).toFixed(4)), C.text);
-      L('p = ' + fmt(p, 0) + ' Pa  =  ' + fmtPa(p), C.pr, 17);
+      Lr('p = F ÷ A = ' + fmt(F, 0) + ' ÷ ' + String(+(A / 1e4).toFixed(4)), C.text);
+      Lr('p = ' + thou(p) + ' Pa  =  ' + fmtPa(p), C.pr, 17);
       txt('1 Pa = 1 N/m²  (one newton on every square metre)', 674, y + 2, 12, C['text-dim'], 'left', 600);
       pMeter(674, y + 40, 460, p, MARKS);
       y += 130;
       txt('Halve the area → double the pressure.', 674, y, 12.5, C['text-dim'], 'left', 600);
       txt('Double the force → double the pressure.', 674, y + 22, 12.5, C['text-dim'], 'left', 600);
-      wrap('Pressure is the force sharing out the area: it tells you how hard each square metre is being pushed.', 674, y + 56, 460, 12.5, C.text, 18, 600);
+      wrap('Count the squares under the block: the force is shared between them. Fewer squares → each one is pushed harder → a darker print.', 674, y + 56, 460, 12.5, C.text, 18, 600);
     });
   },
   data: function () {
@@ -1541,35 +1767,27 @@ scene(1, 'define', {
 });
 
 /* ---------- 1.2  BLOCKS ON SAND ----------------------------------------- */
-var SAND = { y: 380, ppc: 7, perCm: 1000, cap: 12 };
+var SAND = { perCm: 1000, cap: 12, X: 38, Z: 11, depth: 15, rim: 4 };
+var SANDV = { cx: 330, cy: 330, k: 7.4, yaw: 13 * Math.PI / 180, pitch: 22 * Math.PI / 180 };
+/* each brick: its size along x (across), y (up) and z (into the tank), and
+   where it stands; all three are pushed against the front glass so the dent
+   shows in the cross-section                                              */
 var BRICK = [
-  { key: 'flat', name: 'largest face down', w: 20, h: 5, a: 20 * 10, x: 140 },
-  { key: 'side', name: 'side face down', w: 20, h: 10, a: 20 * 5, x: 340 },
-  { key: 'end', name: 'end face down', w: 10, h: 20, a: 10 * 5, x: 530 }];
-function sandBed(y, x0, x1, dents) {
-  CX.save();
-  var g = CX.createLinearGradient(0, y, 0, y + 140);
-  g.addColorStop(0, LIGHT ? '#e8cf95' : '#c9a86a'); g.addColorStop(1, LIGHT ? '#c7a462' : '#8a6d3b');
-  CX.fillStyle = g;
-  CX.beginPath(); CX.moveTo(x0, y);
-  (dents || []).forEach(function (d) { CX.lineTo(d.x0 - 8, y); CX.lineTo(d.x0 - 4, y - 2 - d.d * .15); CX.lineTo(d.x0, y + d.d); CX.lineTo(d.x1, y + d.d); CX.lineTo(d.x1 + 4, y - 2 - d.d * .15); CX.lineTo(d.x1 + 8, y); });
-  CX.lineTo(x1, y); CX.lineTo(x1, y + 140); CX.lineTo(x0, y + 140); CX.closePath(); CX.fill();
-  CX.fillStyle = 'rgba(90,60,20,.35)';
-  for (var i = 0; i < 260; i++) {
-    var sx = Math.abs(Math.sin(i * 12.9898) * 43758.5453) % 1, sy = Math.abs(Math.sin(i * 78.233) * 12345.678) % 1;
-    CX.fillRect(x0 + sx * (x1 - x0), y + 6 + sy * 128, 1.6, 1.6);
-  }
-  CX.restore();
-}
-function brickPic(x, yTop, w, h) {
+  { key: 'flat', name: 'largest face down', dx: 20, dy: 5, dz: 10, a: 20 * 10, xc: -24 },
+  { key: 'side', name: 'side face down', dx: 20, dy: 10, dz: 5, a: 20 * 5, xc: 2 },
+  { key: 'end', name: 'end face down', dx: 10, dy: 20, dz: 5, a: 10 * 5, xc: 27 }];
+function sandCol(shade) { return mixCol(LIGHT ? '#e9cf94' : '#d4b074', '#6b4f24', shade); }
+/* a clay brick: warm red, a little darker on the shaded faces, with grit */
+function brickBox(b, yb) {
+  var x0 = b.xc - b.dx / 2, x1 = b.xc + b.dx / 2, z0 = -SAND.Z + .15, z1 = z0 + b.dz, y1 = yb + b.dy;
   CX.save(); shadowOn(6);
-  var g = CX.createLinearGradient(0, yTop, 0, yTop + h);
-  g.addColorStop(0, '#c0583a'); g.addColorStop(1, '#8a3620');
-  CX.fillStyle = g; CX.fillRect(x - w / 2, yTop, w, h); CX.restore();
-  CX.save(); CX.strokeStyle = '#5a2212'; CX.lineWidth = 1; CX.strokeRect(x - w / 2, yTop, w, h);
-  CX.fillStyle = 'rgba(0,0,0,.15)';
-  for (var i = 0; i < 6; i++) CX.fillRect(x - w / 2 + 4 + (i * 37 % (w - 8)), yTop + 3 + (i * 13 % Math.max(4, h - 6)), 3, 2);
+  box3(x0, x1, yb, y1, z0, z1, '#b24a2e', { top: '#cf6a47', left: '#86331d', stroke: '#5a2212' });
   CX.restore();
+  speckle([[x0, yb, z0], [x1, yb, z0], [x1, y1, z0], [x0, y1, z0]], Math.round(b.dx * b.dy * .9), 'rgba(40,10,0,.28)', b.dx + b.dy, 1.6);
+  speckle([[x0, y1, z0], [x1, y1, z0], [x1, y1, z1], [x0, y1, z1]], Math.round(b.dx * b.dz * .7), 'rgba(255,220,190,.22)', 7 + b.dz, 1.4);
+  /* a soft highlight along the top front edge */
+  dLine([x0, y1, z0], [x1, y1, z0], 'rgba(255,200,170,.55)', 1.4);
+  return { x0: x0, x1: x1, z0: z0, z1: z1, y1: y1 };
 }
 function brickP(b) { return pSolid(V('Wb'), cm2(b.a)); }
 scene(1, 'sand', {
@@ -1578,26 +1796,90 @@ scene(1, 'sand', {
   sub: 'Same brick, same weight, three different faces down. Sink depth grows with the pressure. ▶ Play lowers them on.',
   ctrl: ['Wb'],
   hero: 'p = \\dfrac{W}{A}',
-  len: function () { return 3; },
+  len: function () { return 3.2; },
   draw: function () {
-    var u = S.t === 0 && !S.play ? 1 : smooth(S.t / 2.2), dents = [];
-    BRICK.forEach(function (b) { var d = sinkDepth(brickP(b), SAND.perCm, SAND.cap) * SAND.ppc * u; dents.push({ x0: b.x - b.w * SAND.ppc / 2, x1: b.x + b.w * SAND.ppc / 2, d: d }); });
+    view3(SANDV);
+    var X = SAND.X, Z = SAND.Z, D = SAND.depth, R = SAND.rim;
+    /* Play: the bricks are lowered on, then sink as the sand gives way */
+    var still = S.t === 0 && !S.play, lift = still ? 0 : 14 * (1 - smooth(S.t / .9)), u = still ? 1 : smooth((S.t - .9) / 1.8);
+    var sinks = BRICK.map(function (b) { return sinkDepth(brickP(b), SAND.perCm, SAND.cap) * u; });
+    /* the tank floor and back glass (seen through the sand-free top part) */
+    dPoly([[-X, -D - 1.2, -Z], [X, -D - 1.2, -Z], [X, -D, -Z], [-X, -D, -Z]], LIGHT ? '#475569' : '#334155');
+    dPoly([[-X, 0, Z], [X, 0, Z], [X, R, Z], [-X, R, Z]], 'rgba(186,230,253,.07)', 'rgba(186,230,253,.35)');
+    dPoly([[X, 0, -Z], [X, 0, Z], [X, R, Z], [X, R, -Z]], 'rgba(186,230,253,.05)', 'rgba(186,230,253,.3)');
+    /* the sand: top, left cut face */
+    var top = [[-X, 0, -Z], [X, 0, -Z], [X, 0, Z], [-X, 0, Z]];
+    dPoly(top, sandCol(.02));
+    speckle(top, 900, 'rgba(110,80,30,.35)', 3, 1.4);
+    speckle(top, 300, 'rgba(255,245,220,.45)', 91, 1.2);
+    dPoly([[-X, -D, -Z], [-X, -D, Z], [-X, 0, Z], [-X, 0, -Z]], sandCol(.28));
+    /* the dents on the surface: a dark hollow and a ring of pushed-up sand */
     BRICK.forEach(function (b, i) {
-      var w = b.w * SAND.ppc, h = b.h * SAND.ppc, d = dents[i].d;
-      brickPic(b.x, SAND.y - h + d, w, h);
+      var d = sinks[i]; if (d < .05) return;
+      var x0 = b.xc - b.dx / 2, x1 = b.xc + b.dx / 2, z1 = -Z + .15 + b.dz, e = .9;
+      dPoly([[x0 - e, 0, -Z], [x1 + e, 0, -Z], [x1 + e, 0, z1 + e], [x0 - e, 0, z1 + e]], 'rgba(255,240,210,' + clamp(.12 + d * .04, 0, .4) + ')');
+      dPoly([[x0 - .25, 0, -Z], [x1 + .25, 0, -Z], [x1 + .25, 0, z1 + .25], [x0 - .25, 0, z1 + .25]], 'rgba(60,35,10,' + clamp(.25 + d * .06, 0, .7) + ')');
     });
-    sandBed(SAND.y, 40, 640, dents);
+    /* the bricks, far ones first */
+    var boxes = [];
+    for (var i = BRICK.length - 1; i >= 0; i--) boxes[i] = brickBox(BRICK[i], -sinks[i] + lift);
+    /* the front cross-section, seen through the glass: the sand profile with
+       a hollow under each brick and a darker band of squashed sand beneath  */
+    var prof = [[-X, -D, -Z], [-X, 0, -Z]];
     BRICK.forEach(function (b, i) {
-      var d = dents[i].d, p = brickP(b);
-      if (S.cons && d > 2) { line(b.x + b.w * SAND.ppc / 2 + 16, SAND.y, b.x + b.w * SAND.ppc / 2 + 16, SAND.y + d, C.pr, 2); line(b.x + b.w * SAND.ppc / 2 + 10, SAND.y + d, b.x + b.w * SAND.ppc / 2 + 22, SAND.y + d, C.pr, 2); }
-      txt(b.name, b.x, SAND.y + 160 - 10, 12, C.text, 'center', 700);
-      if (S.nums) {
-        mtxt('A = ' + b.a + ' cm²', b.x, SAND.y + 176 - 10, 11.5, C['text-dim'], 'center', 600);
-        mtxt('p = ' + fmtPa(p), b.x, SAND.y + 194 - 10, 12, C.pr, 'center', 700);
+      var d = sinks[i], x0 = b.xc - b.dx / 2, x1 = b.xc + b.dx / 2, rim = Math.min(.6, d * .18);
+      prof.push([x0 - 1.4, 0, -Z], [x0 - .6, rim, -Z], [x0, -d, -Z], [x1, -d, -Z], [x1 + .6, rim, -Z], [x1 + 1.4, 0, -Z]);
+    });
+    prof.push([X, 0, -Z], [X, -D, -Z]);
+    /* the part of each brick below the surface is in front of the sand, so
+       the cut face is drawn first and the brick fronts again on top        */
+    var gF = (function () { var a = dp(0, 0, -Z), b2 = dp(0, -D, -Z); var g = CX.createLinearGradient(0, a.y, 0, b2.y); g.addColorStop(0, sandCol(.12)); g.addColorStop(1, sandCol(.42)); return g; })();
+    dPoly(prof, gF);
+    speckle(prof, 700, 'rgba(90,60,20,.35)', 17, 1.5);
+    CX.save(); CX.globalAlpha = .35;
+    for (var L = 1; L <= 3; L++) dLine([-X, -L * 4, -Z], [X, -L * 4 + .4, -Z], 'rgba(120,90,40,.5)', 1);
+    CX.restore();
+    BRICK.forEach(function (b, i) {
+      var d = sinks[i]; if (d < .05) return;
+      var x0 = b.xc - b.dx / 2, x1 = b.xc + b.dx / 2, band = Math.min(4, d * .9);
+      dPoly([[x0, -d, -Z], [x1, -d, -Z], [x1 + band * .4, -d - band, -Z], [x0 - band * .4, -d - band, -Z]], 'rgba(90,60,20,.28)');
+    });
+    BRICK.forEach(function (b, i) {
+      var bx = boxes[i], yb = -sinks[i] + lift;
+      dPoly([[bx.x0, yb, bx.z0], [bx.x1, yb, bx.z0], [bx.x1, bx.y1, bx.z0], [bx.x0, bx.y1, bx.z0]], '#b24a2e', '#5a2212');
+      speckle([[bx.x0, yb, bx.z0], [bx.x1, yb, bx.z0], [bx.x1, bx.y1, bx.z0], [bx.x0, bx.y1, bx.z0]], Math.round(b.dx * b.dy * .9), 'rgba(40,10,0,.28)', b.dx + b.dy, 1.6);
+      dLine([bx.x0, bx.y1, bx.z0], [bx.x1, bx.y1, bx.z0], 'rgba(255,200,170,.55)', 1.4);
+    });
+    /* the glass: front and left panes with a faint reflection, then the frame */
+    dPoly([[-X, -D, -Z], [X, -D, -Z], [X, R, -Z], [-X, R, -Z]], 'rgba(186,230,253,.07)');
+    dPoly([[-X, -D, -Z], [-X, -D, Z], [-X, R, Z], [-X, R, -Z]], 'rgba(186,230,253,.08)');
+    CX.save(); CX.globalAlpha = .5;
+    [[-30, 6], [-22, 3], [14, 7]].forEach(function (r) {
+      dPoly([[r[0], -D + 1, -Z], [r[0] + r[1], -D + 1, -Z], [r[0] + r[1] + 8, R - .5, -Z], [r[0] + 8, R - .5, -Z]], 'rgba(255,255,255,.07)');
+    });
+    CX.restore();
+    var fr = LIGHT ? '#64748b' : '#94a3b8';
+    [[[-X, R, -Z], [X, R, -Z]], [[-X, R, -Z], [-X, R, Z]], [[-X, R, Z], [X, R, Z]], [[X, R, -Z], [X, R, Z]],
+      [[-X, -D - 1.2, -Z], [-X, R, -Z]], [[X, -D - 1.2, -Z], [X, R, -Z]], [[-X, -D - 1.2, Z], [-X, R, Z]], [[-X, -D - 1.2, -Z], [X, -D - 1.2, -Z]]].forEach(function (e) {
+      dLine(e[0], e[1], fr, 2.2);
+    });
+    /* weights, depths and labels */
+    BRICK.forEach(function (b, i) {
+      var bx = boxes[i], d = sinks[i], p = brickP(b), topC = dp(b.xc, bx.y1, bx.z0 + b.dz / 2);
+      fArrow(topC.x, topC.y - 66, 52, i === 0 && S.nums ? 'W = ' + fmt(V('Wb'), 0) + ' N' : '');
+      if (S.cons && d > .3) {
+        var a0 = dp(bx.x1 + 2.2, 0, -Z), a1 = dp(bx.x1 + 2.2, -d, -Z);
+        line(a0.x, a0.y, a1.x, a1.y, C.pr, 2); line(a1.x - 5, a1.y, a1.x + 5, a1.y, C.pr, 2); line(a0.x - 5, a0.y, a0.x + 5, a0.y, C.pr, 1.4);
+        if (S.nums) plate(fmt(d, 1) + ' cm', a1.x + 8, (a0.y + a1.y) / 2 + 4, 10.5, C.pr, 'left', true);
       }
-      fArrow(b.x, SAND.y - b.h * SAND.ppc + d - 74, 56, i === 0 && S.nums ? 'W = ' + fmt(V('Wb'), 0) + ' N' : '');
+      var lb = dp(b.xc, -D - 1.2, -Z);
+      txt(b.name, lb.x, lb.y + 24, 12, C.text, 'center', 700);
+      if (S.nums) {
+        mtxt('A = ' + b.a + ' cm²', lb.x, lb.y + 40, 11.5, C['text-dim'], 'center', 600);
+        mtxt('p = ' + fmtPa(p), lb.x, lb.y + 58, 12, C.pr, 'center', 700);
+      }
     });
-    note('brick: 20 cm × 10 cm × 5 cm', 40, 96);
+    note('brick: 20 cm × 10 cm × 5 cm · glass tank of dry sand, seen from the front', 40, 96);
     withCard('sd', 660, 50, 500, 400, function () {
       card(660, 50, 500, 400, 'SAME WEIGHT, DIFFERENT AREA');
       var pm = brickP(BRICK[2]);
@@ -1632,20 +1914,71 @@ scene(1, 'sand', {
 });
 
 /* ---------- 1.3  KNIFE vs BLUNT ----------------------------------------- */
-var KNIFE = { L: 0.08, cut: 1e6, cx: 320, top: 330, board: 460 };
+var KNIFE = { L: 0.08, cut: 1e6 };
+var KNV = { cx: 296, cy: 420, k: 18, yaw: 24 * Math.PI / 180, pitch: 26 * Math.PI / 180 };
 function knifeArea() { return (V('ew') / 1000) * KNIFE.L; }
-function knifePic(x, yEdge, wEdge) {
-  CX.save();
-  /* handle */
-  CX.fillStyle = '#3b2a1a'; rr(x - 16, yEdge - 250, 32, 70, 6); CX.fill();
-  dot(x, yEdge - 230, 3, '#c7ccd3'); dot(x, yEdge - 200, 3, '#c7ccd3');
-  /* blade, tapering to the edge */
-  shadowOn(5);
-  var g = CX.createLinearGradient(x - 24, 0, x + 24, 0);
-  g.addColorStop(0, '#8a95a1'); g.addColorStop(.5, '#eef1f4'); g.addColorStop(1, '#8a95a1');
-  CX.fillStyle = g; CX.beginPath();
-  CX.moveTo(x - 22, yEdge - 180); CX.lineTo(x + 22, yEdge - 180); CX.lineTo(x + Math.max(wEdge / 2, .6), yEdge); CX.lineTo(x - Math.max(wEdge / 2, .6), yEdge); CX.closePath(); CX.fill();
+/* a wooden chopping board with grain along its length */
+function choppingBoard() {
+  var bx = 13, bz = 8, bt = 2;
+  box3(-bx, bx, -bt, 0, -bz, bz, '#b07a45', { top: '#c99462', left: '#8a5a2e', stroke: '#6b4423' });
+  CX.save(); CX.globalAlpha = .35;
+  for (var i = 0; i < 16; i++) {
+    var z = -bz + .6 + i * (2 * bz - 1.2) / 15, w = Math.sin(i * 1.7) * .25;
+    var pts = []; for (var x = -bx + .3; x <= bx - .3; x += 1.5) pts.push(dp(x, 0, z + w * Math.sin(x * .4 + i)));
+    CX.strokeStyle = '#7a4d25'; CX.lineWidth = 1; CX.beginPath();
+    pts.forEach(function (q, j) { if (j) CX.lineTo(q.x, q.y); else CX.moveTo(q.x, q.y); }); CX.stroke();
+  }
   CX.restore();
+  /* end grain rings on the front face */
+  CX.save(); CX.globalAlpha = .3;
+  for (var r = 0; r < 5; r++) dLine([-bx + 2 + r * 5, -bt + .3, -bz], [-bx + 4.5 + r * 5, -.3, -bz], '#6b4423', 1);
+  CX.restore();
+}
+/* a block of hard cheese; its holes are drawn on the faces we can see.
+   z0..z1 lets the scene draw the two halves of a cut block separately    */
+function cheeseBlock(z0, z1, notch) {
+  var x0 = -4, x1 = 4, H = 6;
+  CX.save(); shadowOn(5);
+  box3(x0, x1, 0, H, z0, z1, '#f2c649', { top: '#fbdc7a', left: '#dcaa33', stroke: '#b98a1f' });
+  CX.restore();
+  var hole = function (face, u, v, r) {
+    var pts = [];
+    for (var i = 0; i < 14; i++) {
+      var a = i / 14 * Math.PI * 2, du = Math.cos(a) * r, dv = Math.sin(a) * r;
+      pts.push(face === 'front' ? [u + du, v + dv, z0] : face === 'left' ? [x0, v + dv, u + du] : [u + du, H, v + dv]);
+    }
+    dPoly(pts, 'rgba(176,122,26,.55)');
+  };
+  [[-2.4, 1.6, .7], [1.2, 3.8, .55], [2.8, 1.2, .4], [-.8, 4.6, .35]].forEach(function (h) { if (h[1] < H - .5) hole('front', h[0], h[1], h[2]); });
+  [[-2, 2.2, .5], [1.5, 4.2, .6], [2.8, 1.4, .35]].forEach(function (h) { if (h[0] > z0 + .6 && h[0] < z1 - .6) hole('left', h[0], h[1], h[2]); });
+  [[-2.2, 1.2, .45], [2.1, -2.5, .35]].forEach(function (h) { if (h[1] > z0 + .5 && h[1] < z1 - .5) hole('top', h[0], h[1], h[2]); });
+  if (notch > .02 && z0 < 0 && z1 > 0) {
+    /* a blunt edge only squashes a groove into the top */
+    dPoly([[x0, H, -.5], [x0, H - notch, 0], [x0, H, .5]], '#c9962a');
+    dPoly([[x0, H, -.35], [x1, H, -.35], [x1, H, .35], [x0, H, .35]], 'rgba(150,100,20,.55)');
+  }
+}
+/* a chef's knife in the cutting plane z = 0, edge at height yE (cm) */
+function chefKnife(yE, edgeMm) {
+  var z = -.12;
+  var P = [[7, yE], [-7.5, yE], [-10.5, yE + .7], [-12.8, yE + 2.1], [-12.6, yE + 2.9], [-9, yE + 3.9], [7, yE + 4.3]];
+  var pts = P.map(function (q) { return dp(q[0], q[1], z); });
+  CX.save(); shadowOn(6);
+  var gA = dp(0, yE + 4.3, z), gB = dp(0, yE, z), g = CX.createLinearGradient(0, gA.y, 0, gB.y);
+  g.addColorStop(0, '#9aa5b1'); g.addColorStop(.45, '#e8edf2'); g.addColorStop(1, '#b8c2cc');
+  CX.fillStyle = g; CX.beginPath(); pts.forEach(function (q, i) { if (i) CX.lineTo(q.x, q.y); else CX.moveTo(q.x, q.y); }); CX.closePath(); CX.fill();
+  CX.restore();
+  /* the ground bevel just above the edge — a narrow bright band */
+  var bev = [[7, yE], [-7.5, yE], [-10.5, yE + .7], [-11.2, yE + 1.4], [-8, yE + .9], [7, yE + .9]];
+  dPoly(bev.map(function (q) { return [q[0], q[1], z]; }), 'rgba(255,255,255,.35)');
+  /* a blunt edge is a flat, shiny strip; a sharp one a fine line */
+  var ew = Math.max(1, Math.min(4, edgeMm * 1.6));
+  dLine([7, yE, z], [-7.5, yE, z], edgeMm > .5 ? '#f8fafc' : '#475569', ew);
+  dLine([7, yE + 4.3, z], [-9, yE + 3.9, z], '#6b7785', 1.6);                        /* spine */
+  /* bolster and handle with three rivets */
+  box3(7, 8, yE + .6, yE + 4.4, -.4, .4, '#9aa5b1', { stroke: '#4b5563' });
+  box3(8, 19, yE + 1.1, yE + 4.0, -.6, .6, '#1f2937', { top: '#374151', left: '#111827', stroke: '#0b0f16' });
+  [10.5, 13.5, 16.5].forEach(function (x) { var q = dp(x, yE + 2.55, -.6); dot(q.x, q.y, 2.6, '#cbd5e1'); dot(q.x - .6, q.y - .6, 1, '#ffffff'); });
 }
 scene(1, 'knife', {
   label: '🔪 Knife vs blunt',
@@ -1663,29 +1996,25 @@ scene(1, 'knife', {
   },
   len: function () { return 3; },
   draw: function () {
-    var p = V('Fk') / knifeArea(), cuts = p >= KNIFE.cut, u = smooth(S.t / 2.4);
-    var dent = cuts ? 0 : clamp(p / KNIFE.cut, 0, 1) * 16, travel = cuts ? (KNIFE.board - KNIFE.top) : dent;
-    var yEdge = KNIFE.top - 40 + (40 + travel) * u;
-    /* board and cheese (split when cut) */
-    CX.save(); CX.fillStyle = WOOD.mid; rr(120, KNIFE.board, 420, 22, 4); CX.fill(); CX.restore();
-    var gap = cuts ? 8 * clamp((yEdge - KNIFE.top) / (KNIFE.board - KNIFE.top), 0, 1) : 0;
-    var cheese = function (x0, x1) {
-      CX.save(); var g = CX.createLinearGradient(0, KNIFE.top, 0, KNIFE.board);
-      g.addColorStop(0, '#ffe08a'); g.addColorStop(1, '#e6b84a'); CX.fillStyle = g;
-      CX.fillRect(x0, KNIFE.top, x1 - x0, KNIFE.board - KNIFE.top);
-      CX.fillStyle = 'rgba(180,120,20,.35)';
-      [[.2, .3, 9], [.6, .55, 12], [.35, .75, 7], [.8, .25, 6]].forEach(function (h) { CX.beginPath(); CX.arc(x0 + (x1 - x0) * h[0], KNIFE.top + (KNIFE.board - KNIFE.top) * h[1], h[2], 0, 7); CX.fill(); });
-      CX.restore();
-    };
-    cheese(190, KNIFE.cx - gap / 2); cheese(KNIFE.cx + gap / 2, 450);
-    if (!cuts && yEdge > KNIFE.top) {
-      CX.save(); CX.fillStyle = withA(C['graph-bg'], 1);
-      CX.beginPath(); CX.moveTo(KNIFE.cx - 30, KNIFE.top); CX.quadraticCurveTo(KNIFE.cx, KNIFE.top + 2 * (yEdge - KNIFE.top), KNIFE.cx + 30, KNIFE.top); CX.fill(); CX.restore();
+    view3(KNV);
+    var p = V('Fk') / knifeArea(), cuts = p >= KNIFE.cut, u = smooth(S.t / 2.4), H = 6;
+    var notch = cuts ? 0 : clamp(p / KNIFE.cut, 0, 1) * .9;
+    var yStart = H + 3, yEnd = cuts ? 0 : H - notch, yE = yStart + (yEnd - yStart) * u;
+    var inside = clamp((H - yE) / H, 0, 1), gap = cuts ? .12 + .7 * inside * inside : 0;
+    choppingBoard();
+    /* back half, then the knife, then the front half (which hides the blade
+       once it is inside the cheese)                                        */
+    cheeseBlock(gap / 2, 4 + gap / 2, 0);
+    chefKnife(yE, V('ew'));
+    cheeseBlock(-4 - gap / 2, -gap / 2, 0);
+    if (!cuts && notch > .02 && yE < H + .01) {
+      dPoly([[-4, H, -.5], [-4, H - notch * u, 0], [-4, H, .5]], '#c9962a');
+      dPoly([[-4, H, -.3], [4, H, -.3], [4, H, .3], [-4, H, .3]], 'rgba(150,100,20,.5)');
     }
-    knifePic(KNIFE.cx, yEdge, 2 + V('ew') * 5);
-    fArrow(KNIFE.cx + 60, yEdge - 250, 60, S.nums ? 'F = ' + fmt(V('Fk'), 0) + ' N' : 'F');
-    if (S.t > 0 && S.t >= 2.4) plate(cuts ? '✓ it cuts: p is above 1 MPa' : '✗ it only squashes the cheese: p too small', 120, 540, 12.5, cuts ? C.tot : C.rose, 'left', false);
-    else if (S.t === 0 && !S.play) plate('press ▶ Play to cut', 120, 540, 12, C['text-dim'], 'left', false);
+    var fa = dp(0, yE + 4.3, 0);
+    fArrow(fa.x, fa.y - 76, 64, S.nums ? 'F = ' + fmt(V('Fk'), 0) + ' N' : 'F');
+    if (S.t > 0 && S.t >= 2.4) plate(cuts ? '✓ it cuts: p is above 1 MPa' : '✗ it only dents the cheese: p too small', 60, 572, 12.5, cuts ? C.tot : C.rose, 'left', false);
+    else if (S.t === 0 && !S.play) plate('press ▶ Play to cut', 60, 572, 12, C['text-dim'], 'left', false);
     withCard('kn', 640, 50, 520, 510, function () {
       card(640, 50, 520, 510, 'THE EDGE, MAGNIFIED');
       /* the edge under a magnifier: 40 px per mm */
@@ -1729,6 +2058,64 @@ scene(1, 'knife', {
 });
 
 /* ---------- 1.4  SKIS & SPIKES ------------------------------------------ */
+/* the alpine backdrop: sky, two ranges of mountains and a few pines       */
+function alpine(gy, ice) {
+  var x0 = 30, x1 = 640, y0 = 56;
+  CX.save(); rr(x0, y0, x1 - x0, gy - y0 + 150, 12); CX.clip();
+  var sky = CX.createLinearGradient(0, y0, 0, gy);
+  if (LIGHT) { sky.addColorStop(0, '#bcd8f0'); sky.addColorStop(1, '#eef6fc'); } else { sky.addColorStop(0, '#16324f'); sky.addColorStop(1, '#3d6d95'); }
+  CX.fillStyle = sky; CX.fillRect(x0, y0, x1 - x0, gy - y0);
+  var ridge = function (pts, col, cap) {
+    CX.fillStyle = col; CX.beginPath(); CX.moveTo(x0, gy);
+    pts.forEach(function (q) { CX.lineTo(q[0], q[1]); }); CX.lineTo(x1, gy); CX.closePath(); CX.fill();
+    if (cap) pts.forEach(function (q, i) {
+      if (i === 0 || i === pts.length - 1 || q[1] > pts[i - 1][1] || q[1] > pts[i + 1][1]) return;
+      CX.fillStyle = cap; CX.beginPath(); CX.moveTo(q[0], q[1]);
+      CX.lineTo(q[0] - 26, q[1] + 30); CX.lineTo(q[0] - 12, q[1] + 24); CX.lineTo(q[0] - 2, q[1] + 34); CX.lineTo(q[0] + 10, q[1] + 22); CX.lineTo(q[0] + 24, q[1] + 30); CX.closePath(); CX.fill();
+    });
+  };
+  ridge([[x0, gy - 150], [110, gy - 230], [190, gy - 170], [280, gy - 262], [380, gy - 180], [470, gy - 240], [560, gy - 170], [x1, gy - 205]],
+    LIGHT ? '#9fb6cc' : '#4a6886', LIGHT ? '#ffffff' : '#dbe7f2');
+  ridge([[x0, gy - 70], [140, gy - 120], [250, gy - 80], [360, gy - 130], [470, gy - 86], [x1, gy - 120]], LIGHT ? '#c8d6e3' : '#6f8ba6', null);
+  /* pines on the far slope */
+  [[70, gy - 8, 44], [96, gy - 4, 30], [520, gy - 6, 50], [556, gy - 2, 34], [600, gy - 6, 42]].forEach(function (t) {
+    var x = t[0], y = t[1], h = t[2];
+    CX.fillStyle = '#4b3621'; CX.fillRect(x - 2, y - 6, 4, 8);
+    for (var k = 0; k < 3; k++) {
+      var ty = y - 4 - k * h * .26, w = h * (.42 - k * .1);
+      CX.fillStyle = LIGHT ? '#2f5d4a' : '#1f4a3a'; CX.beginPath(); CX.moveTo(x, ty - h * .42); CX.lineTo(x - w, ty); CX.lineTo(x + w, ty); CX.closePath(); CX.fill();
+      if (!ice) { CX.fillStyle = 'rgba(255,255,255,.85)'; CX.beginPath(); CX.moveTo(x, ty - h * .42); CX.lineTo(x - w * .35, ty - h * .26); CX.lineTo(x + w * .35, ty - h * .26); CX.closePath(); CX.fill(); }
+    }
+  });
+  CX.restore();
+}
+/* the ground as a cross-section: soft snow in layers, or clear lake ice   */
+function skiGround(gy, ice) {
+  var x0 = 30, x1 = 640, th = 140;
+  CX.save(); rr(x0, gy, x1 - x0, th, 10); CX.clip();
+  var g = CX.createLinearGradient(0, gy, 0, gy + th);
+  if (ice) { g.addColorStop(0, '#d7eefa'); g.addColorStop(.25, '#8cc4e2'); g.addColorStop(1, '#2f6f95'); }
+  else { g.addColorStop(0, '#ffffff'); g.addColorStop(.5, '#e6eef6'); g.addColorStop(1, '#b8c9da'); }
+  CX.fillStyle = g; CX.fillRect(x0, gy, x1 - x0, th);
+  if (ice) {
+    CX.strokeStyle = 'rgba(255,255,255,.55)'; CX.lineWidth = 1.2;
+    [[80, 10, 170, 60], [300, 20, 250, 90], [470, 8, 560, 70], [560, 30, 610, 110]].forEach(function (c) {
+      CX.beginPath(); CX.moveTo(c[0], gy + c[1]); CX.lineTo((c[0] + c[2]) / 2 + 12, gy + (c[1] + c[3]) / 2 - 6); CX.lineTo(c[2], gy + c[3]); CX.stroke();
+    });
+    CX.fillStyle = 'rgba(255,255,255,.18)';
+    for (var b = 0; b < 30; b++) { var a = Math.abs(Math.sin(b * 7.3)) % 1, c2 = Math.abs(Math.sin(b * 3.1)) % 1; CX.beginPath(); CX.arc(x0 + a * (x1 - x0), gy + 20 + c2 * 110, 1.5 + (b % 3), 0, 7); CX.fill(); }
+  } else {
+    /* layers: fresh powder on top of older, packed snow */
+    CX.strokeStyle = 'rgba(120,145,170,.35)'; CX.lineWidth = 1;
+    [44, 86, 118].forEach(function (d, i) { CX.beginPath(); CX.moveTo(x0, gy + d); for (var x = x0; x <= x1; x += 20) CX.lineTo(x, gy + d + Math.sin(x * .02 + i) * 3); CX.stroke(); });
+    mtxt('fresh powder', x1 - 10, gy + 30, 10, 'rgba(90,110,135,.8)', 'right', 700);
+    mtxt('packed snow', x1 - 10, gy + 104, 10, 'rgba(90,110,135,.8)', 'right', 700);
+    CX.fillStyle = 'rgba(255,255,255,.9)';
+    for (var s = 0; s < 60; s++) { var sx = Math.abs(Math.sin(s * 12.9898) * 43758.5) % 1, sy = Math.abs(Math.sin(s * 78.233) * 1234.5) % 1; CX.fillRect(x0 + sx * (x1 - x0), gy + 2 + sy * 40, 1.6, 1.6); }
+  }
+  CX.restore();
+  CX.save(); CX.strokeStyle = ice ? '#e0f2fe' : '#ffffff'; CX.lineWidth = 2; CX.beginPath(); CX.moveTo(x0, gy); CX.lineTo(x1, gy); CX.stroke(); CX.restore();
+}
 var SKI = { gy: 420, fx: 300, ppm: 126, snowPerCm: 500 };
 function skiArea(kind) {
   if (kind === 'skis') return 2 * V('Ls') * 0.09;
@@ -1757,39 +2144,62 @@ scene(1, 'skis', {
   len: function () { return 3; },
   draw: function () {
     var k = S.shoe, p = skiP(k), u = S.t === 0 && !S.play ? 1 : smooth(S.t / 2.2), gy = SKI.gy;
-    var ice = k === 'spikes', sink = ice ? 0 : sinkDepth(p, SKI.snowPerCm, 30) * SKI.ppm / 100 * u;
-    /* ground: soft snow or hard ice */
-    CX.save();
-    var g = CX.createLinearGradient(0, gy, 0, gy + 130);
-    if (ice) { g.addColorStop(0, '#cfe8f7'); g.addColorStop(1, '#7fb6d6'); } else { g.addColorStop(0, '#ffffff'); g.addColorStop(1, '#c9d6e3'); }
-    CX.fillStyle = g; CX.fillRect(40, gy, 580, 130); CX.restore();
-    CX.save(); CX.strokeStyle = ice ? '#5b9cc2' : '#9fb3c8'; CX.lineWidth = 1.4; CX.beginPath(); CX.moveTo(40, gy); CX.lineTo(620, gy); CX.stroke(); CX.restore();
+    var ice = k === 'spikes', sinkCm = ice ? 0 : sinkDepth(p, SKI.snowPerCm, 30), sink = sinkCm * SKI.ppm / 100 * u;
+    alpine(gy, ice);
+    skiGround(gy, ice);
+    /* earlier steps left their marks behind the walker */
+    var marks = function () {
+      CX.save();
+      if (k === 'boots') [[110, 14], [170, 20]].forEach(function (f) { CX.fillStyle = 'rgba(80,105,130,.45)'; CX.beginPath(); CX.ellipse(f[0], gy + 2, f[1], 4, 0, 0, 7); CX.fill(); });
+      if (k === 'skis') [gy + 1, gy + 4].forEach(function (y) { line(40, y, SKI.fx - V('Ls') * SKI.ppm / 2, y, 'rgba(90,115,140,.45)', 2); });
+      if (ice) [[90, 1], [150, 3], [210, 0]].forEach(function (f) { line(f[0], gy + 1 + f[1], f[0] + 34, gy + 2 + f[1], 'rgba(255,255,255,.8)', 1.2); });
+      CX.restore();
+    };
+    marks();
     var feetY = gy + sink;
     if (k === 'skis') {
-      var L = V('Ls') * SKI.ppm;
-      CX.save(); CX.fillStyle = '#dc2626'; rr(SKI.fx - L / 2, feetY - 5, L, 6, 3); CX.fill();
-      CX.beginPath(); CX.moveTo(SKI.fx + L / 2 - 4, feetY - 5); CX.quadraticCurveTo(SKI.fx + L / 2 + 14, feetY - 7, SKI.fx + L / 2 + 16, feetY - 20); CX.lineTo(SKI.fx + L / 2 + 10, feetY - 18); CX.quadraticCurveTo(SKI.fx + L / 2 + 8, feetY - 6, SKI.fx + L / 2 - 4, feetY - 1); CX.fill(); CX.restore();
-      feetY -= 5;
+      var L = V('Ls') * SKI.ppm, sy = feetY;
+      CX.save(); shadowOn(4);
+      var sg = CX.createLinearGradient(0, sy - 6, 0, sy); sg.addColorStop(0, '#ef4444'); sg.addColorStop(1, '#991b1b');
+      CX.fillStyle = sg; rr(SKI.fx - L / 2, sy - 6, L, 6, 3); CX.fill();
+      CX.beginPath(); CX.moveTo(SKI.fx + L / 2 - 4, sy - 6); CX.quadraticCurveTo(SKI.fx + L / 2 + 14, sy - 8, SKI.fx + L / 2 + 16, sy - 21); CX.lineTo(SKI.fx + L / 2 + 10, sy - 19); CX.quadraticCurveTo(SKI.fx + L / 2 + 8, sy - 7, SKI.fx + L / 2 - 4, sy - 1); CX.fill();
+      CX.restore();
+      CX.save(); CX.fillStyle = '#1f2937'; rr(SKI.fx - 22, sy - 12, 44, 7, 2); CX.fill(); CX.restore();    /* bindings */
+      feetY -= 7;
     }
-    figure(SKI.fx, feetY, 220, { style: 'shaded', pose: 'stand', col: LIGHT ? '#3f6f9e' : '#7aa7d6', face: 1 });
+    var grips = k === 'skis' ? { near: { x: SKI.fx + 40, y: gy - 102 }, far: { x: SKI.fx - 36, y: gy - 100 } } : null;
+    if (grips) {
+      /* ski poles, planted in the snow beside the skis */
+      [[grips.far, SKI.fx - 58], [grips.near, SKI.fx + 64]].forEach(function (g2) {
+        line(g2[0].x, g2[0].y, g2[1], gy + 6, '#374151', 2.6);
+        CX.save(); CX.strokeStyle = '#111827'; CX.lineWidth = 1.6; CX.beginPath(); CX.ellipse(g2[1] - (g2[1] - g2[0].x) * .04, gy - 2, 7, 2.2, 0, 0, 7); CX.stroke(); CX.restore();
+      });
+    }
+    figure(SKI.fx, feetY, 220, { style: 'shaded', pose: 'stand', col: LIGHT ? '#3f6f9e' : '#7aa7d6', face: 1,
+      nearTo: grips ? grips.near : undefined, farTo: grips ? grips.far : undefined });
     if (!ice && sink > 0.5) {
       /* the snow in front hides whatever has sunk below its surface */
-      CX.save(); CX.fillStyle = g; CX.fillRect(40, gy, 580, 130);
+      /* the front of the snow is a cut face, drawn see-through so the buried
+         boots or skis still show how deep they went                        */
+      CX.save(); CX.globalAlpha = .72; skiGround(gy, false); CX.restore();
+      marks();
       var hw = k === 'skis' ? V('Ls') * SKI.ppm / 2 + 6 : 34;
-      var hg = CX.createLinearGradient(0, gy - 3, 0, gy + 6);
-      hg.addColorStop(0, 'rgba(90,110,135,.55)'); hg.addColorStop(1, 'rgba(90,110,135,0)');
-      CX.fillStyle = hg; CX.beginPath(); CX.ellipse(SKI.fx, gy + 1, hw, 5, 0, 0, 7); CX.fill();
-      CX.strokeStyle = '#9fb3c8'; CX.lineWidth = 1.4; CX.beginPath(); CX.moveTo(40, gy); CX.lineTo(620, gy); CX.stroke();
-      CX.restore();
+      var hg = CX.createLinearGradient(0, gy - 3, 0, gy + 7);
+      hg.addColorStop(0, 'rgba(90,110,135,.6)'); hg.addColorStop(1, 'rgba(90,110,135,0)');
+      CX.save(); CX.fillStyle = hg; CX.beginPath(); CX.ellipse(SKI.fx, gy + 1, hw, 5, 0, 0, 7); CX.fill(); CX.restore();
     }
     if (ice) {
-      CX.save(); CX.strokeStyle = '#374151'; CX.lineWidth = 2;
-      for (var i = -3; i <= 3; i++) { CX.beginPath(); CX.moveTo(SKI.fx + i * 7, gy - 2); CX.lineTo(SKI.fx + i * 7 + 1, gy + 5); CX.stroke(); }
-      CX.restore();
+      /* crampons: a steel frame under each boot with short spikes */
+      [SKI.fx - 12, SKI.fx + 12].forEach(function (x) {
+        CX.save(); CX.fillStyle = '#9ca3af'; rr(x - 13, gy - 5, 26, 4, 1.5); CX.fill();
+        CX.fillStyle = '#6b7280';
+        for (var s2 = 0; s2 < 5; s2++) { var sx2 = x - 11 + s2 * 5.5; CX.beginPath(); CX.moveTo(sx2 - 1.8, gy - 1); CX.lineTo(sx2 + 1.8, gy - 1); CX.lineTo(sx2, gy + 5); CX.closePath(); CX.fill(); }
+        CX.restore();
+      });
     }
-    fArrow(SKI.fx + 70, 120, 70, S.nums ? 'W = ' + fmt(V('Wp'), 0) + ' N' : 'W');
-    if (S.cons && sink > 2) { line(SKI.fx - 60, gy, SKI.fx - 60, gy + sink, C.pr, 2); mtxt('sinks ' + fmt(sinkDepth(p, SKI.snowPerCm, 30), 0) + ' cm', SKI.fx - 66, gy + sink / 2 + 4, 11.5, C.pr, 'right', 700); }
-    if (ice) plate('the spikes bite into the ice: high pressure → grip', 60, gy + 110, 12, C.tot, 'left', false);
+    fArrow(SKI.fx + 80, 110, 70, S.nums ? 'W = ' + fmt(V('Wp'), 0) + ' N' : 'W');
+    if (S.cons && sink > 2) { var mxl = k === 'skis' ? SKI.fx - V('Ls') * SKI.ppm / 2 - 26 : SKI.fx - 70; line(mxl, gy, mxl, gy + sink, C.pr, 2); line(mxl - 6, gy + sink, mxl + 6, gy + sink, C.pr, 2); plate('sinks ' + fmt(sinkCm, 0) + ' cm', mxl - 8, gy + sink / 2 + 18, 11, C.pr, 'right', true); }
+    if (ice) plate('the spikes bite into the ice: high pressure → grip', 50, gy + 118, 12, C.tot, 'left', false);
     withCard('sk', 660, 50, 500, 470, function () {
       card(660, 50, 500, 470, 'SAME PERSON, THREE FOOTWEARS');
       var mx = skiP('spikes');
@@ -1825,27 +2235,99 @@ scene(1, 'skis', {
 /* ---------- 1.5  HEELS & FLOOR ------------------------------------------ */
 var HEEL = { gy: 400, heel: 1, sole: 150, perMm: 1e6, ppm: 3 };
 function heelP(which) { return pSolid(V('Wh'), cm2(which === 'heel' ? HEEL.heel : HEEL.sole)); }
-function stiletto(x, y, dentPx) {
-  CX.save(); shadowOn(6);
-  CX.fillStyle = '#b91c1c';
-  CX.beginPath(); CX.moveTo(x - 110, y - 2); CX.quadraticCurveTo(x - 118, y - 30, x - 80, y - 36);
-  CX.quadraticCurveTo(x - 20, y - 40, x + 20, y - 96); CX.lineTo(x + 58, y - 104); CX.lineTo(x + 60, y - 70);
-  CX.quadraticCurveTo(x + 20, y - 58, x - 30, y - 8); CX.lineTo(x - 110, y - 2); CX.closePath(); CX.fill();
-  CX.restore();
-  CX.save(); CX.fillStyle = '#1f2937';
-  CX.beginPath(); CX.moveTo(x + 42, y - 72); CX.lineTo(x + 56, y - 72); CX.lineTo(x + 50, y + dentPx); CX.lineTo(x + 46, y + dentPx); CX.closePath(); CX.fill();
-  CX.restore();
-  return x + 48;
+/* an oak floor seen in cross-section: planks, grain, a varnished top line */
+function oakFloor(y, x0, x1, dents) {
+  var th = 64, pw = 146;
+  for (var px = x0; px < x1; px += pw) {
+    var w = Math.min(pw - 3, x1 - px);
+    var g = CX.createLinearGradient(0, y, 0, y + th);
+    g.addColorStop(0, '#c89a63'); g.addColorStop(1, '#8e6337');
+    CX.save(); CX.fillStyle = g; CX.fillRect(px, y, w, th);
+    CX.beginPath(); CX.rect(px, y, w, th); CX.clip();
+    CX.strokeStyle = 'rgba(90,55,25,.35)'; CX.lineWidth = 1;
+    for (var i = 0; i < 9; i++) {
+      var yy = y + 6 + i * 6.5, ph = (px * .03 + i * 1.9);
+      CX.beginPath(); CX.moveTo(px, yy);
+      for (var xx = px; xx <= px + w; xx += 12) CX.lineTo(xx, yy + Math.sin(xx * .035 + ph) * 1.6);
+      CX.stroke();
+    }
+    CX.restore();
+  }
+  CX.save(); CX.strokeStyle = 'rgba(255,236,200,.7)'; CX.lineWidth = 1.6; CX.beginPath(); CX.moveTo(x0, y + .8); CX.lineTo(x1, y + .8); CX.stroke(); CX.restore();
+  /* each dent: a crushed pit, with the wood fibres bent round it */
+  (dents || []).forEach(function (d) {
+    if (d.px < .3) return;
+    CX.save(); CX.fillStyle = '#3b2412';
+    CX.beginPath(); CX.moveTo(d.x - d.w / 2 - 2, y); CX.quadraticCurveTo(d.x - d.w / 2, y + d.px, d.x, y + d.px + .5);
+    CX.quadraticCurveTo(d.x + d.w / 2, y + d.px, d.x + d.w / 2 + 2, y); CX.closePath(); CX.fill();
+    CX.strokeStyle = 'rgba(70,40,15,.6)'; CX.lineWidth = 1;
+    for (var k = 1; k <= 3; k++) { CX.beginPath(); CX.moveTo(d.x - d.w - 6 * k, y + 2 + 3 * k); CX.quadraticCurveTo(d.x, y + d.px + 4 * k, d.x + d.w + 6 * k, y + 2 + 3 * k); CX.stroke(); }
+    CX.restore();
+  });
 }
-function trainer(x, y) {
-  CX.save(); shadowOn(6);
-  CX.fillStyle = '#f3f4f6'; rr(x - 110, y - 20, 220, 20, 8); CX.fill();
-  CX.fillStyle = '#2563eb';
-  CX.beginPath(); CX.moveTo(x - 104, y - 20); CX.quadraticCurveTo(x - 108, y - 60, x - 60, y - 70); CX.lineTo(x + 20, y - 76);
-  CX.quadraticCurveTo(x + 70, y - 60, x + 106, y - 20); CX.closePath(); CX.fill();
+/* a court shoe with a stiletto heel, toe to the left; (X, y) is the heel tip */
+function stiletto(X, y, dentPx) {
+  var ty = y + dentPx;
+  CX.save(); shadowOn(7);
+  /* the heel stem, tapering to a small cap */
+  CX.fillStyle = '#1f2937';
+  CX.beginPath(); CX.moveTo(X - 14, y - 96); CX.lineTo(X + 6, y - 100); CX.quadraticCurveTo(X + 2, y - 50, X + 3, ty - 6); CX.lineTo(X - 3, ty - 6); CX.quadraticCurveTo(X - 6, y - 50, X - 14, y - 96); CX.closePath(); CX.fill();
+  CX.fillStyle = '#0b0f16'; CX.fillRect(X - 3.5, ty - 7, 7, 7);
+  /* the sole: flat under the ball, sweeping up the arch */
+  CX.fillStyle = '#3b1d1d';
+  CX.beginPath(); CX.moveTo(X - 226, y - 4); CX.quadraticCurveTo(X - 230, y, X - 214, y); CX.lineTo(X - 150, y);
+  CX.bezierCurveTo(X - 110, y, X - 60, y - 70, X - 12, y - 98); CX.lineTo(X + 8, y - 102); CX.lineTo(X + 8, y - 96);
+  CX.lineTo(X - 14, y - 92); CX.bezierCurveTo(X - 60, y - 64, X - 110, y + 4, X - 150, y + 4); CX.lineTo(X - 214, y + 4); CX.closePath(); CX.fill();
+  /* the glossy upper */
+  var g = CX.createLinearGradient(0, y - 120, 0, y);
+  g.addColorStop(0, '#ef4444'); g.addColorStop(.6, '#b91c1c'); g.addColorStop(1, '#7f1d1d');
+  CX.fillStyle = g;
+  CX.beginPath(); CX.moveTo(X - 226, y - 4); CX.bezierCurveTo(X - 230, y - 22, X - 200, y - 34, X - 150, y - 40);
+  CX.quadraticCurveTo(X - 118, y - 44, X - 104, y - 60);                                 /* vamp to the topline */
+  CX.quadraticCurveTo(X - 60, y - 96, X - 4, y - 124);                                  /* topline up to the heel counter */
+  CX.quadraticCurveTo(X + 10, y - 118, X + 8, y - 102);
+  CX.lineTo(X - 12, y - 98); CX.bezierCurveTo(X - 60, y - 70, X - 110, y, X - 150, y); CX.lineTo(X - 214, y); CX.closePath(); CX.fill();
   CX.restore();
-  CX.save(); CX.strokeStyle = '#e5e7eb'; CX.lineWidth = 2;
-  for (var i = 0; i < 4; i++) { CX.beginPath(); CX.moveTo(x - 20 + i * 14, y - 70 + i * 3); CX.lineTo(x - 6 + i * 14, y - 60 + i * 3); CX.stroke(); }
+  /* the lining showing inside the opening, and a highlight on the toe */
+  CX.save(); CX.fillStyle = '#e7c9a9';
+  CX.beginPath(); CX.moveTo(X - 104, y - 60); CX.quadraticCurveTo(X - 60, y - 96, X - 4, y - 124); CX.quadraticCurveTo(X - 50, y - 104, X - 98, y - 66); CX.closePath(); CX.fill();
+  CX.strokeStyle = 'rgba(255,255,255,.55)'; CX.lineWidth = 2.2; CX.lineCap = 'round';
+  CX.beginPath(); CX.moveTo(X - 214, y - 18); CX.quadraticCurveTo(X - 190, y - 32, X - 150, y - 36); CX.stroke();
+  CX.restore();
+  return X;
+}
+/* a running shoe, toe to the left, sole on the ground at y, centred on X */
+function trainer(X, y) {
+  var x0 = X - 130, x1 = X + 130;
+  CX.save(); shadowOn(7);
+  /* outsole with tread, then a thick white midsole */
+  CX.fillStyle = '#374151'; rr(x0 + 4, y - 7, 256, 7, 3); CX.fill();
+  CX.fillStyle = '#1f2937'; for (var i = 0; i < 16; i++) CX.fillRect(x0 + 10 + i * 15.5, y - 3, 8, 3);
+  var mg = CX.createLinearGradient(0, y - 26, 0, y - 7); mg.addColorStop(0, '#ffffff'); mg.addColorStop(1, '#d1d5db');
+  CX.fillStyle = mg; CX.beginPath(); CX.moveTo(x0, y - 16); CX.quadraticCurveTo(x0 + 2, y - 7, x0 + 16, y - 7); CX.lineTo(x1 - 6, y - 7); CX.quadraticCurveTo(x1 + 2, y - 9, x1, y - 26); CX.lineTo(x0 + 30, y - 24); CX.quadraticCurveTo(x0 + 6, y - 24, x0, y - 16); CX.closePath(); CX.fill();
+  /* the upper */
+  var g = CX.createLinearGradient(0, y - 100, 0, y - 20); g.addColorStop(0, '#3b82f6'); g.addColorStop(1, '#1d4ed8');
+  CX.fillStyle = g;
+  CX.beginPath(); CX.moveTo(x0 + 4, y - 22); CX.quadraticCurveTo(x0 + 6, y - 50, x0 + 60, y - 58); CX.lineTo(x0 + 150, y - 90);
+  CX.quadraticCurveTo(x0 + 170, y - 100, x0 + 196, y - 88); CX.quadraticCurveTo(x0 + 222, y - 84, x1 - 4, y - 104);
+  CX.quadraticCurveTo(x1 + 8, y - 70, x1, y - 26); CX.lineTo(x0 + 30, y - 24); CX.closePath(); CX.fill();
+  CX.restore();
+  CX.save();
+  /* toe cap, heel tab, collar */
+  CX.fillStyle = '#1e40af'; CX.beginPath(); CX.moveTo(x0 + 4, y - 22); CX.quadraticCurveTo(x0 + 6, y - 46, x0 + 44, y - 54); CX.lineTo(x0 + 40, y - 24); CX.closePath(); CX.fill();
+  CX.fillStyle = '#111827'; CX.beginPath(); CX.moveTo(x1 - 4, y - 104); CX.quadraticCurveTo(x1 + 8, y - 90, x1 + 5, y - 62); CX.lineTo(x1 - 6, y - 70); CX.closePath(); CX.fill();
+  CX.fillStyle = '#e5e7eb'; CX.beginPath(); CX.moveTo(x0 + 196, y - 88); CX.quadraticCurveTo(x0 + 222, y - 84, x1 - 4, y - 104); CX.quadraticCurveTo(x0 + 220, y - 92, x0 + 198, y - 94); CX.closePath(); CX.fill();
+  /* tongue */
+  CX.fillStyle = '#2563eb'; CX.beginPath(); CX.moveTo(x0 + 150, y - 90); CX.quadraticCurveTo(x0 + 170, y - 118, x0 + 196, y - 110); CX.lineTo(x0 + 196, y - 88); CX.closePath(); CX.fill();
+  /* side stripes */
+  CX.strokeStyle = 'rgba(255,255,255,.85)'; CX.lineWidth = 3; CX.lineCap = 'round';
+  [0, 10, 20].forEach(function (o) { CX.beginPath(); CX.moveTo(x0 + 90 + o, y - 28); CX.quadraticCurveTo(x0 + 130 + o, y - 44, x0 + 150 + o, y - 80); CX.stroke(); });
+  /* eyelets and laces */
+  for (var j = 0; j < 5; j++) {
+    var ex = x0 + 68 + j * 18, ey = y - 60 - j * 6.2;
+    dot(ex, ey, 2.4, '#e5e7eb');
+    if (j) { CX.strokeStyle = '#f9fafb'; CX.lineWidth = 2; CX.beginPath(); CX.moveTo(ex - 18, ey + 6.2 - 3); CX.lineTo(ex + 3, ey - 5); CX.stroke(); }
+  }
   CX.restore();
 }
 scene(1, 'heels', {
@@ -1858,19 +2340,17 @@ scene(1, 'heels', {
   draw: function () {
     var u = S.t === 0 && !S.play ? 1 : smooth(Math.min(1, S.t / 2.2));
     var pH = heelP('heel'), pT = heelP('sole'), dH = clamp(pH / HEEL.perMm, 0, 8) * u, dT = clamp(pT / HEEL.perMm, 0, 8) * u;
-    var gy = HEEL.gy;
-    CX.save(); var g = CX.createLinearGradient(0, gy, 0, gy + 80);
-    g.addColorStop(0, '#d8b58a'); g.addColorStop(1, '#a9825a'); CX.fillStyle = g; CX.fillRect(40, gy, 580, 80); CX.restore();
-    groundLine(gy, 40, 620);
-    var hx = stiletto(190, gy, dH * HEEL.ppm);
-    CX.save(); CX.fillStyle = withA('#5a3b1f', .8); CX.beginPath(); CX.ellipse(hx, gy + dH * HEEL.ppm / 2, 5, dH * HEEL.ppm / 2 + .5, 0, 0, 7); CX.fill(); CX.restore();
-    trainer(470, gy);
-    fArrow(160, 150, 70, S.nums ? 'W = ' + fmt(V('Wh'), 0) + ' N' : 'W');
-    fArrow(470, 150, 70, S.nums ? 'W = ' + fmt(V('Wh'), 0) + ' N' : 'W');
-    txt('stiletto heel tip: 1 cm²', 190, gy + 110, 12, C.text, 'center', 700);
-    txt('trainer sole: 150 cm²', 470, gy + 110, 12, C.text, 'center', 700);
-    if (S.nums) { mtxt(fmtPa(pH), 190, gy + 130, 13, C.pr, 'center', 800); mtxt(fmtPa(pT), 470, gy + 130, 13, C.pr, 'center', 800); }
-    if (S.cons) { plate('dent ' + fmt(dH, 1) + ' mm', hx + 16, gy + 44, 11.5, C.rose, 'left', true); plate('dent ' + fmt(dT, 2) + ' mm', 470, gy + 44, 11.5, C['text-dim'], 'center', true); }
+    var gy = HEEL.gy, hX = 296, tX = 480, lift = S.t === 0 && !S.play ? 0 : 40 * (1 - smooth(Math.min(1, S.t / .8)));
+    oakFloor(gy, 40, 626, [{ x: hX, w: 6, px: dH * HEEL.ppm }, { x: tX, w: 240, px: dT * HEEL.ppm }]);
+    stiletto(hX, gy - lift, lift > 0 ? 0 : dH * HEEL.ppm);
+    trainer(tX, gy - lift);
+    fArrow(hX - 8, 150 - lift, 70, S.nums ? 'W = ' + fmt(V('Wh'), 0) + ' N' : 'W');
+    fArrow(tX + 30, 170 - lift, 70, S.nums ? 'W = ' + fmt(V('Wh'), 0) + ' N' : 'W');
+    note('assume all the weight on the heel tip — as it is for a moment in each step', 40, 96);
+    txt('stiletto heel tip: 1 cm²', 180, gy + 96, 12, C.text, 'center', 700);
+    txt('trainer sole: 150 cm²', tX, gy + 96, 12, C.text, 'center', 700);
+    if (S.nums) { mtxt(fmtPa(pH), 180, gy + 116, 13, C.pr, 'center', 800); mtxt(fmtPa(pT), tX, gy + 116, 13, C.pr, 'center', 800); }
+    if (S.cons) { plate('dent ' + fmt(dH, 1) + ' mm', hX + 14, gy + 40, 11.5, C.rose, 'left', true); plate('dent ' + fmt(dT, 2) + ' mm', tX + 60, gy + 40, 11.5, C['text-dim'], 'center', true); }
     withCard('hl', 660, 50, 500, 470, function () {
       card(660, 50, 500, 470, 'THE SAME WEIGHT');
       hBar(684, 110, 452, 1, C.rose, 'stiletto heel', fmtPa(pH));
@@ -1926,10 +2406,14 @@ function glassRect(x, y, w, h) {
 }
 /* ---------- 2.1  LIQUID PRESSURE ---------------------------------------- */
 var TANK = { x: 70, w: 200, top: 80, ppm: 46 };
+/* real glassware: a tall beaker, a measuring cylinder and a conical flask,
+   all filled to the SAME depth. Each path is the INSIDE of the vessel.   */
 var SHAPES = [
-  { name: 'wide', path: function (x, b, H) { CX.rect(x - 55, b - H, 110, H); }, x: 455, top: function (x, b, H) { return [[x - 55, b - H], [x + 55, b - H]]; } },
-  { name: 'narrow', path: function (x, b, H) { CX.rect(x - 14, b - H, 28, H); }, x: 548 },
-  { name: 'flask', path: function (x, b, H) { CX.moveTo(x - 50, b); CX.lineTo(x + 50, b); CX.lineTo(x + 12, b - H); CX.lineTo(x - 12, b - H); CX.closePath(); }, x: 628 }];
+  { name: 'beaker', x: 455, path: function (x, b) { CX.moveTo(x - 52, b - 196); CX.lineTo(x - 52, b - 4); CX.quadraticCurveTo(x - 52, b, x - 48, b); CX.lineTo(x + 48, b); CX.quadraticCurveTo(x + 52, b, x + 52, b - 4); CX.lineTo(x + 52, b - 196); } },
+  { name: 'cylinder', x: 548, path: function (x, b) { CX.moveTo(x - 14, b - 200); CX.lineTo(x - 14, b); CX.lineTo(x + 14, b); CX.lineTo(x + 14, b - 200); } },
+  { name: 'flask', x: 628, path: function (x, b) { CX.moveTo(x - 13, b - 200); CX.lineTo(x - 13, b - 128); CX.lineTo(x - 48, b - 10); CX.quadraticCurveTo(x - 50, b, x - 40, b); CX.lineTo(x + 40, b); CX.quadraticCurveTo(x + 50, b, x + 48, b - 10); CX.lineTo(x + 13, b - 128); CX.lineTo(x + 13, b - 200); } }];
+/* half-width of each vessel's inside at height yy above the base (for the meniscus) */
+function shapeHalfW(sh, yy) { return sh.name === 'beaker' ? 52 : sh.name === 'cylinder' ? 14 : yy >= 128 ? 13 : 48 - (48 - 13) * (yy - 10) / 118; }
 scene(2, 'liquid', {
   label: '📖 Liquid pressure',
   title: 'Pressure in a liquid grows with depth and density',
@@ -1941,33 +2425,72 @@ scene(2, 'liquid', {
   run: function () { return Math.round(100 * Math.min(1, S.t / 4.6)) / 10; },
   extra: function () { return liqPills('liq'); }, bind: function () { bindLiq('liq'); },
   draw: function () {
-    var h = V('h'), rho = RHO[S.liq], p = pLiquid(h, rho), bot = TANK.top + 10 * TANK.ppm;
-    /* the tall tank, shaded darker with depth */
-    liquidFill(function () { CX.beginPath(); CX.rect(TANK.x, TANK.top, TANK.w, 10 * TANK.ppm); }, TANK.top, bot, S.liq);
-    glassRect(TANK.x, TANK.top - 20, TANK.w, 10 * TANK.ppm + 20);
-    line(TANK.x, TANK.top, TANK.x + TANK.w, TANK.top, withA('#ffffff', .7), 1.5);
-    vScale(TANK.x - 8, TANK.top, TANK.ppm, 0, 10, 1, 'm', { major: 1 });
-    txt('surface', TANK.x + TANK.w + 8, TANK.top + 4, 11, C['text-muted'], 'left', 600);
+    var h = V('h'), rho = RHO[S.liq], p = pLiquid(h, rho), T = TANK, bot = T.top + 10 * T.ppm, merc = S.liq === 'mercury';
+    /* the aquarium: water shaded by depth, light from above, pebbles, bubbles */
+    liquidFill(function () { CX.beginPath(); CX.rect(T.x, T.top, T.w, 10 * T.ppm); }, T.top, bot, S.liq);
+    if (!merc) lightShafts(T.x, T.x + T.w, T.top, bot - 40, 4);
+    CX.save(); CX.beginPath(); CX.rect(T.x, T.top, T.w, 10 * T.ppm); CX.clip();
+    for (var i = 0; i < 26; i++) {
+      var px0 = T.x + 4 + (i * 37 % 196), r = 5 + (i * 7 % 6);
+      CX.fillStyle = ['#8d7b68', '#a39382', '#6f6255', '#b8a894'][i % 4];
+      CX.beginPath(); CX.ellipse(px0, bot - 3 - (i % 3) * 3, r * 1.3, r * .8, 0, 0, 7); CX.fill();
+    }
+    if (!merc) {
+      CX.strokeStyle = '#2f7d4a'; CX.lineWidth = 3; CX.lineCap = 'round';
+      [[T.x + 22, 150], [T.x + 34, 110], [T.x + 180, 130]].forEach(function (w, j) {
+        CX.beginPath(); CX.moveTo(w[0], bot - 4);
+        for (var yy = 0; yy <= w[1]; yy += 10) CX.lineTo(w[0] + Math.sin(yy * .05 + j + S.t * 1.5) * 6, bot - 4 - yy);
+        CX.stroke();
+      });
+      bubbles(T.x + 150, T.x + 175, bot - 10, T.top + 4, 7, 3);
+    }
+    CX.restore();
+    /* the surface, the glass walls, the black frame and the base */
+    CX.save(); CX.strokeStyle = 'rgba(255,255,255,.75)'; CX.lineWidth = 1.6; CX.beginPath();
+    for (var sx = T.x; sx <= T.x + T.w; sx += 8) { var sy = T.top + Math.sin(sx * .08 + S.t * 3) * 1.2; if (sx === T.x) CX.moveTo(sx, sy); else CX.lineTo(sx, sy); }
+    CX.stroke(); CX.restore();
+    glassStroke(function () { CX.beginPath(); CX.moveTo(T.x, T.top - 24); CX.lineTo(T.x, bot); CX.lineTo(T.x + T.w, bot); CX.lineTo(T.x + T.w, T.top - 24); }, 7);
+    glassGlint(T.x + 8, T.top - 10, bot - 30); glassGlint(T.x + T.w - 10, T.top + 40, bot - 120);
+    CX.save(); CX.fillStyle = '#111827'; rr(T.x - 6, T.top - 30, T.w + 12, 8, 3); CX.fill();
+    var bg = CX.createLinearGradient(0, bot, 0, bot + 16); bg.addColorStop(0, '#374151'); bg.addColorStop(1, '#111827');
+    CX.fillStyle = bg; rr(T.x - 10, bot, T.w + 20, 16, 4); CX.fill(); CX.restore();
+    vScale(T.x - 12, T.top, T.ppm, 0, 10, 1, 'm', { major: 1 });
+    txt('surface', T.x + T.w + 10, T.top + 4, 11, C['text-muted'], 'left', 600);
     /* the probe: pressure acts in ALL directions at a point */
-    var py = TANK.top + h * TANK.ppm, px = TANK.x + TANK.w / 2, Lr = 10 + 50 * clamp(p / pLiquid(10, RHO.mercury), 0, 1) + 20 * clamp(p / pLiquid(10, 1030), 0, 1);
+    var py = T.top + h * T.ppm, px = T.x + T.w / 2, Lr = 10 + 50 * clamp(p / pLiquid(10, RHO.mercury), 0, 1) + 20 * clamp(p / pLiquid(10, 1030), 0, 1);
+    /* its cable runs up, over the rim, and down to the meter */
+    var mx = T.x + T.w + 92, my = 220;
+    CX.save(); CX.strokeStyle = '#1f2937'; CX.lineWidth = 3; CX.lineJoin = 'round'; CX.beginPath();
+    CX.moveTo(px, py - 8); CX.lineTo(px, T.top - 32); CX.quadraticCurveTo(px, T.top - 38, px + 8, T.top - 38); CX.lineTo(mx - 10, T.top - 38);
+    CX.quadraticCurveTo(mx, T.top - 38, mx, T.top - 26); CX.lineTo(mx, my); CX.stroke(); CX.restore();
     [[1, 0], [-1, 0], [0, 1], [0, -1], [.707, .707], [-.707, .707], [.707, -.707], [-.707, -.707]].forEach(function (d) {
-      pArrow(px + d[0] * (Lr + 10), py + d[1] * (Lr + 10), px + d[0] * 10, py + d[1] * 10, 2.2);
+      pArrow(px + d[0] * (Lr + 12), py + d[1] * (Lr + 12), px + d[0] * 12, py + d[1] * 12, 2.2);
     });
-    dot(px, py, 7, '#e5e7eb'); dot(px, py, 3, '#374151');
-    if (S.cons) { line(TANK.x + TANK.w + 12, TANK.top, TANK.x + TANK.w + 12, py, C.pr, 2); mtxt(N().depthH.split(' ').pop() + ' = ' + fmt(h, 1) + ' m', TANK.x + TANK.w + 18, h >= 1.4 ? TANK.top + 26 : py + 66, 12, C.pr, 'left', 700); }
-    gaugeDial(TANK.x + TANK.w + 86, py, 26, p, pLiquid(10, S.liq === 'mercury' ? RHO.mercury : 1030), S.nums ? fmtPa(p) : '');
-    line(px + 8, py, TANK.x + TANK.w + 60, py, STEEL.edge, 2);
-    /* three shapes, same depth, same liquid → same pressure at the bottom */
+    CX.save(); CX.fillStyle = steelGrad(px - 9, 0, px + 9, 0); rr(px - 9, py - 8, 18, 16, 4); CX.fill();
+    CX.fillStyle = '#f59e0b'; CX.beginPath(); CX.arc(px, py, 4, 0, 7); CX.fill(); CX.restore();
+    if (S.cons) { line(T.x + T.w + 14, T.top, T.x + T.w + 14, py, C.pr, 2); mtxt(N().depthH.split(' ').pop() + ' = ' + fmt(h, 1) + ' m', T.x + T.w + 20, h >= 1.4 ? T.top + 26 : py + 30, 12, C.pr, 'left', 700); }
+    digitalMeter(mx, my, S.nums ? fmtPa(p) : '— — —', 'pressure sensor');
+    /* three pieces of glassware, same depth, same liquid → same pressure at the bottom */
     var hb = 520, Hs = h * 18;
     SHAPES.forEach(function (sh) {
-      liquidFill(function () { CX.beginPath(); CX.save(); sh.path(sh.x, hb, Hs); CX.restore(); }, hb - Hs, hb, S.liq, 180);
-      CX.save(); CX.beginPath(); sh.path(sh.x, hb, 200); CX.strokeStyle = LIGHT ? '#64748b' : '#cbd5e1'; CX.lineWidth = 2; CX.stroke(); CX.restore();
+      CX.save(); CX.beginPath(); sh.path(sh.x, hb); CX.closePath(); CX.clip();
+      liquidFill(function () { CX.beginPath(); CX.rect(sh.x - 60, hb - Hs, 120, Hs + 2); }, hb - Hs, hb, S.liq, 180);
+      CX.restore();
+      if (Hs > 3) { var hw = shapeHalfW(sh, Hs); meniscus(sh.x - hw, sh.x + hw, hb - Hs, S.liq); }
+      glassStroke(function () { CX.beginPath(); sh.path(sh.x, hb); }, 5);
+      if (sh.name === 'beaker') { glassGlint(sh.x - 44, hb - 180, hb - 20); gradMarks(sh.x + 52, hb, hb - 180, 12, 5, -1, function (i) { return i * 50; }); }
+      if (sh.name === 'cylinder') {
+        glassGlint(sh.x - 8, hb - 190, hb - 20); gradMarks(sh.x - 14, hb, hb - 190, 8, 5, 1, null);
+        CX.save(); CX.fillStyle = LIGHT ? 'rgba(71,85,105,.5)' : 'rgba(190,225,245,.35)'; CX.beginPath(); CX.moveTo(sh.x - 30, hb + 8); CX.lineTo(sh.x + 30, hb + 8); CX.lineTo(sh.x + 16, hb); CX.lineTo(sh.x - 16, hb); CX.closePath(); CX.fill(); CX.restore();
+      }
+      if (sh.name === 'flask') glassGlint(sh.x - 30, hb - 60, hb - 14);
+      CX.save(); CX.fillStyle = LIGHT ? 'rgba(71,85,105,.8)' : 'rgba(226,240,250,.8)'; CX.fillRect(sh.x - (sh.name === 'beaker' ? 56 : sh.name === 'cylinder' ? 18 : 17), hb - 202, sh.name === 'beaker' ? 112 : sh.name === 'cylinder' ? 36 : 34, 3); CX.restore();
       dot(sh.x, hb - 4, 4, C.pr);
-      if (S.nums) mtxt(fmtPa(p), sh.x, hb + 20, 11.5, C.pr, 'center', 700);
+      if (S.nums) mtxt(fmtPa(p), sh.x, hb + 26, 11.5, C.pr, 'center', 700);
     });
     if (S.cons) line(396, hb - Hs, 684, hb - Hs, withA(C['text-muted'], .8), 1, [4, 4]);
-    txt('same depth, three shapes:', 545, hb + 44, 11.5, C['text-dim'], 'center', 600);
-    txt('same pressure at the bottom', 545, hb + 60, 11.5, C['text-dim'], 'center', 600);
+    txt('beaker, cylinder, flask — same depth:', 545, hb + 48, 11.5, C['text-dim'], 'center', 600);
+    txt('same pressure at the bottom', 545, hb + 64, 11.5, C['text-dim'], 'center', 600);
     withCard('lq', 700, 50, 460, 520, function () {
       card(700, 50, 460, 520, 'p = hρg');
       var y = 102, L = function (s, col, sz) { mtxt(s, 722, y, sz || 13.5, col || C.text, 'left', 700); y += 26; };
@@ -2013,42 +2536,93 @@ scene(2, 'liquid', {
 /* ---------- 2.2  DEPTH & DAM -------------------------------------------- */
 var DAM = { ground: 540, face: 380, ppm: 4.6, fb: 6 };
 function damThick(depth) { return 6 + 6.3e-5 * pLiquid(depth, 1000) * 9.8 / G(); }   /* m — thicker where the pressure is bigger */
+/* the water depth shown: the slider's depth, or the rising level during Play */
+function damLevel() { var H = V('H'); return S.t === 0 && !S.play ? H : H * smooth(Math.min(1, S.t / 4.4)); }
+function damBackdrop(yWater) {
+  var x0 = 20, x1 = 690, y0 = 56, gy = DAM.ground;
+  CX.save(); rr(x0, y0, x1 - x0, gy - y0 + 64, 12); CX.clip();
+  var sky = CX.createLinearGradient(0, y0, 0, gy);
+  if (LIGHT) { sky.addColorStop(0, '#bfdcf3'); sky.addColorStop(1, '#f1f7fc'); } else { sky.addColorStop(0, '#15304c'); sky.addColorStop(1, '#40688c'); }
+  CX.fillStyle = sky; CX.fillRect(x0, y0, x1 - x0, gy - y0);
+  /* valley sides: far blue ridges, then nearer green hills */
+  var hill = function (pts, col) { CX.fillStyle = col; CX.beginPath(); CX.moveTo(x0, gy); pts.forEach(function (q) { CX.lineTo(q[0], q[1]); }); CX.lineTo(x1, gy); CX.closePath(); CX.fill(); };
+  hill([[x0, 220], [120, 170], [230, 205], [340, 150], [470, 195], [590, 160], [x1, 190]], LIGHT ? '#a9bdd0' : '#4c6a88');
+  hill([[x0, 300], [110, 262], [200, 290], [300, 250], [420, 285], [520, 255], [x1, 280]], LIGHT ? '#7fae7a' : '#2f5a3f');
+  /* bedrock under the whole valley */
+  var rk = CX.createLinearGradient(0, gy, 0, gy + 64); rk.addColorStop(0, '#7a6f63'); rk.addColorStop(1, '#4a423a');
+  CX.fillStyle = rk; CX.fillRect(x0, gy, x1 - x0, 64);
+  CX.strokeStyle = 'rgba(30,25,20,.35)'; CX.lineWidth = 1;
+  [[40, 8, 120, 30], [200, 20, 260, 52], [420, 10, 520, 40], [560, 30, 660, 22]].forEach(function (c) { CX.beginPath(); CX.moveTo(c[0], gy + c[1]); CX.lineTo((c[0] + c[2]) / 2, gy + c[3]); CX.lineTo(c[2], gy + c[1] + 6); CX.stroke(); });
+  CX.restore();
+}
 scene(2, 'dam', {
   len: function () { return 5; },
-  playSlider: 'H',
-  run: function () { return 10 + Math.round(90 * Math.min(1, S.t / 4.6)); },
   label: '🌊 Depth & dam',
   title: 'A dam is thicker at the bottom — because the pressure is bigger there',
   sub: 'Pressure grows steadily with depth, so the push on the wall grows too. The dam\'s thickness follows the pressure. ▶ Play fills the reservoir.',
   ctrl: ['H'],
   hero: 'p = h\\rho g',
   draw: function () {
-    var H = V('H'), k = DAM.ppm, ys = DAM.ground - H * k, top = ys - DAM.fb * k;
-    /* reservoir, darker with depth */
-    liquidFill(function () { CX.beginPath(); CX.rect(40, ys, DAM.face - 40, H * k); }, ys, DAM.ground, 'water', 100 * k);
-    line(40, ys, DAM.face, ys, withA('#ffffff', .7), 1.5);
-    /* the dam: its air-side face is set by the pressure at each depth */
-    var bottomT = damThick(H + DAM.fb), topT = damThick(0);
+    var H = V('H'), Hn = damLevel(), k = DAM.ppm, ys = DAM.ground - Hn * k, top = DAM.ground - (H + DAM.fb) * k;
+    damBackdrop(ys);
+    /* the reservoir, darker with depth, with light from the surface */
+    if (Hn > .2) {
+      liquidFill(function () { CX.beginPath(); CX.rect(20, ys, DAM.face - 20, Hn * k); }, ys, DAM.ground, 'water', 100 * k);
+      lightShafts(20, DAM.face, ys, DAM.ground, 5);
+      CX.save(); CX.strokeStyle = 'rgba(255,255,255,.75)'; CX.lineWidth = 1.6; CX.beginPath();
+      for (var sx = 20; sx <= DAM.face; sx += 8) { var sy = ys + Math.sin(sx * .07 + S.t * 2.5) * 1.3; if (sx === 20) CX.moveTo(sx, sy); else CX.lineTo(sx, sy); }
+      CX.stroke(); CX.restore();
+      /* a small sailing boat on the reservoir */
+      var bx = 150, by = ys + Math.sin(S.t * 2) * 1.2;
+      CX.save(); CX.fillStyle = '#f8fafc'; CX.beginPath(); CX.moveTo(bx - 22, by - 4); CX.lineTo(bx + 22, by - 4); CX.lineTo(bx + 14, by + 5); CX.lineTo(bx - 16, by + 5); CX.closePath(); CX.fill();
+      CX.strokeStyle = '#475569'; CX.lineWidth = 1.5; CX.beginPath(); CX.moveTo(bx, by - 4); CX.lineTo(bx, by - 40); CX.stroke();
+      CX.fillStyle = '#ef4444'; CX.beginPath(); CX.moveTo(bx + 2, by - 38); CX.lineTo(bx + 22, by - 10); CX.lineTo(bx + 2, by - 10); CX.closePath(); CX.fill();
+      CX.fillStyle = '#e5e7eb'; CX.beginPath(); CX.moveTo(bx - 2, by - 32); CX.lineTo(bx - 16, by - 10); CX.lineTo(bx - 2, by - 10); CX.closePath(); CX.fill();
+      CX.restore();
+    }
+    /* the dam: concrete, its air-side face set by the pressure at each depth */
+    var topT = damThick(0), baseT = damThick(H);
+    var damPath = function () { CX.beginPath(); CX.moveTo(DAM.face, top); CX.lineTo(DAM.face + topT * k, top); CX.lineTo(DAM.face + baseT * k, DAM.ground); CX.lineTo(DAM.face, DAM.ground); CX.closePath(); };
     CX.save(); shadowOn(8);
-    var g = CX.createLinearGradient(DAM.face, 0, DAM.face + bottomT * k, 0);
-    g.addColorStop(0, '#9ca3af'); g.addColorStop(1, '#6b7280'); CX.fillStyle = g;
-    CX.beginPath(); CX.moveTo(DAM.face, top); CX.lineTo(DAM.face + topT * k, top);
-    CX.lineTo(DAM.face + damThick(H) * k + (bottomT - damThick(H)) * 0, DAM.ground); CX.lineTo(DAM.face, DAM.ground); CX.closePath(); CX.fill();
+    var g = CX.createLinearGradient(DAM.face, 0, DAM.face + baseT * k, 0);
+    g.addColorStop(0, '#c9ccd1'); g.addColorStop(1, '#8b9098'); CX.fillStyle = g; damPath(); CX.fill();
     CX.restore();
-    groundLine(DAM.ground, 20, 660);
+    CX.save(); damPath(); CX.clip();
+    CX.strokeStyle = 'rgba(60,65,75,.35)'; CX.lineWidth = 1;
+    for (var j = 1; j * 10 < H + DAM.fb; j++) { var yj = DAM.ground - j * 10 * k; CX.beginPath(); CX.moveTo(DAM.face, yj); CX.lineTo(DAM.face + baseT * k, yj); CX.stroke(); }
+    CX.fillStyle = 'rgba(60,65,75,.25)';
+    for (var q = 0; q < 220; q++) { var a = Math.abs(Math.sin(q * 12.99) * 437.5) % 1, b2 = Math.abs(Math.sin(q * 78.2) * 123.4) % 1; CX.fillRect(DAM.face + a * baseT * k, top + b2 * (DAM.ground - top), 1.5, 1.5); }
+    /* the wet band on the water side */
+    CX.fillStyle = 'rgba(30,60,80,.18)'; CX.fillRect(DAM.face, ys, 5, DAM.ground - ys);
+    CX.restore();
+    /* the crest road with a railing and a lamp */
+    CX.save(); CX.fillStyle = '#4b5563'; CX.fillRect(DAM.face - 4, top - 4, topT * k + 8, 5);
+    CX.strokeStyle = LIGHT ? '#374151' : '#cbd5e1'; CX.lineWidth = 1.2;
+    CX.beginPath(); CX.moveTo(DAM.face - 2, top - 12); CX.lineTo(DAM.face + topT * k + 2, top - 12); CX.stroke();
+    for (var r = 0; r <= 4; r++) { var rx = DAM.face - 2 + r * (topT * k + 4) / 4; CX.beginPath(); CX.moveTo(rx, top - 4); CX.lineTo(rx, top - 12); CX.stroke(); }
+    CX.beginPath(); CX.moveTo(DAM.face + topT * k * .5, top - 4); CX.lineTo(DAM.face + topT * k * .5, top - 30); CX.lineTo(DAM.face + topT * k * .5 + 8, top - 30); CX.stroke();
+    dot(DAM.face + topT * k * .5 + 9, top - 28, 2.5, '#fde68a');
+    CX.restore();
+    /* downstream: the river leaving the foot of the dam */
+    var toe = DAM.face + baseT * k;
+    CX.save(); var rv = CX.createLinearGradient(0, DAM.ground - 8, 0, DAM.ground); rv.addColorStop(0, mixCol(C.liq, '#ffffff', .2)); rv.addColorStop(1, mixCol(C.liq, '#000000', .3));
+    CX.fillStyle = rv; CX.fillRect(toe, DAM.ground - 7, 690 - toe, 7);
+    CX.strokeStyle = 'rgba(255,255,255,.6)'; CX.lineWidth = 1; for (var w = toe + 8; w < 680; w += 22) { CX.beginPath(); CX.moveTo(w, DAM.ground - 5); CX.lineTo(w + 9, DAM.ground - 5); CX.stroke(); }
+    CX.restore();
     /* pressure arrows on the wall, length ∝ p */
     var n = 8, pMax = pLiquid(100, 1000);
-    for (var i = 1; i <= n; i++) {
-      var d = H * i / n, y = ys + d * k, L = 12 + 150 * pLiquid(d, 1000) / pMax;
+    if (Hn > .5) for (var i = 1; i <= n; i++) {
+      var d = Hn * i / n, y = ys + d * k, L = 12 + 150 * pLiquid(d, 1000) / pMax;
       pArrow(DAM.face - L, y, DAM.face - 2, y, 2.4);
-      if (S.nums && (i === n || i === n / 2)) mtxt(fmtPa(pLiquid(d, 1000)), DAM.face - L - 6, y + 4, 11, C.pr, 'right', 700);
+      if (S.nums && (i === n || i === n / 2)) plate(fmtPa(pLiquid(d, 1000)), DAM.face - L - 8, y + 4, 11, C.pr, 'right', true);
     }
     if (S.cons) {
-      line(DAM.face + topT * k + 30, top, DAM.face + topT * k + 30, top + 12, C['text-dim'], 1.2);
-      mtxt('top ' + fmt(topT, 0) + ' m thick', DAM.face + topT * k + 36, top + 10, 11.5, C['text-dim'], 'left', 600);
-      mtxt('base ' + fmt(damThick(H), 0) + ' m thick', DAM.face + damThick(H) * k + 8, DAM.ground - 8, 11.5, C['text-dim'], 'left', 600);
+      plate('top ' + fmt(topT, 0) + ' m thick', DAM.face + topT * k + 14, top + 12, 11, C['text-dim'], 'left', true);
+      plate('base ' + fmt(baseT, 0) + ' m thick', Math.min(toe - 8, 680), DAM.ground + 20, 11, C['text-dim'], 'right', true);
     }
-    vScale(34, ys, k, 0, H, H > 50 ? 10 : 5, 'm', { major: 2 });
+    CX.save(); CX.fillStyle = withA(C.bg, .55); rr(22, Math.min(ys, DAM.ground - 10 * k) - 10, 36, DAM.ground - Math.min(ys, DAM.ground - 10 * k) + 24, 6); CX.fill(); CX.restore();
+    vScale(52, ys, k, 0, Math.max(Hn, 1), Hn > 50 ? 10 : 5, 'm', { major: 2 });
+    H = Hn;
     withCard('dm', 700, 50, 460, 520, function () {
       card(700, 50, 460, 520, 'PRESSURE ON THE DAM WALL');
       var pb = pLiquid(H, 1000);
@@ -2063,11 +2637,11 @@ scene(2, 'dam', {
     });
   },
   data: function () {
-    var H = V('H');
+    var H = damLevel();
     return [{ l: 'reservoir depth', v: fmt(H, 0) + ' m' }, { l: 'p at half depth', v: fmtPa(pLiquid(H / 2, 1000)), k: 'pr' },
-      { l: 'p at the bottom', v: fmtPa(pLiquid(H, 1000)), k: 'pr' }, { l: 'wall thickness: top → base', v: fmt(damThick(0), 0) + ' m → ' + fmt(damThick(H), 0) + ' m' }];
+      { l: 'p at the bottom', v: fmtPa(pLiquid(H, 1000)), k: 'pr' }, { l: 'wall thickness: top → base', v: fmt(damThick(0), 0) + ' m → ' + fmt(damThick(V('H')), 0) + ' m' }];
   },
-  eq: function () { return [['at the base', 'p = h\\rho g = ' + fmt(V('H'), 0) + ' \\times 1000 \\times ' + G() + ' = ' + fmt(pLiquid(V('H'), 1000) / 1000, 0) + '\\ \\text{kPa}']]; },
+  eq: function () { return [['at the base', 'p = h\\rho g = ' + fmt(damLevel(), 0) + ' \\times 1000 \\times ' + G() + ' = ' + fmt(pLiquid(damLevel(), 1000) / 1000, 0) + '\\ \\text{kPa}']]; },
   info: function () {
     return steps('Why dams are thicker at the bottom', [
       'Pressure in water increases with ' + N().depth + ': p = hρg.',
@@ -2095,45 +2669,73 @@ scene(2, 'hydraulic', {
   draw: function () {
     var F1 = V('F1'), A1 = V('A1'), A2 = V('A2'), r = hydraulic(F1, A1, A2), u = smooth(S.t / 2.4);
     var ws = hydW(A1), wb = hydW(A2), d1 = HYD.d1 * u, d2 = d1 * A1 / A2;
-    var ys = HYD.top + 60 + d1, yb = HYD.top + 160 - d2, pipeT = HYD.pipe, pipeB = HYD.pipe + 28;
-    var oil = 'oil';
-    /* the oil: below both pistons and along the pipe (volume out = volume in) */
+    var ys = HYD.top + 60 + d1, yb = HYD.top + 160 - d2, pipeT = HYD.pipe, pipeB = HYD.pipe + 28, yf = 372, gx = (HYD.xs + HYD.xb) / 2;
+    /* the workshop: a wall, a floor slab cut away to show the pit */
+    CX.save(); rr(20, 56, 670, 544, 12); CX.clip();
+    var wall = CX.createLinearGradient(0, 56, 0, yf);
+    if (LIGHT) { wall.addColorStop(0, '#dde3ea'); wall.addColorStop(1, '#c3ccd6'); } else { wall.addColorStop(0, '#26303d'); wall.addColorStop(1, '#343f4e'); }
+    CX.fillStyle = wall; CX.fillRect(20, 56, 670, yf - 56);
+    CX.fillStyle = LIGHT ? '#b6c0cb' : '#2b3542'; CX.fillRect(20, yf - 60, 670, 6);
+    txt('SERVICE BAY 2', 600, 110, 13, LIGHT ? 'rgba(51,65,85,.55)' : 'rgba(203,213,225,.35)', 'center', 800);
+    var fl = CX.createLinearGradient(0, yf, 0, 600); fl.addColorStop(0, '#8a8f96'); fl.addColorStop(1, '#5f646b');
+    CX.fillStyle = fl; CX.fillRect(20, yf, 670, 600 - yf);
+    CX.fillStyle = 'rgba(40,40,45,.25)';
+    for (var q = 0; q < 260; q++) { var a = Math.abs(Math.sin(q * 12.99) * 437.5) % 1, b = Math.abs(Math.sin(q * 78.2) * 123.4) % 1; CX.fillRect(20 + a * 670, yf + 4 + b * 220, 2, 2); }
+    /* the cut-away pit around the cylinders and pipe */
+    CX.fillStyle = LIGHT ? '#3f4550' : '#1a1e24';
+    CX.fillRect(HYD.xs - ws / 2 - 16, yf, ws + 32, pipeB + 16 - yf); CX.fillRect(HYD.xb - wb / 2 - 16, yf, wb + 32, pipeB + 16 - yf); CX.fillRect(HYD.xs - ws / 2 - 16, pipeT - 16, HYD.xb - HYD.xs + (ws + wb) / 2 + 32, pipeB - pipeT + 32);
+    CX.strokeStyle = '#e5e7eb'; CX.lineWidth = 3; CX.beginPath(); CX.moveTo(20, yf); CX.lineTo(690, yf); CX.stroke();
+    /* yellow-and-black edge of the pit */
+    for (var st = 0; st < 8; st++) { CX.fillStyle = st % 2 ? '#111827' : '#facc15'; CX.fillRect(HYD.xb - wb / 2 - 16 + st * (wb + 32) / 8, yf - 3, (wb + 32) / 8, 4); }
+    CX.restore();
+    /* the oil, below both pistons and along the pipe (volume out = volume in) */
     var oilPath = function () {
       CX.beginPath();
       CX.moveTo(HYD.xs - ws / 2, ys); CX.lineTo(HYD.xs + ws / 2, ys); CX.lineTo(HYD.xs + ws / 2, pipeT);
       CX.lineTo(HYD.xb - wb / 2, pipeT); CX.lineTo(HYD.xb - wb / 2, yb); CX.lineTo(HYD.xb + wb / 2, yb);
       CX.lineTo(HYD.xb + wb / 2, pipeB); CX.lineTo(HYD.xs - ws / 2, pipeB); CX.closePath();
     };
-    liquidFill(oilPath, HYD.top + 60, pipeB, oil, 400);
-    CX.save(); CX.strokeStyle = STEEL.lo; CX.lineWidth = 5; CX.lineJoin = 'round';
-    CX.beginPath();
-    CX.moveTo(HYD.xs - ws / 2 - 3, HYD.top); CX.lineTo(HYD.xs - ws / 2 - 3, pipeB + 3); CX.lineTo(HYD.xb + wb / 2 + 3, pipeB + 3); CX.lineTo(HYD.xb + wb / 2 + 3, HYD.top + 40);
-    CX.moveTo(HYD.xs + ws / 2 + 3, HYD.top); CX.lineTo(HYD.xs + ws / 2 + 3, pipeT - 3); CX.lineTo(HYD.xb - wb / 2 - 3, pipeT - 3); CX.lineTo(HYD.xb - wb / 2 - 3, HYD.top + 40);
-    CX.stroke(); CX.restore();
-    /* pistons */
-    CX.save(); CX.fillStyle = steelGrad(0, ys - 14, 0, ys); CX.fillRect(HYD.xs - ws / 2, ys - 14, ws, 14);
+    liquidFill(oilPath, HYD.top + 60, pipeB, 'oil', 400);
+    /* steel cylinder walls and pipe, cut in half so we see inside */
+    CX.save(); CX.lineJoin = 'round';
+    [[9, '#4b5563'], [5, '#9ca3af'], [1.5, '#e5e7eb']].forEach(function (sk) {
+      CX.strokeStyle = sk[1]; CX.lineWidth = sk[0]; CX.beginPath();
+      CX.moveTo(HYD.xs - ws / 2 - 4, HYD.top); CX.lineTo(HYD.xs - ws / 2 - 4, pipeB + 4); CX.lineTo(HYD.xb + wb / 2 + 4, pipeB + 4); CX.lineTo(HYD.xb + wb / 2 + 4, HYD.top + 40);
+      CX.moveTo(HYD.xs + ws / 2 + 4, HYD.top); CX.lineTo(HYD.xs + ws / 2 + 4, pipeT - 4); CX.lineTo(HYD.xb - wb / 2 - 4, pipeT - 4); CX.lineTo(HYD.xb - wb / 2 - 4, HYD.top + 40);
+      CX.stroke();
+    });
+    CX.restore();
+    /* flanges on the pipe */
+    [HYD.xs + ws / 2 + 30, HYD.xb - wb / 2 - 30].forEach(function (fx) { CX.save(); CX.fillStyle = '#6b7280'; CX.fillRect(fx - 4, pipeT - 10, 8, pipeB - pipeT + 20); CX.restore(); });
+    /* pistons with black seals */
+    CX.save();
+    CX.fillStyle = steelGrad(0, ys - 14, 0, ys); CX.fillRect(HYD.xs - ws / 2, ys - 14, ws, 14);
+    CX.fillStyle = '#111827'; CX.fillRect(HYD.xs - ws / 2, ys - 9, ws, 3);
     CX.fillStyle = steelGrad(HYD.xs - 3, 0, HYD.xs + 3, 0); CX.fillRect(HYD.xs - 3, ys - 80, 6, 66);
-    CX.fillStyle = '#374151'; rr(HYD.xs - 22, ys - 88, 44, 10, 4); CX.fill();
+    CX.fillStyle = '#b91c1c'; rr(HYD.xs - 24, ys - 90, 48, 12, 6); CX.fill();
     CX.fillStyle = steelGrad(0, yb - 16, 0, yb); CX.fillRect(HYD.xb - wb / 2, yb - 16, wb, 16);
-    /* the load on the big piston: a car on a lift platform */
-    CX.fillStyle = '#374151'; CX.fillRect(HYD.xb - 5, yb - 40, 10, 24); CX.fillRect(HYD.xb - 90, yb - 48, 180, 8);
+    CX.fillStyle = '#111827'; CX.fillRect(HYD.xb - wb / 2, yb - 10, wb, 3);
+    /* the ram up to the lift platform */
+    CX.fillStyle = steelGrad(HYD.xb - 10, 0, HYD.xb + 10, 0); CX.fillRect(HYD.xb - 10, yb - 52, 20, 36);
+    var pl = yb - 58;
+    CX.fillStyle = '#374151'; rr(HYD.xb - 104, pl, 208, 8, 2); CX.fill();
+    for (var s2 = 0; s2 < 13; s2++) { CX.fillStyle = s2 % 2 ? '#111827' : '#facc15'; CX.fillRect(HYD.xb - 104 + s2 * 16, pl, 16, 3); }
     CX.restore();
-    CX.save(); CX.fillStyle = '#e76f51'; rr(HYD.xb - 80, yb - 88, 160, 34, 10); CX.fill();
-    CX.fillStyle = '#e76f51'; rr(HYD.xb - 44, yb - 110, 86, 30, 10); CX.fill();
-    CX.fillStyle = '#111827'; CX.beginPath(); CX.arc(HYD.xb - 48, yb - 54, 12, 0, 7); CX.arc(HYD.xb + 48, yb - 54, 12, 0, 7); CX.fill();
-    CX.restore();
-    fArrow(HYD.xs, ys - 150, 56, S.nums ? 'F₁ = ' + fmt(F1, 0) + ' N' : 'F₁');
+    sedan(HYD.xb, pl, 190, '#e76f51');
+    /* the gauge on a riser from the pipe, above the floor */
+    line(gx, pipeT - 4, gx, yf - 22, '#9ca3af', 4);
+    gaugeDial(gx, yf - 46, 24, r.p, Math.max(r.p * 1.4, 1), '');
+    if (S.nums) plate('p = ' + fmtPa(r.p), gx, yf - 82, 11.5, C.pr, 'center', true);
+    fArrow(HYD.xs, ys - 158, 56, S.nums ? 'F₁ = ' + fmt(F1, 0) + ' N' : 'F₁');
     arrow(HYD.xb + wb / 2 + 40, yb + 60, HYD.xb + wb / 2 + 40, yb - 30, C.tot, 3.6, { head: 14 });
     if (S.nums) plate('F₂ = ' + fmt(r.F2, 0) + ' N', HYD.xb + wb / 2 + 52, yb + 20, 11.5, C.tot, 'left', true);
-    gaugeDial((HYD.xs + HYD.xb) / 2, pipeB + 50, 24, r.p, Math.max(r.p * 1.4, 1), S.nums ? 'p = ' + fmtPa(r.p) : 'p');
-    line((HYD.xs + HYD.xb) / 2, pipeB, (HYD.xs + HYD.xb) / 2, pipeB + 26, STEEL.edge, 2);
     if (S.cons && u > 0) {
-      mtxt('moves ' + fmt(HYD.d1 * u / HYD.pxPerCm, 1) + ' cm', HYD.xs - ws / 2 - 10, ys - 20, 11.5, C['text-dim'], 'right', 600);
-      mtxt('moves ' + fmt(HYD.d1 * u / HYD.pxPerCm * A1 / A2, 2) + ' cm', HYD.xb - wb / 2 - 10, yb - 20, 11.5, C['text-dim'], 'right', 600);
+      plate('moves ' + fmt(HYD.d1 * u / HYD.pxPerCm, 1) + ' cm', HYD.xs - ws / 2 - 14, ys - 20, 11, C['text-dim'], 'right', true);
+      plate('moves ' + fmt(HYD.d1 * u / HYD.pxPerCm * A1 / A2, 2) + ' cm', HYD.xb - 108, pl - 18, 11, C['text-dim'], 'right', true);
     }
-    txt('A₁ = ' + fmt(A1, 0) + ' cm²', HYD.xs, pipeB + 22, 11.5, C.text, 'center', 700);
-    txt('A₂ = ' + fmt(A2, 0) + ' cm²', HYD.xb, pipeB + 22, 11.5, C.text, 'center', 700);
-    if (S.t === 0 && !S.play) plate('press ▶ Play to push the small piston down', 40, 88, 12, C['text-dim'], 'left', false);
+    plate('A₁ = ' + fmt(A1, 0) + ' cm²', HYD.xs, pipeB + 34, 11, C.text, 'center', true);
+    plate('A₂ = ' + fmt(A2, 0) + ' cm²', HYD.xb, pipeB + 34, 11, C.text, 'center', true);
+    if (S.t === 0 && !S.play) plate('press ▶ Play to push the small piston down', 214, 88, 12, C['text-dim'], 'left', false);
     withCard('hy', 700, 50, 460, 520, function () {
       card(700, 50, 460, 520, 'SAME PRESSURE, BIGGER AREA, BIGGER FORCE');
       var y = 104, L = function (s, col, sz) { mtxt(s, 722, y, sz || 13.5, col || C.text, 'left', 700); y += 27; };
@@ -2173,15 +2775,37 @@ scene(2, 'hydraulic', {
 
 /* ---------- 2.4  COMMUNICATING VESSELS ---------------------------------- */
 var COM = { base: 470, pipeY: 488, ppc: 10 };
+/* Pascal's vases: each vessel has an INSIDE (for the liquid) and an open
+   glass OUTLINE; all stand on one glass pipe                              */
 var VESSELS = [
-  { name: 'straight tube', x: 104, shape: function (x, b, H) { CX.rect(x - 14, b - H, 28, H); } },
-  { name: 'wide beaker', x: 205, shape: function (x, b, H) { CX.rect(x - 55, b - H, 110, H); } },
-  { name: 'cone', x: 335, shape: function (x, b, H) { CX.moveTo(x - 50, b); CX.lineTo(x + 50, b); CX.lineTo(x + 50 - H * 0.2, b - H); CX.lineTo(x - 50 + H * 0.2, b - H); CX.closePath(); } },
-  { name: 'sloping tube', x: 440, shape: function (x, b, H) { CX.moveTo(x - 12, b); CX.lineTo(x + 12, b); CX.lineTo(x + 12 + H * .35, b - H); CX.lineTo(x - 12 + H * .35, b - H); CX.closePath(); } },
-  { name: 'bulb', x: 600, shape: function (x, b, H) { CX.rect(x - 10, b - H, 20, H); CX.moveTo(x + 34, b - 110); CX.arc(x, b - 110, 34, 0, 7); } }];
+  { name: 'straight tube', x: 104, open: [90, 118], shape: function (x, b, H) { CX.rect(x - 14, b - H, 28, H); },
+    outline: function (x, b, H) { CX.moveTo(x - 14, b - H); CX.lineTo(x - 14, b); CX.moveTo(x + 14, b); CX.lineTo(x + 14, b - H); } },
+  { name: 'wide beaker', x: 205, open: [150, 260], shape: function (x, b, H) { CX.rect(x - 55, b - H, 110, H); },
+    outline: function (x, b, H) { CX.moveTo(x - 55, b - H); CX.lineTo(x - 55, b); CX.moveTo(x + 55, b); CX.lineTo(x + 55, b - H); } },
+  { name: 'cone', x: 335, open: [285, 385], shape: function (x, b, H) { CX.moveTo(x - 50, b); CX.lineTo(x + 50, b); CX.lineTo(x + 50 - H * 0.16, b - H); CX.lineTo(x - 50 + H * 0.16, b - H); CX.closePath(); },
+    outline: function (x, b, H) { CX.moveTo(x - 50 + H * .16, b - H); CX.lineTo(x - 50, b); CX.moveTo(x + 50, b); CX.lineTo(x + 50 - H * .16, b - H); } },
+  { name: 'sloping tube', x: 440, open: [428, 452], shape: function (x, b, H) { CX.moveTo(x - 12, b); CX.lineTo(x + 12, b); CX.lineTo(x + 12 + H * .35, b - H); CX.lineTo(x - 12 + H * .35, b - H); CX.closePath(); },
+    outline: function (x, b, H) { CX.moveTo(x - 12 + H * .35, b - H); CX.lineTo(x - 12, b); CX.moveTo(x + 12, b); CX.lineTo(x + 12 + H * .35, b - H); } },
+  { name: 'bulb', x: 600, open: [590, 610], shape: function (x, b, H) { CX.rect(x - 10, b - H, 20, H); CX.moveTo(x + 34, b - 110); CX.arc(x, b - 110, 34, 0, 7); },
+    outline: function (x, b, H) {
+      CX.moveTo(x - 10, b); CX.lineTo(x - 10, b - 77.5); CX.arc(x, b - 110, 34, 1.87, 4.41, false); CX.lineTo(x - 10, b - H);
+      CX.moveTo(x + 10, b); CX.lineTo(x + 10, b - 77.5); CX.arc(x, b - 110, 34, 1.27, -1.27, true); CX.lineTo(x + 10, b - H);
+    } }];
 function comLevel(i, t) {
   var L = V('fill'), pour = S.t > 0 ? Math.exp(-t / 1.1) * Math.cos(3.2 * t) : 0;
   return L + pour * (i === 0 ? 8 : -2);
+}
+/* the lab behind: a tiled wall and a wooden bench */
+function labBackdrop(benchY) {
+  CX.save(); rr(20, 56, 670, 548, 12); CX.clip();
+  CX.fillStyle = LIGHT ? '#e8edf2' : '#222b36'; CX.fillRect(20, 56, 670, benchY - 56);
+  CX.strokeStyle = LIGHT ? 'rgba(148,163,184,.35)' : 'rgba(148,163,184,.12)'; CX.lineWidth = 1;
+  for (var x = 20; x <= 690; x += 44) { CX.beginPath(); CX.moveTo(x, 56); CX.lineTo(x, benchY); CX.stroke(); }
+  for (var y = 56; y <= benchY; y += 44) { CX.beginPath(); CX.moveTo(20, y); CX.lineTo(690, y); CX.stroke(); }
+  var g = CX.createLinearGradient(0, benchY, 0, benchY + 30); g.addColorStop(0, '#b98552'); g.addColorStop(1, '#7c5530');
+  CX.fillStyle = g; CX.fillRect(20, benchY, 670, 30);
+  CX.fillStyle = '#5a3d22'; CX.fillRect(20, benchY + 30, 670, 70);
+  CX.restore();
 }
 scene(2, 'vessels', {
   label: '🔗 Communicating vessels',
@@ -2191,28 +2815,58 @@ scene(2, 'vessels', {
   hero: 'p = h\\rho g',
   len: function () { return 5; },
   draw: function () {
-    var H = 260, b = COM.base;
-    /* the joining pipe */
+    var H = 260, b = COM.base, bench = b + 50;
+    labBackdrop(bench);
+    /* the stand: a dark base plate with two feet holding the pipe */
+    CX.save(); CX.fillStyle = '#1f2937'; rr(80, b + 32, 560, 10, 3); CX.fill();
+    CX.fillStyle = '#374151'; CX.fillRect(110, b + 42, 16, 8); CX.fillRect(594, b + 42, 16, 8); CX.restore();
+    /* the joining pipe and the liquid in every vessel */
     liquidFill(function () { CX.beginPath(); CX.rect(90, b, 540, 26); }, b - V('fill') * COM.ppc, b + 26, 'water', 320);
     VESSELS.forEach(function (v, i) {
       var lev = comLevel(i, S.t) * COM.ppc;
       CX.save(); CX.beginPath(); v.shape(v.x, b, H); CX.clip();
-      liquidFill(function () { CX.beginPath(); CX.rect(v.x - 80, b - lev, 200, lev); }, b - lev, b, 'water', 320);
+      liquidFill(function () { CX.beginPath(); CX.rect(v.x - 80, b - lev, 200, lev + 1); }, b - lev, b, 'water', 320);
       CX.restore();
-      CX.save(); CX.beginPath(); v.shape(v.x, b, H); CX.strokeStyle = LIGHT ? '#64748b' : '#cbd5e1'; CX.lineWidth = 2; CX.stroke(); CX.restore();
-      txt(v.name, v.x + (i === 3 ? 20 : 0), b + 48, 11, C['text-dim'], 'center', 600);
+      /* the curved surface: its width is the vessel's inside at that height */
+      var hw = i === 1 ? 55 : i === 2 ? 50 - lev * .16 : i === 3 ? 12 : i === 4 ? (Math.abs(lev - 110) < 32 ? Math.sqrt(34 * 34 - (lev - 110) * (lev - 110)) : 10) : 14;
+      var cx = v.x + (i === 3 ? lev * .35 : 0);
+      if (lev > 2) meniscus(cx - hw, cx + hw, b - lev, 'water');
+      glassStroke(function () { CX.beginPath(); v.outline(v.x, b, H); }, 5);
+      /* the rim at the open top */
+      var rimX = v.x + (i === 3 ? H * .35 : 0), rimW = i === 1 ? 118 : i === 2 ? 2 * (50 - H * .16) + 8 : i === 4 ? 26 : 34;
+      CX.save(); CX.fillStyle = LIGHT ? 'rgba(71,85,105,.75)' : 'rgba(226,240,250,.75)'; CX.fillRect(rimX - rimW / 2, b - H - 2, rimW, 3); CX.restore();
+      plate(v.name, v.x + (i === 3 ? 20 : 0), b + 68, 10.5, C.text, 'center', false);
     });
-    CX.save(); CX.strokeStyle = LIGHT ? '#64748b' : '#cbd5e1'; CX.lineWidth = 2; CX.strokeRect(90, b, 540, 26); CX.restore();
+    glassGlint(98, b - 250, b - 30); glassGlint(160, b - 240, b - 20); glassGlint(592, b - 130, b - 90);
+    gradMarks(118, b, b - 250, 10, 5, 1, function (k) { return k; });
+    /* the pipe's glass: its top edge is open under every vessel */
+    var edges = [90]; VESSELS.forEach(function (v) { edges.push(v.open[0], v.open[1]); }); edges.push(630);
+    glassStroke(function () {
+      CX.beginPath();
+      for (var e = 0; e < edges.length; e += 2) { CX.moveTo(edges[e], b); CX.lineTo(edges[e + 1], b); }
+      CX.moveTo(90, b); CX.lineTo(90, b + 26); CX.lineTo(630, b + 26); CX.lineTo(630, b);
+    }, 5);
+    /* Play: a tap above the straight tube pours coloured water in */
+    var pouring = S.t > 0 && S.t < 2.2;
+    CX.save(); CX.fillStyle = steelGrad(96, 0, 112, 0); CX.fillRect(98, 56, 12, 70);
+    CX.fillStyle = '#9ca3af'; rr(88, 122, 32, 12, 4); CX.fill(); CX.fillRect(100, 134, 8, 10);
+    CX.fillStyle = pouring ? '#16a34a' : '#b91c1c'; rr(92, 104, 24, 7, 3); CX.fill(); CX.restore();
+    if (pouring) {
+      var sy0 = 144, sy1 = b - comLevel(0, S.t) * COM.ppc;
+      var sg = CX.createLinearGradient(0, sy0, 0, sy1); sg.addColorStop(0, withA(C.liq, .9)); sg.addColorStop(1, withA(C.liq, .6));
+      CX.save(); CX.fillStyle = sg; CX.fillRect(101, sy0, 6 - Math.max(0, S.t - 1.6) * 6, sy1 - sy0);
+      CX.strokeStyle = 'rgba(255,255,255,.6)'; CX.lineWidth = 1; CX.beginPath(); CX.arc(104, sy1, 6 + (S.t * 20) % 6, Math.PI, 0); CX.stroke(); CX.restore();
+    }
     var lvl = b - V('fill') * COM.ppc, dMark = 8;
-    if (S.cons) line(70, lvl, 660, lvl, C.pr, 1.4, [6, 4]);
+    if (S.cons) line(60, lvl, 670, lvl, C.pr, 1.4, [6, 4]);
     /* points at the same depth in every vessel: same pressure */
     if (S.cons) VESSELS.forEach(function (v, i) {
       if (i === 4) return;
       var x = v.x + (i === 3 ? (V('fill') - dMark) * COM.ppc * .35 : 0);
       dot(x, lvl + dMark * COM.ppc, 4.5, C.pr);
     });
-    if (S.cons) { line(70, lvl + dMark * COM.ppc, 660, lvl + dMark * COM.ppc, withA(C.pr, .5), 1, [2, 4]); note('dots: ' + dMark + ' cm deep in every vessel → the same p = ' + fmtPa(pLiquid(dMark / 100, 1000)), 70, b + 76, C.pr, 'left'); }
-    if (S.t > 0 && S.t < 4) plate('pouring into the straight tube — watch it settle', 40, 88, 12, C['text-dim'], 'left', false);
+    if (S.cons) { line(60, lvl + dMark * COM.ppc, 670, lvl + dMark * COM.ppc, withA(C.pr, .5), 1, [2, 4]); note('dots: ' + dMark + ' cm deep in every vessel → the same p = ' + fmtPa(pLiquid(dMark / 100, 1000)), 40, b + 88, C.pr, 'left'); }
+    if (S.t > 0 && S.t < 4) plate('pouring into the straight tube — watch it settle', 132, 88, 12, C['text-dim'], 'left', false);
     withCard('cv', 700, 50, 460, 520, function () {
       card(700, 50, 460, 520, 'WHY THE LEVELS MATCH');
       wrap('Along the joining pipe the liquid is at one depth. If one column were taller, the pressure under it would be bigger and would push liquid along until the levels matched.', 722, 104, 416, 12.5, C.text, 18, 600);
@@ -3095,8 +3749,8 @@ function updateChrome() {
   [].forEach.call($('gSpeed').children, function (b) {
     b.classList.toggle('active', +b.dataset.s === S.speed);
   });
-  [].forEach.call($('gG').children, function (b) {
-    b.classList.toggle('active', +b.dataset.g === S.g);
+  [].forEach.call($('bG').children, function (b) {
+    b.classList.toggle('on', +b.dataset.g === S.g);
   });
   [].forEach.call($('gPTabs').children, function (b) {
     b.classList.toggle('active', b.dataset.p === S.ptab);
@@ -3119,7 +3773,7 @@ function updateChips() {
   $('chipEq').hidden = !hero;
   if (hero) $('chipEq').innerHTML = K(hero, false);
   $('chipState').innerHTML = sw(C.pr) + 'pressure / force ' + sw(C.liq) + 'liquid ' + sw(C.gas) + 'gas ' +
-    sw(C.atm) + 'atmosphere · g = ' + G() + ' N/kg';
+    sw(C.atm) + 'atmosphere · g = ' + G() + ' m/s²';
   $('chipState').hidden = S.mode === 'quiz';
   $('chipHint').hidden = S.mode === 'quiz';
   $('chipHint').innerHTML = ZOOM.k !== 1
@@ -3210,12 +3864,10 @@ function bindToolbar() {
   [].forEach.call($('gNote').children, function (b) {
     b.addEventListener('click', function () { S.note = b.dataset.n; refresh(); });
   });
-  [].forEach.call($('gG').children, function (b) {
-    b.addEventListener('click', function () {
-      S.g = +b.dataset.g;
-      var sc = cur(); if (sc.onG) sc.onG();
-      refresh();
-    });
+  $('bG').addEventListener('click', function () {
+    S.g = S.g === 10 ? 9.8 : 10;
+    var sc = cur(); if (sc.onG) sc.onG();
+    refresh();
   });
   [].forEach.call($('gSpeed').children, function (b) {
     b.addEventListener('click', function () { S.speed = +b.dataset.s; updateChrome(); });

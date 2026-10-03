@@ -217,7 +217,7 @@ input[type=range]::-moz-range-thumb{
 
 <div class="top-bar">
   <h1>🌊 Diffraction of Waves <span class="sub">Ripple tank · Sound</span></h1>
-  <span class="badge-top">v1.2.1</span>
+  <span class="badge-top">v1.2.4</span>
   <span class="spacer"></span>
   <div class="top-right">
     <select class="theme-select" id="themeSel">
@@ -249,6 +249,7 @@ input[type=range]::-moz-range-thumb{
       <button class="tbtn on" id="btnLabels">🏷 Labels</button>
       <button class="tbtn" id="btnCalc">📐 Calc</button>
       <button class="tbtn on" id="btnGrid">🌐 Grid</button>
+      <button class="tbtn" id="btnRays" title="draw rays — the direction the wave travels, always at right angles to the wavefronts">➤ Rays</button>
     </div>
     <div class="tsep" id="sepCompare"></div>
     <div class="tgroup" id="grpCompare">
@@ -368,7 +369,7 @@ function mkS(){
     /* sound */
     freq:DEF_FREQ, instrument:"drum", listener:null,
     /* show toggles */
-    labels:true, calc:false, grid:true,
+    labels:true, calc:false, grid:true, rays:false,
     /* animation */
     playing:true, phase:0, speed:0.5,
     /* view */
@@ -564,18 +565,54 @@ function tanks(){
 }
 /* spread half-angle of the diffracted beam */
 const spreadAngle = (lam, gapW) => Math.asin(clamp(lam/gapW, 0, 1));
-/* EFFECTIVE half-width of the source line in the gap.
-   A gap many wavelengths wide behaves like a line of sources, so the crest keeps a
-   straight portion the full width of the gap. As the gap narrows towards λ the gap
-   behaves more and more like a SINGLE point source, so that straight portion must
-   shrink to nothing — at w = λ the crest is a true semicircle centred on the gap. */
-const effHalfGap = (lam, gapW) => (gapW/2) * Math.max(0, 1 - clamp(lam/gapW, 0, 1));
+/* Half-width of the STRAIGHT part of a crest beyond the gap.
+   A gap many wavelengths wide is a line of sources: the crest keeps a flat portion
+   the full width of the gap, and the two edge arcs (centred on the gap EDGES) carry
+   it past them, so the crest is always at least as wide as the gap.
+   As the gap narrows the wave can no longer resolve the width of the aperture: by
+   w = λ the gap behaves as ONE point source, so the flat part is gone and the crest
+   is a true semicircle centred on the gap. Between w = λ and w = 2λ it blends. */
+const srcHalfGap = (lam, gapW) => (gapW/2) * clamp((gapW - lam)/lam, 0, 1);
+
+/* ---- rays: the direction the wave travels, drawn at right angles to the crests ----
+   Before the gap every ray is a parallel arrow going straight up the tank. Beyond it
+   the rays are the normals of the crest the product already draws: straight on across
+   the flat part, and fanning out from each gap EDGE to the spread angle θ. So a wide
+   gap gives a narrow beam with slightly splayed edges, and a gap at or below λ gives a
+   fan opening a full 90° each way — the same story the wavefronts tell. */
+function ray(from, ang, len, color, w){
+  const to = { x:from.x + len*Math.cos(ang), y:from.y + len*Math.sin(ang) };
+  line(from, to, color, w||1.5);
+  arrowHeadAt(to, ang, color, 7.5);
+  return to;
+}
+function drawTankRays(t){
+  const RAY = col("--violet"), gh = t.gap/2, f = srcHalfGap(t.lam, t.gap);
+  const th = spreadAngle(t.lam, t.gap);
+  const L = t.cx - t.halfW, R = t.cx + t.halfW, bBot = BARRIER_Y + BARRIER_T;
+  ctx.save();
+  ctx.beginPath(); ctx.rect(L+1, TANK_TOP+1, R-L-2, H-TANK_TOP-3); ctx.clip();
+  /* incoming: parallel rays up to the barrier */
+  const inX = f > 3 ? [t.cx-f*0.8, t.cx, t.cx+f*0.8] : [t.cx-gh*0.5, t.cx, t.cx+gh*0.5];
+  inX.forEach(x => ray({x, y:H-18}, -Math.PI/2, H-18-bBot-10, alpha(RAY,0.55), 1.4));
+  /* outgoing: straight on across the flat part … */
+  const up = BARRIER_Y - TANK_TOP - 10;
+  if(f > 3) [t.cx-f*0.8, t.cx, t.cx+f*0.8].forEach(x => ray({x, y:BARRIER_Y}, -Math.PI/2, up, RAY, 1.5));
+  else ray({x:t.cx, y:BARRIER_Y}, -Math.PI/2, up, RAY, 1.5);
+  /* … and fanning out from each gap edge, up to θ */
+  if(th > 0.02) for(const sgn of [1,-1]) for(const fr of [1/3, 2/3, 1]){
+    const a = -Math.PI/2 + sgn*th*fr;
+    ray({x:t.cx + sgn*f, y:BARRIER_Y}, a, up/Math.max(0.35, Math.abs(Math.cos(th*fr))), alpha(RAY, 1-0.3*fr), 1.5);
+  }
+  ctx.restore();
+  if(S.labels) label("rays ⟂ wavefronts", L + 108, TANK_TOP + 18, RAY, {size:10, bg:true});
+}
 
 function drawTank(t){
   const WAVE = col("--wave");
   const L = t.cx - t.halfW, R = t.cx + t.halfW;
   const gh = t.gap/2, lam = t.lam;
-  const ghE = effHalfGap(lam, t.gap);        // straight part of the crest
+  const ghE = srcHalfGap(lam, t.gap);        // the straight part spans the whole gap
   const th = spreadAngle(lam, t.gap);
   const lw = 1.05 + S.amp*0.055;
   const bBot = BARRIER_Y + BARRIER_T;
@@ -654,6 +691,8 @@ function drawTank(t){
     arrowHeadAt({x, y:H-46}, -Math.PI/2, col("--text-muted"), 7);
   }
   ctx.restore();
+
+  if(S.rays) drawTankRays(t);
 
   /* ---- labels ---- */
   if(S.labels){
@@ -900,6 +939,25 @@ function renderSound(){
       }
       ctx.restore();
     }
+  }
+
+  /* ---- rays: straight out from the loudspeaker, bending round the corner ---- */
+  if(S.rays){
+    const RAY = col("--violet");
+    ctx.save();
+    ctx.beginPath(); ctx.rect(0,0,W,H);                     // never draw through the building
+    ctx.rect(BLD.x0, BLD.y0, BLD_W, BLD.y1-BLD.y0); ctx.clip("evenodd");
+    /* the direct sound: straight rays, so the sound shadow is the part they miss */
+    for(let k=0;k<9;k++){
+      const a = A_CORNER + (A_TOPLEFT + 2*Math.PI - A_CORNER) * (k+0.5)/9;
+      ray(SRC, a, 150, alpha(RAY,0.5), 1.3);
+    }
+    /* the diffracted sound: new rays leaving the corner, out to the bending angle θ */
+    if(thP > 0.02) for(const fr of [1/3, 2/3, 1]){
+      ray(CORNER, A_CORNER - thP*fr, 190, alpha(RAY, 1-0.28*fr), 1.6);
+    }
+    ctx.restore();
+    if(S.labels) label("rays ⟂ wavefronts", 108, 22, RAY, {size:10, bg:true});
   }
 
   /* ---- building ---- */
@@ -1179,7 +1237,7 @@ window.addEventListener("keydown", e => {
 });
 
 /* ---------------- toolbar wiring ---------------- */
-[["btnLabels","labels"],["btnCalc","calc"],["btnGrid","grid"]].forEach(([id,key]) => {
+[["btnLabels","labels"],["btnCalc","calc"],["btnGrid","grid"],["btnRays","rays"]].forEach(([id,key]) => {
   $(id).onclick = () => { S[key] = !S[key]; $(id).classList.toggle("on", S[key]); updateUI(); };
 });
 $("btnCompare").onclick = () => { S.compare = !S.compare; updateUI(); };
@@ -1220,11 +1278,11 @@ $("btnReset").onclick = () => {
   } else {
     S.freq = DEF_FREQ; S.instrument = "drum"; S.listener = null;
   }
-  S.labels = true; S.calc = false; S.grid = true;
+  S.labels = true; S.calc = false; S.grid = true; S.rays = false;
   S.playing = true; S.speed = 0.5; S.phase = 0;
   S.zoom = false; S.pan = {x:0,y:0}; S.drag = null;
   $("btnLabels").classList.add("on"); $("btnGrid").classList.add("on");
-  $("btnCalc").classList.remove("on");
+  $("btnCalc").classList.remove("on"); $("btnRays").classList.remove("on");
   $("btnPlay").textContent = "⏸ Pause";
   document.querySelectorAll("#speedPills .pill").forEach(p => p.classList.toggle("active", p.dataset.s==="0.5"));
   updateUI();
