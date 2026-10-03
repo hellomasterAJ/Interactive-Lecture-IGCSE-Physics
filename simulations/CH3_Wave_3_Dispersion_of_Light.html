@@ -95,11 +95,12 @@ body{
 /* ── Toolbar ── */
 .toolbar{display:flex;flex-direction:column;gap:6px;background:var(--card);border:1px solid var(--border);
   border-radius:12px;padding:8px 14px;margin-bottom:6px;flex:0 0 auto;}
-.trow{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;}
+.trow{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;}
 .tgroup{display:flex;align-items:center;gap:6px;}
 .tlabel{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600;}
 .tsel{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:3px 8px;
-  font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;cursor:pointer;}
+  font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;cursor:pointer;
+  max-width:156px;text-overflow:ellipsis;}          /* a long medium name must not push the row onto a second line */
 .tsel:hover{border-color:var(--accent);}
 .tin{background:var(--bg);border:1px solid var(--border);color:var(--text);border-radius:8px;padding:3px 8px;
   font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;}
@@ -116,7 +117,7 @@ body{
 .pill{border:none;background:transparent;color:var(--text-dim);font-size:11.5px;padding:2px 10px;border-radius:16px;
   cursor:pointer;white-space:nowrap;font-family:'JetBrains Mono',monospace;}
 .pill.active{background:var(--blue);color:#fff;}
-input[type=range]{accent-color:var(--accent);width:140px;cursor:pointer;}
+input[type=range]{accent-color:var(--accent);width:92px;cursor:pointer;}   /* short enough that a shape's own controls, the side button and Play stay on ONE toolbar line */
 .cpills{display:flex;gap:5px;align-items:center;}
 .cpill{width:19px;height:19px;border-radius:50%;border:2px solid transparent;cursor:pointer;padding:0;
   opacity:.35;transition:all .15s;outline:none;}
@@ -178,7 +179,7 @@ table.dt td .sw{display:inline-block;width:9px;height:9px;border-radius:2px;marg
 <div class="container">
 
 <div class="top-bar">
-  <h1>🌈 <span>Dispersion of Light</span> <span class="badge-top">v2.1.0</span></h1>
+  <h1>🌈 <span>Dispersion of Light</span> <span class="badge-top">v2.1.4</span></h1>
   <div class="top-right">
     <select class="theme-select" id="themeSel">
       <option value="dark">🌙 Classic Dark</option>
@@ -230,7 +231,7 @@ table.dt td .sw{display:inline-block;width:9px;height:9px;border-radius:2px;marg
   <!-- Row 2: Adjustable Angle → Play → Medium -->
   <div class="trow">
     <div class="tgroup hidden" id="gApex"><span class="tlabel">Apex</span>
-      <input type="range" id="apexSl" min="45" max="75" step="1" value="60" style="width:100px;">
+      <input type="range" id="apexSl" min="45" max="75" step="1" value="60" style="width:84px;">
       <span class="badge"><b id="apexV">60°</b></span>
     </div>
     <div class="tgroup hidden" id="gCount"><span class="tlabel">Blocks</span>
@@ -244,8 +245,8 @@ table.dt td .sw{display:inline-block;width:9px;height:9px;border-radius:2px;marg
     <div class="tgroup hidden" id="gDir">
       <button class="tbtn" id="dirBtn">◀ from left</button>
     </div>
-    <div class="tgroup hidden" id="gTri"><span class="tlabel">Angle A</span>
-      <input type="range" id="triSl" min="20" max="70" step="1" value="45" style="width:100px;">
+    <div class="tgroup hidden" id="gTri"><span class="tlabel">∠A</span>
+      <input type="range" id="triSl" min="20" max="70" step="1" value="45" style="width:84px;">
       <span class="badge"><b id="triV">45°</b></span>
     </div>
     <div class="tgroup hidden" id="gRain"><span class="tlabel">Rainbow</span>
@@ -256,7 +257,16 @@ table.dt td .sw{display:inline-block;width:9px;height:9px;border-radius:2px;marg
     </div>
     <div class="tgroup" id="grpAngle"><span class="tlabel" id="angLabel">θ₁</span>
       <input type="range" id="angSlider" min="0" max="75" step="0.5" value="50">
-      <input class="tin" id="angInput" type="number" min="0" max="75" step="0.5" value="50" style="width:60px;">°
+      <input class="tin" id="angInput" type="number" min="0" max="75" step="0.5" value="50" style="width:54px;">°
+    </div>
+    <div class="tgroup hidden" id="gDiaDir">
+      <button class="tbtn" id="diaDirBtn" title="which side of the normal the light comes in from" style="min-width:112px">▶ from right</button>
+    </div>
+    <div class="tgroup hidden" id="gTriDir">
+      <button class="tbtn" id="triDirBtn" title="which side of the normal the light comes in from" style="min-width:118px">▼ from above</button>
+    </div>
+    <div class="tgroup hidden" id="gBlkDir">
+      <button class="tbtn" id="blkDirBtn" title="which side of the normal the light comes in from" style="min-width:112px">▶ from right</button>
     </div>
     <div class="tsep"></div>
     <div class="tgroup">
@@ -364,10 +374,10 @@ const mkS  = () => ({ sec:0, src:"mono", mono:0, vis:[true,true,true,true,true,t
   showAngles:true, showLabels:true, showNormals:true, showDev:false, showEq:false, showAdv:false,
   zoom:false, zoomF:2.5, focus:{x:600,y:260}, drag:null, theme:"dark" });
 const mkS1 = () => ({ apex:60, t1:50, pos:0.5, thermo:{x:1050,y:330} });
-const mkS2 = () => ({ count:1, med1:0, med2:2, t1:40, ex:560 });
+const mkS2 = () => ({ count:1, med1:0, med2:2, t1:40, ex:560, side:1 });   /* side: +1 light comes from the right, −1 from the left */
 const mkS3 = () => ({ med:0, t1:30, side:-1 });
-const mkS4 = () => ({ med:0, t1:45, angA:45, ey:0.45 });
-const mkS5 = () => ({ t1:30, pos:0.5 });
+const mkS4 = () => ({ med:0, t1:45, angA:45, ey:0.45, side:1 });   /* side: +1 light comes from above the normal, −1 from below */
+const mkS5 = () => ({ t1:30, pos:0.5, side:1 });   /* side: +1 light comes from the right, −1 from the left */
 const mkS6 = () => ({ type:1 });
 let S = mkS(), S1 = mkS1(), S2 = mkS2(), S3 = mkS3(), S4 = mkS4(), S5 = mkS5(), S6 = mkS6();
 
@@ -510,7 +520,7 @@ function tracePoly(verts, n, entry, dirIn, maxRefl){
   let pt = {...entry}, dir = {...dirIn};
   const pts = [{...entry}], events = [];
   let refl = 0, lastEdge = -1;
-  for(let g = 0; g < 14; g++){
+  for(let g = 0; g < 2*maxRefl + 6; g++){        /* enough steps to follow maxRefl reflections and still exit */
     let best = null;
     for(let i = 0; i < verts.length; i++){
       if(i === lastEdge) continue;
@@ -528,9 +538,11 @@ function tracePoly(verts, n, entry, dirIn, maxRefl){
     const tc = Math.asin(clamp(1/n, 0, 1))*R2D;
     const rf = refractV(dir, nrm, n, 1);
     if(rf === null){
+      /* give up BEFORE recording a bounce we are not going to follow, so the events
+         listed and the reflections drawn are always the same thing */
+      if(refl >= maxRefl){ pts.pop(); return { pts, exitDir:null, events, stopped:true, refl }; }
       events.push({ pt:{...pt}, edge:best.i, th, tc, type:"tir", nrm });
       refl++;
-      if(refl > maxRefl) return { pts, exitDir:null, events, stopped:true, refl };
       dir = reflectV(dir, nrm);
     } else {
       const thOut = Math.asin(clamp(n*Math.sin(th*D2R), -1, 1))*R2D;
@@ -907,6 +919,11 @@ function clipLen(pt, dir, maxL){
   if(dir.y < -1e-6) L = Math.min(L, (18 - pt.y)/dir.y);
   return Math.max(12, L);
 }
+/* The incoming ray's direction. side = +1 keeps the original picture (light arrives
+   from the upper RIGHT and travels left-and-down); side = −1 mirrors it about the
+   normal, so everything downstream — trace, hit-testing, angle arcs, lateral shift —
+   follows from this ONE function and can never disagree with the drawing. */
+function s2InDir(t1){ return { x: -S2.side*Math.sin(t1*D2R), y: Math.cos(t1*D2R) }; }
 function s2Layers(wl){
   /* interfaces derived from the SAME geometry that is drawn — never hardcode twice */
   const g = blocksGeom();
@@ -918,7 +935,7 @@ function s2Layers(wl){
 function s2Trace(wl){
   const { g, ifaces, layers } = s2Layers(wl);
   let pt = { x: S2.ex, y: ifaces[0] };
-  let dir = { x: -Math.sin(S2.t1*D2R), y: Math.cos(S2.t1*D2R) };        // tilts leftward
+  let dir = s2InDir(S2.t1);                                            // tilts away from the chosen side
   const start = vadd(pt, vmul(dir, -clipLen(pt, vmul(dir,-1), 170)));
   const pts = [start, {...pt}], events = [];
   let layer = 0, curIface = 0;
@@ -1004,8 +1021,8 @@ const SEC2 = {
       const t = traces[0].t, c = traces[0].c;
       const e0 = t.events[0];
       if(e0){
-        arcAt(e0.pt, -Math.PI/2, -Math.PI/2 + S2.t1*D2R, 26, C_WHITE_RAY, `θ₁=${fmtA(S2.t1)}°`, 54);
-        if(e0.t2 !== null) arcAt(e0.pt, Math.PI/2, (90 + e0.t2)*D2R, 30, c.hex, `θ₂=${fmtA(e0.t2)}°`, 60);
+        arcAt(e0.pt, -Math.PI/2, -Math.PI/2 + S2.side*S2.t1*D2R, 26, C_WHITE_RAY, `θ₁=${fmtA(S2.t1)}°`, 54);
+        if(e0.t2 !== null) arcAt(e0.pt, Math.PI/2, (90 + S2.side*e0.t2)*D2R, 30, c.hex, `θ₂=${fmtA(e0.t2)}°`, 60);
       }
       t.events.slice(1).forEach(ev => {
         const oy = ev.iface % 2 === 1 ? 13 : -11;        // alternate above/below so gap labels don't collide
@@ -1022,31 +1039,34 @@ const SEC2 = {
       const t = traces[0].t;
       const anyTIR = t.events.some(e => e.tir);
       if(!anyTIR && t.exitDir && t.exitDir.y > 0.1){
-        const inDir = { x: -Math.sin(S2.t1*D2R), y: Math.cos(S2.t1*D2R) };
+        const inDir = s2InDir(S2.t1);
         const E0 = t.pts[1], far = t.pts[t.pts.length-1];
         ctx.save(); ctx.strokeStyle = col("--text-muted"); ctx.setLineDash([4,4]); ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(E0.x, E0.y); ctx.lineTo(E0.x + inDir.x*420, E0.y + inDir.y*420); ctx.stroke();
         ctx.restore();
-        txt("lateral shift", Math.max(far.x - 14, 60), far.y - 8, col("--text-muted"), 10, "right");
+        /* keep the caption on the side the ray is NOT heading, or it sits on the arrow */
+        if(S2.side === 1) txt("lateral shift", Math.max(far.x - 14, 60), far.y - 8, col("--text-muted"), 10, "right");
+        else txt("lateral shift", Math.min(far.x + 14, W - 60), far.y - 8, col("--text-muted"), 10, "left");
       }
     }
   },
   hit(p){
     const g = blocksGeom();
     if(Math.hypot(p.x-S2.ex, p.y-g.bands[0][0]) < 14) return { kind:"pos" };
-    const dir = { x: -Math.sin(S2.t1*D2R), y: Math.cos(S2.t1*D2R) };
+    const dir = s2InDir(S2.t1);
     const E = { x:S2.ex, y:g.bands[0][0] };
     if(distToSeg(p, vadd(E, vmul(dir, -clipLen(E, vmul(dir,-1), 170))), E) < 14) return { kind:"ray" };
     return null;
   },
   onDrag(kind, p){
     const g = blocksGeom();
-    if(kind === "pos"){ S2.ex = clamp(p.x, g.x0+120, g.x1-40); return; }
+    if(kind === "pos"){ S2.ex = S2.side === 1 ? clamp(p.x, g.x0+120, g.x1-40) : clamp(p.x, g.x0+40, g.x1-120); return; }
     const E = { x:S2.ex, y:g.bands[0][0] };
     const v = vsub(E, p);
     if(v.y > 4){
       const ang = Math.atan2(Math.abs(v.x), v.y)*R2D;
       S2.t1 = clamp(Math.round(ang*2)/2, 0, 89);
+      if(Math.abs(v.x) > 3){ S2.side = v.x < 0 ? 1 : -1; syncBlkDirBtn(); }
     }
   },
   rows(){
@@ -1086,7 +1106,7 @@ const SEC2 = {
         `so the emerging beam is a set of parallel coloured rays.`;
     }
     const shift = t.exitPt && t.exitDir ? (() => {
-      const inDir = { x:-Math.sin(S2.t1*D2R), y:Math.cos(S2.t1*D2R) };
+      const inDir = s2InDir(S2.t1);
       const E0 = t.pts[1], perp = { x:-inDir.y, y:inDir.x };
       return Math.abs(vdot(vsub(t.exitPt, E0), perp));
     })() : 0;
@@ -1316,13 +1336,18 @@ function triGeom(){
   const B = { x:400 + base, y:baseY };
   return { A, B, C, verts:[A, B, C], hAC, base };
 }
+/* The normal of the left face is horizontal, so the incoming ray may arrive from
+   ABOVE it (side = +1, the original picture) or from BELOW (side = −1). Everything
+   downstream — the refracted ray, the path through the prism, the angle arcs and the
+   hit-testing — is built from this one sign. */
 function s4Trace(wl){
   const g = triGeom();
   const n = nOf(S4.med, wl);
   const E = vadd(g.A, vmul(vsub(g.C, g.A), S4.ey));
   const r = Math.asin(clamp(Math.sin(S4.t1*D2R)/n, -1, 1))*R2D;
-  const dIn = { x: Math.cos(r*D2R), y: Math.sin(r*D2R) };
-  const dInc = { x: Math.cos(S4.t1*D2R), y: Math.sin(S4.t1*D2R) };
+  const sd = S4.side;
+  const dIn = { x: Math.cos(r*D2R), y: sd*Math.sin(r*D2R) };
+  const dInc = { x: Math.cos(S4.t1*D2R), y: sd*Math.sin(S4.t1*D2R) };
   const start = vadd(E, vmul(dInc, -clipLen(E, vmul(dInc, -1), 300)));
   const tr = tracePoly(g.verts, n, E, dIn, 4);
   const pts = [start, ...tr.pts];
@@ -1365,12 +1390,17 @@ const SEC4 = {
     drawPath([t.start, t.E], c.hex, RAY_W_MONO, p1, {arrow:false});
     drawPath(t.pts.slice(1), c.hex, RAY_W_MONO, p2);
     if(S.showAngles && p1 >= 1){
-      arcAt(t.E, Math.PI, Math.PI + S4.t1*D2R, 26, C_WHITE_RAY, `θ₁=${fmtA(S4.t1)}°`, 54);
+      arcAt(t.E, Math.PI, Math.PI + S4.side*S4.t1*D2R, 26, C_WHITE_RAY, `θ₁=${fmtA(S4.t1)}°`, 54);
       if(p2 >= 1){
-        arcAt(t.E, 0, t.r*D2R, 30, col("--blue"), `r=${fmtA(t.r)}°`, 60);
+        arcAt(t.E, 0, S4.side*t.r*D2R, 30, col("--blue"), `r=${fmtA(t.r)}°`, 60);
         t.tr.events.forEach(ev => {
           const tag = ev.type === "tir" ? `TIR ${fmtA(ev.th)}°>θc` : `${fmtA(ev.th)}°→${fmtA(ev.thOut)}°`;
-          const off = ev.nrm ? vmul(ev.nrm, 26) : {x:0,y:-26};
+          /* a bounce close to the entry would print on top of the r = … label, so push it
+             out along the normal AND further along the ray, away from the entry point */
+          const dE = { x: ev.pt.x - t.E.x, y: ev.pt.y - t.E.y };
+          const dL = Math.hypot(dE.x, dE.y) || 1;
+          let off = ev.nrm ? vmul(ev.nrm, 34) : {x:0,y:-26};
+          if(dL < 110) off = vadd(off, vmul({x:dE.x/dL, y:dE.y/dL}, 46));
           txt(tag, ev.pt.x + off.x, ev.pt.y + off.y, ev.type === "tir" ? col("--orange") : col("--text-muted"), 10);
         });
       }
@@ -1396,6 +1426,7 @@ const SEC4 = {
     const v = vsub(t.E, p);
     if(v.x > 4){
       S4.t1 = clamp(Math.round(Math.atan2(Math.abs(v.y), v.x)*R2D*2)/2, 0, 89);
+      if(Math.abs(v.y) > 3){ S4.side = v.y > 0 ? 1 : -1; syncTriDirBtn(); }   /* dragged across the normal */
     }
   },
   rows(){
@@ -1456,10 +1487,11 @@ function s5Trace(wl){
   const n = nOf(5, wl);                                  // Diamond only
   const E = vadd(g.TL, vmul(vsub(g.TR, g.TL), S5.pos));
   const r = Math.asin(clamp(Math.sin(S5.t1*D2R)/n, -1, 1))*R2D;
-  const dInc = rotV({x:0, y:1}, S5.t1);                  // tilts left going down
-  const dIn = rotV({x:0, y:1}, r);
+  const sd = S5.side;                                    /* +1 tilts left going down (light from the right), −1 mirrors it */
+  const dInc = rotV({x:0, y:1}, sd*S5.t1);
+  const dIn = rotV({x:0, y:1}, sd*r);
   const start = vadd(E, vmul(dInc, -230));
-  const tr = tracePoly(g.verts, n, E, dIn, 5);
+  const tr = tracePoly(g.verts, n, E, dIn, 10);   /* a trapped ray is followed for up to 10 internal reflections */
   const pts = [start, ...tr.pts];
   if(tr.exitDir) pts.push(vadd(tr.exitPt, vmul(tr.exitDir, 190)));
   return { g, E, start, dInc, dIn, r, n, tr, pts, tc: Math.asin(clamp(1/n,0,1))*R2D };
@@ -1504,13 +1536,24 @@ const SEC5 = {
     });
     if(S.showAngles && p1 >= 1){
       /* incident arc between the normal and the incident ray (source is up-right) */
-      arcAt(t.E, -Math.PI/2, -Math.PI/2 + S5.t1*D2R, 26, C_WHITE_RAY, `θ₁=${fmtA(S5.t1)}°`, 52);
+      arcAt(t.E, -Math.PI/2, -Math.PI/2 + S5.side*S5.t1*D2R, 26, C_WHITE_RAY, `θ₁=${fmtA(S5.t1)}°`, 52);
       if(p2 >= 1){
         arcAt(t.E, Math.PI/2, Math.PI/2 + t.r*D2R, 30, col("--blue"), `r=${fmtA(t.r)}°`, 58);
+        /* with up to 10 bounces the angle labels can pile up, so a label is pushed
+           further out and then skipped altogether if it would still sit on one already
+           printed — an unreadable stack of numbers is worse than one missing label */
+        const placed = [];
         t.tr.events.forEach(ev => {
           const tag = ev.type === "tir" ? `${fmtA(ev.th)}°` : `exit ${fmtA(ev.thOut)}°`;
-          const off = ev.nrm ? vmul(ev.nrm, 24) : {x:0,y:-24};
-          txt(tag, ev.pt.x + off.x, ev.pt.y + off.y, ev.type === "tir" ? col("--orange") : col("--green"), 10);
+          const nrm = ev.nrm || {x:0,y:-1};
+          let at = null;
+          for(const d of [24, 40, 56]){
+            const q = { x: ev.pt.x + nrm.x*d, y: ev.pt.y + nrm.y*d };
+            if(placed.every(o => Math.abs(o.x-q.x) > 44 || Math.abs(o.y-q.y) > 13)){ at = q; break; }
+          }
+          if(!at) return;
+          placed.push(at);
+          txt(tag, at.x, at.y, ev.type === "tir" ? col("--orange") : col("--green"), 10);
         });
       }
     }
@@ -1536,6 +1579,7 @@ const SEC5 = {
     const v = vsub(t.E, p);
     if(v.y > 4){
       S5.t1 = clamp(Math.round(Math.atan2(Math.abs(v.x), v.y)*R2D*2)/2, 5, 60);
+      if(Math.abs(v.x) > 3){ S5.side = v.x < 0 ? 1 : -1; syncDiaDirBtn(); }   /* dragged across the normal */
     }
   },
   rows(){
@@ -1783,6 +1827,10 @@ function updateUI(){
   $("gApex").classList.toggle("hidden", S.sec !== 0);
   $("gCount").classList.toggle("hidden", S.sec !== 1);
   $("gDir").classList.toggle("hidden", S.sec !== 2);
+  $("gBlkDir").classList.toggle("hidden", S.sec !== 1);
+  $("gTriDir").classList.toggle("hidden", S.sec !== 3);
+  $("gDiaDir").classList.toggle("hidden", S.sec !== 4);
+  syncBlkDirBtn(); syncTriDirBtn(); syncDiaDirBtn();
   $("gTri").classList.toggle("hidden", S.sec !== 3);
   $("gRain").classList.toggle("hidden", S.sec !== 5);
   $("btnDev").classList.toggle("hidden", S.sec !== 0);
@@ -2005,6 +2053,17 @@ $("cntPills").addEventListener("click", e => {
   [...$("cntPills").children].forEach(x => x.classList.remove("active"));
   b.classList.add("active"); S2.count = +b.dataset.n; paramChanged();
 });
+function syncDiaDirBtn(){ $("diaDirBtn").textContent = S5.side === 1 ? "▶ from right" : "◀ from left"; }
+$("diaDirBtn").addEventListener("click", () => { S5.side = -S5.side; syncDiaDirBtn(); paramChanged(); });
+function syncTriDirBtn(){ $("triDirBtn").textContent = S4.side === 1 ? "▼ from above" : "▲ from below"; }
+$("triDirBtn").addEventListener("click", () => { S4.side = -S4.side; syncTriDirBtn(); paramChanged(); });
+function syncBlkDirBtn(){ $("blkDirBtn").textContent = S2.side === 1 ? "▶ from right" : "◀ from left"; }
+$("blkDirBtn").addEventListener("click", () => {
+  S2.side = -S2.side;
+  if(S2.side === -1) S2.ex = Math.min(S2.ex, blocksGeom().x1 - 120);
+  else S2.ex = Math.max(S2.ex, blocksGeom().x0 + 120);
+  syncBlkDirBtn(); paramChanged();
+});
 $("dirBtn").addEventListener("click", () => {
   S3.side *= -1;
   $("dirBtn").textContent = S3.side === 1 ? "▶ from right" : "◀ from left";
@@ -2026,16 +2085,16 @@ $("btnReset").addEventListener("click", () => {
     S1 = mkS1();
     $("apexSl").value = S1.apex; $("apexV").textContent = S1.apex + "°";
   } else if(S.sec === 1){
-    S2 = mkS2();
+    S2 = mkS2(); syncBlkDirBtn();
     [...$("cntPills").children].forEach(x => x.classList.toggle("active", +x.dataset.n === S2.count));
   } else if(S.sec === 2){
     S3 = mkS3();
     $("dirBtn").textContent = "◀ from left";
   } else if(S.sec === 3){
-    S4 = mkS4();
+    S4 = mkS4(); syncTriDirBtn();
     $("triSl").value = S4.angA; $("triV").textContent = S4.angA + "°";
   } else if(S.sec === 4){
-    S5 = mkS5();
+    S5 = mkS5(); syncDiaDirBtn();
   } else {
     S6 = mkS6();
     [...$("rainPills").children].forEach(x => x.classList.toggle("active", +x.dataset.r === S6.type));
