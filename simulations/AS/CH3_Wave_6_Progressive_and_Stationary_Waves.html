@@ -252,7 +252,7 @@ sup{font-size:.72em;vertical-align:.4em}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">〰️ Progressive &amp; Stationary Waves</span> <span class="badge-top" id="badge">v1.0.5</span></h1>
+    <h1><span class="t">〰️ Progressive &amp; Stationary Waves</span> <span class="badge-top" id="badge">v1.0.8</span></h1>
     <div class="top-right">
       <select class="theme-select" id="theme" title="Colour theme">
         <option value="dark">◐ Classic Dark</option>
@@ -300,7 +300,6 @@ sup{font-size:.72em;vertical-align:.4em}
         <button class="pill active" data-v="same" title="both waves travel to the right, starting together">In phase</button>
         <button class="pill" data-v="phi" title="both travel to the right; wave 2 lags by φ">φ apart</button>
         <button class="pill" data-v="opp" title="wave 2 travels to the left">Opposite directions</button></div></div>
-      <div class="tgroup" data-sub="1ph"><div class="sliders" id="gCtrl1"></div></div>
       <!-- Mode 2.1 -->
       <div class="tgroup nb" data-sub="2d1"><div class="pills" id="gType">
         <button class="pill active" data-v="T">Transverse</button>
@@ -320,14 +319,14 @@ sup{font-size:.72em;vertical-align:.4em}
         <button class="ctrl-btn" id="tSnap" title="graphs of the two waves and their sum at t = 0, T/4, T/2, 3T/4 and T">📊 Snapshots</button></div>
       <!-- Mode 3.2 -->
       <div class="tgroup nb" data-sub="3tube"><div class="pills" id="gTexp">
-        <button class="pill active" data-v="speaker" title="a loudspeaker at a tube of fixed length — change the frequency">🔊 Speaker · vary f</button>
-        <button class="pill" data-v="fork" title="a tuning fork of fixed frequency over a water-filled tube — change the water level">🍴 Fork · water level</button></div></div>
+        <button class="pill active" data-v="speaker" title="a loudspeaker at a tube of fixed length — change the frequency">🔊 Vary f</button>
+        <button class="pill" data-v="fork" title="a tuning fork of fixed frequency over a water-filled tube — change the water level">🍴 Water level</button></div></div>
       <div class="tgroup" data-sub="3tube" data-exp="speaker"><div class="pills" id="gTube">
         <button class="pill active" data-v="oo" title="open at both ends — displacement antinode at each end">open–open</button>
         <button class="pill" data-v="oc" title="open at the left, closed at the right — node at the closed end">open–closed</button></div></div>
-      <div class="tgroup" data-sub="3tube" data-exp="fork"><span class="tlabel">Fork</span><div class="pills" id="gFork"></div></div>
+      <div class="tgroup" data-sub="3tube" data-exp="fork"><span class="tlabel">Fork Hz</span><div class="pills" id="gFork"></div></div>
       <div class="tgroup" data-sub="3tube" data-exp="fork">
-        <button class="ctrl-btn" id="bRecord" title="record the current air-column length (do it where the sound is loudest)">📌 Record L</button>
+        <button class="ctrl-btn" id="bRecord" title="record the current air-column length (do it where the sound is loudest)">📌 Record</button>
         <button class="ctrl-btn" id="bClearRec" title="clear the recorded readings">Clear</button>
         <button class="ctrl-btn" id="tRevealW" title="show the theoretical loudness curve and resonance lengths">! Reveal</button></div>
       <div class="tgroup" data-sub="3tube" data-exp="speaker"><span class="tlabel">Tune to</span><div class="pills" id="gTmode">
@@ -342,19 +341,17 @@ sup{font-size:.72em;vertical-align:.4em}
       <!-- energy (2.1, 2.2, 3.1) -->
       <div class="tgroup" data-sub="2d1 2rip 3str" id="gEnergy">
         <button class="ctrl-btn" id="tEnergy" title="energy tokens: do they travel along the wave or stay in place?">⚡ Energy</button></div>
-      <span class="spacer"></span>
-      <div class="tgroup nb">
-        <button class="ctrl-btn" id="tGrid" title="grid lines on the graphs">▦ Grid</button>
-        <button class="ctrl-btn on" id="tLabels" title="names and markers on the diagram">Labels</button>
-        <button class="ctrl-btn" id="tFormula" title="the equations, as a card you can drag">Formula</button>
-      </div>
+      <!-- every parameter slider lives in row 1, after the context controls -->
+      <div class="tgroup" id="gSliders"><div class="sliders" id="gCtrl"></div></div>
     </div>
 
     <div class="trow" id="row2">
       <div class="tgroup nb" id="gShow"><span class="tlabel">Show</span>
         <button class="ctrl-btn on" id="tHints" title="how-to hints — bottom-right corner of the canvas">Hints</button>
         <button class="ctrl-btn on" id="tClock" title="time / slow-motion note — bottom-left corner of the canvas">Time</button>
-        <button class="ctrl-btn on" id="tStatus" title="status, e.g. RESONANCE — top-right corner of the canvas">Status</button>
+        <button class="ctrl-btn" id="tGrid" title="grid lines on the graphs">▦ Grid</button>
+        <button class="ctrl-btn on" id="tLabels" title="names and markers on the diagram, and the status chip (e.g. RESONANCE)">Labels</button>
+        <button class="ctrl-btn" id="tFormula" title="the equations, as a card you can drag">Formula</button>
       </div>
       <div class="tgroup">
         <button class="ctrl-btn primary" id="bPlay" title="Space"><span class="ppl on" data-pp="pause">Pause</span><span class="ppl" data-pp="play">Play</span></button>
@@ -363,9 +360,6 @@ sup{font-size:.72em;vertical-align:.4em}
           <button class="pill active" data-v="1">1×</button>
           <button class="pill" data-v="2">2×</button>
         </div>
-      </div>
-      <div class="tgroup">
-        <div class="sliders" id="gCtrl"></div>
       </div>
       <span class="spacer"></span>
       <div class="tgroup nb">
@@ -450,7 +444,7 @@ function DEF(md) {
 }
 var S = {
   md: 1, ex: { 1: 'tl', 2: 'd1', 3: 'str' }, ptab: 'data', theme: 'dark',
-  play: true, speed: 1, tw: 0, show: { hints: true, time: true, status: true }, labels: true, formula: false, grid: true, energy: false,
+  play: true, speed: 1, tw: 0, show: { hints: true, time: true }, labels: true, formula: false, grid: true, energy: false,
   zoom: { k: 1, ox: 0, oy: 0 }, typed: {}, eqPos: null,
   m1: DEF(1), m2: DEF(2), m3: DEF(3)
 };
@@ -1574,8 +1568,8 @@ SCENES['3pl'] = function () {
   }
 
   /* cut along the dashed line: a 1-D standing wave with its nodes */
-  var GX = graph({ x: 660, y: 92, w: 500, h: 150, x0: 0, x1: 1, y0: -1.15, y1: 1.15, xt: 0.1, yt: 0.5, xlab: 'position across the plate', ylab: 'displacement',
-    title: 'along the dashed line' });
+  var GX = graph({ x: 660, y: 290, w: 500, h: 100, x0: 0, x1: 1, y0: -1.15, y1: 1.15, xt: 0.1, yt: 0.5, xlab: 'position across the plate', ylab: 'displacement',
+    title: 'along the dashed line (top view cut)' });
   plotFn(GX.X, GX.Y, 0, 1, 300, function (u) { return Math.abs(plZ(nm[0], nm[1], u, P.CUT)) / P.zmax; }, C.envelope, 1.4, [5, 4]);
   plotFn(GX.X, GX.Y, 0, 1, 300, function (u) { return -Math.abs(plZ(nm[0], nm[1], u, P.CUT)) / P.zmax; }, C.envelope, 1.4, [5, 4]);
   plotFn(GX.X, GX.Y, 0, 1, 300, function (u) { return plZ(nm[0], nm[1], u, P.CUT) / P.zmax * c; }, C.sum, 2.6);
@@ -1586,20 +1580,20 @@ SCENES['3pl'] = function () {
     prev = zz;
   }
   /* key */
-  var kx = 660, ky = 300;
-  CX.fillStyle = rgba(C.card, 0.92); rr(kx, ky, 500, 250, 12); CX.fill(); CX.strokeStyle = C.border; CX.lineWidth = 1; CX.stroke();
-  T('Reading a Chladni pattern', kx + 16, ky + 24, { size: 14, wt: 800, color: C.text });
-  CX.fillStyle = C.sand; CX.fillRect(kx + 18, ky + 50, 26, 12);
-  T('sand lines = NODAL LINES: the plate does not move,', kx + 54, ky + 52, { size: 12.5, wt: 700, color: C.text });
-  T('so the sand settles there', kx + 54, ky + 70, { size: 12, color: C.textDim });
-  CX.fillStyle = C.plateHi; CX.fillRect(kx + 18, ky + 94, 26, 12);
-  T('flickering patches = ANTINODES:', kx + 54, ky + 96, { size: 12.5, wt: 700, color: C.text });
-  T('maximum vibration — sand is thrown off them', kx + 54, ky + 114, { size: 12, color: C.textDim });
-  nodeMark(kx + 31, ky + 146, false);
-  T('a node on the dashed cut = where a nodal line crosses it', kx + 54, ky + 146, { size: 12, color: C.textDim });
-  T('Each mode needs its own resonant frequency:', kx + 16, ky + 184, { size: 12.5, wt: 700, color: C.text });
-  T('f ≈ ' + plFreq() + ' Hz (illustrative) — higher modes → more lines', kx + 16, ky + 204, { size: 12.5, color: C.accent, mono: 1 });
-  T('energy is stored in the vibration — no energy flows across a nodal line', kx + 16, ky + 228, { size: 11.5, color: C.energy, wt: 600 });
+  var kx = 660, ky = 436;
+  CX.fillStyle = rgba(C.card, 0.92); rr(kx, ky, 500, 182, 12); CX.fill(); CX.strokeStyle = C.border; CX.lineWidth = 1; CX.stroke();
+  T('Reading a Chladni pattern', kx + 16, ky + 20, { size: 14, wt: 800, color: C.text });
+  CX.fillStyle = C.sand; CX.fillRect(kx + 18, ky + 40, 26, 12);
+  T('sand lines = NODAL LINES: the plate does not move,', kx + 54, ky + 44, { size: 12.5, wt: 700, color: C.text });
+  T('so the sand settles there', kx + 54, ky + 60, { size: 12, color: C.textDim });
+  CX.fillStyle = C.plateHi; CX.fillRect(kx + 18, ky + 78, 26, 12);
+  T('flickering patches = ANTINODES:', kx + 54, ky + 82, { size: 12.5, wt: 700, color: C.text });
+  T('maximum vibration — sand is thrown off them', kx + 54, ky + 98, { size: 12, color: C.textDim });
+  nodeMark(kx + 31, ky + 120, false);
+  T('a node on the dashed cut = where a nodal line crosses it', kx + 54, ky + 120, { size: 12, color: C.textDim });
+  T('f ≈ ' + plFreq() + ' Hz (illustrative) — each mode has its own resonant f', kx + 16, ky + 144, { size: 12.5, color: C.accent, mono: 1 });
+  T('energy is stored in the vibration — no energy flows across a nodal line', kx + 16, ky + 166, { size: 11.5, color: C.energy, wt: 600 });
+  plSideView(nm, ph);
 };
 
 /* ── 3.1b  Snapshots: why two opposite progressive waves give a stationary wave ──
@@ -1651,6 +1645,57 @@ function strSnapshots() {
     T('N', X(STR_L / n), yBot + 12, { size: 12, wt: 800, color: C.node, align: 'center' });
     T('A', X(STR_L / (2 * n)), yBot + 12, { size: 12, wt: 800, color: C.antinode, align: 'center' });
     T('nodes (N) stay still in every snapshot · the waves keep moving, their sum only grows and shrinks in place', X(STR_L / 2), yBot + 30, { size: 12.5, wt: 700, color: C.textDim, align: 'center' });
+  }
+}
+
+/* side view of the apparatus: generator → vibrator → stem → plate bolted at its centre.
+   The plate's edge profile follows the dashed cut, exaggerated, and stays attached to the stem. */
+function plSideView(nm, ph) {
+  var x0 = 700, x1 = 1140, yP = 118, cxm = (x0 + x1) / 2, c = Math.cos(ph), A = 22, CUT = PL.CUT;
+  var zc = plZ(nm[0], nm[1], 0.5, CUT) / PL.zmax, stem = 3 * c, zm = 0.05;
+  for (var q = 0; q <= 100; q++) zm = Math.max(zm, Math.abs(plZ(nm[0], nm[1], q / 100, CUT) / PL.zmax - zc));
+  A = 24 / zm;                                   /* scale so the bending always reads clearly */
+  var prof = function (u) { return yP - stem - A * (plZ(nm[0], nm[1], u, CUT) / PL.zmax - zc) * c; };
+  T('Side view of the apparatus', 660, 30, { size: 13, wt: 800, color: C.text });
+  if (S.labels) T('bending exaggerated', 1160, 30, { size: 11, color: C.textMuted, align: 'right' });
+  /* bench */
+  CX.fillStyle = '#7a5434'; CX.fillRect(660, 236, 500, 10);
+  /* signal generator */
+  CX.fillStyle = C.source; rr(664, 168, 112, 66, 8); CX.fill(); CX.strokeStyle = C.border; CX.lineWidth = 1.2; CX.stroke();
+  CX.fillStyle = '#0e1a10'; rr(674, 178, 92, 26, 4); CX.fill();
+  T(plFreq() + ' Hz', 760, 191, { size: 13, wt: 700, color: '#8cff9f', align: 'right', mono: 1 });
+  T('signal generator', 720, 220, { size: 10, color: C.textDim, align: 'center' });
+  CX.beginPath(); CX.moveTo(776, 214); CX.bezierCurveTo(820, 236, 840, 224, cxm - 52, 214); CX.strokeStyle = '#2a3036'; CX.lineWidth = 4; CX.stroke();
+  /* mechanical vibrator + driving stem */
+  CX.fillStyle = C.source; rr(cxm - 52, 182, 104, 54, 8); CX.fill(); CX.strokeStyle = C.border; CX.stroke();
+  dot(cxm, 196, 9, C.metal); T('vibrator', cxm, 222, { size: 10.5, color: C.textDim, align: 'center' });
+  CX.fillStyle = C.metal; CX.fillRect(cxm - 3, yP - stem, 6, 188 - (yP - stem));
+  /* the plate (drawn with thickness) */
+  var top = [], n = 120;
+  for (var i = 0; i <= n; i++) { var u = i / n; top.push([x0 + u * (x1 - x0), prof(u)]); }
+  CX.beginPath(); top.forEach(function (p, k) { if (k) CX.lineTo(p[0], p[1]); else CX.moveTo(p[0], p[1]); });
+  for (i = n; i >= 0; i--) CX.lineTo(top[i][0], top[i][1] + 6);
+  CX.closePath(); CX.fillStyle = C.metal; CX.fill(); CX.strokeStyle = rgba('#000000', 0.35); CX.lineWidth = 1; CX.stroke();
+  /* centre bolt */
+  CX.fillStyle = C.metal; CX.fillRect(cxm - 9, prof(0.5) - 7, 18, 7); CX.strokeStyle = rgba('#000000', 0.4); CX.strokeRect(cxm - 9, prof(0.5) - 7, 18, 7);
+  /* sand: heaps where the edge profile has a node, grains hopping at the antinodes */
+  var prev = plZ(nm[0], nm[1], 0, CUT);
+  CX.fillStyle = C.sand;
+  for (var k = 1; k <= 400; k++) {
+    var uu = k / 400, zz = plZ(nm[0], nm[1], uu, CUT);
+    if (prev * zz < 0 || (zz === 0 && prev !== 0)) { var xs = x0 + uu * (x1 - x0), ys = prof(uu); CX.beginPath(); CX.moveTo(xs - 11, ys); CX.quadraticCurveTo(xs, ys - 13, xs + 11, ys); CX.closePath(); CX.fill(); }
+    prev = zz;
+  }
+  for (k = 0; k < 28; k++) {
+    var ug = (k + 0.5) / 28, za = Math.abs(plZ(nm[0], nm[1], ug, CUT) / PL.zmax);
+    if (za < 0.35) continue;
+    var hop = 14 * za * Math.abs(Math.sin(ph * 2 + k * 1.7));
+    CX.fillRect(x0 + ug * (x1 - x0) - 1.2, prof(ug) - 3 - hop, 2.4, 2.4);
+  }
+  if (S.labels) {
+    T('square metal plate (edge on)', x0, yP - 46, { size: 11, wt: 700, color: C.textDim });
+    T('sand heaps at the nodes', x1, yP - 46, { size: 11, wt: 700, color: C.sand, align: 'right' });
+    T('stem drives the centre', cxm + 12, 160, { size: 10.5, color: C.textMuted });
   }
 }
 
@@ -2082,8 +2127,8 @@ function croHide() { return !S.m1.cro.reveal; }
 var CTRL = {
   '1tl': [{ k: 'm1.tl.f', lab: 'Frequency f', min: 1, max: 10, step: 0.5, unit: 'Hz' }, { k: 'm1.tl.A', lab: 'Amplitude A', min: 0.2, max: 1, step: 0.05, unit: 'm' }],
   '1cro': [{ k: 'm1.cro.f', lab: 'Input frequency', vals: CRO_F, unit: 'Hz', hide: croHide }, { k: 'm1.cro.V0', lab: 'Input amplitude V<sub>0</sub>', min: 0.5, max: 10, step: 0.5, unit: 'V', hide: croHide }],
-  '1ph': [{ k: 'm1.ph.f', lab: 'Frequency f', min: 0.5, max: 5, step: 0.5, unit: 'Hz' }, { k: 'm1.ph.A', lab: 'Amplitude A', min: 0.2, max: 1, step: 0.05, unit: 'm' },
-    { k: 'm1.ph.phi', row: 1, lab: 'Phase difference φ', min: 0, max: 360, step: 15, unit: '°', lock: function () { return S.m1.ph.step !== 'super' || S.m1.ph.scn !== 'phi'; } }],
+  '1ph': [{ k: 'm1.ph.phi', lab: 'Phase difference φ', min: 0, max: 360, step: 15, unit: '°', lock: function () { return S.m1.ph.step !== 'super' || S.m1.ph.scn !== 'phi'; } },
+    { k: 'm1.ph.f', lab: 'Frequency f', min: 0.5, max: 5, step: 0.5, unit: 'Hz' }, { k: 'm1.ph.A', lab: 'Amplitude A', min: 0.2, max: 1, step: 0.05, unit: 'm' }],
   '2d1': [{ k: 'm2.d1.f', lab: 'Frequency f', min: 1, max: 10, step: 0.5, unit: 'Hz' }, { k: 'm2.d1.A', lab: 'Amplitude A', min: 0.2, max: 1, step: 0.05, unit: 'm' }, { k: 'm2.d1.v', lab: 'Wave speed v', min: 1, max: 10, step: 0.5, unit: 'm/s' }],
   '2rip': [{ k: 'm2.rip.f', lab: 'Frequency f', min: 1, max: 10, step: 0.5, unit: 'Hz' }, { k: 'm2.rip.A', lab: 'Amplitude A', min: 0.2, max: 1, step: 0.05, unit: '' }],
   '3str': [{ k: 'm3.str.f', lab: 'Frequency f', min: 1, max: 60, step: 0.01, unit: 'Hz' }, { k: 'm3.str.Tn', lab: 'Tension T', min: 0.5, max: 5, step: 0.1, unit: 'N' }],
@@ -2121,18 +2166,19 @@ function onParam(k) {
 }
 function ctrlRoot() { return document.querySelector('.toolbar'); }
 function renderCtrls() {
-  var g = ctrlRoot(), L = ctrlList(), h = '', h1 = '';
+  var g = ctrlRoot(), L = ctrlList(), H = { gCtrl: '' };
   L.forEach(function (c, i) {
-    var row1 = c.row === 1, out = '';
+    var box = 'gCtrl', out = '';
     var typed = !!S.typed[c.k], v = getP(c.k), dp = dpOf(c);
     var mid = typed ? '<input type="text" class="tin" inputmode="decimal" data-i="' + i + '" value="' + (c.vals ? v : fx(v, dp)) + '">'
       : (c.vals ? '<input type="range" data-i="' + i + '" min="0" max="' + (c.vals.length - 1) + '" step="1" value="' + c.vals.indexOf(v) + '">'
         : '<input type="range" data-i="' + i + '" min="' + c.min + '" max="' + c.max + '" step="' + c.step + '" value="' + v + '">');
     out = '<div class="sl' + (typed ? ' typed' : '') + '" data-i="' + i + '"><label class="sl-t" data-i="' + i + '" title="click to switch between slider and typed value">' + c.lab + '<span class="tg"></span></label>' +
       '<span class="mid">' + mid + '</span><span class="val" data-i="' + i + '">' + valTxt(c, v) + '</span></div>';
-    if (row1) h1 += out; else h += out;
+    H[box] += out;
   });
-  $('gCtrl').innerHTML = h; $('gCtrl1').innerHTML = h1;
+  for (var id in H) $(id).innerHTML = H[id];
+  $('gSliders').style.display = L.length ? '' : 'none';
   g.querySelectorAll('.sl-t').forEach(function (el) { el.addEventListener('click', function () { var c = L[+el.dataset.i]; S.typed[c.k] = !S.typed[c.k]; renderCtrls(); }); });
   g.querySelectorAll('input[type=range]').forEach(function (el) {
     el.addEventListener('input', function () { var c = L[+el.dataset.i]; setVal(c, c.vals ? c.vals[+el.value] : +(+el.value).toFixed(dpOf(c))); });
@@ -2169,7 +2215,7 @@ function syncCtrlVals() {
 }
 function fitCtrls() {
   /* only the slider slots shrink — buttons never change width */
-  var g = $('gCtrl'), row = $('row2'); g.classList.remove('c1', 'c2', 'c3');
+  var g = $('gCtrl'), row = $('row1'); g.classList.remove('c1', 'c2', 'c3');
   ['c1', 'c2', 'c3'].forEach(function (c) { if (row.scrollWidth > row.clientWidth + 1) g.classList.add(c); });
 }
 
@@ -2207,13 +2253,16 @@ function syncToolbar() {
   $('tLabels').classList.toggle('on', S.labels);
   $('tFormula').classList.toggle('on', S.formula);
   $('tGrid').classList.toggle('on', S.grid);
-  $('tHints').classList.toggle('on', S.show.hints); $('tClock').classList.toggle('on', S.show.time); $('tStatus').classList.toggle('on', S.show.status);
+  $('tHints').classList.toggle('on', S.show.hints); $('tClock').classList.toggle('on', S.show.time);
   $('tGrid').classList.toggle('locked', s === '1cro');
   $('tFormula').classList.toggle('locked', s === '3pl');
   $('bPlay').querySelectorAll('.ppl').forEach(function (p) { p.classList.toggle('on', p.dataset.pp === (S.play ? 'pause' : 'play')); });
   setActive('gSpeed', S.speed);
   $('bbLeft').textContent = BOTTOM[s];
-  renderEq();
+  /* the slider group draws a divider only if a context group is visible before it */
+  var prevVis = false; document.querySelectorAll('#row1 > .tgroup[data-sub]').forEach(function (g) { if (g.style.display !== 'none') prevVis = true; });
+  $('gSliders').classList.toggle('nb', !prevVis);
+  renderEq(); fitCtrls();
 }
 
 /* ── formula card (draggable) ──────────────────────────────────────────── */
@@ -2276,7 +2325,7 @@ function patchChips() {
   var st = '';
   if (s === '3str') { var m = strModes(); st = m.res ? '● RESONANCE — harmonic n = ' + m.dom.n : ''; }
   if (s === '3tube') { if (S.m3.tube.exp === 'fork') { var fr = fkResp(S.m3.tube.Lw); st = fr.a > 0.6 ? '● RESONANCE — n = ' + fr.n + ', L = ' + fx(S.m3.tube.Lw * 100, 1) + ' cm' : ''; } else { var md = tubeModes(); st = md.res ? '● RESONANCE — mode n = ' + md.n : ''; } }
-  setChip('chipState', S.show.status ? st : '');
+  setChip('chipState', S.labels ? st : '');   /* Labels also carries the status chip */
   setChip('chipHint', S.show.hints ? (s === '3tube' && S.m3.tube.exp === 'fork' ? 'lower the water slowly — listen<br>📌 Record L where it is loudest' : s === '3str' && S.m3.str.snap ? 'highlighted row = this moment<br>Tune to 1st … 4th to change n' : HINT[s]) : '');
   $('bbRight').textContent = 'mode ' + S.md + ' · ' + SUBS[S.md].filter(function (x) { return x[0] === S.ex[S.md]; })[0][1].replace(/^\S+\s/, '') + (S.play ? '' : ' · paused');
   if (s === '1cro') syncCtrlVals();
@@ -2365,7 +2414,7 @@ function initUI() {
   bindPills('gType', function (v) { S.m2.d1.type = v; d1Clear(); syncToolbar(); });
   bindPills('gSrc', function (v) { S.m2.rip.src = v; S.m2.rip.t0 = tPhys() - 0.5; S.m2.rip.tok = []; S.m2.rip.lastSpawn = -1; syncToolbar(); });
   bindPills('gHarm', function (v) { S.m3.str.f = +strFn(+v).toFixed(2); syncCtrlVals(); syncToolbar(); });
-  $('gFork').innerHTML = FORKS.map(function (f) { return '<button class="pill" data-v="' + f + '">' + f + ' Hz</button>'; }).join('');
+  $('gFork').innerHTML = FORKS.map(function (f) { return '<button class="pill" data-v="' + f + '">' + f + '</button>'; }).join('');
   bindPills('gTexp', function (v) { S.m3.tube.exp = v; renderCtrls(); syncToolbar(); renderPanel(); });
   bindPills('gFork', function (v) { S.m3.tube.fork = +v; S.m3.tube.rec = []; syncToolbar(); renderPanel(); });
   $('bRecord').onclick = function () { fkRecord(); patchPanel(); };
@@ -2384,10 +2433,10 @@ function initUI() {
   $('tComp').onclick = function () { S.m3.str.comps = !S.m3.str.comps; syncToolbar(); };
   $('tAnti').onclick = function () { S.m3.pl.anti = !S.m3.pl.anti; syncToolbar(); };
   $('bSprinkle').onclick = function () { plSprinkle(Math.floor(S.tw * 1000) + 7); };
-  $('tLabels').onclick = function () { S.labels = !S.labels; syncToolbar(); };
+  $('tLabels').onclick = function () { S.labels = !S.labels; syncToolbar(); patchChips(); };
   $('tFormula').onclick = function () { S.formula = !S.formula; syncToolbar(); placeChips(); };
   $('tGrid').onclick = function () { S.grid = !S.grid; syncToolbar(); };
-  [['tHints', 'hints'], ['tClock', 'time'], ['tStatus', 'status']].forEach(function (b) {
+  [['tHints', 'hints'], ['tClock', 'time']].forEach(function (b) {
     $(b[0]).onclick = function () { S.show[b[1]] = !S.show[b[1]]; syncToolbar(); patchChips(); };
   });
   $('bPlay').onclick = function () { S.play = !S.play; syncToolbar(); };
