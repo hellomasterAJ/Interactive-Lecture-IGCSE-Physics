@@ -177,6 +177,9 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
 .sliders.c1 .sl .mid{width:76px}
 .sliders.c2 .sl .mid{width:62px}
 .sliders.c2 .sl .val{min-width:50px}
+.sliders.c3 .sl .mid{width:48px}
+.sliders.c3 .sl .val{min-width:44px}
+
 
 /* ── main split 70/30 ── */
 .main{flex:1 1 auto;display:grid;grid-template-columns:minmax(0,7fr) minmax(320px,3fr);
@@ -190,10 +193,14 @@ body{font-family:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
 .cchip:empty{display:none}
 #chipEq{top:8px;right:10px;color:var(--katex-color);border-color:var(--accent);padding:6px 11px;line-height:1.7;
   pointer-events:auto;cursor:move;font-size:12px;user-select:none;box-shadow:0 4px 14px rgba(0,0,0,.25)}
-#chipEq .eqh{font-size:9px;color:var(--accent);letter-spacing:.6px;text-transform:uppercase;margin-bottom:2px}
+#chipEq > div:not(.eqh){margin:6px 0;line-height:1.6}
+#chipEq .eqh{display:flex;align-items:center;justify-content:center;gap:6px;font-size:9px;color:var(--accent);letter-spacing:.6px;text-transform:uppercase;line-height:1;margin-bottom:2px}
+#chipEq .grip{width:9px;height:9px;flex:0 0 auto;opacity:.8;
+  background-image:radial-gradient(circle,var(--accent) 0.9px,transparent 1.2px);background-size:3px 3px}
 #chipTime{left:10px;color:var(--amber);border-color:var(--amber)}
 #chipZoom{left:10px;color:var(--accent);border-color:var(--accent)}
 #chipState{right:10px;color:var(--green);border-color:var(--green)}
+#chipHint{right:10px;line-height:1.5;text-align:right}
 sub{font-size:.72em;vertical-align:-.28em}
 sup{font-size:.72em;vertical-align:.4em}
 
@@ -245,7 +252,7 @@ sup{font-size:.72em;vertical-align:.4em}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">〰️ Progressive &amp; Stationary Waves</span> <span class="badge-top" id="badge">v1.0.0</span></h1>
+    <h1><span class="t">〰️ Progressive &amp; Stationary Waves</span> <span class="badge-top" id="badge">v1.0.5</span></h1>
     <div class="top-right">
       <select class="theme-select" id="theme" title="Colour theme">
         <option value="dark">◐ Classic Dark</option>
@@ -293,6 +300,7 @@ sup{font-size:.72em;vertical-align:.4em}
         <button class="pill active" data-v="same" title="both waves travel to the right, starting together">In phase</button>
         <button class="pill" data-v="phi" title="both travel to the right; wave 2 lags by φ">φ apart</button>
         <button class="pill" data-v="opp" title="wave 2 travels to the left">Opposite directions</button></div></div>
+      <div class="tgroup" data-sub="1ph"><div class="sliders" id="gCtrl1"></div></div>
       <!-- Mode 2.1 -->
       <div class="tgroup nb" data-sub="2d1"><div class="pills" id="gType">
         <button class="pill active" data-v="T">Transverse</button>
@@ -308,12 +316,21 @@ sup{font-size:.72em;vertical-align:.4em}
         <button class="pill" data-v="3" title="set the generator to f₃ = 3f₁">3rd</button>
         <button class="pill" data-v="4" title="set the generator to f₄ = 4f₁">4th</button></div></div>
       <div class="tgroup" data-sub="3str">
-        <button class="ctrl-btn on" id="tComp" title="the two progressive waves (one each way) whose sum is the stationary wave">≋ Components</button></div>
+        <button class="ctrl-btn on" id="tComp" title="the two progressive waves (one each way) whose sum is the stationary wave">≋ Components</button>
+        <button class="ctrl-btn" id="tSnap" title="graphs of the two waves and their sum at t = 0, T/4, T/2, 3T/4 and T">📊 Snapshots</button></div>
       <!-- Mode 3.2 -->
-      <div class="tgroup nb" data-sub="3tube"><div class="pills" id="gTube">
+      <div class="tgroup nb" data-sub="3tube"><div class="pills" id="gTexp">
+        <button class="pill active" data-v="speaker" title="a loudspeaker at a tube of fixed length — change the frequency">🔊 Speaker · vary f</button>
+        <button class="pill" data-v="fork" title="a tuning fork of fixed frequency over a water-filled tube — change the water level">🍴 Fork · water level</button></div></div>
+      <div class="tgroup" data-sub="3tube" data-exp="speaker"><div class="pills" id="gTube">
         <button class="pill active" data-v="oo" title="open at both ends — displacement antinode at each end">open–open</button>
         <button class="pill" data-v="oc" title="open at the left, closed at the right — node at the closed end">open–closed</button></div></div>
-      <div class="tgroup" data-sub="3tube"><span class="tlabel">Tune to</span><div class="pills" id="gTmode">
+      <div class="tgroup" data-sub="3tube" data-exp="fork"><span class="tlabel">Fork</span><div class="pills" id="gFork"></div></div>
+      <div class="tgroup" data-sub="3tube" data-exp="fork">
+        <button class="ctrl-btn" id="bRecord" title="record the current air-column length (do it where the sound is loudest)">📌 Record L</button>
+        <button class="ctrl-btn" id="bClearRec" title="clear the recorded readings">Clear</button>
+        <button class="ctrl-btn" id="tRevealW" title="show the theoretical loudness curve and resonance lengths">! Reveal</button></div>
+      <div class="tgroup" data-sub="3tube" data-exp="speaker"><span class="tlabel">Tune to</span><div class="pills" id="gTmode">
         <button class="pill" data-v="1">1st mode</button>
         <button class="pill" data-v="2">2nd</button>
         <button class="pill" data-v="3">3rd</button></div></div>
@@ -334,7 +351,12 @@ sup{font-size:.72em;vertical-align:.4em}
     </div>
 
     <div class="trow" id="row2">
-      <div class="tgroup nb">
+      <div class="tgroup nb" id="gShow"><span class="tlabel">Show</span>
+        <button class="ctrl-btn on" id="tHints" title="how-to hints — bottom-right corner of the canvas">Hints</button>
+        <button class="ctrl-btn on" id="tClock" title="time / slow-motion note — bottom-left corner of the canvas">Time</button>
+        <button class="ctrl-btn on" id="tStatus" title="status, e.g. RESONANCE — top-right corner of the canvas">Status</button>
+      </div>
+      <div class="tgroup">
         <button class="ctrl-btn primary" id="bPlay" title="Space"><span class="ppl on" data-pp="pause">Pause</span><span class="ppl" data-pp="play">Play</span></button>
         <div class="pills" id="gSpeed">
           <button class="pill" data-v="0.5">0.5×</button>
@@ -345,7 +367,7 @@ sup{font-size:.72em;vertical-align:.4em}
       <div class="tgroup">
         <div class="sliders" id="gCtrl"></div>
       </div>
-      <span class="hintchip" id="tbHint"></span>
+      <span class="spacer"></span>
       <div class="tgroup nb">
         <button class="ctrl-btn" id="bReset" title="Reset — restores the defaults of the CURRENT mode only (other modes keep their settings)">Reset</button>
       </div>
@@ -358,6 +380,7 @@ sup{font-size:.72em;vertical-align:.4em}
       <div class="cchip" id="chipTime"></div>
       <div class="cchip" id="chipZoom"></div>
       <div class="cchip" id="chipState"></div>
+      <div class="cchip" id="chipHint"></div>
       <div class="cchip" id="chipEq" hidden></div>
     </div>
     <div class="panel">
@@ -420,14 +443,14 @@ function DEF(md) {
     rip: { src: 'point', f: 4, A: 0.6, t0: 0, cur: null, tok: [], lastSpawn: -1 }
   };
   return {
-    str: { f: 0, Tn: 2.0, comps: true, n0: 2 },
-    tube: { type: 'oo', L: 0.50, f: 340 },
+    str: { f: 0, Tn: 2.0, comps: true, n0: 2, snap: false },
+    tube: { exp: 'speaker', type: 'oo', L: 0.50, f: 340, fork: 512, Lw: 0.30, r: 2.0, rec: [], seen: {}, reveal: false },
     pl: { mode: 4, anti: false }
   };
 }
 var S = {
   md: 1, ex: { 1: 'tl', 2: 'd1', 3: 'str' }, ptab: 'data', theme: 'dark',
-  play: true, speed: 1, tw: 0, labels: true, formula: false, grid: true, energy: false,
+  play: true, speed: 1, tw: 0, show: { hints: true, time: true, status: true }, labels: true, formula: false, grid: true, energy: false,
   zoom: { k: 1, ox: 0, oy: 0 }, typed: {}, eqPos: null,
   m1: DEF(1), m2: DEF(2), m3: DEF(3)
 };
@@ -604,6 +627,7 @@ function placeChips() {
   $('chipTime').style.left = l + 'px'; $('chipTime').style.bottom = bot + 'px';
   $('chipZoom').style.left = l + 'px'; $('chipZoom').style.bottom = (bot + 26) + 'px';
   $('chipState').style.right = r + 'px'; $('chipState').style.top = top + 'px';
+  $('chipHint').style.right = r + 'px'; $('chipHint').style.bottom = bot + 'px';
   var eq = $('chipEq');
   if (S.eqPos) { eq.style.left = S.eqPos.x + 'px'; eq.style.top = S.eqPos.y + 'px'; eq.style.right = 'auto'; }
   else { eq.style.left = 'auto'; eq.style.right = r + 'px'; eq.style.top = (top + 28) + 'px'; }
@@ -658,7 +682,7 @@ function nearest(arr, x) { var b = null, d = 1e9; arr.forEach(function (v) { if 
 function capAmp(spacing, lamPx) { if (lamPx <= 2 * spacing) return 0.42 * spacing; return 0.42 * spacing / Math.sin(Math.PI * spacing / lamPx); }
 
 /* ── 1.1  T/L graphs ───────────────────────────────────────────────────── */
-var TL = { X0: 90, X1: 1130, SPAN: 8, V: 4, yT: 102, aT: 60, yL: 238, ga: { x: 90, y: 292, w: 1040, h: 118 }, gb: { x: 90, y: 480, w: 1040, h: 118 } };
+var TL = { X0: 90, X1: 1130, SPAN: 8, V: 4, yT: 102, aT: 60, yL: 238, ga: { x: 90, y: 292, w: 1040, h: 118 }, gb: { x: 90, y: 466, w: 1040, h: 118 } };
 function tlLam() { return TL.V / S.m1.tl.f; }
 SCENES['1tl'] = function () {
   var p = S.m1.tl, t = tPhys(), lam = tlLam(), px = (TL.X1 - TL.X0) / TL.SPAN;
@@ -920,7 +944,7 @@ function phCircle() {
   var cols = [C.text, C.textDim, C.markT, C.markL];
   for (var r = 0; r < 4; r++) for (q = 0; q <= 4; q++)
     T(rows[r][q], TX(q * Math.PI / 2), cy + 182 + r * 22, { size: 12.5, wt: r ? 600 : 700, color: cols[r], align: 'center', mono: 1 });
-  T('one turn of the arm = 360° = 2π rad = one period T = one wavelength λ', 640, 640, { size: 14, wt: 800, color: C.accent, align: 'center' });
+  T('one turn of the arm = 360° = 2π rad = one period T = one wavelength λ', 640, 604, { size: 14, wt: 800, color: C.accent, align: 'center' });
 }
 function fracLam(deg) { var m = { 0: '0', 90: '¼', 180: '½', 270: '¾', 360: '1' }; return m[deg] != null ? m[deg] : fx(deg / 360, 2); }
 function phSuperWaves() {
@@ -969,8 +993,8 @@ function phSuper() {
   if (p.scn !== 'opp') {
     var RA = 2 * p.A * Math.abs(Math.cos(w.d / 2)), dg = Math.round(p.scn === 'same' ? 0 : p.phi);
     var tag = (dg % 360 === 0) ? 'CONSTRUCTIVE — crest meets crest' : (dg === 180 ? 'DESTRUCTIVE — crest meets trough' : 'partly constructive');
-    T('resultant amplitude = 2A |cos(φ/2)| = 2 × ' + fx(p.A, 2) + ' × |cos ' + fx(dg / 2, 0) + '°| = ' + fx(RA, 2) + ' m', 640, 630, { size: 14, wt: 800, color: C.sum, align: 'center' });
-    T(tag, 640, 654, { size: 12.5, wt: 700, color: dg === 180 ? C.node : C.textDim, align: 'center' });
+    T('resultant amplitude = 2A |cos(φ/2)| = 2 × ' + fx(p.A, 2) + ' × |cos ' + fx(dg / 2, 0) + '°| = ' + fx(RA, 2) + ' m', PH.SX0, 614, { size: 14, wt: 800, color: C.sum });
+    T(tag, PH.SX0, 636, { size: 12.5, wt: 700, color: dg === 180 ? C.node : C.textDim });
     if (S.labels && dg % 360 !== 0) {
       var c1 = features(lam, p.f, w.t, 0.25, 0.2 + lam * dg / 360, PH.SPAN - 0.2);
       var c1m = nearest(c1, 4.6);
@@ -993,7 +1017,7 @@ function phSuper() {
       var j = Math.max(0, Math.min(nodes.length - 2, Math.floor(nodes.length / 2) - 1));
       if (nodes.length >= 2) dimH(X(nodes[j]), X(nodes[j + 1]), PH.bs + 2 * a * p.A + 18, 'node spacing = λ/2 = ' + fx(lam / 2, 2) + ' m', C.node, true);
     }
-    T('a STANDING WAVE — a preview of Mode 3: the nodes (N) never move, the antinodes (A) swing by 2A', 640, 652, { size: 13.5, wt: 800, color: C.sum, align: 'center' });
+    T('a STANDING WAVE — a preview of Mode 3: the nodes (N) never move, the antinodes (A) swing by 2A', PH.SX0, 630, { size: 13.5, wt: 800, color: C.sum });
   }
 }
 
@@ -1249,14 +1273,14 @@ SCENES['2rip'] = function () {
 
   /* cork height against time */
   var TW = 2, tau = ((t % TW) + TW) % TW, t0 = t - tau;
-  var B = graph({ x: 850, y: 290, w: 318, h: 120, x0: 0, x1: TW, y0: -1.1, y1: 1.1, xt: 0.5, yt: 0.5, xlab: 'time / s', ylab: 'height of cork', title: 'cork height–time' });
+  var B = graph({ x: 850, y: 270, w: 318, h: 120, x0: 0, x1: TW, y0: -1.1, y1: 1.1, xt: 0.5, yt: 0.5, xlab: 'time / s', ylab: 'height of cork', title: 'cork height–time' });
   var corkAt = function (tt) { var s = S.m2.rip.t0; if (tt - s < (isP ? RP.corkR : RP.corkR) / RP.V) return 0; return A * Math.sqrt(isP ? RIP_R0 / RP.corkR : 1) * Math.sin(TAU * (p.f * tt - RP.corkR / lam)); };
   if (tau > 0.002) plotFn(B.X, B.Y, 0, tau, Math.max(2, Math.round(tau * 150)), function (u) { return corkAt(t0 + u); }, C.amber, 2.2);
   dot(B.X(tau), B.Y(corkAt(t)), 4.5, C.amber, C.graphBg);
 
   /* key ideas */
-  var kx = 790, ky = 462;
-  CX.fillStyle = rgba(C.card, 0.9); rr(kx, ky, 386, 190, 12); CX.fill(); CX.strokeStyle = C.border; CX.lineWidth = 1; CX.stroke();
+  var kx = 790, ky = 436;
+  CX.fillStyle = rgba(C.card, 0.9); rr(kx, ky, 386, 178, 12); CX.fill(); CX.strokeStyle = C.border; CX.lineWidth = 1; CX.stroke();
   T('Wavelength λ = ' + fx(lam, 1) + ' cm   ·   f = ' + fx(p.f, 1) + ' Hz', kx + 16, ky + 22, { size: 13, wt: 800, color: C.text, mono: 1 });
   T('Wave speed v = fλ = ' + fx(p.f, 1) + ' × ' + fx(lam / 100, 3) + ' = ' + fx(RP.V / 100, 2) + ' m/s', kx + 16, ky + 46, { size: 12.5, wt: 700, color: C.travel, mono: 1 });
   var K = ['• The cork bobs up and down — the water does', '   NOT travel with the wave.', '• Wavefronts (crests) move outwards, ⟂ to the', '   direction of travel; energy goes with them.',
@@ -1282,7 +1306,14 @@ function strModes() {
   }
   return { list: out, dom: best, res: best.a > 0.5 };
 }
+/* At resonance the string IS the pure standing wave of the dominant harmonic —
+   exactly the sum of the two drawn progressive components. (v1.0.2 summed every
+   mode's off-resonance response too: at f₂ the 3rd…8th harmonics added up to ~40 %
+   of the amplitude with a different phase, so the string wiggled like bent wire
+   and no longer matched blue + orange.) Off resonance the small mixed motion of
+   all modes is still shown. */
 function strY(m, x, ph) {          /* displacement in units of amax, x in m */
+  if (m.res) { var d = m.dom; return d.a * Math.sin(d.n * Math.PI * x / STR_L) * Math.cos(ph - d.d); }
   var y = 0; for (var i = 0; i < m.list.length; i++) { var o = m.list[i]; y += o.a * Math.sin(o.n * Math.PI * x / STR_L) * Math.cos(ph - o.d); } return y;
 }
 /* energy tokens: two per loop, each confined between its antinode and the
@@ -1305,6 +1336,7 @@ STEP['3str'] = function () {
   STRTOK.prev = now;
 };
 SCENES['3str'] = function () {
+  if (S.m3.str.snap) { strSnapshots(); return; }
   var p = S.m3.str, m = strModes(), ph = visPhase(), n = m.dom.n, px = (STR.X1 - STR.X0) / STR_L, y0 = STR.y0, A = STR.amax;
   var X = function (x) { return STR.X0 + x * px; };
   var lam = 2 * STR_L / n, aD = m.dom.a;
@@ -1349,10 +1381,14 @@ SCENES['3str'] = function () {
     }
   }
   /* the string itself */
+  /* a soft cord: dark edge, body, thin highlight — one smooth path, round joins */
   CX.beginPath();
   for (var i = 0; i <= 400; i++) { var x = STR_L * i / 400, yy = y0 - A * strY(m, x, ph); if (i) CX.lineTo(X(x), yy); else CX.moveTo(X(x), yy); }
-  CX.strokeStyle = C.sum; CX.lineWidth = 3.4; CX.stroke();
-  line(X(STR_L), y0, 1000, 250, C.sum, 3.4);
+  CX.lineJoin = 'round'; CX.lineCap = 'round';
+  CX.strokeStyle = rgba('#000000', C.dark ? 0.45 : 0.25); CX.lineWidth = 5.6; CX.stroke();
+  CX.strokeStyle = C.sum; CX.lineWidth = 3.6; CX.stroke();
+  CX.save(); CX.translate(0, -0.9); CX.strokeStyle = rgba('#ffffff', C.dark ? 0.35 : 0.5); CX.lineWidth = 1; CX.stroke(); CX.restore();
+  CX.lineJoin = 'miter'; CX.lineCap = 'butt';
   /* nodes, antinodes, λ */
   if (m.res) {
     for (var j = 0; j <= n; j++) {
@@ -1385,7 +1421,7 @@ SCENES['3str'] = function () {
   line(G2.X(clamp(p.f, 0, fmax)), 470, G2.X(clamp(p.f, 0, fmax)), 620, C.accent, 1.6, [4, 3]);
   dot(G2.X(clamp(p.f, 0, fmax)), G2.Y(Math.min(aD, 1.15)), 5, C.accent, C.graphBg);
   /* summary card */
-  var cx0 = 676, cy0 = 452;
+  var cx0 = 676, cy0 = 436;
   CX.fillStyle = rgba(C.card, 0.9); rr(cx0, cy0, 316, 196, 12); CX.fill(); CX.strokeStyle = C.border; CX.lineWidth = 1; CX.stroke();
   if (m.res) {
     T('Harmonic n = ' + n + (n === 1 ? '  (fundamental)' : ''), cx0 + 14, cy0 + 22, { size: 14, wt: 800, color: C.text });
@@ -1403,7 +1439,7 @@ SCENES['3str'] = function () {
 };
 
 /* ── 3.2  Resonant air tube ────────────────────────────────────────────── */
-var TB = { x0: 200, y: 205, r: 40, pxm: 860, Q: 30, NMAX: 10, ga: { y: 300, h: 120 }, gb: { y: 486, h: 120 } };
+var TB = { x0: 200, y: 205, r: 40, pxm: 860, Q: 30, NMAX: 10, ga: { y: 290, h: 116 }, gb: { y: 462, h: 116 } };
 function tubeK(n, type, L) { return type === 'oo' ? n * Math.PI / L : (2 * n - 1) * Math.PI / (2 * L); }
 function tubeModes() {
   var t = S.m3.tube, best = null;
@@ -1416,7 +1452,8 @@ function beyond(G, L, g) {
   T('beyond the end of the tube', (x + TB.x0 + TB.pxm) / 2, g.y + g.h / 2, { size: 11.5, color: C.textMuted, align: 'center' });
 }
 function tubeCounts(n, type) { return type === 'oo' ? { nodes: n, anti: n + 1 } : { nodes: n, anti: n }; }
-SCENES['3tube'] = function () {
+SCENES['3tube'] = function () { if (S.m3.tube.exp === 'fork') tubeFork(); else tubeSpeaker(); };
+function tubeSpeaker() {
   var tb = S.m3.tube, md = tubeModes(), n = md.n, L = tb.L, x0 = TB.x0, x1 = x0 + L * TB.pxm, ph = visPhase(), oc = tb.type === 'oc';
   var X = function (x) { return x0 + x * TB.pxm; }, k = tubeK(n, tb.type, L);
   var s = function (x) { return Math.cos(k * x); }, pr = function (x) { return Math.sin(k * x); };
@@ -1443,7 +1480,7 @@ SCENES['3tube'] = function () {
   var c = Math.cos(ph);
   for (var xx = x0 + 6; xx <= x1 - 6; xx += 12) {
     var xm = (xx - x0) / TB.pxm, dxp = aV * s(xm) * c;
-    for (var r = -2; r <= 2; r++) dot(xx + dxp, TB.y + r * 14, 2.6, C.particle);
+    for (var r = -2; r <= 2; r++) dot(xx + dxp, TB.y + r * 14, 1.7, C.particle);
   }
   /* N / A markers (displacement) + guides down through both graphs */
   var Ns = [], As = [], j;
@@ -1472,7 +1509,7 @@ SCENES['3tube'] = function () {
   plotFn(GB.X, GB.Y, 0, L, 300, function (x) { return am * pr(x) * c; }, C.violet, 2.6);
   line(GB.X(L), TB.gb.y, GB.X(L), TB.gb.y + TB.gb.h, C.textMuted, 2); beyond(GB, L, TB.gb);
   if (S.labels) {
-    T('displacement N = pressure antinode · displacement A = pressure node', 640, 650, { size: 12.5, wt: 700, color: C.textDim, align: 'center' });
+    T('displacement N = pressure antinode · displacement A = pressure node', TB.x0, 628, { size: 12.5, wt: 700, color: C.textDim });
     T('open end: pressure stays atmospheric → pressure node', 760, TB.gb.y + 12, { size: 11.5, color: C.textMuted, bg: rgba(C.graphBg, 0.85) });
   }
   if (!md.res && S.labels) T('not at resonance — the air column hardly vibrates (quiet). Tune to a mode.', 640, 92, { size: 13, wt: 700, color: C.textDim, align: 'center' });
@@ -1564,6 +1601,241 @@ SCENES['3pl'] = function () {
   T('f ≈ ' + plFreq() + ' Hz (illustrative) — higher modes → more lines', kx + 16, ky + 204, { size: 12.5, color: C.accent, mono: 1 });
   T('energy is stored in the vibration — no energy flows across a nodal line', kx + 16, ky + 228, { size: 11.5, color: C.energy, wt: 600 });
 };
+
+/* ── 3.1b  Snapshots: why two opposite progressive waves give a stationary wave ──
+   y_R = A sin(kx − ωt) (→), y_L = A sin(kx + ωt) (←), sum = 2A sin kx cos ωt.
+   Drawn at t = 0, T/4, T/2, 3T/4, T for the current harmonic. */
+var SNAP = { x0: 230, x1: 990, top: 62, h: 104, a: 20 };
+function strSnapshots() {
+  var m = strModes(), n = m.dom.n, lam = 2 * STR_L / n, k = TAU / lam, a = SNAP.a;
+  var X = function (x) { return SNAP.x0 + x / STR_L * (SNAP.x1 - SNAP.x0); };
+  var Phi = visPhase() - m.dom.d, q = Math.round((((Phi % TAU) + TAU) % TAU) / (Math.PI / 2)) % 4;
+  var rows = [
+    { t: 't = 0', wt: 0, c1: 'crest meets crest', c2: 'in phase', s1: 'sum = 2A sin kx', s2: 'MAXIMUM displacement' },
+    { t: 't = T/4', wt: Math.PI / 2, c1: 'each wave moved λ/4', c2: 'crest meets trough', s1: 'sum = 0 everywhere', s2: 'string passes through flat' },
+    { t: 't = T/2', wt: Math.PI, c1: 'each wave moved λ/2', c2: 'in phase again', s1: 'sum = −2A sin kx', s2: 'MAXIMUM, upside down' },
+    { t: 't = 3T/4', wt: 1.5 * Math.PI, c1: 'each wave moved 3λ/4', c2: 'crest meets trough', s1: 'sum = 0 everywhere', s2: 'flat again' },
+    { t: 't = T', wt: TAU, c1: 'each wave moved λ', c2: 'back to the start', s1: 'same as t = 0', s2: 'one full cycle' }];
+  T('How two progressive waves make a stationary wave — snapshots every quarter period (harmonic n = ' + n + ')', 30, 22, { size: 14, wt: 800, color: C.text });
+  var lx = 640, w1 = T('- - wave → (y_R)', lx, 46, { size: 12, wt: 700, color: C.wave1 });
+  var w2 = T('- - ← wave (y_L)', lx + w1.w + 14, 46, { size: 12, wt: 700, color: C.wave2 });
+  T('—— sum y_R + y_L', lx + w1.w + w2.w + 28, 46, { size: 12, wt: 700, color: C.sum });
+  var yTop = SNAP.top, yBot = SNAP.top + 5 * SNAP.h;
+  /* nodes and antinodes never move: guides through every snapshot */
+  for (var j = 0; j <= n; j++) line(X(j * STR_L / n), yTop, X(j * STR_L / n), yBot, rgba(C.node, 0.35), 1, [3, 4]);
+  for (j = 0; j < n; j++) line(X((j + 0.5) * STR_L / n), yTop, X((j + 0.5) * STR_L / n), yBot, rgba(C.antinode, 0.3), 1, [3, 4]);
+  rows.forEach(function (r, i) {
+    var y0 = SNAP.top + i * SNAP.h + SNAP.h / 2, live = (i === q) || (i === 4 && q === 0);
+    CX.fillStyle = rgba(C.card, live ? 0.75 : 0.35); rr(14, y0 - SNAP.h / 2 + 4, W - 28, SNAP.h - 8, 10); CX.fill();
+    if (live) { CX.strokeStyle = C.accent; CX.lineWidth = 1.6; CX.stroke(); }
+    line(SNAP.x0, y0, SNAP.x1, y0, C.envelope, 1, [4, 4]);
+    var yR = function (x) { return a * Math.sin(k * x - r.wt); }, yL = function (x) { return a * Math.sin(k * x + r.wt); };
+    /* offset dashes so the two waves stay visible where they coincide (t = 0, T/2, T) */
+    plotFn(X, function (v) { return v; }, 0, STR_L, 240, function (x) { return y0 - yL(x); }, C.wave2, 1.8, [6, 6]);
+    CX.lineDashOffset = 6;
+    plotFn(X, function (v) { return v; }, 0, STR_L, 240, function (x) { return y0 - yR(x); }, C.wave1, 1.8, [6, 6]);
+    CX.lineDashOffset = 0;
+    plotFn(X, function (v) { return v; }, 0, STR_L, 240, function (x) { return y0 - yR(x) - yL(x); }, C.sum, 3);
+    /* follow one crest of each travelling wave: it shifts λ/4 per row */
+    var cR = (lam / 4 + r.wt / k), cL = (lam / 4 - r.wt / k);
+    cR = ((cR % lam) + lam) % lam; cL = ((cL % lam) + lam) % lam;
+    if (cR <= STR_L) dot(X(cR), y0 - a, 4, C.wave1, C.graphBg);
+    if (cL <= STR_L) dot(X(cL), y0 - a, 4, C.wave2, C.graphBg);
+    for (var j2 = 0; j2 <= n; j2++) dot(X(j2 * STR_L / n), y0, 4, C.node, C.graphBg);
+    T(r.t, 30, y0 - 20, { size: 15, wt: 800, color: live ? C.accent : C.text, mono: 1 });
+    if (S.labels) { T(r.c1, 30, y0 + 2, { size: 11.5, color: C.textDim }); T(r.c2, 30, y0 + 19, { size: 11.5, wt: 700, color: C.textDim }); }
+    T(r.s1, 1008, y0 - 10, { size: 12.5, wt: 800, color: C.sum, mono: 1 });
+    if (S.labels) T(r.s2, 1008, y0 + 10, { size: 11.5, color: C.textDim });
+  });
+  if (S.labels) {
+    T('N', X(STR_L / n), yBot + 12, { size: 12, wt: 800, color: C.node, align: 'center' });
+    T('A', X(STR_L / (2 * n)), yBot + 12, { size: 12, wt: 800, color: C.antinode, align: 'center' });
+    T('nodes (N) stay still in every snapshot · the waves keep moving, their sum only grows and shrinks in place', X(STR_L / 2), yBot + 30, { size: 12.5, wt: 700, color: C.textDim, align: 'center' });
+  }
+}
+
+/* ═══════════ 3.2b  Resonance tube with a tuning fork (water column) ═══════
+   A vertical glass tube stands in water; its air column is closed by the
+   water surface (displacement node) and open at the top. A tuning fork of
+   fixed f is held over the mouth. Lowering the water lengthens the column;
+   it resonates when L + e = (2n − 1)λ/4, where e ≈ 0.6r is the END
+   CORRECTION — the antinode actually sits a little ABOVE the open end.
+   Two resonance lengths eliminate e:  λ = 2(L₂ − L₁),  e = (L₂ − 3L₁)/2.  */
+var FORKS = [256, 320, 384, 512];
+var FK = { cx: 470, top: 120, pxm: 480, half: 22, Q: 15, LEN: 1.0, bins: 200 };
+function fkE() { return 0.6 * S.m3.tube.r / 100; }                  /* m */
+function fkLam() { return V_SOUND / S.m3.tube.fork; }
+function fkLres(n) { return (2 * n - 1) * fkLam() / 4 - fkE(); }   /* air-column length of resonance n */
+function fkResp(Lw) {
+  var Le = Lw + fkE(), f = S.m3.tube.fork, best = { a: 0, n: 1 };
+  for (var n = 1; n <= 8; n++) { var a = resp(f, (2 * n - 1) * V_SOUND / (4 * Le), FK.Q); if (a > best.a) best = { a: a, n: n }; }
+  best.a = Math.min(best.a, 1); return best;
+}
+function fkRes() { return fkResp(S.m3.tube.Lw).a > 0.6; }
+function fkNote() {                                       /* remember what the student has "heard" */
+  var t = S.m3.tube, b = Math.round(t.Lw / FK.LEN * FK.bins);
+  t.seen[t.fork + ':' + t.r + ':' + b] = fkResp(t.Lw).a;
+}
+function fkRecord() {
+  var t = S.m3.tube, a = fkResp(t.Lw).a;
+  t.rec.push({ L: t.Lw, a: a });
+  if (t.rec.length > 6) t.rec.shift();
+}
+/* the first two distinct loud lengths the student recorded */
+function fkResults() {
+  var t = S.m3.tube, loud = t.rec.filter(function (r) { return r.a > 0.6; }).map(function (r) { return r.L; }).sort(function (a, b) { return a - b; }), d = [];
+  loud.forEach(function (L) { if (!d.length || L - d[d.length - 1] > 0.05) d.push(L); });
+  if (d.length < 2) return { L1: d[0], L2: null };
+  var L1 = d[0], L2 = d[1], lam = 2 * (L2 - L1);
+  return { L1: L1, L2: L2, lam: lam, v: lam * t.fork, e: (L2 - 3 * L1) / 2 };
+}
+function tubeFork() {
+  var t = S.m3.tube, ph = visPhase(), c = Math.cos(ph), R = fkResp(t.Lw), a = R.a, lam = fkLam(), e = fkE();
+  var k = TAU / lam, cx = FK.cx, top = FK.top, P = FK.pxm, half = FK.half, bot = top + FK.LEN * P;
+  var Y = function (L) { return top + L * P; }, yw = Y(t.Lw);
+  fkNote();
+  /* clamp stand for the tube */
+  CX.fillStyle = C.metal; CX.fillRect(340, 90, 7, 560); CX.fillRect(300, 646, 120, 8);
+  CX.fillRect(347, 200, cx - half - 6 - 347, 6); CX.fillRect(347, 520, cx - half - 6 - 347, 6);
+  /* water in the tube + hose + reservoir (same level: connected vessels) */
+  var water = rgba(C.tube, 0.35);
+  CX.fillStyle = water; CX.fillRect(cx - half, yw, 2 * half, bot - yw);
+  CX.beginPath(); CX.moveTo(cx - half, yw); CX.quadraticCurveTo(cx, yw + 7, cx + half, yw); CX.strokeStyle = C.tube; CX.lineWidth = 2; CX.stroke();
+  var rx = 662, rw = 56, rTop = yw - 46, rBot = yw + 54;
+  CX.beginPath(); CX.moveTo(cx, bot + 4); CX.bezierCurveTo(cx, 660, rx + rw / 2, 670, rx + rw / 2, rBot);
+  CX.strokeStyle = '#3a4048'; CX.lineWidth = 9; CX.stroke(); CX.strokeStyle = rgba(C.tube, 0.5); CX.lineWidth = 4; CX.stroke();
+  CX.fillStyle = water; CX.fillRect(rx, yw, rw, rBot - yw);
+  CX.strokeStyle = C.tube; CX.lineWidth = 2.5; CX.beginPath(); CX.moveTo(rx, rTop); CX.lineTo(rx, rBot); CX.lineTo(rx + rw, rBot); CX.lineTo(rx + rw, rTop); CX.stroke();
+  line(rx, yw, rx + rw, yw, C.tube, 2);
+  CX.fillStyle = C.metal; CX.fillRect(rx + rw + 18, 90, 7, 560); CX.fillRect(rx + rw, rTop + 30, 25, 6);
+  if (S.labels) { T('reservoir', rx + rw / 2, rTop - 14, { size: 11.5, color: C.textDim, align: 'center' }); T('raise / lower', rx + rw / 2, rBot + 16, { size: 11, color: C.textMuted, align: 'center' }); }
+  line(cx + half + 2, yw, rx - 2, yw, rgba(C.tube, 0.55), 1, [3, 4]);
+  /* metre rule: 0 at the rim */
+  CX.fillStyle = rgba(C.amber, 0.18); CX.fillRect(398, top - 6, 28, FK.LEN * P + 12);
+  for (var mm = 0; mm <= 100; mm++) {
+    var yy = Y(mm / 100), Lk = mm % 10 === 0 ? 12 : mm % 5 === 0 ? 8 : 5;
+    line(426 - Lk, yy, 426, yy, C.textDim, 1);
+    if (mm % 10 === 0) T(String(mm), 410 - 3, yy, { size: 10, color: C.textDim, align: 'right', mono: 1 });
+  }
+  T('cm', 412, top - 16, { size: 10, color: C.textMuted, align: 'center' });
+  /* standing-wave envelope: node at the water, antinode e above the rim at resonance */
+  var Le = t.Lw + e, ampPx = 16 * a;
+  if (a > 0.02) {
+    [1, -1].forEach(function (sg) {
+      CX.beginPath();
+      for (var i = 0; i <= 200; i++) { var d = Le * i / 200, x = cx + sg * ampPx * Math.abs(Math.sin(k * d)); if (i) CX.lineTo(x, yw - d * P); else CX.moveTo(x, yw - d * P); }
+      CX.strokeStyle = rgba(C.waveL, 0.85); CX.lineWidth = 1.5; CX.setLineDash([5, 4]); CX.stroke(); CX.setLineDash([]);
+    });
+  }
+  /* air particles: vertical (longitudinal) vibration, none at the node */
+  var capPx = Math.min(9, 0.42 / (k / P));
+  for (var dy = 6; dy < t.Lw * P - 3; dy += 11) {
+    var d0 = dy / P, disp = capPx * a * Math.sin(k * d0) * c;
+    for (var col = -1; col <= 1; col++) dot(cx + col * 13, yw - dy - disp, 1.3, C.particle);
+  }
+  /* glass walls */
+  [cx - half, cx + half].forEach(function (x) { line(x, top, x, bot, C.tube, 3); });
+  line(cx - half + 4, top + 4, cx - half + 4, bot - 4, rgba('#ffffff', 0.22), 1.5);
+  CX.beginPath(); CX.moveTo(cx - half, bot); CX.lineTo(cx + half, bot); CX.strokeStyle = C.tube; CX.lineWidth = 3; CX.stroke();
+  /* N / A markers */
+  nodeMark(cx + half + 26, yw, false); if (S.labels) T('N', cx + half + 40, yw, { size: 12.5, wt: 800, color: C.node });
+  if (R.a > 0.6) {
+    for (var q = 1; q <= 8; q++) {
+      var dA = (2 * q - 1) * lam / 4, dN = q * lam / 2;
+      if (dA <= Le + 0.005) { antiMark(cx + half + 26, yw - dA * P, false); if (S.labels) T('A', cx + half + 40, yw - dA * P, { size: 12.5, wt: 800, color: C.antinode }); }
+      if (dN < t.Lw) { nodeMark(cx + half + 26, yw - dN * P, false); if (S.labels) T('N', cx + half + 40, yw - dN * P, { size: 12.5, wt: 800, color: C.node }); }
+    }
+  }
+  /* air-column length L (rim → water) */
+  if (S.labels) {
+    dimV(cx + half + 70, top, yw, 'L = ' + fx(t.Lw * 100, 1) + ' cm', C.markL, 1);
+  }
+  /* tuning fork over the mouth */
+  var wob = 1.6 * Math.sin(ph * 6);
+  CX.fillStyle = C.metal;
+  CX.fillRect(cx - 3, 14, 6, 26);
+  CX.beginPath(); CX.moveTo(cx - 12 - wob, 92); CX.lineTo(cx - 12 - wob, 50); CX.quadraticCurveTo(cx - 12, 38, cx, 38); CX.quadraticCurveTo(cx + 12, 38, cx + 12 + wob, 50); CX.lineTo(cx + 12 + wob, 92);
+  CX.strokeStyle = C.metal; CX.lineWidth = 6; CX.stroke();
+  for (var w = 1; w <= 2; w++) { CX.beginPath(); CX.arc(cx, 100, 8 + w * 7 + (ph % TAU) * 0.6, 0.25 * Math.PI, 0.75 * Math.PI); CX.strokeStyle = rgba(C.waveL, 0.35); CX.lineWidth = 1.5; CX.stroke(); }
+  if (S.labels) T('tuning fork  f = ' + t.fork + ' Hz', cx + 26, 40, { size: 12.5, wt: 700, color: C.text });
+  /* end correction: magnifier on the rim (×6) */
+  fkMagnifier(cx, top, a, k, e, Le, yw, P, half);
+
+  /* loudness meter */
+  var mx = 760, my = 62;
+  T('Loudness heard', mx, my, { size: 13, wt: 800, color: C.text });
+  CX.fillStyle = rgba(C.border, 0.9); rr(mx, my + 14, 400, 16, 5); CX.fill();
+  CX.fillStyle = a > 0.6 ? C.green : C.amber; rr(mx, my + 14, Math.max(4, 400 * a), 16, 5); CX.fill();
+  if (a > 0.6) T('LOUD — resonance (n = ' + R.n + ')', mx + 400, my, { size: 12.5, wt: 800, color: C.green, align: 'right' });
+  /* loudness vs L: what you have explored (and, with Reveal, the theory) */
+  var G = graph({ x: 800, y: 122, w: 360, h: 136, x0: 0, x1: FK.LEN, y0: 0, y1: 1.1, xt: 0.1, yt: 0.5, xlab: 'air column L / m', ylab: 'loudness', title: 'loudness vs L — explored' });
+  if (t.reveal) {
+    plotFn(G.X, G.Y, 0.01, FK.LEN, 500, function (L) { return fkResp(L).a; }, rgba(C.sum, 0.6), 1.6, [5, 4]);
+    for (var n = 1; n <= 4; n++) { var Ln = fkLres(n); if (Ln > 0 && Ln < FK.LEN) T('L_' + n, G.X(Ln), G.Y(1) - 11, { size: 11.5, wt: 700, color: C.sum, align: 'center' }); }
+  }
+  CX.fillStyle = C.accent;
+  for (var key in t.seen) {
+    var pr = key.split(':'); if (+pr[0] !== t.fork || +pr[1] !== t.r) continue;
+    var Lb = +pr[2] / FK.bins * FK.LEN; CX.fillRect(G.X(Lb) - 1.4, G.Y(t.seen[key]) - 1.4, 2.8, 2.8);
+  }
+  line(G.X(t.Lw), 122, G.X(t.Lw), 258, C.markL, 1.4, [4, 3]);
+  t.rec.forEach(function (r) { dot(G.X(r.L), G.Y(r.a), 4, r.a > 0.6 ? C.green : C.textMuted, C.graphBg); });
+  /* results card */
+  var kx = 760, ky = 304, res = fkResults();
+  CX.fillStyle = rgba(C.card, 0.92); rr(kx, ky, 410, 312, 12); CX.fill(); CX.strokeStyle = C.border; CX.lineWidth = 1; CX.stroke();
+  T('Your readings  (📌 Record at each loud point)', kx + 14, ky + 20, { size: 12.5, wt: 800, color: C.text });
+  if (!t.rec.length) T('none yet — lower the water slowly and listen', kx + 14, ky + 46, { size: 12, color: C.textMuted });
+  t.rec.forEach(function (r, i) {
+    T((i + 1) + ')  L = ' + fx(r.L * 100, 1) + ' cm', kx + 14, ky + 46 + i * 20, { size: 12, color: C.text, mono: 1 });
+    T(r.a > 0.6 ? 'loud ✓' : 'quiet ✗', kx + 200, ky + 46 + i * 20, { size: 12, wt: 700, color: r.a > 0.6 ? C.green : C.textMuted, mono: 1 });
+  });
+  var yb = ky + 176;
+  line(kx + 12, yb - 12, kx + 398, yb - 12, C.border, 1);
+  if (res.L2 != null) {
+    T('L₁ = ' + fx(res.L1 * 100, 1) + ' cm,  L₂ = ' + fx(res.L2 * 100, 1) + ' cm', kx + 14, yb + 4, { size: 12.5, wt: 700, color: C.text, mono: 1 });
+    T('λ = 2(L₂ − L₁) = ' + fx(res.lam, 3) + ' m', kx + 14, yb + 28, { size: 12.5, wt: 700, color: C.markL, mono: 1 });
+    T('v = fλ = ' + t.fork + ' × ' + fx(res.lam, 3) + ' = ' + fx(res.v, 0) + ' m/s', kx + 14, yb + 52, { size: 12.5, wt: 700, color: C.accent, mono: 1 });
+    T('e = (L₂ − 3L₁)/2 = ' + fx(res.e * 100, 1) + ' cm', kx + 14, yb + 76, { size: 12.5, wt: 700, color: C.antinode, mono: 1 });
+    T('(0.6r = ' + fx(e * 100, 1) + ' cm)', kx + 260, yb + 76, { size: 12, color: C.textMuted, mono: 1 });
+  } else {
+    T('Record two resonances (L₁ and L₂) to find', kx + 14, yb + 4, { size: 12, color: C.textDim });
+    T('λ = 2(L₂ − L₁) — the end correction cancels out,', kx + 14, yb + 24, { size: 12, color: C.textDim });
+    T('then v = fλ and e = (L₂ − 3L₁)/2', kx + 14, yb + 44, { size: 12, color: C.textDim });
+  }
+  T('Using L₁ alone (λ = 4L₁) underestimates λ by 4e.', kx + 14, yb + 104, { size: 11.5, wt: 600, color: C.red });
+  T('Water surface = node · antinode ≈ 0.6r above the rim', kx + 14, yb + 124, { size: 11.5, color: C.textMuted });
+}
+/* a ×6 lens on the mouth of the tube, where the end correction lives */
+function fkMagnifier(cx, top, a, k, e, Le, yw, P, half) {
+  var mx = 228, my = 176, mr = 62, Z = 6, ox = cx + half - 8, oy = top;    /* lens centre and what it looks at */
+  line(cx - half - 2, top, mx + mr * 0.85, my - mr * 0.5, rgba(C.textDim, 0.5), 1, [3, 3]);
+  CX.save(); CX.beginPath(); CX.arc(mx, my, mr, 0, TAU); CX.fillStyle = C.graphBg; CX.fill(); CX.clip();
+  CX.translate(mx, my); CX.scale(Z, Z); CX.translate(-ox, -oy);
+  CX.fillStyle = rgba(C.tube, 0.06); CX.fillRect(cx - half, top, 2 * half, 40);
+  line(cx + half, top, cx + half, top + 40, C.tube, 3 / Z * 2);
+  var ampPx = 16 * a;
+  if (a > 0.02) {
+    CX.beginPath();
+    for (var i = 0; i <= 120; i++) { var d = Le - 0.05 + 0.05 * i / 120, x = cx + ampPx * Math.abs(Math.sin(k * d)); if (i) CX.lineTo(x, yw - d * P); else CX.moveTo(x, yw - d * P); }
+    CX.strokeStyle = rgba(C.waveL, 0.9); CX.lineWidth = 1.5 / Z * 2; CX.setLineDash([5 / Z, 4 / Z]); CX.stroke(); CX.setLineDash([]);
+  }
+  var ya = yw - Le * P;
+  if (a > 0.6) {
+    CX.beginPath(); CX.moveTo(cx + 2, ya - 1.2); CX.lineTo(cx + 3.2, ya); CX.lineTo(cx + 2, ya + 1.2); CX.lineTo(cx + 0.8, ya); CX.closePath(); CX.fillStyle = C.antinode; CX.fill();
+  }
+  line(cx - 4, top, cx + half + 3, top, rgba(C.text, 0.6), 0.25, [1, 1]);
+  line(cx + 6, ya, cx + half + 3, ya, rgba(C.antinode, 0.8), 0.25, [1, 1]);
+  CX.restore();
+  CX.beginPath(); CX.arc(mx, my, mr, 0, TAU); CX.strokeStyle = C.metal; CX.lineWidth = 3; CX.stroke();
+  if (S.labels) {
+    var yRim = my + (top - oy) * Z, yAnt = my + ((yw - Le * P) - oy) * Z;
+    T('×6', mx + mr - 18, my + mr - 12, { size: 11, wt: 700, color: C.textMuted });
+    T('rim', mx - mr + 8, yRim - 8, { size: 11, wt: 700, color: C.textDim });
+    if (a > 0.6) T('A', mx - 6, yAnt - 9, { size: 11.5, wt: 800, color: C.antinode, align: 'right' });
+    T('end correction e ≈ 0.6r = ' + fx(e * 100, 1) + ' cm', mx, my + mr + 16, { size: 12, wt: 700, color: C.antinode, align: 'center' });
+    T('the antinode is just ABOVE the open end', mx, my + mr + 33, { size: 11, color: C.textMuted, align: 'center' });
+  }
+}
 
 /* ═══════════ SIDE PANEL — Data / Calculate / Info / Answer ════════════════
    renderPanel() builds the HTML once per sub-mode/tab with placeholders;
@@ -1736,17 +2008,45 @@ PANEL['3pl'] = {
     'At the antinodes the plate vibrates strongly and <b>throws the sand off</b>; it bounces around until it lands on a node, where it stays.']); }
 };
 
+function panelId() { return sub() === '3tube' && S.m3.tube.exp === 'fork' ? '3tubeF' : sub(); }
+/* ── 3.2b tuning fork + water column ── */
+PANEL['3tubeF'] = {
+  data: function () { return sh('Apparatus') + kv('Tuning-fork frequency f', 'f', 'hi') + kv('Speed of sound v (true)', 'v') + kv('Tube radius r', 'r') + kv('End correction e ≈ 0.6r', 'e') +
+    sh('Now') + kv('Air column L (rim → water)', 'L', 'hi') + kv('Loudness', 'loud') + kv('Resonance', 'res', 't') +
+    sh('From your readings') + kv('First resonance L<sub>1</sub>', 'L1') + kv('Second resonance L<sub>2</sub>', 'L2') + kv('λ = 2(L<sub>2</sub> − L<sub>1</sub>)', 'lam', 'hi') + kv('v = fλ', 'vm', 'hi') + kv('e = (L<sub>2</sub> − 3L<sub>1</sub>)/2', 'em') + kv('Energy', 'E', 'energy'); },
+  vals: function () { var t = S.m3.tube, R = fkResp(t.Lw), res = fkResults(), lam = fkLam(), e = fkE(), L1 = res.L1, L2 = res.L2;
+    return { f: t.fork + ' Hz', v: V_SOUND + ' m/s', r: fx(t.r, 1) + ' cm', e: fx(e * 100, 2) + ' cm', L: fx(t.Lw * 100, 1) + ' cm', loud: Math.round(R.a * 100) + ' %',
+      res: R.a > 0.6 ? 'yes — n = ' + R.n + ' (L + e = ' + (2 * R.n - 1) + 'λ/4)' : 'no', L1: L1 != null ? fx(L1 * 100, 1) + ' cm' : '—', L2: L2 != null ? fx(L2 * 100, 1) + ' cm' : '—',
+      lam: res.lam ? fx(res.lam, 3) + ' m' : '—', vm: res.v ? fx(res.v, 0) + ' m/s' : '—', em: res.e != null && res.lam ? fx(res.e * 100, 1) + ' cm' : '—', E: E_STAT,
+      t1: '\\lambda = \\dfrac{v}{f} = \\dfrac{' + V_SOUND + '}{' + t.fork + '} = ' + u(fx(lam, 3), 'm'),
+      t2: 'L_1 + e = \\dfrac{\\lambda}{4},\\quad L_2 + e = \\dfrac{3\\lambda}{4}',
+      t3: res.lam ? '\\lambda = 2(L_2 - L_1) = 2(' + fx(L2, 3) + ' - ' + fx(L1, 3) + ') = ' + u(fx(res.lam, 3), 'm') : '\\lambda = 2(L_2 - L_1) = \\;?',
+      t4: res.lam ? 'v = f\\lambda = ' + t.fork + '\\times ' + fx(res.lam, 3) + ' = ' + u(fx(res.v, 0), 'm\\,s^{-1}') : 'v = f\\lambda = \\;?',
+      t5: res.lam ? 'e = \\dfrac{L_2 - 3L_1}{2} = ' + u(fx(res.e * 100, 1), 'cm') + '\\quad(0.6r = ' + fx(e * 100, 1) + '\\,\\mathrm{cm})' : 'e = \\dfrac{L_2 - 3L_1}{2} = \\;?',
+      t6: 'L_n = \\dfrac{(2n-1)\\lambda}{4} - e:\\; ' + [1, 2, 3].map(function (n) { return fx(fkLres(n) * 100, 1); }).join(',\\; ') + '\\,\\mathrm{cm}' }; },
+  calc: function () { return ct('Wavelength of the fork (true value)') + eqb('t1') + ct('Resonance conditions (closed at the water)') + eqb('t2') + cn('Subtract: L₂ − L₁ = λ/2, so the unknown end correction e cancels.', 1) +
+    ct('From your two readings') + eqb('t3') + eqb('t4') + ct('End correction') + eqb('t5') + ct('Where the resonances are (theory)') + eqb('t6'); },
+  info: function () { return sh('Method') + ol(['Strike the tuning fork and hold it just above the open top of the tube.', 'Start with the water high (short air column) and <b>lower it slowly</b> — the water surface is a <b>displacement node</b>.',
+    'At a certain length the sound becomes much <b>louder</b>: resonance. Fine-tune up and down and record the length L<sub>1</sub> from the rim to the water surface.',
+    'Keep lowering: the next loud point is L<sub>2</sub>. Then λ = 2(L<sub>2</sub> − L<sub>1</sub>) and v = fλ.']) +
+    sh('Errors and the end correction') + ol(['<b>End correction</b>: the antinode forms slightly <b>above</b> the open end (≈ 0.6 × tube radius), so L<sub>1</sub> + e = λ/4. Using λ = 4L<sub>1</sub> alone gives λ too small.',
+      'Using the <b>difference</b> L<sub>2</sub> − L<sub>1</sub> removes e. You can also find e = (L<sub>2</sub> − 3L<sub>1</sub>)/2.', 'Judging the loudest point is subjective — approach it from above and below and take the mean.',
+      'Read L to the <b>bottom of the meniscus</b>, at eye level (avoid parallax).', 'The speed of sound depends on air temperature — record the temperature.']); },
+  ans: function () { return qa('A tuning fork of frequency 512 Hz gives resonance with an air column of length 15.4 cm and again at 48.6 cm. Calculate the speed of sound and the end correction.',
+    ['L₂ − L₁ = λ/2 → λ = 2(0.486 − 0.154) = <b>0.664 m</b>.', 'v = fλ = 512 × 0.664 = <b>340 m s⁻¹</b>.', 'L₁ + e = λ/4 = 0.166 m → e = 0.166 − 0.154 = <b>0.012 m</b> (1.2 cm).',
+      'Using the difference of two lengths means the end correction does not affect λ.']); }
+};
 var panelKey = '', TEXC = {};
 function renderPanel() {
-  var P = PANEL[sub()], tab = S.ptab;
+  var P = PANEL[panelId()], tab = S.ptab;
   $('pbody').innerHTML = P[tab]();
-  panelKey = sub() + '|' + tab + '|' + (sub() === '1ph' ? S.m1.ph.step + S.m1.ph.scn : '') + (sub() === '3tube' ? S.m3.tube.type : '') + (sub() === '1cro' ? S.m1.cro.reveal : '');
+  panelKey = sub() + '|' + tab + '|' + (sub() === '1ph' ? S.m1.ph.step + S.m1.ph.scn : '') + (sub() === '3tube' ? S.m3.tube.type + S.m3.tube.exp : '') + (sub() === '1cro' ? S.m1.cro.reveal : '');
   TEXC = {}; patchPanel();
 }
 function patchPanel() {
-  var key = sub() + '|' + S.ptab + '|' + (sub() === '1ph' ? S.m1.ph.step + S.m1.ph.scn : '') + (sub() === '3tube' ? S.m3.tube.type : '') + (sub() === '1cro' ? S.m1.cro.reveal : '');
+  var key = sub() + '|' + S.ptab + '|' + (sub() === '1ph' ? S.m1.ph.step + S.m1.ph.scn : '') + (sub() === '3tube' ? S.m3.tube.type + S.m3.tube.exp : '') + (sub() === '1cro' ? S.m1.cro.reveal : '');
   if (key !== panelKey) { renderPanel(); return; }
-  var V = PANEL[sub()].vals(), els = $('pbody').querySelectorAll('[data-v]'), i;
+  var V = PANEL[panelId()].vals(), els = $('pbody').querySelectorAll('[data-v]'), i;
   for (i = 0; i < els.length; i++) { var k = els[i].getAttribute('data-v'), v = V[k] == null ? '' : V[k]; if (els[i].innerHTML !== v) els[i].innerHTML = v; }
   var tx = $('pbody').querySelectorAll('[data-tex]');
   for (i = 0; i < tx.length; i++) {
@@ -1776,16 +2076,19 @@ function getP(path) { var a = path.split('.'), o = S; for (var i = 0; i < a.leng
 function setP(path, v) { var a = path.split('.'), o = S; for (var i = 0; i < a.length - 1; i++) o = o[a[i]]; o[a[a.length - 1]] = v; }
 
 /* ── parameter controls: name | slider ⇄ typed box | value+unit ─────────── */
+function tubeSpk() { return S.m3.tube.exp !== 'fork'; }
+function tubeFk() { return S.m3.tube.exp === 'fork'; }
 function croHide() { return !S.m1.cro.reveal; }
 var CTRL = {
   '1tl': [{ k: 'm1.tl.f', lab: 'Frequency f', min: 1, max: 10, step: 0.5, unit: 'Hz' }, { k: 'm1.tl.A', lab: 'Amplitude A', min: 0.2, max: 1, step: 0.05, unit: 'm' }],
   '1cro': [{ k: 'm1.cro.f', lab: 'Input frequency', vals: CRO_F, unit: 'Hz', hide: croHide }, { k: 'm1.cro.V0', lab: 'Input amplitude V<sub>0</sub>', min: 0.5, max: 10, step: 0.5, unit: 'V', hide: croHide }],
   '1ph': [{ k: 'm1.ph.f', lab: 'Frequency f', min: 0.5, max: 5, step: 0.5, unit: 'Hz' }, { k: 'm1.ph.A', lab: 'Amplitude A', min: 0.2, max: 1, step: 0.05, unit: 'm' },
-    { k: 'm1.ph.phi', lab: 'Phase difference φ', min: 0, max: 360, step: 15, unit: '°', lock: function () { return S.m1.ph.step !== 'super' || S.m1.ph.scn !== 'phi'; } }],
+    { k: 'm1.ph.phi', row: 1, lab: 'Phase difference φ', min: 0, max: 360, step: 15, unit: '°', lock: function () { return S.m1.ph.step !== 'super' || S.m1.ph.scn !== 'phi'; } }],
   '2d1': [{ k: 'm2.d1.f', lab: 'Frequency f', min: 1, max: 10, step: 0.5, unit: 'Hz' }, { k: 'm2.d1.A', lab: 'Amplitude A', min: 0.2, max: 1, step: 0.05, unit: 'm' }, { k: 'm2.d1.v', lab: 'Wave speed v', min: 1, max: 10, step: 0.5, unit: 'm/s' }],
   '2rip': [{ k: 'm2.rip.f', lab: 'Frequency f', min: 1, max: 10, step: 0.5, unit: 'Hz' }, { k: 'm2.rip.A', lab: 'Amplitude A', min: 0.2, max: 1, step: 0.05, unit: '' }],
   '3str': [{ k: 'm3.str.f', lab: 'Frequency f', min: 1, max: 60, step: 0.01, unit: 'Hz' }, { k: 'm3.str.Tn', lab: 'Tension T', min: 0.5, max: 5, step: 0.1, unit: 'N' }],
-  '3tube': [{ k: 'm3.tube.f', lab: 'Frequency f', min: 50, max: 2000, step: 1, unit: 'Hz' }, { k: 'm3.tube.L', lab: 'Length L', min: 0.2, max: 1, step: 0.01, unit: 'm' }],
+  '3tube': [{ k: 'm3.tube.f', lab: 'Frequency f', min: 50, max: 2000, step: 1, unit: 'Hz', when: tubeSpk }, { k: 'm3.tube.L', lab: 'Length L', min: 0.2, max: 1, step: 0.01, unit: 'm', when: tubeSpk },
+    { k: 'm3.tube.Lw', lab: 'Air column L', min: 0.05, max: 0.95, step: 0.001, unit: 'm', when: tubeFk }, { k: 'm3.tube.r', lab: 'Tube radius r', min: 1, max: 3, step: 0.5, unit: 'cm', when: tubeFk }],
   '3pl': []
 };
 function dpOf(c) { if (c.vals) return 0; var s = String(c.step); return s.indexOf('.') < 0 ? 0 : s.length - s.indexOf('.') - 1; }
@@ -1810,24 +2113,26 @@ function cleanTxt(c, s) {
   }
   return out;
 }
-function ctrlList() { return CTRL[sub()] || []; }
+function ctrlList() { return (CTRL[sub()] || []).filter(function (c) { return !c.when || c.when(); }); }
 function setVal(c, v) { setP(c.k, v); onParam(c.k); syncCtrlVals(); syncToolbar(); }
 function onParam(k) {
   if (k === 'm2.rip.f' && S.energy) { S.m2.rip.tok = []; S.m2.rip.lastSpawn = -1; }
   if (k === 'm1.cro.f' || k === 'm1.cro.V0') { }
 }
+function ctrlRoot() { return document.querySelector('.toolbar'); }
 function renderCtrls() {
-  var g = $('gCtrl'), L = ctrlList(), h = '';
+  var g = ctrlRoot(), L = ctrlList(), h = '', h1 = '';
   L.forEach(function (c, i) {
+    var row1 = c.row === 1, out = '';
     var typed = !!S.typed[c.k], v = getP(c.k), dp = dpOf(c);
     var mid = typed ? '<input type="text" class="tin" inputmode="decimal" data-i="' + i + '" value="' + (c.vals ? v : fx(v, dp)) + '">'
       : (c.vals ? '<input type="range" data-i="' + i + '" min="0" max="' + (c.vals.length - 1) + '" step="1" value="' + c.vals.indexOf(v) + '">'
         : '<input type="range" data-i="' + i + '" min="' + c.min + '" max="' + c.max + '" step="' + c.step + '" value="' + v + '">');
-    h += '<div class="sl' + (typed ? ' typed' : '') + '" data-i="' + i + '"><label class="sl-t" data-i="' + i + '" title="click to switch between slider and typed value">' + c.lab + '<span class="tg"></span></label>' +
+    out = '<div class="sl' + (typed ? ' typed' : '') + '" data-i="' + i + '"><label class="sl-t" data-i="' + i + '" title="click to switch between slider and typed value">' + c.lab + '<span class="tg"></span></label>' +
       '<span class="mid">' + mid + '</span><span class="val" data-i="' + i + '">' + valTxt(c, v) + '</span></div>';
+    if (row1) h1 += out; else h += out;
   });
-  if (!L.length) h = '<span class="tlabel" style="text-transform:none;letter-spacing:0">Pick a mode (n, m) above — the plate is driven at that mode’s resonant frequency</span>';
-  g.innerHTML = h;
+  $('gCtrl').innerHTML = h; $('gCtrl1').innerHTML = h1;
   g.querySelectorAll('.sl-t').forEach(function (el) { el.addEventListener('click', function () { var c = L[+el.dataset.i]; S.typed[c.k] = !S.typed[c.k]; renderCtrls(); }); });
   g.querySelectorAll('input[type=range]').forEach(function (el) {
     el.addEventListener('input', function () { var c = L[+el.dataset.i]; setVal(c, c.vals ? c.vals[+el.value] : +(+el.value).toFixed(dpOf(c))); });
@@ -1851,7 +2156,7 @@ function renderCtrls() {
   syncCtrlVals(); fitCtrls();
 }
 function syncCtrlVals() {
-  var g = $('gCtrl'), L = ctrlList();
+  var g = ctrlRoot(), L = ctrlList();
   L.forEach(function (c, i) {
     var v = getP(c.k), vs = g.querySelector('.val[data-i="' + i + '"]'), sl = g.querySelector('.sl[data-i="' + i + '"]');
     if (vs) vs.textContent = valTxt(c, v);
@@ -1863,9 +2168,9 @@ function syncCtrlVals() {
   });
 }
 function fitCtrls() {
-  var g = $('gCtrl'), row = $('row2'); g.classList.remove('c1', 'c2');
-  if (row.scrollWidth > row.clientWidth + 1) g.classList.add('c1');
-  if (row.scrollWidth > row.clientWidth + 1) g.classList.add('c2');
+  /* only the slider slots shrink — buttons never change width */
+  var g = $('gCtrl'), row = $('row2'); g.classList.remove('c1', 'c2', 'c3');
+  ['c1', 'c2', 'c3'].forEach(function (c) { if (row.scrollWidth > row.clientWidth + 1) g.classList.add(c); });
 }
 
 /* ── toolbar state ─────────────────────────────────────────────────────── */
@@ -1878,6 +2183,7 @@ function syncToolbar() {
   document.querySelectorAll('#row1 [data-sub]').forEach(function (g) {
     var on = g.dataset.sub.split(' ').indexOf(s) >= 0;
     if (on && g.dataset.step) on = g.dataset.step === S.m1.ph.step;
+    if (on && g.dataset.exp) on = g.dataset.exp === S.m3.tube.exp;
     g.style.display = on ? '' : 'none';
   });
   document.querySelectorAll('#gTabs .tab').forEach(function (b) { b.classList.toggle('active', +b.dataset.md === S.md); });
@@ -1885,6 +2191,7 @@ function syncToolbar() {
   setActive('gSub', S.ex[S.md]);
   setActive('gVdiv', S.m1.cro.vdiv); setActive('gTdiv', S.m1.cro.tdiv);
   setActive('gPhStep', S.m1.ph.step); setActive('gPhStart', S.m1.ph.start); setActive('gPhScn', S.m1.ph.scn);
+  setActive('gTexp', S.m3.tube.exp); setActive('gFork', S.m3.tube.fork); $('tRevealW').classList.toggle('on', S.m3.tube.reveal);
   setActive('gType', S.m2.d1.type); setActive('gSrc', S.m2.rip.src); setActive('gTube', S.m3.tube.type); setActive('gPlate', S.m3.pl.mode);
   var m = strModes(); setActive('gHarm', m.res && Math.abs(S.m3.str.f / m.dom.fn - 1) < 0.004 ? m.dom.n : -1);
   var tm = tubeModes(); setActive('gTmode', tm.res && Math.abs(S.m3.tube.f / tm.fn - 1) < 0.004 ? tm.n : -1);
@@ -1894,11 +2201,13 @@ function syncToolbar() {
   $('gHarm').querySelectorAll('.pill').forEach(function (b) { b.title = 'set the generator to f' + b.dataset.v + ' = ' + fx(strFn(+b.dataset.v), 2) + ' Hz'; });
   $('tReveal').classList.toggle('on', S.m1.cro.reveal);
   $('tEnergy').classList.toggle('on', S.energy);
-  $('tComp').classList.toggle('on', S.m3.str.comps);
+  $('tComp').classList.toggle('on', S.m3.str.comps); $('tSnap').classList.toggle('on', S.m3.str.snap);
+  $('tComp').classList.toggle('locked', S.m3.str.snap); $('tEnergy').classList.toggle('locked', s === '3str' && S.m3.str.snap);
   $('tAnti').classList.toggle('on', S.m3.pl.anti);
   $('tLabels').classList.toggle('on', S.labels);
   $('tFormula').classList.toggle('on', S.formula);
   $('tGrid').classList.toggle('on', S.grid);
+  $('tHints').classList.toggle('on', S.show.hints); $('tClock').classList.toggle('on', S.show.time); $('tStatus').classList.toggle('on', S.show.status);
   $('tGrid').classList.toggle('locked', s === '1cro');
   $('tFormula').classList.toggle('locked', s === '3pl');
   $('bPlay').querySelectorAll('.ppl').forEach(function (p) { p.classList.toggle('on', p.dataset.pp === (S.play ? 'pause' : 'play')); });
@@ -1920,12 +2229,13 @@ var EQS = {
 var eqKey = '';
 function renderEq() {
   var el = $('chipEq'), s = sub(), list = EQS[s];
-  if (s === '3tube') list = S.m3.tube.type === 'oo' ? ['\\lambda_n = \\dfrac{2L}{n}', 'f_n = \\dfrac{n\\,v}{2L}'] : ['\\lambda = \\dfrac{4L}{2n-1}', 'f = \\dfrac{(2n-1)\\,v}{4L}'];
+  if (s === '3tube' && S.m3.tube.exp === 'fork') list = ['L + e = \\dfrac{(2n-1)\\lambda}{4}', 'L_2 - L_1 = \\dfrac{\\lambda}{2}', 'e \\approx 0.6\\,r'];
+  else if (s === '3tube') list = S.m3.tube.type === 'oo' ? ['\\lambda_n = \\dfrac{2L}{n}', 'f_n = \\dfrac{n\\,v}{2L}'] : ['\\lambda = \\dfrac{4L}{2n-1}', 'f = \\dfrac{(2n-1)\\,v}{4L}'];
   var show = S.formula && !!list;
   el.hidden = !show;
   if (!show) { eqKey = ''; return; }
   var key = s + list.join('|'); if (key === eqKey) return; eqKey = key;
-  el.innerHTML = '<div class="eqh">Formula · drag me</div>' + list.map(function (t) {
+  el.innerHTML = '<div class="eqh"><span class="grip"></span>Formula</div>' + list.map(function (t) {
     return '<div>' + (window.katex ? katex.renderToString(t, { throwOnError: false }) : t) + '</div>'; }).join('');
 }
 (function () {
@@ -1943,31 +2253,31 @@ function renderEq() {
 
 /* ── chips ─────────────────────────────────────────────────────────────── */
 var HINT = {
-  '1tl': 'drag P along the wave · double-click: zoom ×2 · middle-click: reset P',
-  '1cro': 'click a dial to turn it (shift-click turns it back) · 🎲 New signal = a fresh reading to practise',
-  '1ph': 'drag the probe to add the waves point by point · double-click: zoom ×2',
-  '2d1': 'drag P along the wave · ⚡ Energy: watch what crosses the fixed point',
-  '2rip': 'move the mouse over the water to measure λ · double-click: zoom ×2',
-  '3str': 'use Tune to: 1st … 4th, or the frequency control · ⚡ Energy: tokens stay in their own loop',
-  '3tube': 'change L or f, or Tune to a mode · N / A = displacement nodes / antinodes',
-  '3pl': 'pick a mode — the sand migrates to the new nodal lines · double-click: zoom ×2'
+  '1tl': 'drag P along the wave<br>middle-click: P back home',
+  '1cro': 'click a dial to turn it<br>shift-click turns it back',
+  '1ph': 'drag the probe:<br>y = y₁ + y₂ point by point',
+  '2d1': 'drag P along the wave<br>⚡ Energy: what crosses the line?',
+  '2rip': 'hover over the water<br>to measure λ',
+  '3str': 'Tune to a harmonic<br>or slide the frequency',
+  '3tube': 'Tune to a mode,<br>or change L or f',
+  '3pl': 'pick a mode (n, m):<br>the sand moves to the new lines'
 };
 function setChip(id, h) { var el = $(id); if (el.innerHTML !== h) el.innerHTML = h; }
 function patchChips() {
   var s = sub(), t = tPhys(), tc = '';
   if (s === '1cro') tc = 'trace held still by the trigger';
   else if (s === '3str') tc = 'not to time scale — drawn at ' + F_VIS + ' Hz (real: ' + fx(S.m3.str.f, 1) + ' Hz)';
-  else if (s === '3tube') tc = 'not to time scale — drawn at ' + F_VIS + ' Hz (real: ' + fx(S.m3.tube.f, 0) + ' Hz)';
+  else if (s === '3tube') tc = 'not to time scale — drawn at ' + F_VIS + ' Hz (real: ' + fx(S.m3.tube.exp === 'fork' ? S.m3.tube.fork : S.m3.tube.f, 0) + ' Hz)';
   else if (s === '3pl') tc = 'not to time scale — real plate ≈ ' + plFreq() + ' Hz';
   else tc = 'slow motion ×' + SLOW + ' · t = ' + fx(t, 2) + ' s';
   if (S.speed !== 1) tc += ' · ' + S.speed + '×';
-  setChip('chipTime', tc);
+  setChip('chipTime', S.show.time ? tc : '');
   setChip('chipZoom', S.zoom.k > 1 ? '🔍 ×2 — drag to pan · double-click or Esc to exit' : '');
   var st = '';
   if (s === '3str') { var m = strModes(); st = m.res ? '● RESONANCE — harmonic n = ' + m.dom.n : ''; }
-  if (s === '3tube') { var md = tubeModes(); st = md.res ? '● RESONANCE — mode n = ' + md.n : ''; }
-  setChip('chipState', st);
-  setChip('tbHint', HINT[s]);
+  if (s === '3tube') { if (S.m3.tube.exp === 'fork') { var fr = fkResp(S.m3.tube.Lw); st = fr.a > 0.6 ? '● RESONANCE — n = ' + fr.n + ', L = ' + fx(S.m3.tube.Lw * 100, 1) + ' cm' : ''; } else { var md = tubeModes(); st = md.res ? '● RESONANCE — mode n = ' + md.n : ''; } }
+  setChip('chipState', S.show.status ? st : '');
+  setChip('chipHint', S.show.hints ? (s === '3tube' && S.m3.tube.exp === 'fork' ? 'lower the water slowly — listen<br>📌 Record L where it is loudest' : s === '3str' && S.m3.str.snap ? 'highlighted row = this moment<br>Tune to 1st … 4th to change n' : HINT[s]) : '');
   $('bbRight').textContent = 'mode ' + S.md + ' · ' + SUBS[S.md].filter(function (x) { return x[0] === S.ex[S.md]; })[0][1].replace(/^\S+\s/, '') + (S.play ? '' : ' · paused');
   if (s === '1cro') syncCtrlVals();
 }
@@ -2055,6 +2365,12 @@ function initUI() {
   bindPills('gType', function (v) { S.m2.d1.type = v; d1Clear(); syncToolbar(); });
   bindPills('gSrc', function (v) { S.m2.rip.src = v; S.m2.rip.t0 = tPhys() - 0.5; S.m2.rip.tok = []; S.m2.rip.lastSpawn = -1; syncToolbar(); });
   bindPills('gHarm', function (v) { S.m3.str.f = +strFn(+v).toFixed(2); syncCtrlVals(); syncToolbar(); });
+  $('gFork').innerHTML = FORKS.map(function (f) { return '<button class="pill" data-v="' + f + '">' + f + ' Hz</button>'; }).join('');
+  bindPills('gTexp', function (v) { S.m3.tube.exp = v; renderCtrls(); syncToolbar(); renderPanel(); });
+  bindPills('gFork', function (v) { S.m3.tube.fork = +v; S.m3.tube.rec = []; syncToolbar(); renderPanel(); });
+  $('bRecord').onclick = function () { fkRecord(); patchPanel(); };
+  $('bClearRec').onclick = function () { S.m3.tube.rec = []; S.m3.tube.seen = {}; patchPanel(); };
+  $('tRevealW').onclick = function () { S.m3.tube.reveal = !S.m3.tube.reveal; syncToolbar(); };
   bindPills('gTube', function (v) { S.m3.tube.type = v; syncToolbar(); renderPanel(); });
   bindPills('gTmode', function (v) { S.m3.tube.f = +tubeFn(+v).toFixed(0); syncCtrlVals(); syncToolbar(); });
   bindPills('gPlate', function (v) { S.m3.pl.mode = +v; syncToolbar(); });
@@ -2064,12 +2380,16 @@ function initUI() {
   $('tReveal').onclick = function () { S.m1.cro.reveal = !S.m1.cro.reveal; syncCtrlVals(); syncToolbar(); renderPanel(); };
   $('bNewSig').onclick = function () { newSignal(); };
   $('tEnergy').onclick = function () { S.energy = !S.energy; d1Clear(); S.m2.rip.tok = []; S.m2.rip.lastSpawn = -1; STRTOK.passed = 0; STRTOK.prev = null; syncToolbar(); };
+  $('tSnap').onclick = function () { S.m3.str.snap = !S.m3.str.snap; if (S.m3.str.snap) S.energy = false; syncToolbar(); };
   $('tComp').onclick = function () { S.m3.str.comps = !S.m3.str.comps; syncToolbar(); };
   $('tAnti').onclick = function () { S.m3.pl.anti = !S.m3.pl.anti; syncToolbar(); };
   $('bSprinkle').onclick = function () { plSprinkle(Math.floor(S.tw * 1000) + 7); };
   $('tLabels').onclick = function () { S.labels = !S.labels; syncToolbar(); };
   $('tFormula').onclick = function () { S.formula = !S.formula; syncToolbar(); placeChips(); };
   $('tGrid').onclick = function () { S.grid = !S.grid; syncToolbar(); };
+  [['tHints', 'hints'], ['tClock', 'time'], ['tStatus', 'status']].forEach(function (b) {
+    $(b[0]).onclick = function () { S.show[b[1]] = !S.show[b[1]]; syncToolbar(); patchChips(); };
+  });
   $('bPlay').onclick = function () { S.play = !S.play; syncToolbar(); };
   $('bReset').onclick = resetMode;
   $('theme').addEventListener('change', function () { setTheme(this.value); });
