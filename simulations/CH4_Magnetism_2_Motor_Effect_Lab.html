@@ -94,15 +94,19 @@
    everywhere, which is what the rule was protecting; an invisible colour
    protects nothing. Every value below is verified >= 3:1 in verify.js. */
 :root, .theme-hausnight, .theme-neon, .theme-clay{
-  --field-line:rgba(168,85,247,0.85);     /* purple  — magnetic field lines */
-  --force:#39ff14;                        /* neon green — force / motion */
-  --current:#9aa4ae;                      /* graphite — conventional current */
+  /* THE MAGNET TOPIC THEME (see references/ui-theme.md in the
+     physics-simulation-2d skill): field pink, current mint, force yellow —
+     the same three colours every magnetism lab uses, bright for dark canvases
+     and carrying a halo of their own colour there. */
+  --field-line:rgba(255,102,184,0.88);    /* pink  #FF66B8 — magnetic field  */
+  --force:#FAF863;                        /* yellow #FAF863 — force / motion */
+  --current:#4FF5DC;                      /* mint  #4FF5DC — conventional current */
   --neutral-pt:#22d3ee;                   /* cyan — neutral points */
 }
 .theme-light, .theme-haus{
-  --field-line:rgba(139,33,232,0.85);     /* purple, deepened for white */
-  --force:#0f8f12;                        /* green, deepened for white */
-  --current:#36393d;                      /* true dark charcoal */
+  --field-line:rgba(180,48,125,0.86);     /* pink,   deepened for white */
+  --force:#69680C;                        /* yellow, deepened for white */
+  --current:#167163;                      /* mint,   deepened for white */
   --neutral-pt:#0b7e8e;                   /* cyan, deepened for white */
 }
 
@@ -288,7 +292,7 @@ input[type=range]::-moz-range-thumb{ width:13px; height:13px; border-radius:50%;
 
   <!-- ======================= TOP BAR (45 px) ======================= -->
   <div class="top-bar">
-    <h1>🧲 <span>Motor Effect Lab</span> <span class="badge-top" id="badgeTop">v3.1.9</span></h1>
+    <h1>🧲 <span>Motor Effect Lab</span> <span class="badge-top" id="badgeTop">v3.2.2</span></h1>
     <div class="top-right">
       <div class="mode-tabs">
         <button class="mode-tab active" data-mode="sim">Simulate</button>
@@ -837,7 +841,29 @@ function readPalette() {
     green: g('--green'), rose: g('--rose'), violet: g('--violet'),
     amber: g('--amber'), blue: g('--blue'), orange: g('--orange')
   };
+  /* The three Magnet-theme colours glow on a dark canvas and never on a light
+     one — the switch comes from the canvas luminance, not the theme name, so a
+     new theme gets the right treatment for free. */
+  PAL.darkBG = relLum(PAL.bg) < 0.2;
+  PAL.glowSet = new Set([PAL.fieldLine, PAL.current, PAL.force].map(squash));
 }
+const squash = v => String(v).replace(/\s/g, '').toLowerCase();
+function relLum(c) {
+  const m = squash(c).match(/^#?([0-9a-f]{6})$|rgba?\((\d+),(\d+),(\d+)/);
+  if (!m) return 1;
+  let r, g2, b;
+  if (m[1]) { const n = parseInt(m[1], 16); r = n >> 16 & 255; g2 = n >> 8 & 255; b = n & 255; }
+  else { r = +m[2]; g2 = +m[3]; b = +m[4]; }
+  const f = v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(r) + 0.7152 * f(g2) + 0.0722 * f(b);
+}
+function glowable(col) { return !!(PAL.darkBG && col && PAL.glowSet && PAL.glowSet.has(squash(col))); }
+function glowOn(ctx, col, blur) {
+  if (!glowable(col)) return false;
+  ctx.save(); ctx.shadowColor = col; ctx.shadowBlur = blur || 10;
+  ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; return true;
+}
+function glowOff(ctx, on) { if (on) ctx.restore(); }
 function setTheme(cls) {
   document.body.className = cls || '';
   S.theme = cls || '';
@@ -951,6 +977,7 @@ function txt(ctx, s, x, y, o) {
   ctx.restore();
 }
 function headAt(ctx, x, y, ang, size, col) {
+  const gl = glowOn(ctx, col, 8);
   ctx.save();
   ctx.translate(x, y); ctx.rotate(ang);
   ctx.fillStyle = col || PAL.text;
@@ -958,6 +985,7 @@ function headAt(ctx, x, y, ang, size, col) {
   ctx.moveTo(0, 0); ctx.lineTo(-size, size * 0.52); ctx.lineTo(-size, -size * 0.52);
   ctx.closePath(); ctx.fill();
   ctx.restore();
+  glowOff(ctx, gl);
 }
 function arrow(ctx, x0, y0, x1, y1, o) {
   o = o || {};
@@ -965,7 +993,9 @@ function arrow(ctx, x0, y0, x1, y1, o) {
   const ang = Math.atan2(y1 - y0, x1 - x0);
   if (Math.hypot(x1 - x0, y1 - y0) < 0.5) return;
   const bx = x1 - Math.cos(ang) * hs * 0.85, by = y1 - Math.sin(ang) * hs * 0.85;
+  const gl = glowOn(ctx, col, 11);
   line(ctx, x0, y0, bx, by, { col, lw: o.lw || 2, alpha: o.alpha, cap: 'round' });
+  glowOff(ctx, gl);
   ctx.save(); ctx.globalAlpha = o.alpha != null ? o.alpha : 1;
   headAt(ctx, x1, y1, ang, hs, col);
   ctx.restore();
@@ -977,7 +1007,9 @@ function paintLine(ctx, pts, o) {
   if (!pts || pts.length < 2) return;
   o = o || {};
   ctx.save();
-  ctx.strokeStyle = o.col || PAL.fieldLine;
+  const colL = o.col || PAL.fieldLine;
+  if (glowable(colL)) { ctx.shadowColor = colL; ctx.shadowBlur = 9; }   /* inside the save above */
+  ctx.strokeStyle = colL;
   ctx.lineWidth = o.lw || 1.6;
   ctx.globalAlpha = o.alpha != null ? o.alpha : 1;
   ctx.lineJoin = 'round'; ctx.lineCap = 'round';
@@ -1899,9 +1931,10 @@ function tick(ts) {
      the force, so only the current-direction arrows appear. */
   function pairCurves() {
     const g = pairGeom();
+    const R = 11;                      /* a traced line goes round the conductor */
     const bounds = { x0: 40, y0: 40, x1: 1160, y1: 640 };
     const solids = [{ contains: (x, y) =>
-      PHYS.hyp(x - g.w1.x, y - g.w1.y) < 11 || PHYS.hyp(x - g.w2.x, y - g.w2.y) < 11 }];
+      PHYS.hyp(x - g.w1.x, y - g.w1.y) < R || PHYS.hyp(x - g.w2.x, y - g.w2.y) < R }];
     const seeds = []
       .concat(PHYS.equalFluxSeeds(fieldFn_pair, { x: g.w1.x - 250, y: g.y }, { x: g.w1.x - 16, y: g.y }, 5))
       .concat(PHYS.equalFluxSeeds(fieldFn_pair, { x: g.w2.x + 16, y: g.y }, { x: g.w2.x + 250, y: g.y }, 5))
@@ -1959,6 +1992,15 @@ function tick(ts) {
   function drawPairSide(ctx) {
     const g = pairGeom();
     const curves = pairCurves();
+    /* The curves are traced in the bird-eye plane, where a wire is a solid the
+       line must go round, so every ring arrives at its own wire with a gap in
+       it. Seen EDGE-ON that gap is wrong: the ring is a circle in the plane cut
+       by the wire, so it passes IN FRONT of the rod on the near side and BEHIND
+       it on the far side — it is never interrupted. Runs that stop and restart
+       within a rod's width are therefore joined back up, and the near half is
+       painted after the rods and the current arrows so it genuinely covers
+       them, while the far half stays underneath. */
+    const BRIDGE = 34;
     const half = which => {
       for (const c of curves) {
         const seg = []; let run = [];
@@ -1968,6 +2010,10 @@ function tick(ts) {
           else if (run.length) { seg.push(run); run = []; }
         }
         if (run.length) seg.push(run);
+        for (let i = seg.length - 1; i > 0; i--) {          /* close the rod-width gaps */
+          const a = seg[i - 1][seg[i - 1].length - 1], b = seg[i][0];
+          if (Math.hypot(b.x - a.x, b.y - a.y) <= BRIDGE) { seg[i - 1] = seg[i - 1].concat(seg[i]); seg.splice(i, 1); }
+        }
         for (const s of seg)
           paintLine(ctx, s, {
             col: PAL.fieldLine,
@@ -1984,7 +2030,6 @@ function tick(ts) {
     drawConductorNetwork(ctx, [g.w1, g.w2].map(w => ({
       w: 13, pts: [{ x: w.x, y: WIRE_TOP }, { x: w.x, y: WIRE_BOT }]
     })));
-    half('near');
     /* current-direction arrows only — no supply is drawn (spec 4.1.c), so
        the flow animation runs along each WIRE rather than round a circuit */
     for (const [w, dir, name] of [[g.w1, F.dir1, 'I₁'], [g.w2, F.dir2, 'I₂']]) {
@@ -2004,6 +2049,7 @@ function tick(ts) {
           { col: PAL.current, size: 10.5, weight: 700, plate: true });
       }
     }
+    half('near');                 /* in front of the rods and the current arrows */
     const f = pairForces(), FL = 58;
     arrow(ctx, g.w1.x, g.y, g.w1.x + f.on1.x * FL, g.y + f.on1.y * FL, { col: PAL.force, lw: 3.6, head: 13 });
     arrow(ctx, g.w2.x, g.y, g.w2.x + f.on2.x * FL, g.y + f.on2.y * FL, { col: PAL.force, lw: 3.6, head: 13 });
@@ -3925,6 +3971,10 @@ function tick(ts) {
     txt(ctx, pole, x, cy, { col: '#fff', size: 24, weight: 800 });
   }
 
+  /* which brush is positive and which is negative — ONE list, used by the 3-D
+     scene and by the enlarged card, so a student reads the same polarity twice */
+  const brushPoles = () => [[1, '+', PAL.rose], [-1, '−', PAL.blue]];
+
   /* ---------- the split ring and its brushes, IN the projection ----------
      The old drawing squashed the ring vertically — ctx.scale(1, 0.55) — which
      is what a ring lying in the HORIZONTAL plane would look like. But the
@@ -3967,19 +4017,22 @@ function tick(ts) {
     ctx.restore();
 
     /* the brushes are FIXED in space: they touch the cylinder at its left and
-       right extremes, half way along its thickness, and carry leads outwards */
+       right extremes, half way along its thickness, and carry leads outwards.
+       The + / − marking comes from brushPoles(), the same list the enlarged card
+       uses, so the drawing and the card can never show opposite polarity. */
     const mid = p3(cxw, cyw, z0 + T / 2);
-    for (const sgn of [1, -1]) {
+    for (const [sgn, lab, col] of brushPoles()) {
       const bx = mid.x + sgn * R;
       ctx.save();
-      ctx.strokeStyle = PAL.steel; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
+      ctx.strokeStyle = col; ctx.lineWidth = 2.6; ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(bx + sgn * 26, mid.y); ctx.lineTo(bx + sgn * 56, mid.y);
       ctx.stroke();
       ctx.fillStyle = PAL.iron;
       rr(ctx, sgn > 0 ? bx + 1 : bx - 27, mid.y - 9, 26, 18, 3); ctx.fill();
-      ctx.strokeStyle = PAL.metalHi; ctx.lineWidth = 1.2; ctx.stroke();
+      ctx.strokeStyle = col; ctx.lineWidth = 1.6; ctx.stroke();
       ctx.restore();
+      txt(ctx, lab, bx + sgn * 14, mid.y, { col, size: 12, weight: 800 });
     }
     txt(ctx, 'brushes (fixed)', mid.x, near.y + R + 26, { col: PAL.textMuted, size: 9.5 });
     txt(ctx, M.commutatorOn ? 'split ring' : 'slip ring', far.x, far.y - R - 14,
@@ -4026,7 +4079,7 @@ function tick(ts) {
 
     // the two fixed brushes, marked + and −
     const bx = ringR + 26;
-    for (const [sgn, lab, col] of [[1, '+', PAL.rose], [-1, '−', PAL.blue]]) {
+    for (const [sgn, lab, col] of brushPoles()) {
       const x = cx + sgn * bx;
       ctx.save();
       ctx.fillStyle = PAL.iron; rr(ctx, x - 10, cy - 9, 20, 18, 3); ctx.fill();

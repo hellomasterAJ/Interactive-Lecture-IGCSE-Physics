@@ -67,9 +67,9 @@
 :root, .theme-hausnight, .theme-neon, .theme-light, .theme-haus, .theme-clay {
   --pole-n:#ff4444;        /* north — red, as on every school bar magnet   */
   --pole-s:#4488ff;        /* south — blue                                 */
-  --field-line:rgba(255,200,50,0.62);   /* gold  — magnetic field lines    */
-  --current:#ff8c1a;       /* orange — conventional current                */
-  --force:#22c55e;         /* green  — force / motion                      */
+  --field-line:rgba(255,102,184,0.88);  /* pink   #FF66B8 — magnetic field    */
+  --current:#4FF5DC;       /* mint   #4FF5DC — conventional current        */
+  --force:#FAF863;         /* yellow #FAF863 — force / motion              */
   --wire:#c87f3a;          /* copper                                       */
   --neutral-pt:#a78bfa;    /* violet — neutral points                      */
   --compass:#e2e8f0;
@@ -77,6 +77,15 @@
 :root, .theme-hausnight, .theme-neon {
   --metal:#7c8899; --metal-hi:#aab4c2; --iron:#8a95a3; --steel:#66707c;
   --nonmag:#7a6f66; --insul:#5b4636; --filing:rgba(200,208,220,0.80);
+}
+/* The three signature colours are the SAME HUES in every theme, but a mint or a
+   pale yellow that sings on a near-black canvas disappears on a cream one (contrast
+   1.3:1). On the light themes only, each hue is taken down to the darkest shade that
+   still reads as that colour, so every theme clears 4.5:1 against its own canvas. */
+.theme-light, .theme-haus, .theme-clay {
+  --field-line:rgba(180,48,125,0.86);   /* pink,   darkened  */
+  --current:#167163;                    /* mint,   darkened  */
+  --force:#69680C;                      /* yellow, darkened  */
 }
 .theme-light, .theme-haus, .theme-clay {
   --metal:#5d6875; --metal-hi:#98a3b0; --iron:#6f7a88; --steel:#4a535d;
@@ -278,7 +287,7 @@ table.dt tr.no  td:first-child{color:var(--text-muted)}
 
   <!-- ===== HEADER ZONE (45 px) ===== -->
   <div class="top-bar">
-    <h1>🧲 <span>Magnetic Fields Lab</span> <span class="badge-top" id="badgeTop">v1.5.0</span></h1>
+    <h1>🧲 <span>Magnetic Fields Lab</span> <span class="badge-top" id="badgeTop">v1.5.2</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="modeTabs">
         <button class="mode-tab active" data-mode="sim">Simulate</button>
@@ -753,7 +762,31 @@ function readPalette(){
     steel:g('--steel'), nonmag:g('--nonmag'), insul:g('--insul'),
     filing:g('--filing')
   };
+  /* On a near-black canvas the three signature colours are given a soft halo of
+     their own colour, so a thin field line or a current arrow glows instead of
+     sitting flat. On the light themes the halo would be a grey smudge, so it is
+     switched off there — the flag is derived from the canvas itself, never from
+     the theme name, so a new theme gets the right treatment for free. */
+  PAL.darkBG = relLum(PAL.bg) < 0.2;
+  PAL.glowSet = new Set([PAL.line, PAL.cur, PAL.force].map(squash));
 }
+const squash = v => String(v).replace(/\s/g, '').toLowerCase();
+function relLum(c){
+  const m = squash(c).match(/^#?([0-9a-f]{6})$|rgba?\((\d+),(\d+),(\d+)/);
+  let r, g, b;
+  if(!m) return 1;
+  if(m[1]){ const n = parseInt(m[1], 16); r = n>>16&255; g = n>>8&255; b = n&255; }
+  else { r = +m[2]; g = +m[3]; b = +m[4]; }
+  const f = v => { v /= 255; return v <= 0.03928 ? v/12.92 : Math.pow((v+0.055)/1.055, 2.4); };
+  return 0.2126*f(r) + 0.7152*f(g) + 0.0722*f(b);
+}
+/* turn the halo on for one of the three colours; returns true if ctx was saved */
+function glowOn(col, blur){
+  if(!PAL.darkBG || !col || !PAL.glowSet || !PAL.glowSet.has(squash(col))) return false;
+  CX.save(); CX.shadowColor = col; CX.shadowBlur = blur || 10; CX.shadowOffsetX = 0; CX.shadowOffsetY = 0;
+  return true;
+}
+function glowOff(on){ if(on) CX.restore(); }
 function setTheme(name){
   document.body.className = name === 'dark' ? '' : 'theme-' + name;
   S.theme = name; readPalette(); draw(); updatePanel();
@@ -848,6 +881,7 @@ function metalGrad(x, y, w, h, base, hi){
 function arrow(x1, y1, x2, y2, opt){
   opt = opt || {};
   const hd = opt.head || 10, lw = opt.lw || 2.4;
+  const gl = glowOn(opt.col, 11);
   CX.strokeStyle = opt.col || PAL.accent; CX.fillStyle = opt.col || PAL.accent;
   CX.lineWidth = lw; CX.lineCap = 'round';
   const a = Math.atan2(y2-y1, x2-x1), L = Math.hypot(x2-x1, y2-y1);
@@ -858,15 +892,18 @@ function arrow(x1, y1, x2, y2, opt){
   CX.lineTo(x2 - hd*Math.cos(a-0.38), y2 - hd*Math.sin(a-0.38));
   CX.lineTo(x2 - hd*Math.cos(a+0.38), y2 - hd*Math.sin(a+0.38));
   CX.closePath(); CX.fill();
+  glowOff(gl);
 }
 /* one arrowhead sitting on a path, used along every field line */
 function headAt(p, q, col, sz){
   const a = Math.atan2(q.y-p.y, q.x-p.x), s = sz || 7;
+  const gl = glowOn(col, 8);
   CX.fillStyle = col; CX.beginPath();
   CX.moveTo(q.x, q.y);
   CX.lineTo(q.x - s*Math.cos(a-0.42), q.y - s*Math.sin(a-0.42));
   CX.lineTo(q.x - s*Math.cos(a+0.42), q.y - s*Math.sin(a+0.42));
   CX.closePath(); CX.fill();
+  glowOff(gl);
 }
 /* Paint a set of traced field lines.
    The third argument is HOW MANY arrowheads to put on each line, not how
@@ -877,6 +914,7 @@ function headAt(p, q, col, sz){
    with the curve invisible underneath. */
 function paintLines(lines, col, perLine){
   const n = perLine || 4;
+  const gl = glowOn(col || PAL.line, 9);
   CX.strokeStyle = col || PAL.line; CX.lineWidth = 1.9;
   CX.lineJoin = 'round'; CX.lineCap = 'round';
   for(const L of lines){
@@ -891,6 +929,7 @@ function paintLines(lines, col, perLine){
     for(let i = step; i < L.length - 3; i += step)
       headAt(L[i-3], L[i], col || PAL.line, 8);
   }
+  glowOff(gl);
 }
 
 /* ---------- a school bar magnet: red north, blue south ---------- */
@@ -962,6 +1001,7 @@ function compassGlyph(x, y, r, th, opt){
 function currentDot(x, y, r, s, opt){
   opt = opt || {};
   const col = opt.col || PAL.cur;
+  const gl = glowOn(col, 10);
   CX.fillStyle = PAL.card; CX.beginPath(); CX.arc(x, y, r, 0, TAU); CX.fill();
   CX.strokeStyle = col; CX.lineWidth = Math.max(1.6, r*0.19); CX.lineCap = 'round';
   CX.beginPath(); CX.arc(x, y, r, 0, TAU); CX.stroke();
@@ -971,6 +1011,7 @@ function currentDot(x, y, r, s, opt){
     const a = r*0.60;
     line(x-a, y-a, x+a, y+a); line(x-a, y+a, x+a, y-a);
   }
+  glowOff(gl);
 }
 /* a length of copper wire */
 function copperWire(x1, y1, x2, y2, wdt){
