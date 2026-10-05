@@ -47,7 +47,8 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── CH5_Nuclear_3_Radioactive_Lab.html            ← Radioactive Lab ☢️
 │   └── AS/                                            ← A-Level 9702 wave sims
 │       ├── AS_CH3_Wave_1_Progressive_and_Stationary_Waves.html ← Progressive & Stationary Waves 〰️
-│       └── AS_CH3_Wave_3_Doppler_Effect.html         ← Doppler Effect & Redshift 🚨
+│       ├── AS_CH3_Wave_3_Doppler_Effect.html         ← Doppler Effect & Redshift 🚨
+│       └── AS_CH3_Wave_4_Intensity_and_Polarisation.html ← Intensity & Polarisation 🔆
 ├── scripts/               ← Build system (Python)
 │   ├── build.py           ← Main: python build.py lecture.md
 │   ├── build_dashboard.py ← Dashboard generator
