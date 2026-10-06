@@ -228,7 +228,7 @@ ol.steps li{margin:3px 0}
 <body>
 <div class="container">
   <div class="top-bar">
-    <h1>📏 S.I. Units &amp; Homogeneity <span class="badge-top" id="badge">v1.0.2</span></h1>
+    <h1>📏 S.I. Units &amp; Homogeneity <span class="badge-top" id="badge">v1.0.3</span></h1>
     <div class="top-right">
       <select class="theme-select" id="themeSel" aria-label="Theme">
         <option value="dark">Classic Dark</option>
@@ -1088,16 +1088,23 @@ function drawM1Pref(){
   // ── ladder
   ctx.strokeStyle = COL.rung; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(LAD.x, LAD.y0-6); ctx.lineTo(LAD.x, LAD.y1+6); ctx.stroke();
   for (let n=LAD.bot; n<=LAD.top; n++){ const y = ladY(n); ctx.lineWidth = 1.2; ctx.beginPath(); ctx.moveTo(LAD.x-5,y); ctx.lineTo(LAD.x+5,y); ctx.stroke(); }
+  // exponent column: 10ⁿ for lengths; (10ⁿ)² = 10²ⁿ for areas, (10ⁿ)³ = 10³ⁿ for volumes
+  const rungExpr = (n, D) => D===1 || n===0 ? '10^{' + n*D + '}' : '(10^{' + n + '})^{' + D + '} = 10^{' + n*D + '}';
+  const exW = Math.max(...PREFIX.map(p => richUW(rungExpr(p.n, T.D), T.D>1 ? 17 : 19)));
   PREFIX.forEach(p => {
     const y = ladY(p.n), isBase = p.n===0, hit = p.n===T.pf || p.n===T.pt;
     const c = isBase ? COL.accent : hit ? COL.marker : p.key ? COL.ink : p.rare ? COL['text-muted'] : COL['ink-dim'];
     ctx.lineWidth = isBase ? 3 : 2; ctx.strokeStyle = c; ctx.beginPath(); ctx.moveTo(LAD.x-14,y); ctx.lineTo(LAD.x+14,y); ctx.stroke();
     if (p.key){ ctx.beginPath(); ctx.arc(LAD.x+12, y-7, 2.6, 0, Math.PI*2); ctx.fillStyle = COL.amber; ctx.fill(); }
-    const small = p.rare && !hit, fu = small ? 15 : (isBase||hit ? 23 : 21), fe = small ? 14 : 19, fn = small ? 13 : 15;
+    const small = p.rare && !hit, fu = small ? 15 : (isBase||hit ? 23 : 21), fn = small ? 13 : (T.D>1 ? 14 : 15);
+    const fe = T.D>1 ? (small ? 12 : 17) : (small ? 14 : 19);
     text(p.p + T.u, LAD.x+22, y+(small?5:7), F_UP(fu), c);
-    richU('10^{' + p.n*T.D + '}', LAD.x+88, y+(small?5:7), fe, c);
-    if (S.labels) text(p.name + (p.rare?' (rare)':''), LAD.x+152, y+(small?4:6), F_UI(fn, p.key||isBase||hit?600:500), p.rare ? COL['text-muted'] : COL['ink-dim']);
+    richU(rungExpr(p.n, T.D), LAD.x+88, y+(small?5:7), fe, c);
+    if (S.labels) text(p.name + (p.rare?' (rare)':''), LAD.x + 88 + exW + 14, y+(small?4:6), F_UI(fn, p.key||isBase||hit?600:500), p.rare ? COL['text-muted'] : COL['ink-dim']);
   });
+  if (T.D > 1){                      // the rule every rung follows, written once above the ladder
+    richU('each rung:  ' + '(prefix)m^{' + T.D + '} = (10^{n} m)^{' + T.D + '} = 10^{' + T.D + 'n} m^{' + T.D + '}', LAD.x - 100, 20, 15, COL.amber);
+  }
   // ── marker travels pf → 0 → pt (one rung = one power of ten)
   const e = prog <= 1 ? lerp(T.pf, 0, ease(prog)) : lerp(0, T.pt, ease(prog-1));
   const labs = [];
@@ -1576,6 +1583,9 @@ function panelData(){
   } else if (S.mode===0 && S.pill[0]===1){
     const T = prefixTask(), d = decParse(T.v), pf = prefOf(T.pf), pt = prefOf(T.pt), sci = decSci(d, T.D*T.pf), sci2 = decSci(d, prefShift(T));
     const hide = S.m1.pref.sub==='prac' && !S.m1.pref.prac.result;
+    if (T.D > 1) h += sec('dim', T.D===2 ? 'Area — every prefix is squared' : 'Volume — every prefix is cubed',
+      PREFIX.filter(p=>p.n!==0).map(p => `<div class="sym" style="grid-template-columns:52px 1fr auto"><span class="s up">${p.p}m${supStr(T.D)}</span><span>${K('(10^{'+p.n+'}\\,\\text{m})^{'+T.D+'} = 10^{'+(T.D*p.n)+'}\\,\\text{m}^{'+T.D+'}')}</span><span class="u">${p.name}</span></div>`).join('')
+      + `<div class="note">The prefix belongs to the metre, so it is raised to the same power as the metre: e.g. 1 mm${supStr(T.D)} = (10⁻³ m)${supStr(T.D)} = 10${supStr(-3*T.D)} m${supStr(T.D)}.</div>`);
     h += sec('sym','What the symbols mean', PREFIX.filter(p=>p.n!==0).map(p => `<div class="sym"><span class="s up">${p.p}</span><span>${p.name}${p.rare?' <span class="muted">(rare)</span>':''}${p.key?' <span class="mk" title="worth memorising">★ key</span>':''}</span><span class="u">${K('10^{'+p.n+'}')}</span></div>`).join(''));
     h += sec('read','Readouts', kv([['Value given', T.v + ' ' + pf.p + T.u, 1], ['Prefix', pf.p ? pf.name + ' = 10' + supStr(pf.n) + (T.D>1 ? '  → ' + pf.p + T.u + ' = 10' + supStr(T.D*pf.n) + ' ' + T.u : '') : 'none'],
       ['Value (scientific, base unit)', hide ? '?' : sci.mant + ' × 10' + supStr(sci.exp) + ' ' + T.u, 1], ['Target prefix', pt.p ? pt.name + ' (' + pt.p + T.u + ')' : 'base unit (' + T.u + ')'],
