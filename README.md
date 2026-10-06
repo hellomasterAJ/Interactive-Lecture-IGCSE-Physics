@@ -45,7 +45,8 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── CH5_Nuclear_1_Atomic_Models.html              ← Atomic Models ⚛️
 │   ├── CH5_Nuclear_2_Nuclear_Symbols_Reactions.html  ← Nuclear Symbols & Reactions ☢️
 │   ├── CH5_Nuclear_3_Radioactive_Lab.html            ← Radioactive Lab ☢️
-│   └── AS/                                            ← A-Level 9702 wave sims
+│   └── AS/                                            ← A-Level 9702 sims
+│       ├── AS_CH0_Fundamental_1_SI_Units_and_Homogeneity.html ← SI Units & Homogeneity 🧱
 │       ├── AS_CH3_Wave_1_Progressive_and_Stationary_Waves.html ← Progressive & Stationary Waves 〰️
 │       ├── AS_CH3_Wave_2_Interference_and_Grating.html ← Interference & Diffraction Grating 🎯
 │       ├── AS_CH3_Wave_3_Doppler_Effect.html         ← Doppler Effect & Redshift 🚨
