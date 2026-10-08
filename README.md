@@ -137,6 +137,15 @@ Educational use — HAUS Academy
 
 ## 📋 Changelog
 
+### 8 Oct 2026 — AS/SI Units & Homogeneity `v1.1.7` (`simulations/AS/AS_CH0_Fundamental_1_SI_Units_and_Homogeneity.html`) · A-Level 9702 Chapter 0
+
+| # | การเปลี่ยนแปลง | รายละเอียด |
+|---|---------------|-----------|
+| 1 | **โจทย์จริงจาก PDF** | เอาโจทย์ข้อสอบ SI Units (จาก `0. SI Units.pdf`) มาเป็น exercise bank — prefix / homogeneity / derive unit ตามข้อจริง |
+| 2 | **Prefix เต็มสเกล** | ตาราง prefix `tera→atto` + เครื่องแปลง (`nm→pm`, `MW→W`, `kΩ→Ω`) + ฝึกแปลงข้อสอบ |
+| 3 | **Homogeneity คมขึ้น** | พิสูจน์ LHS=RHS + distractor ผิด, highlight จุดที่หน่วยไม่สมดุล |
+| 4 | **UI/เครื่องมือ** | natural-display calculator + unit keypad โดยรวม 6 themes / KaTeX offline / badge v1.1.7 |
+
 ### 7 July 2026 — Mass vs Weight Simulator (`simulations/Measurement_3_balance_newtonmeter.html`)
 
 | # | การเปลี่ยนแปลง | รายละเอียด |
