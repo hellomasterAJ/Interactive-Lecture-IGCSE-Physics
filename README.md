@@ -47,10 +47,11 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── CH5_Nuclear_3_Radioactive_Lab.html            ← Radioactive Lab ☢️
 │   └── AS/                                            ← A-Level 9702 sims
 │       ├── AS_CH0_Fundamental_1_SI_Units_and_Homogeneity.html ← SI Units & Homogeneity 🧱
+│       ├── AS_CH0_Fundamental_2_Uncertainty_and_Significant_Figures.html ← Uncertainty & Sig Figs ⚠️📏
 │       ├── AS_CH3_Wave_1_Progressive_and_Stationary_Waves.html ← Progressive & Stationary Waves 〰️
 │       ├── AS_CH3_Wave_2_Interference_and_Grating.html ← Interference & Diffraction Grating 🎯
 │       ├── AS_CH3_Wave_3_Doppler_Effect.html         ← Doppler Effect & Redshift 🚨
-│       └── AS_CH3_Wave_4_Intensity_and_Polarisation.html ← Intensity & Polarisation 🔆
+│       ├── AS_CH3_Wave_4_Intensity_and_Polarisation.html ← Intensity & Polarisation 🔆
 ├── scripts/               ← Build system (Python)
 │   ├── build.py           ← Main: python build.py lecture.md
 │   ├── build_dashboard.py ← Dashboard generator
@@ -136,6 +137,16 @@ python3 -m playwright install chromium
 Educational use — HAUS Academy
 
 ## 📋 Changelog
+
+### 10 Oct 2026 — AS/Uncertainty & Significant Figures `v1.1.1` (`simulations/AS/AS_CH0_Fundamental_2_Uncertainty_and_Significant_Figures.html`) · A-Level 9702 Chapter 0
+
+| # | การเปลี่ยนแปลง | รายละเอียด |
+|---|---------------|-----------|
+| 1 | **3 โหมดใหม่** | ① Data & Errors (systematic/random, instrument, N น้อย→มาก/SD) ② Uncertainty Math (Abs/Rel/%, operators +−×÷xⁿ, graph+error bars, least DP/SF report) ③ Problem Solving (โจทย์จริง Q1–Q10) |
+| 2 | **อ้างอิงไฟล์จริง** | Mode 2 ตามวิธี lecture ลายมือ (`Lecture.pdf`); Mode 3 ทำโจทย์จริงจาก `Uncertainty.pdf` (10 ข้อ) |
+| 3 | **Operator machine** | +−→รวม absolute, ×÷→รวม % , power→×n (x³/∛x เพิ่ม) + result รูป `(a±b)×10ⁿ` สำหรับค่าใหญ่/เล็ก |
+| 4 | **UI** | box width ปรับ, 💬 Hints default off, s.f. box ชี้ลงถึงหลักที่รายงาน; badge v1.1.1 / KaTeX offline / 6 themes |
+| 5 | **เอกสาร** | `Uncertainty_v1.0.7_Changes.xlsx` — change log + box widths + วิธีทำ Example 2 แนบในโฟลเดอร์ |
 
 ### 8 Oct 2026 — AS/SI Units & Homogeneity `v1.1.7` (`simulations/AS/AS_CH0_Fundamental_1_SI_Units_and_Homogeneity.html`) · A-Level 9702 Chapter 0
 
