@@ -326,7 +326,7 @@ table.dt tr.hl td{color:var(--accent);font-weight:700}
 <body>
 <div class="container">
   <div class="top-bar">
-    <h1>📐 Uncertainty &amp; Significant Figures <span class="badge-top" id="badge">v1.1.1</span></h1>
+    <h1>📐 Uncertainty &amp; Significant Figures <span class="badge-top" id="badge">v1.1.8</span></h1>
     <div class="top-right">
       <select class="theme-select" id="themeSel" aria-label="Theme">
         <option value="dark">Classic Dark</option>
@@ -388,6 +388,7 @@ table.dt tr.hl td{color:var(--accent);font-weight:700}
           <option value="balance">Digital balance</option>
           <option value="volt">Analogue voltmeter</option>
         </select>
+        <button class="tg" id="tgZE" title="Show / hide zero error">0️⃣ Zero error</button>
       </div>
       <div class="tgroup" data-ctx="m0p1">
         <span class="tlabel">Reading</span>
@@ -424,7 +425,7 @@ table.dt tr.hl td{color:var(--accent);font-weight:700}
         <span class="tlabel">Operator</span>
         <div class="seg" id="segOp">
           <button class="sp" data-v="+">+ Add</button><button class="sp" data-v="-">− Subtract</button><button class="sp" data-v="*">× Multiply</button>
-          <button class="sp" data-v="/">÷ Divide</button><button class="sp" data-v="sq">x²</button><button class="sp" data-v="sqrt">√x</button>
+          <button class="sp" data-v="/">÷ Divide</button><button class="sp" data-v="sq">x²</button><button class="sp" data-v="sqrt">√x</button><button class="sp" data-v="inv" title="Reciprocal, e.g. f = 1/T">1/x</button><button class="sp" data-v="ln" title="Natural log">ln x</button><button class="sp" data-v="lg" title="Log base 10">lg x</button>
         </div>
       </div>
       <div class="tgroup" data-ctx="m1p1">
@@ -590,6 +591,8 @@ const pctOf = (x, dx) => 100 * dx / Math.abs(x);
 const pct2 = p => Number(fmtSF(p, 2));            // the lecture writes every percentage to 2 s.f. (1.9 %, 4.2 %, 6.1 %)
 
 /* ── combining (lecture method) ── */
+const UNARY = op => op==='sq' || op==='sqrt' || op==='inv' || op==='ln' || op==='lg';
+const ISLOG = op => op==='ln' || op==='lg';   // operators that use input A only
 function combine(op, A, B, pw=2){                 // pw: the power used by sq (x², x³) and sqrt (√x, ∛x)
   // A, B = {v, d, s (written string), ds}
   const pA = pct2(pctOf(A.v, A.d)), pB = B ? pct2(pctOf(B.v, B.d)) : 0;
@@ -601,8 +604,12 @@ function combine(op, A, B, pw=2){                 // pw: the power used by sq (x
     case '/': val = A.v / B.v; pct = pct2(pA + pB); kind = 'pct'; rule = 'sf'; n = Math.min(sfOf(A.s), sfOf(B.s)); break;
     case 'sq': val = Math.pow(A.v, pw); pct = pct2(pw * pA); kind = 'pct'; rule = 'sf'; n = sfOf(A.s); break;
     case 'sqrt': val = Math.pow(A.v, 1/pw); pct = pct2(pA / pw); kind = 'pct'; rule = 'sf'; n = sfOf(A.s); break;
-  }
+    case 'inv': val = 1 / A.v; pct = pA; kind = 'pct'; rule = 'sf'; n = sfOf(A.s); break;          // 1/x keeps the SAME percentage
+    case 'ln': val = Math.log(A.v);   unc = A.d / A.v;               kind = 'log'; rule = 'dp'; n = sfOf(A.s); break;   // Δ(ln x) = Δx/x
+    case 'lg': val = Math.log10(A.v); unc = A.d / (A.v * Math.LN10); kind = 'log'; rule = 'dp'; n = sfOf(A.s); break;   // Δ(lg x) = Δx/(x ln10)
+  }                                                 // logs: d.p. of the log = s.f. of x
   if (kind === 'abs') pct = pct2(pctOf(val, unc));
+  else if (kind === 'log') pct = pA;                // the % of x (the % of a log has no use)
   else unc = val * pct / 100;
   const lec = reportLecture(val, unc, rule, n), one = report1sf(val, unc);
   return {val, unc, pct, pA, pB, kind, rule, n, lec, one};
@@ -1165,46 +1172,78 @@ function drawErr(){
    MODE 1.2 — writing the uncertainty of ONE instrument reading
    ═══════════════════════════════════════════════════════════════ */
 const INST = {
-  ruler:  {name:'Metre rule (mm scale)', unit:'mm', div:'1 mm', d:0.5, dp:1, analog:true,  make: r => ({v: 40 + Math.floor(r()*96)})},
+  ruler:  {name:'Metre rule (mm scale)', unit:'mm', div:'1 mm', d:1, dp:0, analog:true, fine:true, alt:{d:0.5, dp:1},   // mm marks too close to judge half → ± 1 division
+             make: r => ({v: 40 + Math.floor(r()*96)})},
   vernier:{name:'Vernier caliper', unit:'cm', div:'0.01 cm (vernier)', d:0.01, dp:2, analog:true, vernier:true, make: r => ({v: Math.round((1.2 + r()*3.6)*100)/100})},
   watch:  {name:'Analogue stopwatch', unit:'s', div:'0.2 s', d:0.1, dp:1, analog:true, make: r => ({v: Math.round((3 + r()*25)*5)/5})},
   balance:{name:'Digital balance', unit:'g', div:'last digit 0.01 g', d:0.01, dp:2, analog:false, make: r => ({v: Math.round((12 + r()*80)*100)/100})},
   volt:   {name:'Analogue voltmeter', unit:'V', div:'0.1 V', d:0.05, dp:2, analog:true, make: r => ({v: Math.round((0.6 + r()*4.2)*10)/10})}
 };
+/* zero error: the scale reading when NOTHING is measured; corrected value = scale reading − zero error */
+const ZE = {ruler:[10, 20, 10], vernier:[0.03, -0.02, 0.04, -0.03, 0.02], watch:[0.4, 0.6, 1.0], balance:[0.04, 0.07, 0.12], volt:[0.1, 0.2, -0.1]};
+const ZEWHAT = {ruler:'the worn end: the object starts at this mark', vernier:'jaws closed — nothing between them', watch:'reset, before pressing start', balance:'empty pan, before TARE', volt:'leads disconnected — no p.d.'};
+const ZV = {zero:false};                                       // the instrument is drawn in its zero-check state
+function instZero(){ const I = S.m1.inst; if (!I.ze) return 0; const L = ZE[I.kind]; return L[(I.seed - 1) % L.length]; }
 function instReading(){ const I = S.m1.inst, def = INST[I.kind]; const r = rng(I.seed*7919 + I.kind.length*131); return def.make(r).v; }
-const instAnswer = () => { const I = S.m1.inst, def = INST[I.kind], v = instReading(); return {v, vs: v.toFixed(def.dp), d: def.d, ds: String(def.d), unit: def.unit}; };
+const instAnswer = () => { const I = S.m1.inst, def = INST[I.kind], v = instReading(), z = instZero(), raw = Math.round((v + z)*1e6)/1e6;
+  return {v, vs: v.toFixed(def.dp), d: def.d, ds: String(def.d), unit: def.unit, z, zs: (z > 0 ? '+' : z < 0 ? '−' : '') + Math.abs(z).toFixed(def.dp), raw, raws: raw.toFixed(def.dp)}; };
 function checkInst(vs, ds){
   const A = instAnswer(), def = INST[S.m1.inst.kind];
   const v = parseNum(vs), d = parseNum(ds);
   if (!vs.trim() || !ds.trim()) return {lvl:'empty', msg:'Fill in both boxes: value ± uncertainty.'};
   if (!isFinite(v) || !isFinite(d)) return {lvl:'bad', msg:'Type numbers only — the unit is already shown.'};
   const tolV = def.analog && !def.vernier ? def.d + 1e-9 : 1e-9 + def.d*0.01;
-  const vOK = Math.abs(v - A.v) <= tolV, dOK = Math.abs(d - A.d) < 1e-9;
+  const altOK = !!def.alt && Math.abs(d - def.alt.d) < 1e-9;
+  const vOK = Math.abs(v - A.v) <= tolV, dOK = Math.abs(d - A.d) < 1e-9 || altOK;
+  if (vOK && altOK && dpOf(vs)===dpOf(ds)) return {lvl:'ok', msg:'Accepted: ' + vs + ' ± ' + ds + ' ' + A.unit + ' — but the mm marks are too close to judge half a division by eye, so ± 1 mm (' + A.vs + ' ± ' + A.ds + ' ' + A.unit + ') is the safer answer.'};
+  if (vOK && altOK) return {lvl:'near', msg:'Write the value to the same decimal place as the uncertainty: ' + v.toFixed(def.alt.dp) + ' ± ' + def.alt.d + ' ' + A.unit + ' — though for marks this close, ' + A.vs + ' ± ' + A.ds + ' ' + A.unit + ' is safer.'};
   if (vOK && dOK){ if (dpOf(vs) !== dpOf(ds)) return {lvl:'near', msg:'Right reading and uncertainty — but write the value to the same decimal place as the uncertainty: ' + A.vs + ' ± ' + A.ds + ' ' + A.unit + '.'};
     return {lvl:'ok', msg:'Correct: ' + vs + ' ± ' + ds + ' ' + A.unit + '.'}; }
-  if (vOK) return {lvl:'near', msg: def.analog ? (def.vernier ? 'Reading is right. A vernier is read to its least count, so Δ = ± 0.01 cm.' : 'Reading is right. Analogue scale → ± half the smallest division (' + def.div + ' → ± ' + A.ds + ' ' + A.unit + ').')
+  if (vOK) return {lvl:'near', msg: def.fine ? 'Reading is right. The marks are only ' + def.div + ' apart — too close to judge half a division by eye — so Δ = ± the smallest division (± ' + A.ds + ' ' + A.unit + ').' : def.analog ? (def.vernier ? 'Reading is right. A vernier is read to its least count, so Δ = ± 0.01 cm.' : 'Reading is right. Analogue scale → ± half the smallest division (' + def.div + ' → ± ' + A.ds + ' ' + A.unit + ').')
                                        : 'Reading is right. Digital display → ± 1 in the last digit (± ' + A.ds + ' ' + A.unit + ').'};
-  if (dOK) return {lvl:'near', msg:'The uncertainty is right — read the scale again.'};
+  if (A.z && Math.abs(v - A.raw) <= tolV) return {lvl:'near', msg:'That is the scale reading. Correct it for the zero error: ' + A.raws + ' − (' + A.zs + ') = ' + A.vs + ' ' + A.unit + '.'};
+  if (A.z && Math.abs(v - (A.raw + A.z)) <= tolV) return {lvl:'near', msg:'The zero error was added — SUBTRACT it: corrected = reading − zero error.'};
+  if (dOK) return {lvl:'near', msg:'The uncertainty is right — read the scale again' + (A.z ? ' and subtract the zero error.' : '.')};
   return {lvl:'bad', msg:'Not yet — read the magnified scale, then use the rule in the card below.'};
 }
+const INSTUI = {tabs:[]};
 function drawInst(){
   const I = S.m1.inst, def = INST[I.kind], A = instAnswer(), o = I, k = ease(stepOn(o, 1));
   card(24, 18, 768, 372, {r:14, fill: rgba(COL.card, .55)});
   text(def.name, 44, 44, F_UI(20, 800), COL.ink, 'left', 'middle');
-  text(def.analog ? 'Analogue scale' : 'Digital display', 44 + tw(def.name, F_UI(20,800)) + 12, 44, F_UI(15, 600), def.analog ? COL.amber : COL.digital, 'left', 'middle');
-  const reading = lerp(I.kind==='balance' ? 0 : A.v*0.15, A.v, k);
+  text(def.fine ? 'Analogue scale · fine marks' : def.analog ? 'Analogue scale' : 'Digital display', 44 + tw(def.name, F_UI(20,800)) + 12, 44, F_UI(15, 600), def.analog ? COL.amber : COL.digital, 'left', 'middle');
+  INSTUI.tabs = [];
+  if (I.ze){ [['zero', '① Zero check'], ['meas', '② Measure']].forEach(([v, t], j) => { const w = 122, x = 524 + j*(w + 8), y = 28, on = I.zv===v;
+      rrect(x, y, w, 30, 15); ctx.fillStyle = on ? rgba(COL.amber, .22) : rgba(COL.card2, .9); ctx.fill(); ctx.strokeStyle = on ? COL.amber : COL.border; ctx.lineWidth = 1.4; ctx.stroke();
+      text(t, x + w/2, y + 15.5, F_UI(14, 800), on ? COL.amber : COL['text-dim'], 'center', 'middle'); INSTUI.tabs.push({v, x, y, w, h:30}); });
+  }
+  ZV.zero = !!I.ze && I.zv==='zero';
+  const target = ZV.zero ? A.z : A.raw, reading = ZV.zero ? target : lerp(I.kind==='balance' ? 0 : target*0.15, target, k);
   ({ruler: drawRuler, vernier: drawVernier, watch: drawWatch, balance: drawBalance, volt: drawVolt})[I.kind](reading, k);
+  if (I.ze){                                                   // the zero-error card replaces the rule card
+    card(24, 404, 520, 252, {r:14});
+    text('Zero error', 44, 430, F_UI(18, 800), COL.amber, 'left', 'middle');
+    const show = I.peek || (I.result && I.result.lvl==='ok');
+    [['①', 'Zero check: ' + ZEWHAT[I.kind], 'zero error  z = ' + (show ? A.zs + ' ' + A.unit : '?')],
+     ['②', 'Measure: read the scale as usual', 'scale reading  r = ' + (show ? A.raws + ' ' + A.unit : '?')],
+     ['③', 'Correct it: value = r − z', show ? A.raws + ' − (' + A.zs + ') = ' + A.vs + ' ' + A.unit : 'value = r − z']].forEach(([n, a, b], j) => { const y = 466 + j*52;
+      text(n, 48, y, F_UI(17, 800), COL.amber, 'left', 'middle'); text(a, 76, y, F_UI(15, 700), j===(I.zv==='zero' ? 0 : 1) ? COL.amber : COL.ink, 'left', 'middle'); text(b, 76, y + 21, F_MO(14, 700), show ? COL.amber : COL['text-dim'], 'left', 'middle'); });
+    text('z above zero → subtract it · z below zero (negative) → add its size', 44, 622, F_UI(13.5, 600), COL['text-dim'], 'left', 'middle');
+    text('Δ: same rule as before (' + (def.fine ? '± the smallest division' : def.vernier ? '± the least count' : def.analog ? '± half the smallest division' : '± 1 in the last digit') + ')', 44, 642, F_UI(13.5, 600), COL['text-muted'], 'left', 'middle');
+  } else {
   // the rule card
   card(24, 404, 520, 252, {r:14});
   text('How to write the uncertainty of ONE reading', 44, 430, F_UI(18, 800), COL.ink, 'left', 'middle');
-  const rows = [['Analogue scale', '± half the smallest division', 'ruler 1 mm → ± 0.5 mm · voltmeter 0.1 V → ± 0.05 V', COL.amber, def.analog && !def.vernier],
+  const rows = [['Analogue scale', '± half the smallest division', 'when half a division can be judged · voltmeter 0.1 V → ± 0.05 V', COL.amber, def.analog && !def.vernier && !def.fine],
+                ['Fine marks', '± the smallest division', 'marks too close to judge half · metre rule 1 mm → ± 1 mm', COL.amber, !!def.fine],
                 ['Vernier / micrometer', '± the least count', 'vernier caliper → ± 0.01 cm', COL.amber, !!def.vernier],
                 ['Digital display', '± 1 in the last digit', '25.37 g → ± 0.01 g (or the maker’s stated value)', COL.digital, !def.analog]];
-  rows.forEach(([a, b, c, col, on], i) => { const y = 466 + i*60;
-    if (on){ rrect(34, y - 20, 500, 54, 9); ctx.fillStyle = rgba(col, .12); ctx.fill(); }
-    text(a, 48, y, F_UI(16, 700), on ? col : COL['text-dim'], 'left', 'middle');
-    text(b, 236, y, F_UI(16, 700), on ? COL.ink : COL['text-dim'], 'left', 'middle');
-    text(c, 48, y + 23, F_UI(14, 500), COL['text-muted'], 'left', 'middle'); });
+  rows.forEach(([a, b, c, col, on], i) => { const y = 462 + i*48;
+    if (on){ rrect(34, y - 18, 500, 46, 9); ctx.fillStyle = rgba(col, .12); ctx.fill(); }
+    text(a, 48, y, F_UI(15.5, 700), on ? col : COL['text-dim'], 'left', 'middle');
+    text(b, 236, y, F_UI(15.5, 700), on ? COL.ink : COL['text-dim'], 'left', 'middle');
+    text(c, 48, y + 19, F_UI(13, 500), COL['text-muted'], 'left', 'middle'); });
+  }
   // the student's quote
   card(560, 404, 616, 252, {r:14});
   text('Your reading', 580, 430, F_UI(18, 800), COL.ink, 'left', 'middle');
@@ -1235,11 +1274,13 @@ function drawRuler(v){
   const x0 = 70, y0 = 190, pxmm = 4.5, n = 150, L = v;
   const scene = () => {
     rulerBody(x0, y0, pxmm, n);
-    // a metal rod laid against the scale, its left end on the zero mark
-    ctx.fillStyle = metal(0, y0 - 34, 0, y0 - 4); rrect(x0, y0 - 34, L*pxmm, 30, 4); ctx.fill();
-    hLine(x0 + L*pxmm, y0 - 40, x0 + L*pxmm, y0 + 8, rgba(COL.needle, .8), 1.2, [3,3]);
+    // a metal rod laid against the scale; with a zero error (worn end) its left end sits on the zero-error mark
+    const z0 = instZero(), xs = x0 + z0*pxmm, xe = ZV.zero ? xs + 60*pxmm : x0 + L*pxmm;
+    if (z0){ ctx.fillStyle = rgba(COL['cv-bg'], .9); ctx.beginPath(); ctx.moveTo(x0 - 14, y0); ctx.lineTo(x0 + 3*pxmm, y0); ctx.lineTo(x0 - 14, y0 + 70); ctx.fill(); }   // the worn corner
+    ctx.fillStyle = metal(0, y0 - 34, 0, y0 - 4); rrect(xs, y0 - 34, xe - xs, 30, 4); ctx.fill();
+    const xm = ZV.zero ? xs : xe; hLine(xm, y0 - 40, xm, y0 + 8, rgba(COL.needle, .8), 1.2, [3,3]);
   };
-  scene(); magnifier(scene, x0 + L*pxmm, y0 + 4, 4);
+  scene(); magnifier(scene, ZV.zero ? x0 + instZero()*pxmm : x0 + L*pxmm, y0 + 4, 4);
 }
 function drawVernier(v){
   const x0 = 70, y0 = 170, pxmm = 5.6, n = 110;
@@ -1255,7 +1296,7 @@ function drawVernier(v){
     ctx.fillStyle = metal(z - 4, 0, z + 36, 0); ctx.fillRect(z, y0 + 84, 40, 80);
     for (let j=0;j<=10;j++){ const x = z + j*0.9*pxmm; hLine(x, y0 + 44, x, y0 + 44 + (j%5===0 ? 18 : 11), '#1b1f24', 1.1); if (j%5===0) text(String(j), x, y0 + 72, F_UI(10, 700), '#1b1f24', 'center', 'middle'); }
     // the object between the jaws
-    ctx.fillStyle = lgrad(x0, 0, z, 0, [[0,'#b5651d'],[.5,'#e3a35b'],[1,'#a0541a']]); rrect(x0, y0 + 96, z - x0, 56, 6); ctx.fill();
+    if (!ZV.zero){ ctx.fillStyle = lgrad(x0, 0, z, 0, [[0,'#b5651d'],[.5,'#e3a35b'],[1,'#a0541a']]); rrect(x0, y0 + 96, z - x0, 56, 6); ctx.fill(); }
   };
   scene(); const z = x0 + v*10*pxmm; magnifier(scene, z + 30, y0 + 52, 2.6);
 }
@@ -1278,8 +1319,8 @@ function drawBalance(v, k){
   const x = 180, y = 120;
   ctx.fillStyle = lgrad(0, y + 120, 0, y + 230, [[0,'#e8ebee'],[1,'#9aa2ab']]); rrect(x, y + 120, 440, 110, 14); ctx.fill();
   ctx.beginPath(); ctx.ellipse(x + 220, y + 110, 170, 22, 0, 0, Math.PI*2); ctx.fillStyle = metal(x + 50, 0, x + 390, 0); ctx.fill();
-  ctx.fillStyle = lgrad(x + 150, 0, x + 290, 0, [[0,'#6a6a72'],[.5,'#b9bcc4'],[1,'#5a5a62']]); rrect(x + 160, y + 30, 120, 74, 8); ctx.fill();
-  text('sample', x + 220, y + 70, F_UI(12, 600), '#1b1b1b', 'center', 'middle');
+  if (!ZV.zero){ ctx.fillStyle = lgrad(x + 150, 0, x + 290, 0, [[0,'#6a6a72'],[.5,'#b9bcc4'],[1,'#5a5a62']]); rrect(x + 160, y + 30, 120, 74, 8); ctx.fill();
+  text('sample', x + 220, y + 70, F_UI(12, 600), '#1b1b1b', 'center', 'middle'); }
   rrect(x + 110, y + 146, 220, 60, 8); ctx.fillStyle = COL.lcd; ctx.fill();
   const shownV = k < 1 ? (v*k).toFixed(2) : v.toFixed(2);
   text(shownV, x + 316, y + 178, F_MO(38, 700), COL.digital, 'right', 'middle'); text('g', x + 342, y + 180, F_UI(18, 700), '#333', 'left', 'middle');
@@ -1338,25 +1379,52 @@ function drawStats(){
     if (on){ rrect(tx + 6, y - rh/2 + 2, 348, rh - 4, 6); ctx.fillStyle = rgba(COL.accent, .14); ctx.fill(); }
     const vals = few ? [String(i+1), x.toFixed(D.dp)] : [String(i+1), x.toFixed(D.dp), o.prog > 2 + i/rows ? (dv>=0?'+':'−') + Math.abs(dv).toFixed(3) : '', o.prog > 2 + i/rows ? (dv*dv).toFixed(5) : ''];
     let xx = tx + 14; vals.forEach((s, j) => { text(s, xx + colW[j] - 8, y, F_MO(14, j===1 ? 700 : 500), j===1 ? COL.val : on ? COL.accent : COL['text-dim'], 'right', 'middle'); xx += colW[j]; }); });
-  // dot plot on a number line
+  // dot plot on a number line — readings drop in, the mean is the balance point, then the error bar (value ± error)
   const px0 = few ? 280 : 430, px1 = 1160, py = 150, lo = st.min - (few ? 0.3 : 0.08), hi = st.max + (few ? 0.3 : 0.08);
-  const X = v => px0 + (v - lo)/(hi - lo)*(px1 - px0);
+  const X = v => px0 + (v - lo)/(hi - lo)*(px1 - px0), axY = py + 40, barY = 96;
   card(px0 - 20, 24, px1 - px0 + 40, 262, {r:12});
-  hLine(px0, py + 40, px1, py + 40, COL.axis, 1.5);
+  hLine(px0, axY, px1, axY, COL.axis, 1.5);
   const step = few ? 0.1 : 0.02; for (let v = Math.ceil(lo/step)*step; v <= hi + 1e-9; v += step){ const big = Math.abs(Math.round(v/(step*5))*(step*5) - v) < 1e-9;
-    hLine(X(v), py + 40, X(v), py + (big ? 50 : 46), COL.axis, 1); if (big || few) text(v.toFixed(D.dp), X(v), py + 64, F_MO(13), COL['text-muted'], 'center', 'middle'); }
+    hLine(X(v), axY, X(v), axY + (big ? 10 : 6), COL.axis, 1); if (big || few) text(v.toFixed(D.dp), X(v), py + 64, F_MO(13), COL['text-muted'], 'center', 'middle'); }
   text(D.sym + ' / ' + D.unit, px1, py + 86, F_IT(17), COL['text-dim'], 'right', 'middle');
-  const cnt = {}; D.xs.forEach((x, i) => { const key = x.toFixed(D.dp); cnt[key] = (cnt[key]||0) + 1; const yy = py + 26 - (cnt[key]-1)*20;
-    hCirc(X(x), yy, i===hiI ? 9 : 7, i===hiI ? COL.accent : COL.val, COL['cv-bg'], 1.5); });
-  if (o.prog > 0.5){ const a = ease(stepOn(o, 1)); ctx.globalAlpha = a;
-    hLine(X(st.mean), 50, X(st.mean), py + 44, COL.accent, 2.4); text('Mean = ' + st.mean.toFixed(D.dp + 2) + ' s', X(st.mean), 40, F_UI(15, 700), COL.accent, 'center', 'middle'); ctx.globalAlpha = 1; }
-  if (few && o.prog > 1.5){ const a = ease(stepOn(o, 2)); ctx.globalAlpha = a; const yb = py + 112;
-    hLine(X(st.min), yb, X(st.max), yb, COL.unc, 2); hLine(X(st.min), yb - 8, X(st.min), yb + 8, COL.unc, 2); hLine(X(st.max), yb - 8, X(st.max), yb + 8, COL.unc, 2);
-    text('Range = ' + (st.max - st.min).toFixed(D.dp) + ' s   →   half the range = ' + st.half.toFixed(2) + ' s', (X(st.min) + X(st.max))/2, yb + 20, F_UI(15, 700), COL.unc, 'center', 'middle'); ctx.globalAlpha = 1; }
+  const a1 = stepOn(o, 1), n = D.xs.length, dd = few ? 0.3 : 0.25, gap = (0.6 - dd)/Math.max(1, n - 1);
+  const dropT = i => clamp((a1 - i*gap)/dd, 0, 1);                                     // each reading falls in turn, all landed by 60 %
+  const bounce = t => t < 0.72 ? (t/0.72)**2 : 1 - 0.18*Math.sin((t - 0.72)/0.28*Math.PI);
+  const cnt = {}; D.xs.forEach((x, i) => { const key = x.toFixed(D.dp); cnt[key] = (cnt[key]||0) + 1; const yy = py + 26 - (cnt[key]-1)*20, t = dropT(i);
+    if (t <= 0) return; const y = lerp(36, yy, bounce(t));
+    ctx.globalAlpha = Math.min(1, t*3); hCirc(X(x), y, i===hiI ? 9 : 7, i===hiI ? COL.accent : COL.val, COL['cv-bg'], 1.5); ctx.globalAlpha = 1;
+    if (t < 1 && t > 0.6 && few) text(x.toFixed(D.dp), X(x), y - 16, F_MO(13, 700), COL.val, 'center', 'middle'); });
+  // the mean: a glowing line, a pill label and a balance point under the axis
+  const aM = ease(clamp((a1 - 0.62)/0.38, 0, 1)), aE0 = ease(clamp((stepOn(o, few ? 2 : 4) - 0.45)/0.55, 0, 1));
+  if (aM > 0){ const xm = X(st.mean), pulse = 0.5 + 0.5*Math.sin(S.t*3);
+    ctx.save(); ctx.globalAlpha = aM; ctx.shadowColor = COL.accent; ctx.shadowBlur = 10 + 8*pulse;
+    hLine(xm, axY + 4, xm, lerp(axY, lerp(58, barY + 12, aE0), aM), COL.accent, 3); ctx.restore();
+    ctx.globalAlpha = aM;
+    ctx.beginPath(); ctx.moveTo(xm, axY + 2); ctx.lineTo(xm - 9, axY + 15); ctx.lineTo(xm + 9, axY + 15); ctx.closePath(); ctx.fillStyle = COL.accent; ctx.fill();   // fulcrum
+    const lbl = 'Mean = ' + st.mean.toFixed(D.dp + 2) + ' s', fw = tw(lbl, F_UI(16, 800)) + 26;
+    rrect(xm - fw/2, 30, fw, 28, 14); ctx.fillStyle = rgba(COL.accent, .2 + .1*pulse); ctx.fill(); ctx.strokeStyle = COL.accent; ctx.lineWidth = 1.6; ctx.stroke();
+    text(lbl, xm, 44.5, F_UI(16, 800), COL.accent, 'center', 'middle');
+    ctx.globalAlpha = 1; }
+  if (few && o.prog > 1.5){ const a = ease(stepOn(o, 2)); ctx.globalAlpha = a; const yb = py + 112, xc = (X(st.min) + X(st.max))/2, hw = (X(st.max) - X(st.min))/2*a;
+    hLine(xc - hw, yb, xc + hw, yb, COL.unc, 2); hLine(xc - hw, yb - 8, xc - hw, yb + 8, COL.unc, 2); hLine(xc + hw, yb - 8, xc + hw, yb + 8, COL.unc, 2);
+    text('Range = ' + (st.max - st.min).toFixed(D.dp) + ' s   →   half the range = ' + st.half.toFixed(2) + ' s', xc, yb + 20, F_UI(15, 700), COL.unc, 'center', 'middle'); ctx.globalAlpha = 1; }
   if (!few && o.prog > 3.5){ const a = ease(stepOn(o, 4)); ctx.globalAlpha = a*0.9;
-    ctx.fillStyle = rgba(COL.unc, .14); ctx.fillRect(X(st.mean - st.sd), 54, X(st.mean + st.sd) - X(st.mean - st.sd), py - 14);
-    hLine(X(st.mean - st.sd), 54, X(st.mean - st.sd), py + 40, COL.unc, 1.4, [5,4]); hLine(X(st.mean + st.sd), 54, X(st.mean + st.sd), py + 40, COL.unc, 1.4, [5,4]);
-    text('− s', X(st.mean - st.sd) - 6, 66, F_IT(17), COL.unc, 'right', 'middle'); text('+ s', X(st.mean + st.sd) + 6, 66, F_IT(17), COL.unc, 'left', 'middle'); ctx.globalAlpha = 1; }
+    ctx.fillStyle = rgba(COL.unc, .14); ctx.fillRect(X(st.mean - st.sd), 62, X(st.mean + st.sd) - X(st.mean - st.sd), axY - 62);
+    hLine(X(st.mean - st.sd), 62, X(st.mean - st.sd), axY, COL.unc, 1.4, [5,4]); hLine(X(st.mean + st.sd), 62, X(st.mean + st.sd), axY, COL.unc, 1.4, [5,4]);
+    text('− s', X(st.mean - st.sd) - 6, 128, F_IT(17), COL.unc, 'right', 'middle'); text('+ s', X(st.mean + st.sd) + 6, 128, F_IT(17), COL.unc, 'left', 'middle'); ctx.globalAlpha = 1; }
+  // the error bar: centre = the value, half-width = the error  →  value ± error
+  const eStep = few ? 2 : 4, rStep = few ? 3 : 5, aE = ease(clamp((stepOn(o, eStep) - 0.45)/0.55, 0, 1)), aR = ease(stepOn(o, rStep));
+  if (aE > 0){ const xm = X(st.mean), d = lerp(R0.unc, Number(R0.rep.u), aR), vC = lerp(st.mean, Number(R0.rep.v), aR), xc = X(vC), hw = (X(vC + d) - xc)*aE;
+    ctx.globalAlpha = aE;
+    hLine(xc - hw, barY, xc + hw, barY, COL.unc, 3.2); [xc - hw, xc + hw].forEach(x => hLine(x, barY - 10, x, barY + 10, COL.unc, 3.2));
+    ctx.save(); ctx.translate(xc, barY); ctx.rotate(Math.PI/4); ctx.fillStyle = COL.val; ctx.fillRect(-6, -6, 12, 12); ctx.strokeStyle = COL['cv-bg']; ctx.lineWidth = 1.5; ctx.strokeRect(-6, -6, 12, 12); ctx.restore();
+    if (S.labels){
+      const vs = aR > 0.5 ? R0.rep.v : st.mean.toFixed(D.dp + 2), us = aR > 0.5 ? R0.rep.u : R0.unc.toFixed(few ? 2 : 4);
+      text('value ' + vs, xc, barY - 20, F_UI(14, 800), COL.val, 'center', 'middle');
+      text('± ' + us + ' s', xc + hw/2, barY + 18, F_UI(14, 800), COL.unc, 'center', 'middle');
+      text('error = half-width', xc + hw + 14, barY - 1, F_UI(13, 700), COL.unc, 'left', 'middle');
+      text('centre = value', xc - hw - 14, barY - 1, F_UI(13, 700), COL.val, 'right', 'middle'); }
+    ctx.globalAlpha = 1; }
   // formula + decision + report
   const bx = few ? 260 : 410, by = 300, bw = 1180 - bx;
   card(bx, by, bw, 356, {r:12});
@@ -1372,10 +1440,15 @@ function drawStats(){
     L('About two thirds of the readings lie within ± s of the mean. The mean itself is known better: s/√N = ' + st.se.toFixed(4) + ' s.', COL['text-muted'], F_UI(15, 500));
   }
   if (o.prog > (few ? 2.5 : 4.5)){ const a = ease(stepOn(o, few ? 3 : 5)); ctx.globalAlpha = a;
-    rrect(bx + 16, by + 214, bw - 32, 70, 12); ctx.fillStyle = rgba(COL.accent, .12); ctx.fill(); ctx.strokeStyle = COL.accent; ctx.lineWidth = 1.6; ctx.stroke();
-    text('Reported', bx + 36, by + 246, F_UI(16, 700), COL.accent, 'left', 'middle');
-    rich('t = (' + R0.rep.v + ' ± ' + R0.rep.u + ') «s»', bx + 150, by + 256, 30, COL.ink);
-    text('Δ to 1 s.f., mean to the same decimal place', bx + bw - 30, by + 269, F_UI(13.5, 600), COL['text-dim'], 'right', 'middle'); ctx.globalAlpha = 1; }
+    rrect(bx + 16, by + 200, bw - 32, 96, 12); ctx.fillStyle = rgba(COL.accent, .12); ctx.fill(); ctx.strokeStyle = COL.accent; ctx.lineWidth = 1.6; ctx.stroke();
+    text('Reported', bx + 36, by + 236, F_UI(16, 700), COL.accent, 'left', 'middle');
+    const fsR = 30, x0 = bx + 150, yR = by + 246; let xx = x0;
+    xx += rich('t = (', xx, yR, fsR, COL.ink); const xv = xx; xx += rich(R0.rep.v, xx, yR, fsR, COL.val); const wv = xx - xv;
+    xx += rich(' ± ', xx, yR, fsR, COL.ink); const xu = xx; xx += rich(R0.rep.u, xx, yR, fsR, COL.unc); const wu = xx - xu; rich(') «s»', xx, yR, fsR, COL.ink);
+    if (S.labels){ hLine(xv, yR + 10, xv + wv, yR + 10, COL.val, 2); hLine(xu, yR + 10, xu + wu, yR + 10, COL.unc, 2);
+      text('value = centre of the bar', xv, yR + 30, F_UI(13.5, 700), COL.val, 'left', 'middle');
+      text('error = half-width of the bar', Math.max(xu, xv + tw('value = centre of the bar', F_UI(13.5, 700)) + 24), yR + 30, F_UI(13.5, 700), COL.unc, 'left', 'middle'); }
+    text('Δ to 1 s.f., mean to the same decimal place', bx + bw - 30, by + 236, F_UI(13.5, 600), COL['text-dim'], 'right', 'middle'); ctx.globalAlpha = 1; }
   text('Which method?  N small (2–5 readings) → half the range ·  N large (≈ 10 or more) → standard deviation', bx + 20, by + 314, F_UI(14.5, 600), COL.amber, 'left', 'middle');
 }
 
@@ -1456,14 +1529,17 @@ const OPRE = [
   {name:'Example 2 : Operators', pw:3, A:{v:24.3, d:0.1, s:'24.3', ds:'0.1', u:'cm', sym:'A'}, B:{v:12.6, d:0.2, s:'12.6', ds:'0.2', u:'cm', sym:'B'}, op:'+'},
   {name:'Example 3 : Density', A:{v:25.0, d:0.2, s:'25.0', ds:'0.2', u:'g', sym:'m'}, B:{v:8.0, d:0.1, s:'8.0', ds:'0.1', u:'cm³', sym:'V'}, op:'/'},
   {name:'Example 4 : Speed Squared', A:{v:3.0, d:0.1, s:'3.0', ds:'0.1', u:'m s⁻¹', sym:'v'}, B:null, op:'sq'},
-  {name:'Example 5 : Square root', A:{v:16.0, d:0.4, s:'16.0', ds:'0.4', u:'cm²', sym:'A'}, B:null, op:'sqrt'}
+  {name:'Example 5 : Square root', A:{v:16.0, d:0.4, s:'16.0', ds:'0.4', u:'cm²', sym:'A'}, B:null, op:'sqrt'},
+  {name:'Example 6 : Period', A:{v:0.25, d:0.01, s:'0.25', ds:'0.01', u:'s', sym:'T'}, B:null, op:'inv', rsym:'f', rname:'frequency'},
+  {name:'Example 7 : Natural log', A:{v:5.0, d:0.1, s:'5.0', ds:'0.1', u:'V', sym:'V'}, B:null, op:'ln', rsym:'y'},
+  {name:'Example 8 : Log base 10', A:{v:25.0, d:0.5, s:'25.0', ds:'0.5', u:'mA', sym:'I'}, B:null, op:'lg', rsym:'y'}
 ];
-const OPNAME = {'+':'Add', '-':'Subtract', '*':'Multiply', '/':'Divide', sq:'Square', sqrt:'Square root'};
+const OPNAME = {'+':'Add', '-':'Subtract', '*':'Multiply', '/':'Divide', sq:'Square', sqrt:'Square root', inv:'Reciprocal', ln:'Natural log', lg:'Log base 10'};
 /* (a ± b) × 10ⁿ for big / small reported pairs — digits follow the reported place, so 14300 ± 200 → (1.43 ± 0.02) × 10⁴ */
 const sciP = R => { const v = Number(R.v), e = mag(Math.abs(v)); if (!v || (e > -3 && e < 4)) return null; const k = Math.max(0, e - R.place);
   return {v: (v/Math.pow(10, e)).toFixed(k), u: (Number(R.u)/Math.pow(10, e)).toFixed(k), e}; };
 const supN = n => String(n).replace(/-/g,'⁻').replace(/\d/g, d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[d]);
-const OPSYM = {'+':'+', '-':'−', '*':'×', '/':'÷', sq:'x²', sqrt:'√x'};
+const OPSYM = {'+':'+', '-':'−', '*':'×', '/':'÷', sq:'x²', sqrt:'√x', inv:'1/x', ln:'ln x', lg:'lg x'};
 /* the power keys follow the example: Example 2 uses x³ and ∛x, the others x² and √x */
 const opPw = () => OPRE[S.m2.op.pre].pw || 2;
 const opSymN = (op, pw) => op==='sq' ? (pw===3 ? 'x³' : 'x²') : op==='sqrt' ? (pw===3 ? '∛x' : '√x') : OPSYM[op];
@@ -1476,11 +1552,13 @@ function opUnit(op, A, B, pw=2){
   if (pw===3 && op==='sqrt') return ({'cm³':'cm', 'cm':'cm^{1/3}'})[A.u] || '(' + A.u + ')^{1/3}';
   const T = {'*':{'cm|cm':'cm²'}, '/':{'cm|cm':'', 'g|cm³':'g cm⁻³'}, sq:{'cm':'cm²', 'm s⁻¹':'m² s⁻²', 'g':'g²', 'cm²':'cm⁴', 'cm³':'cm⁶'}, sqrt:{'cm²':'cm', 'cm':'cm^{1/2}', 'm s⁻¹':'(m s⁻¹)^{1/2}', 'g':'g^{1/2}', 'cm³':'cm^{3/2}'}};
   if (op==='+' || op==='-') return A.u;
+  if (ISLOG(op)) return '';                                   // a log is a pure number: ln(V / V)
+  if (op==='inv') return ({'s':'Hz', 'Hz':'s', 'cm':'cm⁻¹', 'm':'m⁻¹'})[A.u] || A.u + '⁻¹';
   if (op==='sq' || op==='sqrt') return T[op][A.u] || '';
   return T[op][A.u + '|' + B.u] != null ? T[op][A.u + '|' + B.u] : A.u + ' ' + B.u;
 }
 function opState(){
-  const M = S.m2.op, P = OPRE[M.pre], op = M.op, two = !(op==='sq' || op==='sqrt');
+  const M = S.m2.op, P = OPRE[M.pre], op = M.op, two = !UNARY(op);
   if (two && !P.B) return {P, op, err:'This preset has only one input — choose x² or √x.'};
   if ((op==='+' || op==='-') && P.A.u !== P.B.u) return {P, op, err:'You cannot add or subtract quantities with different units (' + P.A.u + ' and ' + P.B.u + ').'};
   let A = P.A, B = P.B, swap = false;
@@ -1491,7 +1569,8 @@ function opState(){
 function opLines(St){
   const {A, B, r, op, unit} = St, pw = St.pw || 2, u = unit ? ' ' + unit : '', R = COL.pct, Bl = COL.abs, G = COL.ok;
   const rawV = fmtSF(r.val, r.rule==='dp' ? 3 : r.n + 1), rawU = fmtSF(r.unc, 3);
-  const nm = op==='sq' ? A.sym + '^{' + pw + '}' : op==='sqrt' ? ROOT[pw] + A.sym : A.sym + ' ' + OPSYM[op] + ' ' + B.sym;
+  const nm = ISLOG(op) ? op + ' ' + A.sym : op==='inv' ? (St.P.rsym ? St.P.rsym + ' = 1 / ' + A.sym : '1 / ' + A.sym) : op==='sq' ? A.sym + '^{' + pw + '}' : op==='sqrt' ? ROOT[pw] + A.sym : A.sym + ' ' + OPSYM[op] + ' ' + B.sym;
+  const nmD = op==='inv' && St.P.rsym ? St.P.rsym : nm;          // the name used in Δ( … )
   const U8 = u ? unitRich(u.trim()) : '';
   const sp = r.rule==='sf' ? sciP(r.lec) : null;
   const rep = sp ? [{t:'Report →', c:COL.rand}, {t:'=', c:COL.ink}, {t:'(', c:COL.ink}, {t:sp.v, c:COL.ink, tight:true}, {t:'±'}, {t:sp.u, c:Bl}, {t:')', tight:true}, {t:'× 10^{' + sp.e + '}', math:true}, {t:U8, math:true}]
@@ -1502,8 +1581,21 @@ function opLines(St){
     [{t:'='}, {t:fmtDP(r.val, r.n), dn:'Least Decimal Place'}, {t:'±'}, {t:fmtDP(r.unc, Math.max(r.n, dpOf(A.ds))), c:Bl}, {t:U8, math:true}],
     [{t:'±'}, {t:'( ' + fmtDP(r.unc, Math.max(r.n, dpOf(A.ds))) + ' / ' + fmtDP(Math.abs(r.val), r.n) + ' ) × 100 %', c:R}, {t:'= ± ' + fmtSF(r.pct, 2) + ' %', c:R}],
     rep];
-  const pctTerms = op==='sq' ? pw + ' × ' + fmtSF(r.pA, 2) : op==='sqrt' ? PWFR[pw] + ' × ' + fmtSF(r.pA, 2) : fmtSF(r.pA, 2) + ' + ' + fmtSF(r.pB, 2);
-  const inner = op==='sq' ? [{t:A.s, up:sfOf(A.s) + ' s.f.'}, {t:PWSUP[pw], tight:true}] : op==='sqrt' ? [{t:ROOT[pw]}, {t:A.s, up:sfOf(A.s) + ' s.f.', tight:true}]
+  if (ISLOG(op)){                                              // ln x, lg x: Δy = Δx/x (× 0.434 for lg); d.p. of y = s.f. of x
+    const ys = St.P.rsym || 'y', arg = A.u ? A.sym + ' / «' + A.u + '»' : A.sym, fn = '«' + op + '»';
+    const rawL = fmtDP(r.val, r.n + 2), rawLU = fmtSF(r.unc, 3);
+    const keepL = (() => { const c = rawL.replace(/^-/, ''), dot = c.indexOf('.'), p = r.lec.place; return clamp(((dot < 0 ? c.length : dot) + 1 - p)/c.length, 0, 1); })();
+    const repL = [{t:'Report →', c:COL.rand}, {t:ys + ' =', math:true}, {t:r.lec.v, c:COL.ink}, {t:'±'}, {t:r.lec.u, c:Bl}];
+    repL.foot = 'd.p. of the log = s.f. of ' + A.sym + '   ←   uncertainty: same d.p.';
+    return [
+      [{t:ys + ' = ' + fn + '(' + arg + ') =', math:true}, {t:fn, math:true}, {t:'[', c:COL['text-muted']}, {t:A.s, up:sfOf(A.s) + ' s.f.', upc:G}, {t:']', c:COL['text-muted']}],
+      [{t:'='}, {t:rawL, dn:'calculator value'}],
+      [{t:'Δ' + ys + ' =', math:true}, {t:(op==='lg' ? '0.434 × ' : '') + '( ' + A.ds + ' / ' + A.s + ' )', c:R, dn: op==='lg' ? '(1 / ln 10) × fraction of ' + A.sym : 'fraction of ' + A.sym, dnc:R}, {t:'='}, {t:rawLU, c:Bl}],
+      [{t:'='}, {t:rawL, box:true, boxW:keepL, dn:'keep ' + r.n + ' d.p.', dnc:G}, {t:'±'}, {t:rawLU, c:Bl}],
+      repL];
+  }
+  const pctTerms = op==='inv' ? fmtSF(r.pA, 2) : op==='sq' ? pw + ' × ' + fmtSF(r.pA, 2) : op==='sqrt' ? PWFR[pw] + ' × ' + fmtSF(r.pA, 2) : fmtSF(r.pA, 2) + ' + ' + fmtSF(r.pB, 2);
+  const inner = op==='inv' ? [{t:'1 /'}, {t:A.s, up:sfOf(A.s) + ' s.f.', upc:G}] : op==='sq' ? [{t:A.s, up:sfOf(A.s) + ' s.f.'}, {t:PWSUP[pw], tight:true}] : op==='sqrt' ? [{t:ROOT[pw]}, {t:A.s, up:sfOf(A.s) + ' s.f.', tight:true}]
               : [{t:A.s, up:sfOf(A.s) + ' s.f.', upc:G}, {t:OPSYM[op]}, {t:B.s, dn:sfOf(B.s) + ' s.f.', dnc:G}];
   if (op==='sq' || op==='sqrt') inner[1].upc = G, inner[op==='sq' ? 0 : 1].upc = G;
   // × ÷ powers — five clear steps: combine → value ± % → convert % to Δ → value ± Δ → report
@@ -1514,37 +1606,57 @@ function opLines(St){
     return clamp((p >= 0 ? ip - p : ip + 1 - p)/c.length, 0, 1); })();
   return [
     [{t:nm + ' =', math:true}, {t:'[', c:COL['text-muted']}, ...inner, {t:']', c:COL['text-muted']}, {t:'±'}, {t:'[ ' + pctTerms + ' ] %', c:R}],
-    [{t:'='}, {t:rawC, dn:'calculator value'}, {t:'±'}, {t:pctS + ' %', c:R, dn:'total %', dnc:R}],
-    [{t:'Δ(' + nm + ') =', math:true}, {t:'( ' + pctS + ' / 100 )', c:R, dn:'% → absolute', dnc:R}, {t:'× ' + rawC}, {t:'='}, {t:rawU, c:Bl}, {t:U8, math:true}],
+    [{t:'='}, {t:rawC, dn:'calculator value'}, {t:'±'}, {t:pctS + ' %', c:R, dn: op==='inv' ? 'same % as ' + A.sym : 'total %', dnc:R}],
+    [{t:'Δ' + (nmD.length > 1 ? '(' + nmD + ')' : nmD) + ' =', math:true}, {t:'( ' + pctS + ' / 100 )', c:R, dn:'% → absolute', dnc:R}, {t:'× ' + rawC}, {t:'='}, {t:rawU, c:Bl}, {t:U8, math:true}],
     [{t:'='}, {t:rawC, box:true, boxW:keep, dn:'keep ' + r.n + ' s.f.', dnc:G}, {t:'±'}, {t:rawU, c:Bl}, {t:U8, math:true}],
     rep];
 }
 /* layout (logical 1200×675), top → bottom:
    ① problem + operator chips   ② the combination machine (inputs → operator → result)   ③ scrollable working area */
-const OPS_UI = {chips:[], work:{x:24, y:336, w:1152, h:321}, max:0, bar:null, key:''};
-const OPS_ORDER = ['+','-','*','/','sq','sqrt'];
+const OPS_UI = {chips:[], work:{x:24, y:304, w:1152, h:353}, max:0, bar:null, key:''};
+/* the working is shown as three explained steps; each step heads the line it starts at */
+function opSteps(St){
+  const r = St.r, op = St.op, A = St.A, pw = St.pw || 2;
+  if (r.kind==='abs') return [
+    {at:0, t:(op==='+' ? 'Add' : 'Subtract') + ' the values and ADD the absolute uncertainties (never subtract them)'},
+    {at:2, t:'Work out the percentage uncertainty of the result'},
+    {at:3, t:'Report: value to the least decimal places (' + r.n + ' d.p.), uncertainty to the same place'}];
+  if (r.kind==='log') return [
+    {at:0, t:'Take the ' + (op==='ln' ? 'natural log' : 'log base 10') + ' of the number ' + (A.u ? A.sym + ' / ' + A.u : A.sym)},
+    {at:2, t:'Uncertainty of the log = the FRACTIONAL uncertainty of ' + A.sym + (op==='lg' ? ', × 0.434 (= 1 / ln 10)' : '')},
+    {at:3, t:'Round: decimal places of the log = significant figures of ' + A.sym + ' (' + r.n + ')'}];
+  const first = op==='*' ? 'Multiply the values and ADD the percentage uncertainties'
+    : op==='/' ? 'Divide the values and ADD the percentage uncertainties'
+    : op==='sq' ? 'Raise to the power ' + pw + ' and MULTIPLY the percentage by ' + pw
+    : op==='sqrt' ? 'Take the ' + (pw===3 ? 'cube' : 'square') + ' root and multiply the percentage by ' + PWFR[pw]
+    : 'Take the reciprocal 1 / ' + A.sym + ' — the percentage stays the SAME';
+  return [{at:0, t:first},
+    {at:2, t:'Convert the percentage back to an absolute uncertainty:  Δ = (% / 100) × value'},
+    {at:3, t:'Round: value to the least significant figures (' + r.n + ' s.f.), uncertainty to the same decimal place'}];
+}
+const OPS_ORDER = ['+','-','*','/','sq','sqrt','inv','ln','lg'];
 function drawOps(){
-  const M = S.m2.op, St = opState(), o = M, P = St.P, one = St.op==='sq' || St.op==='sqrt';
+  const M = S.m2.op, St = opState(), o = M, P = St.P, one = UNARY(St.op);
   const key = M.pre + '|' + M.op; if (OPS_UI.key !== key){ OPS_UI.key = key; M.scroll = 0; }
-  const kind = St.r ? St.r.kind : (St.op==='+' || St.op==='-' ? 'abs' : 'pct'), kc = St.err ? COL['text-muted'] : kind==='abs' ? COL.abs : COL.pct;
+  const kind = St.r ? St.r.kind : (St.op==='+' || St.op==='-' ? 'abs' : ISLOG(St.op) ? 'log' : 'pct'), kc = St.err ? COL['text-muted'] : kind==='pct' ? COL.pct : COL.abs;
   const qs = Q => Q.sym + ' = (' + Q.s + ' ± ' + Q.ds + ') «' + Q.u + '»';
   // ① problem + operator
   card(24, 14, 1152, 86, {r:14});
   text(P.name.toUpperCase(), 44, 33, F_UI(14, 800), COL.accent, 'left', 'middle');
   const A0 = St.A || P.A, B0 = St.B || P.B;
-  const pw = St.pw || P.pw || 2, find = St.err ? '' : (one ? (St.op==='sq' ? A0.sym + '^{' + pw + '}' : ROOT[pw] + A0.sym) : A0.sym + ' ' + OPSYM[St.op] + ' ' + B0.sym);
+  const pw = St.pw || P.pw || 2, find = St.err ? '' : (one ? (ISLOG(St.op) ? (P.rsym || 'y') + ' = «' + St.op + '»(' + (A0.u ? A0.sym + ' / «' + A0.u + '»' : A0.sym) + ')' : St.op==='inv' ? (P.rsym ? P.rsym + ' = 1 / ' + A0.sym : '1 / ' + A0.sym) : St.op==='sq' ? A0.sym + '^{' + pw + '}' : ROOT[pw] + A0.sym) : A0.sym + ' ' + OPSYM[St.op] + ' ' + B0.sym);
   const stmt = [['Given', COL['text-dim'], false], [qs(P.A), COL.val, true]].concat(P.B ? [['and', COL['text-dim'], false], [qs(P.B), COL.val, true]] : [])
                .concat(find ? [['→  Find', COL['text-dim'], false], [find, kc, true]] : []);
   let fs = 24; const sw = f => stmt.reduce((w, [t, c, m]) => w + (m ? richW(parseRich(t), f) : tw(t, F_UI(f*0.72, 700))) + f*0.7, 0);
-  while (fs > 14 && sw(fs) > 740) fs -= 1;
+  while (fs > 14 && sw(fs) > 630) fs -= 1;                         // stay clear of the 9 operator chips (x ≥ 694)
   let xx = 44; stmt.forEach(([t, c, m]) => { if (m) xx += rich(t, xx, 76, fs, c); else { text(t, xx, 70, F_UI(fs*0.72, 700), c, 'left', 'middle'); xx += tw(t, F_UI(fs*0.72, 700)); } xx += fs*0.7; });
   text('Choose an operator', 1156, 29, F_UI(13, 700), COL['text-muted'], 'right', 'middle');
   OPS_UI.chips = [];
-  OPS_ORDER.forEach((op, i) => { const w = 50, x = 1156 - (6 - i)*w - (5 - i)*8, y = 42, on = St.op===op, dis = !P.B && !(op==='sq' || op==='sqrt');
-    const c = op==='+' || op==='-' ? COL.abs : COL.pct;
+  OPS_ORDER.forEach((op, i) => { const w = 46, x = 1156 - (9 - i)*w - (8 - i)*6, y = 42, on = St.op===op, dis = !P.B && !UNARY(op);
+    const c = op==='+' || op==='-' || ISLOG(op) ? COL.abs : COL.pct;
     ctx.globalAlpha = dis ? .3 : 1;
     card(x, y, w, 40, {r:10, stroke: on ? c : COL.border, lw: on ? 2 : 1, fill: on ? rgba(c, .18) : COL.card2});
-    text(opSymN(op, pw), x + w/2, y + 21, F_UP(op==='sq' || op==='sqrt' ? 18 : 22), on ? c : COL.ink, 'center', 'middle');
+    text(opSymN(op, pw), x + w/2, y + 21, F_UP(ISLOG(op) ? 16 : UNARY(op) ? 18 : 22), on ? c : COL.ink, 'center', 'middle');
     ctx.globalAlpha = 1; OPS_UI.chips.push({op, x, y, w, h:40, dis}); });
   // ② the combination machine
   const Y0 = 114;
@@ -1566,8 +1678,8 @@ function drawOps(){
   card(352, Y0, 320, 174, {r:16, stroke: kc, lw: 2.4, fill: rgba(kc, .08)});
   text(opSymN(St.op, pw), 512, Y0 + 36, F_UP(40), kc, 'center', 'middle');
   text(opNameN(St.op, pw), 512, Y0 + 76, F_UI(18, 800), COL.ink, 'center', 'middle');
-  text(kind==='abs' ? 'Add the ABSOLUTE uncertainties' : St.op==='sq' ? 'Percentage × ' + pw : St.op==='sqrt' ? 'Percentage × ' + PWFR[pw] : 'Add the PERCENTAGE uncertainties', 512, Y0 + 110, F_UI(14.5, 700), kc, 'center', 'middle');
-  rich(kind==='abs' ? 'ΔR = ΔA + ΔB' : St.op==='sq' ? '%R = ' + pw + ' × %A' : St.op==='sqrt' ? '%R = ' + PWFR[pw] + ' × %A' : '%R = %A + %B', 512, Y0 + 148, 20, COL['text-dim'], 'center');
+  text(kind==='abs' ? 'Add the ABSOLUTE uncertainties' : ISLOG(St.op) ? 'Δy = the FRACTION Δx / x' + (St.op==='lg' ? ' × 0.434' : '') : St.op==='inv' ? 'Percentage stays the SAME' : St.op==='sq' ? 'Percentage × ' + pw : St.op==='sqrt' ? 'Percentage × ' + PWFR[pw] : 'Add the PERCENTAGE uncertainties', 512, Y0 + 110, F_UI(14.5, 700), kc, 'center', 'middle');
+  rich(kind==='abs' ? 'ΔR = ΔA + ΔB' : St.op==='ln' ? 'Δ(«ln» x) = Δx / x' : St.op==='lg' ? 'Δ(«lg» x) = Δx / (x «ln»10)' : St.op==='inv' ? (P.rsym ? '%' + P.rsym + ' = %' + P.A.sym : '%R = %A') : St.op==='sq' ? '%R = ' + pw + ' × %A' : St.op==='sqrt' ? '%R = ' + PWFR[pw] + ' × %A' : '%R = %A + %B', 512, Y0 + 148, 20, COL['text-dim'], 'center');
   card(720, Y0, 456, 174, {r:16, stroke: COL.accent, lw: 2});
   text('RESULT', 740, Y0 + 20, F_UI(14, 800), COL.accent, 'left', 'middle');
   if (St.err){ wrap(St.err, F_UI(16, 700), 416).forEach((l, i) => text(l, 740, Y0 + 66 + i*26, F_UI(16, 700), COL.fail, 'left', 'middle')); }
@@ -1579,30 +1691,45 @@ function drawOps(){
     const l1 = (sp ? '(' + sp.v + ' ± ' + sp.u + ') × 10^{' + sp.e + '}' : r.lec.v + ' ± ' + r.lec.u) + (St.unit ? ' ' + unitRich(St.unit) : ''), l2 = '± ' + fmtSF(r.pct, 2) + ' %';
     let f2 = 32; const fit = f => Math.max(richW(parseRich(l1), f), richW(parseRich(vHead), f) + richW(parseRich(l2), f)) <= 416;
     while (f2 > 18 && !fit(f2)) f2 -= 1;
-    const xPm = 740 + richW(parseRich(vHead), f2);
-    rich(l1, 740, Y0 + 70, f2, COL.ink);
-    rich(l2, xPm, Y0 + 70 + f2*1.3, f2, COL.pct);
+    // centre the whole block (both lines, ± signs still in one column) in the card: x 720 … 1176
+    const wHead = richW(parseRich(vHead), f2), wL2 = St.op==='inv' ? richW(parseRich(l2), f2) + 14 + tw('same % as ' + St.A.sym, F_UI(15, 800)) : ISLOG(St.op) ? 0 : richW(parseRich(l2), f2);
+    const bw = Math.max(richW(parseRich(l1), f2), wHead + wL2), bx0 = 948 - bw/2;
+    const xPm = bx0 + wHead;
+    rich(l1, bx0, Y0 + 70, f2, COL.ink);
+    const w2 = ISLOG(St.op) ? 0 : rich(l2, xPm, Y0 + 70 + f2*1.3, f2, COL.pct);
+    if (ISLOG(St.op)) text('Δy = ' + (St.op==='lg' ? '0.434 × ' : '') + 'Δ' + St.A.sym + ' / ' + St.A.sym + '  (the ' + fmtSF(r.pct, 2) + ' % of ' + St.A.sym + ' as a fraction)', 948, Y0 + 64 + f2*1.3, F_UI(15, 700), COL.abs, 'center', 'middle');
+    if (St.op==='inv') text('same % as ' + St.A.sym, xPm + w2 + 14, Y0 + 64 + f2*1.3, F_UI(15, 800), COL.pct, 'left', 'middle');
     const same = r.lec.v===r.one.v && r.lec.u===r.one.u;
     const ms = 'Mark-scheme check (Δ to 1 s.f.):  ' + (so ? '(' + so.v + ' ± ' + so.u + ') × 10' + supN(so.e) : r.one.v + ' ± ' + r.one.u) + (same ? '   ✓ same' : '   (also accepted)');
     let mf = 15; while (mf > 11 && tw(ms, F_UI(mf, 600)) > 416) mf -= 0.5;
-    text(ms, 740, Y0 + 154, F_UI(mf, 600), same ? COL.ok : COL.amber, 'left', 'middle');
+    text(ms, 948, Y0 + 154, F_UI(mf, 600), same ? COL.ok : COL.amber, 'center', 'middle');
     ctx.globalAlpha = 1; }
   // ③ the working area — scrolls vertically when the steps run past the bottom
   const Wk = OPS_UI.work;
   card(24, 300, 1152, 361, {r:14});
-  text((St.r && St.r.kind==='abs') ? 'Working (lecture method · + −)' : 'Working (lecture method · × ÷ powers)', 44, 320, F_UI(15, 700), COL['text-muted'], 'left', 'middle');
   OPS_UI.max = 0; OPS_UI.bar = null;
-  if (St.err){ text('Choose an operator that suits these inputs.', 64, 390, F_UI(16, 600), COL['text-dim'], 'left', 'middle'); return; }
-  const L = opLines(St), FS = 30, GAP = 98, top = Wk.y + 54;
-  const bottomOf = (ln, i) => top + i*GAP + (S.labels && (ln.foot || ln.some(t => t.dn)) ? 56 : 18);
-  const content = bottomOf(L[L.length-1], L.length-1) - Wk.y + 6;
+  if (St.err){ text('Choose an operator that suits these inputs.', 64, 360, F_UI(16, 600), COL['text-dim'], 'left', 'middle'); return; }
+  const L = opLines(St), FS = 30, STP = opSteps(St);
+  // lay out: step heading → its lines (room above for ↑ labels, below for ↓ labels / footnotes)
+  const pos = []; let yy = Wk.y + 8;
+  L.forEach((ln, i) => { const h = STP.find(sp => sp.at===i), p = {};
+    if (h){ yy += i ? 18 : 6; p.head = yy + 14; p.h = h; p.n = STP.indexOf(h) + 1; yy += 34; }
+    yy += S.labels && ln.some(t => t.up) ? 54 : 36; p.base = yy;
+    yy += S.labels && (ln.foot || ln.some(t => t.dn)) ? 52 : 18; p.bottom = yy; pos.push(p); });
+  const bottomOf = (ln, i) => pos[i].bottom;
+  const content = yy - Wk.y + 8;
   OPS_UI.max = Math.max(0, content - Wk.h);
   // during Play keep the newest line in view
   if (S.playing){ let last = 0; L.forEach((ln, i) => { if (stepOn(o, i + 1) > 0) last = i; });
     const want = clamp(bottomOf(L[last], last) - (Wk.y + Wk.h) + 6, 0, OPS_UI.max); if (want > (M.scroll || 0)) M.scroll = lerp(M.scroll || 0, want, .18); }
   M.scroll = clamp(M.scroll || 0, 0, OPS_UI.max);
   ctx.save(); ctx.beginPath(); ctx.rect(Wk.x, Wk.y, Wk.w, Wk.h); ctx.clip(); ctx.translate(0, -M.scroll);
-  L.forEach((ln, i) => { const a = ease(stepOn(o, i + 1)); if (a <= 0) return; const y = top + i*GAP; drawTok(ln, 64, y, FS, a);
+  L.forEach((ln, i) => { const a = ease(stepOn(o, i + 1)); if (a <= 0) return; const p = pos[i], y = p.base;
+    if (p.head){ ctx.globalAlpha = a; const pl = 'STEP ' + p.n, pw0 = tw(pl, F_UI(13, 800)) + 20;
+      rrect(44, p.head - 13, pw0, 26, 13); ctx.fillStyle = rgba(COL.accent, .18); ctx.fill(); ctx.strokeStyle = COL.accent; ctx.lineWidth = 1.3; ctx.stroke();
+      text(pl, 44 + pw0/2, p.head + 0.5, F_UI(13, 800), COL.accent, 'center', 'middle');
+      text(p.h.t, 44 + pw0 + 14, p.head + 0.5, F_UI(17, 700), COL.ink, 'left', 'middle'); ctx.globalAlpha = 1; }
+    drawTok(ln, 64, y, FS, a);
     if (ln.foot && S.labels){ ctx.globalAlpha = a; const x0 = 64 + tokW(ln[0], FS) + tokW(ln[1], FS) + 2*FS*0.32; text(ln.foot, x0, y + 36, F_UI(15, 700), St.r.rule==='dp' ? COL.round : COL.ok, 'left', 'middle'); ctx.globalAlpha = 1; } });
   ctx.restore();
   if (OPS_UI.max > 0){                                       // soft fades + scrollbar
@@ -1903,7 +2030,7 @@ function prefOf(e){ const p = PREFIX.find(q => q[0]===e); return p ? {p:p[1], na
 const STAGE_T = 0.9, DWELL = 0.8;
 function freshM1(){ return {
   err:{n:0, seed:1, noise:errNoise(1), cal:false, fireT:0, ap:false},
-  inst:{kind:'ruler', seed:1, inV:'', inD:'', result:null, peek:false, step:1, prog:0, dwell:0, ok:0, tries:0},
+  inst:{kind:'ruler', seed:1, inV:'', inD:'', result:null, peek:false, ze:false, zv:'zero', step:1, prog:0, dwell:0, ok:0, tries:0},
   stat:{sub:'few', seed:1, step:3, prog:0, dwell:0} }; }
 function freshM2(){ return {
   ab:{which:'A', x:5.2, dx:0.1, step:3, prog:0, dwell:0},
@@ -2052,10 +2179,11 @@ function panelFor(){
   }
   if (k==='m0p1'){
     const I = S.m1.inst, def = INST[I.kind], A = instAnswer();
-    o.data = sym('inst') + sec('read', 'Readouts', kv([['Instrument', def.name, 1], ['Smallest division / resolution', def.div], ['Type', def.analog ? 'analogue scale' : 'digital display'], ['Your value', I.inV || '—'], ['Your ± Δ', I.inD || '—'], ['Reading written', I.inV && I.inD ? I.inV + ' ± ' + I.inD + ' ' + def.unit : '—', 1]]));
-    o.calc = sec('rule', 'Uncertainty of one reading', EQ(def.analog && !def.vernier ? ['\\Delta x &= \\tfrac12 \\times \\text{smallest}', '&\\quad\\text{division}', '&= \\tfrac12 \\times ' + def.div.split(' ')[0] + uT(def.unit), '&= ' + def.d + uT(def.unit)]
+    o.data = sym('inst') + sec('read', 'Readouts', kv([['Instrument', def.name, 1], ['Smallest division / resolution', def.div], ['Type', def.analog ? 'analogue scale' : 'digital display'], ['Your value', I.inV || '—'], ['Your ± Δ', I.inD || '—'], ['Reading written', I.inV && I.inD ? I.inV + ' ± ' + I.inD + ' ' + def.unit : '—', 1]].concat(I.ze ? [['Zero error z', I.peek || (I.result && I.result.lvl==='ok') ? A.zs + ' ' + A.unit : 'read it in ① Zero check'], ['Corrected value', 'scale reading − z']] : [])));
+    o.calc = sec('rule', 'Uncertainty of one reading', EQ(def.fine ? ['\\Delta x &= \\text{smallest division}', '&= ' + def.d + uT(def.unit), '&\\text{(marks too close to judge half)}'] : def.analog && !def.vernier ? ['\\Delta x &= \\tfrac12 \\times \\text{smallest}', '&\\quad\\text{division}', '&= \\tfrac12 \\times ' + def.div.split(' ')[0] + uT(def.unit), '&= ' + def.d + uT(def.unit)]
                                                               : def.vernier ? ['\\Delta x &= \\text{least count}', '&= ' + def.d + uT(def.unit)] : ['\\Delta x &= 1 \\text{ in the last digit}', '&= ' + def.d + uT(def.unit)]));
-    o.info = sec('how', 'How to write a reading', steps(['Read the scale at eye level, looking straight on (no parallax).', 'Analogue scale: the uncertainty is ± half the smallest division.', 'Vernier / micrometer: ± the least count (0.01 cm / 0.01 mm).', 'Digital display: ± 1 in the last digit (unless the maker states more).', 'Write value ± uncertainty with the SAME number of decimal places, and the unit.']));
+    const ZEINFO = sec('ze', 'Zero error', steps(['A <b>zero error</b> is the reading an instrument gives when it should read zero (jaws closed, empty pan, leads disconnected, a worn ruler end).', 'It is a <b>systematic</b> error: every reading is shifted by the same amount, so repeating does not remove it.', 'Find it first (① Zero check), then correct each reading: <b>value = reading − zero error</b>.', 'Positive zero error (reads above zero) → subtract it. Negative zero error (reads below zero) → add its size.', 'The uncertainty uses the same rule as before. (Strictly the zero reading has its own uncertainty too; mark schemes usually ignore this for a single correction.)']));
+    o.info = (S.m1.inst.ze ? ZEINFO : '') + sec('how', 'How to write a reading', steps(['Read the scale at eye level, looking straight on (no parallax).', 'Analogue scale: the uncertainty is ± half the smallest division — when you can really judge half a division.', 'Fine marks (e.g. the 1 mm marks of a metre rule): half a division cannot be judged by eye, so use ± the smallest division (± 1 mm).', 'Vernier / micrometer: ± the least count (0.01 cm / 0.01 mm).', 'Digital display: ± 1 in the last digit (unless the maker states more).', 'Write value ± uncertainty with the SAME number of decimal places, and the unit.']));
     o.ans = sec('a', 'Answer', I.peek || (I.result && I.result.lvl==='ok') ? '<div class="qp">' + K(tx(A.vs + ' ± ' + A.ds) + uT(A.unit)) + '</div>' : '<div class="muted">Check your reading or press ! Peek.</div>')
           + (I.result ? sec('fb', 'Feedback', '<div class="' + {ok:'verdict-ok', near:'fb-near', bad:'verdict-bad', empty:'muted'}[I.result.lvl] + '">' + I.result.msg + '</div>') : '');
   }
@@ -2065,7 +2193,7 @@ function panelFor(){
       + sec('tab', 'Readings', '<table class="dt"><tr><th>i</th><th>t / s</th></tr>' + D.xs.map((x, i) => `<tr><td>${i+1}</td><td>${x.toFixed(D.dp)}</td></tr>`).join('') + '</table>');
     o.calc = few ? sec('c', 'Mean and half the range', EQ(['\\bar{t} &= \\frac{\\sum t_i}{4}', '&= \\frac{' + D.xs.map(x => x.toFixed(1)).join('+') + '}{4}', '&= ' + st.mean.toFixed(3) + '\\ \\text{s}', '\\Delta t &= \\tfrac12(t_{max}-t_{min})', '&= \\tfrac12(' + st.max.toFixed(1) + '-' + st.min.toFixed(1) + ')', '&= ' + st.half.toFixed(2) + '\\ \\text{s}', 't &= (' + R0.rep.v + '\\pm' + R0.rep.u + ')\\ \\text{s}']))
                  : sec('c', 'Mean and standard deviation', EQ(['\\bar{t} &= \\frac{\\sum t_i}{N}', '&= \\frac{' + D.xs.reduce((a,b)=>a+b,0).toFixed(2) + '}{12}', '&= ' + st.mean.toFixed(4) + '\\ \\text{s}', 's &= \\sqrt{\\frac{\\sum (t_i-\\bar{t})^2}{N-1}}', '&= \\sqrt{\\frac{' + st.ss.toFixed(5) + '}{11}}', '&= ' + st.sd.toFixed(4) + '\\ \\text{s}', 't &= (' + R0.rep.v + '\\pm' + R0.rep.u + ')\\ \\text{s}', '\\tfrac{s}{\\sqrt{N}} &= ' + st.se.toFixed(4) + '\\ \\text{s}', '&(\\text{uncertainty of the mean})']));
-    o.info = sec('how', 'How to get the uncertainty from repeated readings', steps(['Repeat the measurement and record every reading.', 'Calculate the mean.', 'A few readings: uncertainty = half the range ½(max − min) — or the instrument resolution if that is larger.', 'Many readings: use the standard deviation s = √(Σ(x − x̄)²/(N − 1)).', 'Report mean ± uncertainty: uncertainty to 1 s.f., mean to the same decimal place.']));
+    o.info = sec('how', 'How to get the uncertainty from repeated readings', steps(['Repeat the measurement and record every reading.', 'Calculate the mean.', 'A few readings: uncertainty = half the range ½(max − min) — or the instrument resolution if that is larger.', 'Many readings: use the standard deviation s = √(Σ(x − x̄)²/(N − 1)).', 'Report mean ± uncertainty: uncertainty to 1 s.f., mean to the same decimal place.', 'On the dot plot the result is an <b>error bar</b>: its centre is the VALUE (the mean, the balance point of the readings) and its half-width is the ERROR — so the bar is read as value ± error.']));
     o.ans = sec('a', 'Answer', '<div class="qp">' + K('t = (' + R0.rep.v + '\\pm' + R0.rep.u + ')\\ \\text{s}') + ' — using ' + R0.method + '.</div>');
   }
   if (k==='m1p0'){
@@ -2080,17 +2208,33 @@ function panelFor(){
     o.data = sym('op');
     if (St.err){ o.data += `<div class="note">${St.err}</div>`; }
     else { const r = St.r;
-      o.data += sec('read', 'Readouts', kv([['Input 1', St.A.sym + ' = ' + St.A.s + ' ± ' + St.A.ds + ' ' + St.A.u], ['Input 2', St.B && !(St.op==='sq'||St.op==='sqrt') ? St.B.sym + ' = ' + St.B.s + ' ± ' + St.B.ds + ' ' + St.B.u : '—'], ['Operator', opNameN(St.op, St.pw), 1],
-        ['Combine', r.kind==='abs' ? 'absolute uncertainties' : 'percentage uncertainties'], ['Result (raw)', calcV(r.val)], ['Δ result (raw)', fmtSF(r.unc, 3)], ['Percentage', fmtSF(r.pct, 2) + ' %'],
+      o.data += sec('read', 'Readouts', kv([['Input 1', St.A.sym + ' = ' + St.A.s + ' ± ' + St.A.ds + ' ' + St.A.u], ['Input 2', St.B && !UNARY(St.op) ? St.B.sym + ' = ' + St.B.s + ' ± ' + St.B.ds + ' ' + St.B.u : '—'], ['Operator', opNameN(St.op, St.pw), 1],
+        ['Combine', r.kind==='abs' ? 'absolute uncertainties' : r.kind==='log' ? 'Δy = fractional uncertainty of x' : 'percentage uncertainties'], ['Result (raw)', calcV(r.val)], ['Δ result (raw)', fmtSF(r.unc, 3)], [r.kind==='log' ? 'Percentage of ' + St.A.sym : 'Percentage', fmtSF(r.pct, 2) + ' %'],
         ['Reported (lecture)', r.lec.v + ' ± ' + r.lec.u + (St.unit ? ' ' + St.unit : ''), 1], ['Check: Δ to 1 s.f.', r.one.v + ' ± ' + r.one.u]])); }
     if (!St.err){ const r = St.r, A = St.A, B = St.B, u = uT(St.unit);
       const rows = r.kind==='abs' ? [`R &= ${A.s} ${St.op==='+'?'+':'-'} ${B.s}`, `&= ${fmtDP(r.val, r.n)}`, `\\Delta R &= ${A.ds} + ${B.ds}`, `&= ${fmtDP(r.unc, Math.max(r.n, dpOf(A.ds)))}`, `\\%R &= \\frac{${fmtDP(r.unc, Math.max(r.n, dpOf(A.ds)))}}{${fmtDP(Math.abs(r.val), r.n)}}\\times100\\%`, `&= ${fmtSF(r.pct,2)}\\%`, `R &= ${r.lec.v}\\pm${r.lec.u}${u}`]
         : St.op==='sq' ? [`R &= (${A.s})^{${St.pw}}`, `&= ${calcV(r.val)}`, `\\%R &= ${St.pw}\\times${fmtSF(r.pA,2)}\\%`, `&= ${fmtSF(r.pct,2)}\\%`, `\\Delta R &= \\frac{${fmtSF(r.pct,2)}}{100}\\times${calcV(r.val)}`, `&= ${fmtSF(r.unc,3)}`, `R &= ${r.lec.v}\\pm${r.lec.u}${u}`]
+        : ISLOG(St.op) ? [`y &= \\${St.op}(${A.s})`, `&= ${fmtDP(r.val, r.n + 2)}`, St.op==='ln' ? `\\Delta y &= \\frac{\\Delta ${A.sym}}{${A.sym}} = \\frac{${A.ds}}{${A.s}}` : `\\Delta y &= \\frac{1}{\\ln 10}\\,\\frac{\\Delta ${A.sym}}{${A.sym}}`, ...(St.op==='lg' ? [`&= 0.434\\times\\frac{${A.ds}}{${A.s}}`] : []), `&= ${fmtSF(r.unc,3)}`, `y &= ${r.lec.v}\\pm${r.lec.u}`, `&(${r.n}\\ \\text{d.p.} = ${r.n}\\ \\text{s.f. of } ${A.sym})`]
+        : St.op==='inv' ? [`${St.P.rsym || 'R'} &= \\frac{1}{${A.s}}`, `&= ${calcV(r.val)}`, `\\%${St.P.rsym || 'R'} &= \\%${A.sym} = ${fmtSF(r.pA,2)}\\%`, `\\Delta ${St.P.rsym || 'R'} &= \\frac{${fmtSF(r.pct,2)}}{100}\\times${calcV(r.val)}`, `&= ${fmtSF(r.unc,3)}`, `${St.P.rsym || 'R'} &= ${r.lec.v}\\pm${r.lec.u}${u}`, `&(\\text{least s.f.} = ${r.n})`]
         : St.op==='sqrt' ? [`R &= \\sqrt${St.pw===3 ? '[3]' : ''}{${A.s}}`, `&= ${calcV(r.val)}`, `\\%R &= \\tfrac1${St.pw}\\times${fmtSF(r.pA,2)}\\%`, `&= ${fmtSF(r.pct,2)}\\%`, `\\Delta R &= \\frac{${fmtSF(r.pct,2)}}{100}\\times${calcV(r.val)}`, `&= ${fmtSF(r.unc,3)}`, `R &= ${r.lec.v}\\pm${r.lec.u}${u}`]
         : [`R &= ${A.s} ${St.op==='*'?'\\times':'\\div'} ${B.s}`, `&= ${calcV(r.val)}`, `\\%R &= ${fmtSF(r.pA,2)}\\% + ${fmtSF(r.pB,2)}\\%`, `&= ${fmtSF(r.pct,2)}\\%`, `\\Delta R &= \\frac{${fmtSF(r.pct,2)}}{100}\\times${calcV(r.val)}`, `&= ${fmtSF(r.unc,3)}`, `R &= ${r.lec.v}\\pm${r.lec.u}${u}`, `&(\\text{least s.f.} = ${r.n})`];
-      o.calc = sec('c', 'Propagation — ' + opNameN(St.op, St.pw), EQ(rows)) + sec('r', 'The rule', '<div class="qp">' + K(r.kind==='abs' ? '\\Delta(A\\pm B) = \\Delta A + \\Delta B' : St.op==='sq' ? '\\frac{\\Delta x^n}{x^n} = n\\frac{\\Delta x}{x}' : St.op==='sqrt' ? '\\frac{\\Delta \\sqrt[n]{x}}{\\sqrt[n]{x}} = \\tfrac1n\\frac{\\Delta x}{x}' : '\\frac{\\Delta(AB)}{AB} = \\frac{\\Delta A}{A} + \\frac{\\Delta B}{B}', true) + '</div>');
-      o.ans = sec('a', 'Answer', '<div class="qp">' + K('R = ' + r.lec.v + '\\pm' + r.lec.u + u) + ' &nbsp; (± ' + fmtSF(r.pct, 2) + ' %)</div>' + (r.lec.v===r.one.v && r.lec.u===r.one.u ? '' : '<div class="note">Mark schemes quote Δ to 1 s.f.: ' + K(r.one.v + '\\pm' + r.one.u + u) + ' is also accepted.</div>')); }
-    o.info = sec('how', 'How to combine uncertainties (lecture)', steps(['Write each input as value ± absolute uncertainty, and as a percentage.', '<b>+ or −</b>: ADD the ABSOLUTE uncertainties (never subtract them).', '<b>× or ÷</b>: ADD the PERCENTAGE (fractional) uncertainties.', '<b>Powers</b>: multiply the percentage by the power (x² → 2×, √x → ½×). Exact numbers (π, 2, ½) carry no uncertainty.', 'Convert the final percentage back to an absolute uncertainty: Δ = (% / 100) × value.', 'Report: least d.p. (+ −) or least s.f. (× ÷) for the value; the uncertainty to the same decimal place.']));
+      o.calc = sec('c', 'Propagation — ' + opNameN(St.op, St.pw), EQ(rows)) + sec('r', 'The rule', '<div class="qp">' + K(r.kind==='abs' ? '\\Delta(A\\pm B) = \\Delta A + \\Delta B' : St.op==='ln' ? '\\Delta(\\ln x) = \\frac{\\Delta x}{x}' : St.op==='lg' ? '\\Delta(\\lg x) = \\frac{\\Delta x}{x\\,\\ln 10} \\approx 0.434\\,\\frac{\\Delta x}{x}' : St.op==='inv' ? '\\frac{\\Delta (1/x)}{1/x} = \\frac{\\Delta x}{x}\\quad\\Rightarrow\\quad \\frac{\\Delta f}{f} = \\frac{\\Delta T}{T}' : St.op==='sq' ? '\\frac{\\Delta x^n}{x^n} = n\\frac{\\Delta x}{x}' : St.op==='sqrt' ? '\\frac{\\Delta \\sqrt[n]{x}}{\\sqrt[n]{x}} = \\tfrac1n\\frac{\\Delta x}{x}' : '\\frac{\\Delta(AB)}{AB} = \\frac{\\Delta A}{A} + \\frac{\\Delta B}{B}', true) + '</div>');
+      o.ans = sec('a', 'Answer', '<div class="qp">' + K((r.kind==='log' ? 'y' : St.P.rsym || 'R') + ' = ' + r.lec.v + '\\pm' + r.lec.u + u) + (r.kind==='log' ? '' : ' &nbsp; (± ' + fmtSF(r.pct, 2) + ' %)') + '</div>' + (r.lec.v===r.one.v && r.lec.u===r.one.u ? '' : '<div class="note">Mark schemes quote Δ to 1 s.f.: ' + K(r.one.v + '\\pm' + r.one.u + u) + ' is also accepted.</div>')); }
+    const LOGPROOF = sec('logs', 'Logarithms — ln x and lg x (with proof)',
+        '<div class="qp"><b>Result.</b> The ABSOLUTE uncertainty of a log is the FRACTIONAL uncertainty of x:</div>'
+      + EQ(['\\Delta(\\ln x) &= \\frac{\\Delta x}{x}', '\\Delta(\\lg x) &= \\frac{1}{\\ln 10}\\,\\frac{\\Delta x}{x}', '&\\approx 0.434\\,\\frac{\\Delta x}{x}'])
+      + '<div class="qp"><b>Proof 1 — a small change (calculus).</b> For y = ln x the gradient is dy/dx = 1/x, so a small change Δx gives</div>'
+      + EQ(['y &= \\ln x', '\\frac{dy}{dx} &= \\frac{1}{x}', '\\Delta y &\\approx \\frac{dy}{dx}\\,\\Delta x', '&= \\frac{\\Delta x}{x}'])
+      + '<div class="qp"><b>Proof 2 — max and min (no calculus).</b> Work out y at x + Δx and at x − Δx and take half the difference:</div>'
+      + EQ(['\\Delta y &= \\tfrac12\\big[\\ln(x+\\Delta x)', '&\\qquad - \\ln(x-\\Delta x)\\big]', '&= \\tfrac12\\ln\\frac{1+\\varepsilon}{1-\\varepsilon}', '&\\approx \\tfrac12(\\varepsilon + \\varepsilon)', '&= \\varepsilon = \\frac{\\Delta x}{x}'])
+      + '<div class="qp">where ε = Δx / x; '
+      + 'using ln(1 + ε) ≈ ε and ln(1 − ε) ≈ −ε when ε is small.</div>'
+      + '<div class="qp"><b>From ln to lg.</b> Change of base: lg x = ln x / ln 10, and ln 10 is an exact number, so</div>'
+      + EQ(['\\lg x &= \\frac{\\ln x}{\\ln 10}', '\\Delta(\\lg x) &= \\frac{1}{\\ln 10}\\,\\Delta(\\ln x)', '&= \\frac{1}{2.303}\\,\\frac{\\Delta x}{x}', '&\\approx 0.434\\,\\frac{\\Delta x}{x}'])
+      + '<div class="qp"><b>Check with Example 7</b> (V = 5.0 ± 0.1): ½[ln 5.1 − ln 4.9] = ½(1.62924 − 1.58924) = 0.0200 — the same as ΔV/V = 0.1/5.0 = 0.020.</div>'
+      + '<div class="qp"><b>Reporting.</b> A log has no unit (take the log of a number: ln(V / V)). Give the log to as many <b>decimal places</b> as x has <b>significant figures</b>, and the uncertainty to the same decimal place: ln(5.0) → 1.61 ± 0.02.</div>');
+    const HOWOP = sec('how', 'How to combine uncertainties (lecture)', steps(['Write each input as value ± absolute uncertainty, and as a percentage.', '<b>+ or −</b>: ADD the ABSOLUTE uncertainties (never subtract them).', '<b>× or ÷</b>: ADD the PERCENTAGE (fractional) uncertainties.', '<b>Powers</b>: multiply the percentage by the power (x² → 2×, √x → ½×). Exact numbers (π, 2, ½) carry no uncertainty.', 'Convert the final percentage back to an absolute uncertainty: Δ = (% / 100) × value.', '<b>Logs</b>: Δ(ln x) = Δx/x and Δ(lg x) = 0.434 Δx/x — see the proof (choose ln x or lg x).', 'Report: least d.p. (+ −) or least s.f. (× ÷) for the value; the uncertainty to the same decimal place.']));
+    o.info = ISLOG(S.m2.op.op) ? LOGPROOF + HOWOP : HOWOP + LOGPROOF;
   }
   if (k==='m1p2'){
     const {D, P, F} = grData(), q = D.derive(F.m, F.dm), rep = report1sf(q.v, q.d), U = userLine();
@@ -2121,7 +2265,7 @@ function panelFor(){
 let panelKey = '';
 function renderPanel(force){
   const P = panelFor(), html = '<div class="ptools"><button data-all="close">▸ Collapse all</button><button data-all="open">▾ Expand all</button></div>' + (P[S.ptab] || '<div class="muted">—</div>');
-  const key = S.ptab + '|' + html.length + '|' + html.slice(0, 80) + html.slice(-200);
+  const key = S.ptab + '|' + html;                          // the whole text: a same-length change must still refresh
   if (!force && key === panelKey) return; panelKey = key;
   const pb = $('pbody'), st = pb.scrollTop; pb.innerHTML = html; pb.scrollTop = st;
   document.querySelectorAll('.ptab').forEach(b => b.classList.toggle('active', b.dataset.t===S.ptab));
@@ -2135,10 +2279,11 @@ $('pbody').addEventListener('click', e => {
 function cardTex(){
   const k = ctxKey();
   if (k==='m0p0') return ['\\textsf{\\small mean of N readings}', '\\bar{x} = \\dfrac{\\sum x_i}{N}'];
-  if (k==='m0p1') return ['\\textsf{\\small analogue: half the smallest division}', '\\Delta x = \\tfrac12\\,(\\text{division})', '\\textsf{\\small digital: one in the last digit}'];
+  if (k==='m0p1' && S.m1.inst.ze) return ['\\textsf{\\small zero error: reading with nothing measured}', '\\text{value} = r - z', '\\textsf{\\small z positive → subtract; z negative → add}'];
+  if (k==='m0p1') return INST[S.m1.inst.kind].fine ? ['\\textsf{\\small fine marks: the smallest division}', '\\Delta x = 1\\ \\text{division}', '\\textsf{\\small (half a division cannot be judged)}'] : ['\\textsf{\\small analogue: half the smallest division}', '\\Delta x = \\tfrac12\\,(\\text{division})', '\\textsf{\\small digital: one in the last digit}'];
   if (k==='m0p2') return S.m1.stat.sub==='few' ? ['\\textsf{\\small a few readings: half the range}', '\\Delta x = \\tfrac12\\,(x_{max}-x_{min})'] : ['\\textsf{\\small many readings: standard deviation}', 's = \\sqrt{\\dfrac{\\sum (x_i-\\bar{x})^2}{N-1}}'];
   if (k==='m1p0') return ['\\textsf{\\small relative uncertainty}', '\\dfrac{\\Delta x}{x}', '\\textsf{\\small percentage uncertainty}', '\\dfrac{\\Delta x}{x}\\times 100\\%'];
-  if (k==='m1p1'){ const op = S.m2.op.op; return op==='+'||op==='-' ? ['\\textsf{\\small + or −: add absolute uncertainties}', '\\Delta(x\\pm y)=\\Delta x+\\Delta y'] : op==='sq'||op==='sqrt' ? ['\\textsf{\\small powers: multiply the fraction by n}', '\\dfrac{\\Delta x^n}{x^n}=n\\,\\dfrac{\\Delta x}{x}'] : ['\\textsf{\\small × or ÷: add fractional uncertainties}', '\\dfrac{\\Delta(xy)}{xy}=\\dfrac{\\Delta x}{x}+\\dfrac{\\Delta y}{y}']; }
+  if (k==='m1p1'){ const op = S.m2.op.op; if (op==='ln') return ['\\textsf{\\small natural log}', '\\Delta(\\ln x)=\\dfrac{\\Delta x}{x}']; if (op==='lg') return ['\\textsf{\\small log base 10}', '\\Delta(\\lg x)=\\dfrac{\\Delta x}{x\\,\\ln 10}\\approx 0.434\\,\\dfrac{\\Delta x}{x}']; return op==='+'||op==='-' ? ['\\textsf{\\small + or −: add absolute uncertainties}', '\\Delta(x\\pm y)=\\Delta x+\\Delta y'] : op==='inv' ? ['\\textsf{\\small reciprocal: the SAME percentage}', 'f = \\dfrac{1}{T}', '\\dfrac{\\Delta f}{f}=\\dfrac{\\Delta T}{T}'] : op==='sq'||op==='sqrt' ? ['\\textsf{\\small powers: multiply the fraction by n}', '\\dfrac{\\Delta x^n}{x^n}=n\\,\\dfrac{\\Delta x}{x}'] : ['\\textsf{\\small × or ÷: add fractional uncertainties}', '\\dfrac{\\Delta(xy)}{xy}=\\dfrac{\\Delta x}{x}+\\dfrac{\\Delta y}{y}']; }
   if (k==='m1p2') return ['\\textsf{\\small straight-line graph}', 'y = m x + c', '\\Delta m = \\tfrac12\\,(m_{max}-m_{min})'];
   if (k==='m1p3') return ['\\textsf{\\small report: Δ to the same place as the value}', 'x = (2.6 \\pm 0.1)'];
   const pt = QS[S.m3.q].parts[S.m3.part]; return ['\\textsf{\\small ' + pt.rule.replace(/[%]/g,'\\%').replace(/→/g,'$\\rightarrow$').replace(/×/g,'$\\times$').replace(/√/g,'$\\surd$').replace(/[π]/g,'$\\pi$').replace(/[²]/g,'$^2$').replace(/[⁴]/g,'$^4$').replace(/[½]/g,'1/2') + '}'];
@@ -2186,7 +2331,7 @@ function updateUI(){
   $('tgLabels').classList.toggle('on', S.labels); $('tgFormula').classList.toggle('on', S.formula);
   // context controls
   $('tgCal').classList.toggle('on', S.m1.err.cal); $('tgAP').classList.toggle('on', S.m1.err.ap); $('nShots').textContent = 'N = ' + S.m1.err.n;
-  $('instSel').value = S.m1.inst.kind; $('instU').textContent = INST[S.m1.inst.kind].unit;
+  $('tgZE').classList.toggle('on', S.m1.inst.ze); $('instSel').value = S.m1.inst.kind; $('instU').textContent = INST[S.m1.inst.kind].unit;
   if (document.activeElement !== $('instV')) $('instV').value = S.m1.inst.inV; if (document.activeElement !== $('instD')) $('instD').value = S.m1.inst.inD;
   $('instV').className = 'tin ansbox' + (S.m1.inst.result ? ' ' + ({ok:'good', bad:'bad'}[S.m1.inst.result.lvl] || '') : '');
   document.querySelectorAll('#segFew .sp').forEach(b => b.classList.toggle('active', b.dataset.v===S.m1.stat.sub));
@@ -2194,7 +2339,7 @@ function updateUI(){
   $('opPre').value = String(S.m2.op.pre);
   const one = !OPRE[S.m2.op.pre].B;
   const pwN = opPw(); document.querySelector('#segOp [data-v="sq"]').textContent = opSymN('sq', pwN); document.querySelector('#segOp [data-v="sqrt"]').textContent = opSymN('sqrt', pwN);
-  document.querySelectorAll('#segOp .sp').forEach(b => { b.classList.toggle('active', b.dataset.v===S.m2.op.op); b.disabled = one && !(b.dataset.v==='sq' || b.dataset.v==='sqrt'); b.style.opacity = b.disabled ? .35 : 1; });
+  document.querySelectorAll('#segOp .sp').forEach(b => { b.classList.toggle('active', b.dataset.v===S.m2.op.op); b.disabled = one && !UNARY(b.dataset.v); b.style.opacity = b.disabled ? .35 : 1; });
   $('grSel').value = S.m2.gr.kind; $('tgWorst').classList.toggle('on', S.m2.gr.worst);
   if (document.activeElement !== $('repV')) $('repV').value = S.m2.rep.v; if (document.activeElement !== $('repU')) $('repU').value = S.m2.rep.u;
   document.querySelectorAll('#segRule .sp').forEach(b => b.classList.toggle('active', b.dataset.v===S.m2.rep.rule));
@@ -2264,7 +2409,7 @@ function togglePlay(){
 }
 function instCheck(){ const I = S.m1.inst; I.inV = $('instV').value.trim(); I.inD = $('instD').value.trim(); I.result = checkInst(I.inV, I.inD);
   if (I.result.lvl!=='empty'){ I.tries++; if (I.result.lvl==='ok') I.ok++; } updateUI(); }
-function instNew(){ const I = S.m1.inst; I.seed++; I.inV = ''; I.inD = ''; I.result = null; I.peek = false; restartTL(); updateUI(); }
+function instNew(){ const I = S.m1.inst; I.seed++; I.inV = ''; I.inD = ''; I.result = null; I.peek = false; I.zv = 'zero'; restartTL(); updateUI(); }
 function qCheck(){ const M = S.m3, key = M.q + ':' + M.part, P = QS[M.q].parts[M.part]; M.ans[key] = qAnsStr(); const r = checkPart(P, M.ans[key]);
   M.res[key] = r; if (r.lvl!=='empty'){ M.tries++; if (r.lvl==='ok') M.ok++; }
   const q0 = M.q, p0 = M.part;
@@ -2293,6 +2438,7 @@ $('tgCal').onclick = () => { S.m1.err.cal = !S.m1.err.cal; updateUI(); };
 $('tgAP').onclick = () => { S.m1.err.ap = !S.m1.err.ap; updateUI(); };
 // 1.2
 $('instSel').addEventListener('change', e => { S.m1.inst.kind = e.target.value; instNew(); });
+$('tgZE').onclick = () => { const I = S.m1.inst; I.ze = !I.ze; I.zv = 'zero'; I.inV = ''; I.inD = ''; I.result = null; I.peek = false; restartTL(); updateUI(); };
 $('instV').addEventListener('input', e => { S.m1.inst.inV = e.target.value; S.m1.inst.result = null; renderPanel(); });
 $('instD').addEventListener('input', e => { S.m1.inst.inD = e.target.value; S.m1.inst.result = null; renderPanel(); });
 ['instV','instD'].forEach(id => $(id).addEventListener('keydown', e => { if (e.key==='Enter') instCheck(); }));
@@ -2343,6 +2489,9 @@ $('bQNext').onclick = () => setPill((S.m3.q + 1) % QS.length);
 const PAN = {on:false};
 function setZoomCentre(cx, cy){ S.zoom.cx = clamp(cx, 0, W); S.zoom.cy = clamp(cy, 0, H); }
 cv.addEventListener('pointerdown', e => {
+  if (ctxKey()==='m0p1' && S.m1.inst.ze && e.button===0){             // the zero-check / measure tabs on the canvas
+    const p = toLogical(e), t = INSTUI.tabs.find(t => p.x >= t.x && p.x <= t.x + t.w && p.y >= t.y && p.y <= t.y + t.h);
+    if (t){ if (S.m1.inst.zv !== t.v){ S.m1.inst.zv = t.v; restartTL(); updateUI(); } return; } }
   if (e.button===1){ e.preventDefault(); cancelSelection(); return; }
   if (e.button!==0) return;
   if (ctxKey()==='m1p2'){

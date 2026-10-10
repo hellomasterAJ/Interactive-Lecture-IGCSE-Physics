@@ -306,7 +306,7 @@ table.res td.mono{font-family:'JetBrains Mono',ui-monospace,monospace}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span class="t">🏃 Motion &amp; Kinematics</span> <span class="badge-top" id="badge">v1.8.4</span></h1>
+    <h1><span class="t">🏃 Motion &amp; Kinematics</span> <span class="badge-top" id="badge">v1.8.7</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="gMode">
         <button class="mode-tab active" data-m="sim">Simulate</button>
@@ -480,6 +480,23 @@ var PHYS = {
       v: function (t) { t = Math.max(0, Math.min(T, t)); return vT * (1 - Math.exp(-t / tau)); },
       a: function (t) { t = Math.max(0, Math.min(T, t)); return (vT / tau) * Math.exp(-t / tau); },
       s: function (t) { t = Math.max(0, Math.min(T, t)); return vT * (t - tau * (1 - Math.exp(-t / tau))); }
+    };
+  },
+
+  /* terminal velocity, then the parachute opens at tOpen:
+       free fall  v = vT1(1 − e^(−t/τ1)), with τ1 = vT1/g so a starts at g
+       canopy     v = vT2 + (vo − vT2) e^(−(t−to)/τ2) — a is NEGATIVE: it slows down */
+  chuteModel: function (vT1, vT2, to, T) {
+    var g = 9.81, t1 = vT1 / g, t2 = 0.8;
+    var v1 = function (t) { return vT1 * (1 - Math.exp(-t / t1)); };
+    var s1 = function (t) { return vT1 * (t - t1 * (1 - Math.exp(-t / t1))); };
+    var vo = v1(to), so = s1(to);
+    var cl = function (t) { return Math.max(0, Math.min(T, t)); };
+    return {
+      T: T, chute: true, vT: vT1, vT2: vT2, tOpen: to, a0: g,
+      v: function (t) { t = cl(t); return t <= to ? v1(t) : vT2 + (vo - vT2) * Math.exp(-(t - to) / t2); },
+      a: function (t) { t = cl(t); return t <= to ? (vT1 / t1) * Math.exp(-t / t1) : -(vo - vT2) / t2 * Math.exp(-(t - to) / t2); },
+      s: function (t) { t = cl(t); return t <= to ? s1(t) : so + vT2 * (t - to) + (vo - vT2) * t2 * (1 - Math.exp(-(t - to) / t2)); }
     };
   },
 
@@ -3132,7 +3149,7 @@ function m3Frames(mod) {
    three graphs plot, at the same cursor time tc.                              */
 var M3B = { y0: 50, y1: 176, road: 146 };            /* band top/bottom, road line */
 var M3C = { x0: 1104, x1: 1192 };                     /* right-hand column          */
-function m3Vertical(sc) { return sc.key === 'turn' || sc.key === 'term' || sc.key === 'lift'; }
+function m3Vertical(sc) { return sc.key === 'turn' || sc.key === 'term' || sc.key === 'chute' || sc.key === 'lift'; }
 
 /* ═══════════════ 🛗 ELEVATOR — rest → speed up → cruise → slow down → rest ═══════════════
    The lift leaves the ground floor from rest and stops at the top floor.
@@ -3344,17 +3361,25 @@ function m3Dash(mod, tc) {
   mtxt(fmt(sp, 1), cx, dy + R + 18, 15, C.spd, 'center', 700);
   mtxt('m/s', cx, dy + R + 30, 8.5, C['text-muted'], 'center', 700);
   /* pedals: which one is the driver pressing right now? */
-  var speeding = sp > 0.05 && a * v > 1e-6 || (sp <= 0.05 && Math.abs(a) > 1e-6);
-  var braking = sp > 0.05 && a * v < -1e-6;
-  [['GAS', speeding, C.green, x0 + 10], ['BRAKE', braking, C.red, cx + 3]].forEach(function (pd) {
-    var px = pd[3], py = y0 + 150, pw = w / 2 - 13;
+  var speeding, braking;
+  if (sp > 0.05) { speeding = a * v > 1e-6; braking = a * v < -1e-6; }
+  else {
+    /* (almost) at rest: look a moment ahead and behind.  Speed about to grow =
+       pulling away on the accelerator; speed just fallen to zero = the brake
+       that stopped it; at rest either side = no pedal at all                 */
+    var spN = Math.abs(mod.v(Math.min(mod.T, tc + 0.08))), spP = Math.abs(mod.v(Math.max(0, tc - 0.08)));
+    speeding = Math.abs(a) > 1e-6 && spN > sp + 1e-4;
+    braking = !speeding && spP > sp + 1e-4;
+  }
+  [['ACC', speeding, C.green, x0 + 10], ['BRAKE', braking, C.red, cx + 3]].forEach(function (pd) {
+    var px = pd[3], py = y0 + 136, pw = w / 2 - 13;
     CX.save();
     CX.fillStyle = pd[1] ? pd[2] : C.card; rr(px, py, pw, 28, 5); CX.fill();
     CX.strokeStyle = pd[1] ? pd[2] : C.border; CX.lineWidth = 1; rr(px, py, pw, 28, 5); CX.stroke();
     CX.strokeStyle = pd[1] ? C.bg : C['text-muted']; CX.lineWidth = 1;
     for (var g = 0; g < 3; g++) { CX.beginPath(); CX.moveTo(px + 6, py + 7 + g * 7); CX.lineTo(px + pw - 6, py + 7 + g * 7); CX.stroke(); }
     CX.restore();
-    mtxt(pd[0], px + pw / 2, py + 40, 7.5, pd[1] ? pd[2] : C['text-muted'], 'center', 800);
+    mtxt(pd[0], px + pw / 2, py + 39, 7.5, pd[1] ? pd[2] : C['text-muted'], 'center', 800);
   });
   mtxt(v < -0.05 ? 'REVERSE ←' : (sp > 0.05 ? 'DRIVE →' : 'STOPPED'), cx, y0 + h - 8, 8, v < -0.05 ? C.a : C['text-dim'], 'center', 800);
 }
@@ -3581,7 +3606,8 @@ function m3SkyBand(sc, mod, tc) {
     lab('jump door', px - 19, py + 34, 'center', px - 19, py + 10);
     txt('a skydiver jumps and falls straight DOWN', px + 180, B.y0 + 42, 13, C.text, 'left', 700);
     txt('follow the fall in the column on the right →', px + 180, B.y0 + 62, 11.5, C['text-dim'], 'left', 500);
-    txt('air resistance grows with speed until it balances the weight', px + 180, B.y0 + 82, 11.5, C['text-dim'], 'left', 500);
+    txt(sc.key === 'chute' ? 'the parachute opens at t = ' + fmt(mod.tOpen, 1) + ' s — drag jumps, the diver slows to a new, lower terminal v'
+                           : 'air resistance grows with speed until it balances the weight', px + 180, B.y0 + 82, 11.5, C['text-dim'], 'left', 500);
   }
 }
 function m3Column(sc, mod, tc, fr) {
@@ -3621,7 +3647,7 @@ function m3Column(sc, mod, tc, fr) {
     mtxt(sym('s') + ' / m', x0 + w / 2, y1 - 4, 8.5, C['text-dim'], 'center', 700);
   } else {
     /* s grows DOWNWARDS from the jump; weight is constant, drag grows with v */
-    var topY = y0 + 30, botY = y1 - 22, hi2 = Math.max(sr.hi, 1), k2 = (botY - topY) / hi2;
+    var topY = y0 + 30, botY = y1 - 22 - (sc.key === 'chute' ? 40 : 0), hi2 = Math.max(sr.hi, 1), k2 = (botY - topY) / hi2;
     var Yd = function (q) { return topY + q * k2; };
     var st2 = niceStep(hi2, 6);
     CX.fillStyle = withA(C.text, LIGHT ? .22 : .10);
@@ -3639,11 +3665,28 @@ function m3Column(sc, mod, tc, fr) {
       figure(0, 0, 40, { style: 'shaded', pose: dive, col: C.ink, alpha: alpha, shadow: false });
       CX.restore();
     };
-    if (S.trace) strobeTimes(tc, 0.5).forEach(function (t3) { drawDiver(Yd(mod.s(t3)), .2); });
+    /* under an open canopy the diver hangs upright, arms up on the steering toggles */
+    var hang = function (yy, alpha, u) {
+      var cw = 18 + 22 * u, top = yy - 66;
+      CX.save(); if (alpha) CX.globalAlpha = alpha;
+      CX.strokeStyle = withA(C.text, .55); CX.lineWidth = 1;
+      CX.beginPath(); CX.moveTo(cx - 8, yy - 30); CX.lineTo(cx - cw, top + 6); CX.moveTo(cx - 8, yy - 30); CX.lineTo(cx + cw - 16, top + 6); CX.stroke();
+      CX.fillStyle = '#e8564f';
+      CX.beginPath(); CX.ellipse(cx - 8, top + 6, cw, 12 + 6 * u, 0, Math.PI, 0); CX.closePath(); CX.fill();
+      CX.fillStyle = 'rgba(255,255,255,.55)';
+      CX.beginPath(); CX.ellipse(cx - 8, top + 6, cw * 0.36, 12 + 6 * u, 0, Math.PI, 0); CX.closePath(); CX.fill();
+      CX.restore();
+      figure(cx - 8, yy + 6, 36, { style: 'shaded', pose: 'cheer', col: C.ink, alpha: alpha, shadow: false });
+    };
+    var isOpen = function (t) { return sc.key === 'chute' && t >= mod.tOpen; };
+    var infl = function (t) { return Math.min(1, (t - mod.tOpen) / 0.6); };
+    if (S.trace) strobeTimes(tc, 0.5).forEach(function (t3) { if (isOpen(t3)) hang(Yd(mod.s(t3)), .2, infl(t3)); else drawDiver(Yd(mod.s(t3)), .2); });
     var dyy = Yd(s);
-    drawDiver(dyy, null);
-    /* forces: weight fixed length; air resistance = weight × v / vT (the model's linear drag) */
-    var Wl = 34, Dl = Wl * Math.min(1, v / mod.vT);
+    if (isOpen(tc)) hang(dyy, null, infl(tc)); else drawDiver(dyy, null);
+    /* forces: weight a fixed length; drag from a = g(1 − D/W), i.e. D/W = 1 − a/g.
+       In free fall that is v/vT (linear drag); with the canopy open it exceeds W  */
+    var Wl = 34, ratio = mod.chute ? 1 - mod.a(tc) / mod.a0 : v / mod.vT;
+    var Dl = Wl * Math.min(sc.key === 'chute' ? 2.2 : 1, Math.max(0, ratio));
     arrow(cx, dyy + 6, 0, Wl, C.a, 2.6);
     if (Dl > 2) arrow(cx + 14, dyy - 6, 0, -Dl, C.spd, 2.6);
     CX.restore();
@@ -3670,7 +3713,7 @@ function m3Draw(sc) {
   txt(sc.title, 40, 26, 17, C.text, 'left', 700);
   txt(sc.sub, 40, 44, 12, C['text-dim'], 'left', 500);
   if (S.hints)
-    txt('hover any graph to read values · all three share one time axis',
+    txt('click a graph to jump to that time · all three share one time axis',
       1160, 26, 11, C['text-muted'], 'right', 500);
 
   /* ---- the scene: a street, a park or the sky, plus the right-hand column ---- */
@@ -3702,9 +3745,22 @@ function m3Draw(sc) {
     var gsl = mod.v(tc), half = Math.min(1.1, mod.T * 0.16);
     var t1 = Math.max(0, tc - half), t2 = Math.min(mod.T, tc + half);
     var y1 = mod.s(tc) + gsl * (t1 - tc), y2 = mod.s(tc) + gsl * (t2 - tc);
-    CX.save(); CX.strokeStyle = C.tan; CX.lineWidth = 1.8; CX.setLineDash([6, 4]);
-    CX.beginPath(); CX.moveTo(gx(fr.s, t1), gy(fr.s, y1)); CX.lineTo(gx(fr.s, t2), gy(fr.s, y2)); CX.stroke();
+    var sx1 = gx(fr.s, t1), sx2 = gx(fr.s, t2), sy1 = gy(fr.s, y1), sy2 = gy(fr.s, y2);
+    CX.save(); CX.beginPath(); CX.rect(fr.s.x, fr.s.y, fr.s.w, fr.s.h); CX.clip();
+    CX.strokeStyle = C.tan; CX.lineWidth = 3; CX.lineCap = 'round'; CX.setLineDash([0.1, 6]);
+    CX.beginPath(); CX.moveTo(sx1, sy1); CX.lineTo(sx2, sy2); CX.stroke();
+    /* the gradient triangle: rise Δs over run Δt */
+    var sTri = Math.abs(sy2 - sy1) >= 6;
+    if (sTri) {
+      CX.setLineDash([]); CX.lineWidth = 1.4; CX.globalAlpha = 0.9; CX.lineCap = 'butt';
+      CX.beginPath(); CX.moveTo(sx1, sy1); CX.lineTo(sx2, sy1); CX.lineTo(sx2, sy2); CX.stroke();
+      CX.globalAlpha = 0.12; CX.fillStyle = C.tan;
+      CX.beginPath(); CX.moveTo(sx1, sy1); CX.lineTo(sx2, sy1); CX.lineTo(sx2, sy2); CX.closePath(); CX.fill();
+    }
     CX.restore();
+    var inS = function (y) { return y > fr.s.y + 10 && y < fr.s.y + fr.s.h - 4; }, sdt = sy1 + (sy2 < sy1 ? 13 : -6);
+    if (sTri && inS(sdt)) mtxt('Δ' + sym('t'), (sx1 + sx2) / 2, sdt, 10, C.tan, 'center', 700);
+    if (Math.abs(sy2 - sy1) > 14) mtxt('Δ' + sym('s'), sx2 + 5, Math.max(fr.s.y + 14, Math.min(fr.s.y + fr.s.h - 8, (sy1 + sy2) / 2 + 3)), 10, C.tan, 'left', 700);
     /* next to the cursor — on its LEFT once the cursor nears the right edge,
        so the caption never runs out of the frame into the side column      */
     var cursorCap = function (g, str, y, col) {
@@ -3714,6 +3770,32 @@ function m3Draw(sc) {
       mtxt(str, right ? X - 8 : X + 8, y, 11, col, right ? 'right' : 'left', 700);
     };
     cursorCap(fr.s, 'gradient = ' + sym('v') + ' = ' + fmt(gsl, 2), fr.s.y + 16, C.tan);
+    /* the tangent to the v–t graph: its gradient is the acceleration.  It is a
+       dotted line in the acceleration colour, so it never reads as the dashed
+       orange s–t tangent above                                                 */
+    var asl = mod.a(tc), vy1 = mod.v(tc) + asl * (t1 - tc), vy2 = mod.v(tc) + asl * (t2 - tc);
+    var GV = LIGHT ? '#7c3aed' : '#b794f6';            /* purple: the v–t gradient's own colour */
+    CX.save(); CX.beginPath(); CX.rect(fr.v.x, fr.v.y, fr.v.w, fr.v.h); CX.clip();   /* a steep tangent stays inside its panel */
+    CX.strokeStyle = GV; CX.lineWidth = 3; CX.lineCap = 'round'; CX.setLineDash([0.1, 6]);
+    CX.beginPath(); CX.moveTo(gx(fr.v, t1), gy(fr.v, vy1)); CX.lineTo(gx(fr.v, t2), gy(fr.v, vy2)); CX.stroke();
+    /* a gradient triangle under the tangent: rise Δv over run Δt.  On a straight
+       v–t line the tangent lies on the line itself, so the triangle is what
+       makes the gradient visible                                               */
+    var tx1 = gx(fr.v, t1), tx2 = gx(fr.v, t2), ty1 = gy(fr.v, vy1), ty2 = gy(fr.v, vy2);
+    var tri = Math.abs(ty2 - ty1) >= 6;                 /* no triangle on a flat line (a = 0) */
+    if (tri) {
+      CX.setLineDash([]); CX.lineWidth = 1.4; CX.globalAlpha = 0.9; CX.lineCap = 'butt';
+      CX.beginPath(); CX.moveTo(tx1, ty1); CX.lineTo(tx2, ty1); CX.lineTo(tx2, ty2); CX.stroke();
+      CX.globalAlpha = 0.12; CX.fillStyle = GV;
+      CX.beginPath(); CX.moveTo(tx1, ty1); CX.lineTo(tx2, ty1); CX.lineTo(tx2, ty2); CX.closePath(); CX.fill();
+    }
+    CX.restore();
+    var inV = function (y) { return y > fr.v.y + 10 && y < fr.v.y + fr.v.h - 4; }, dty = ty1 + (ty2 < ty1 ? 13 : -6);
+    if (tri && inV(dty)) mtxt('Δ' + sym('t'), (tx1 + tx2) / 2, dty, 10, GV, 'center', 700);
+    if (Math.abs(ty2 - ty1) > 14) mtxt('Δ' + sym('v'), tx2 + 5, Math.max(fr.v.y + 14, Math.min(fr.v.y + fr.v.h - 8, (ty1 + ty2) / 2 + 3)), 10, GV, 'left', 700);
+    /* the caption sits at the top of the panel unless the curve itself runs there */
+    var vcy = gy(fr.v, mod.v(tc)), capY = vcy < fr.v.y + 40 ? Math.min(fr.v.y + fr.v.h - 26, vcy + 24) : fr.v.y + 16;
+    cursorCap(fr.v, 'gradient = ' + sym('a') + ' = ' + fmt(asl, 2), capY, GV);
     cursorCap(fr.v, 'shaded area = ' + sym('s') + ' = ' + fmt(mod.s(tc) - mod.s(0), 2) + ' m', fr.v.y + fr.v.h - 8, C.s);
     /* park the a–t caption in whichever corner the curve is furthest from */
     var cap = sym('a') + ' = gradient of the v–t graph above';
@@ -3968,6 +4050,26 @@ m3('term', 7, '🪂 Terminal velocity', 'Terminal velocity — acceleration dyin
       'The acceleration is the gradient of the v–t curve, and that gradient is clearly flattening.</li>' +
       '<li><b>s–t:</b> curved at first, then becomes a <b>straight line</b> — constant velocity at last.</li>' +
       '<li>Note the object never slows down here. Reaching terminal velocity means it stops <i>speeding up</i>.</li></ol>';
+  });
+
+m3('chute', 7.5, '⛱ Parachute', 'Terminal velocity with a parachute — two terminal velocities',
+  'Free fall to a first terminal velocity, then the canopy opens: drag exceeds weight, a turns negative and v falls to a new, lower terminal velocity.',
+  function (p) { return PHYS.chuteModel(p.vT1, p.vT2, p.tOpen, p.tOpen + 6); },
+  [{ k: 'vT1', label: 'free-fall v', min: 10, max: 40, step: 1, unit: 'm/s', d: 0 },
+  { k: 'vT2', label: 'canopy v', min: 2, max: 9, step: 0.5, unit: 'm/s', d: 1 },
+  { k: 'tOpen', label: 'opens at', min: 2, max: 10, step: 0.5, unit: 's', d: 1 }], { vT1: 20, vT2: 5, tOpen: 6 },
+  function () {
+    var p = S.p;
+    return '<div class="note">The weight stays the same all the way down. What changes is the air resistance: ' +
+      'it grows with speed, and a parachute makes it far larger at the same speed.</div>' +
+      '<ol class="steps">' +
+      '<li><b>Free fall:</b> drag grows until it equals the weight. The resultant force and the acceleration fall to zero and ' +
+      'v levels off at the first terminal velocity, ' + fmt(p.vT1, 0) + ' m/s.</li>' +
+      '<li><b>The canopy opens</b> at t = ' + fmt(p.tOpen, 1) + ' s: drag is suddenly much <b>bigger</b> than the weight, so the resultant ' +
+      'force is upwards and the acceleration is <b>negative</b> — the diver slows down (still moving down).</li>' +
+      '<li>As v falls, drag falls too, until it balances the weight again at a new, lower terminal velocity of ' + fmt(p.vT2, 1) + ' m/s.</li>' +
+      '<li><b>v–t:</b> rise, flat, a sharp drop, then flat again. <b>a–t:</b> starts at g, decays to 0, dips sharply negative, ' +
+      'and returns to 0. <b>s–t:</b> two straight sections with different gradients.</li></ol>';
   });
 
 /* ===================== MODE 4 — Uniform acceleration (SUVAT) ===================== */
@@ -5211,12 +5313,21 @@ function loop(now) {
 }
 
 /* ---------- pointer ----------------------------------------------------- */
-function hoverGraphs(L) {
+/* Mode 3: rolling the pointer over a graph no longer moves anything.  A click
+   on a graph sets the animation clock to the time under the pointer (and
+   pauses there, so the values can be read); holding the button down and
+   dragging scrubs along the time axis.                                     */
+function graphAt(L) {
   if (S.md === 3 && window.M3F) {
     var F = window.M3F, k;
-    for (k in F) if (inFrame(F[k], L.x, L.y)) { S.hover = frameT(F[k], L.x); return true; }
+    for (k in F) if (inFrame(F[k], L.x, L.y)) return F[k];
   }
-  return false;
+  return null;
+}
+function setTimeFromGraph(g, L) {
+  S.t = frameT(g, L.x); S.hover = null;
+  S.play = false; S.done = false;
+  updateChrome(); patchLive();
 }
 
 function wireCanvas() {
@@ -5228,8 +5339,13 @@ function wireCanvas() {
       S.cardDrag = { key: hit.key, dx: L.x - hit.x, dy: L.y - hit.y, cx: e.clientX, cy: e.clientY, card: hit };
       return;
     }
-    if (S.zoom.k > 1) { S.zoom.panning = true; S.zoom.px = e.clientX; S.zoom.py = e.clientY; return; }
-    hoverGraphs(L);
+    var g = graphAt(L);
+    /* zoomed in, a press-and-drag still pans; a plain click on a graph sets the time */
+    if (S.zoom.k > 1) {
+      S.zoom.panning = true; S.zoom.px = e.clientX; S.zoom.py = e.clientY;
+      S.graphClick = g ? { g: g, L: L, cx: e.clientX, cy: e.clientY } : null; return;
+    }
+    if (g) { S.scrub = g; setTimeFromGraph(g, L); return; }
   });
   CV.addEventListener('pointermove', function (e) {
     var L = toLogical(e.clientX, e.clientY);
@@ -5242,7 +5358,8 @@ function wireCanvas() {
       S.zoom.oy += (e.clientY - S.zoom.py) / VT.s;
       S.zoom.px = e.clientX; S.zoom.py = e.clientY; clampPan(); return;
     }
-    if (S.md === 3) { if (!hoverGraphs(L)) S.hover = null; }
+    if (S.scrub) { setTimeFromGraph(S.scrub, L); return; }
+    CV.style.cursor = graphAt(L) ? 'pointer' : '';
   });
   CV.addEventListener('pointerup', function (e) {
     var d = S.cardDrag;
@@ -5253,9 +5370,13 @@ function wireCanvas() {
     }
   });
   ['pointerup', 'pointercancel'].forEach(function (ev) {
-    CV.addEventListener(ev, function () { S.cardDrag = null; S.zoom.panning = false; });
+    CV.addEventListener(ev, function (e) {
+      var c = S.graphClick;
+      if (ev === 'pointerup' && c && Math.hypot(e.clientX - c.cx, e.clientY - c.cy) < 5) setTimeFromGraph(c.g, c.L);
+      S.cardDrag = null; S.zoom.panning = false; S.scrub = null; S.graphClick = null;
+    });
   });
-  CV.addEventListener('pointerleave', function () { if (S.md === 3) S.hover = null; });
+  CV.addEventListener('pointerleave', function () { CV.style.cursor = ''; });
   CV.addEventListener('dblclick', function (e) {
     var L = toLogical(e.clientX, e.clientY);
     if (S.zoom.k > 1) { S.zoom = { k: 1, ox: 0, oy: 0, panning: false, px: 0, py: 0 }; }
