@@ -48,6 +48,7 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   └── AS/                                            ← A-Level 9702 sims
 │       ├── AS_CH0_Fundamental_1_SI_Units_and_Homogeneity.html ← SI Units & Homogeneity 🧱
 │       ├── AS_CH0_Fundamental_2_Uncertainty_and_Significant_Figures.html ← Uncertainty & Sig Figs ⚠️📏
+│       ├── AS_CH0_Fundamental_3_Estimation.html ← Estimation & Order of Magnitude 🔢
 │       ├── AS_CH3_Wave_1_Progressive_and_Stationary_Waves.html ← Progressive & Stationary Waves 〰️
 │       ├── AS_CH3_Wave_2_Interference_and_Grating.html ← Interference & Diffraction Grating 🎯
 │       ├── AS_CH3_Wave_3_Doppler_Effect.html         ← Doppler Effect & Redshift 🚨
@@ -137,6 +138,14 @@ python3 -m playwright install chromium
 Educational use — HAUS Academy
 
 ## 📋 Changelog
+
+### 11 Oct 2026 — AS/Estimation & Order of Magnitude `v1.0.1` (`simulations/AS/AS_CH0_Fundamental_3_Estimation.html`) · A-Level 9702 Chapter 0
+
+| # | การเปลี่ยนแปลง | รายละเอียด |
+|---|---------------|-----------|
+| 1 | **3 โหมด** | ① Order of Magnitude (บันได 10ⁿ + อ่าน order จากเลข) ② Estimation Method (Fermi builder ต่อสมมติฐาน `×÷` → ปัด order) ③ Practice (P1–P6) |
+| 2 | **Scenario** | มวลรถ `~10³kg` · โมเลกุลในหยดน้ำ `~10²¹` · พลังงานมนุษย์ `~10²W` · ข้าว 1 ถุง `~5×10⁴` |
+| 3 | **มาตรฐาน** | 6 themes / KaTeX offline / badge v1.0.1 / window.S |
 
 ### 10 Oct 2026 — AS/Uncertainty & Significant Figures `v1.1.1` (`simulations/AS/AS_CH0_Fundamental_2_Uncertainty_and_Significant_Figures.html`) · A-Level 9702 Chapter 0
 
