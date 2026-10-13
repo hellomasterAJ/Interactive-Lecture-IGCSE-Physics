@@ -263,7 +263,7 @@ h4.ph{font-size:11px;text-transform:uppercase;letter-spacing:.7px;color:var(--te
 <div class="container">
 
   <div class="top-bar">
-    <h1><span>⚛️ Molecular Models</span> <span class="badge-top" id="badge">v1.5.0</span></h1>
+    <h1><span>⚛️ Molecular Models</span> <span class="badge-top" id="badge">v1.6.2</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="viewTabs">
         <button class="mode-tab active" data-view="sim">Simulate</button>
@@ -538,6 +538,23 @@ function wrap(str, x, y, w, size, col, lh, weight, font) {
   return yy;
 }
 
+
+/* a power of ten drawn as a real superscript: the Unicode characters
+   ⁻¹⁰ do not share a baseline in a monospaced font, so the exponent is
+   drawn as its own smaller run, raised by a fixed fraction of the size.
+   Returns the total width, and takes a trailing unit such as ' m'.       */
+function powTxt(expo, x, y, size, col, align, unit) {
+  var base = '10', ex = String(expo).replace('-', '\u2212'), tail = unit || '';
+  var wB = textW(base, size, 700, '"JetBrains Mono", monospace');
+  var wE = textW(ex, size * .62, 700, '"JetBrains Mono", monospace');
+  var wT = tail ? textW(tail, size, 700, '"JetBrains Mono", monospace') : 0;
+  var w = wB + wE + wT;
+  var x0 = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x;
+  mtxt(base, x0, y, size, col, 'left', 700);
+  mtxt(ex, x0 + wB, y - size * .42, size * .62, col, 'left', 700);
+  if (tail) mtxt(tail, x0 + wB + wE, y, size, col, 'left', 700);
+  return w;
+}
 
 /* ═════════════════ laboratory apparatus, drawn properly ═════════════════
    One set of parts shared by every gas-law scene, so a cylinder, a gauge
@@ -1798,7 +1815,9 @@ scene(1, 'history', {
    One decade table drives the ruler, every instrument's reach bracket and
    every specimen caption, so they can never drift apart.                  */
 var SCALE_LO = -10, SCALE_HI = 0;                 /* log10(size / metre)    */
-function sx10(lg, x, w) { return x + (lg - SCALE_LO) / (SCALE_HI - SCALE_LO) * w; }
+/* the ruler reads the way a person does: the big things on the LEFT, the
+   small ones on the right                                                 */
+function sx10(lg, x, w) { return x + (SCALE_HI - lg) / (SCALE_HI - SCALE_LO) * w; }
 var INSTR = [
   { k: 'opt', nm: 'Optical microscope', sub: 'light + glass lenses · about ×1000',
     lo: -6.3, hi: -3, best: '≈ 0.2 µm', sees: 'cells, bacteria', cant: 'cannot resolve single molecules — light\'s own wavelength is too long',
@@ -1954,11 +1973,100 @@ function ballStick(cx, cy, s) {
   });
   CX.restore();
 }
+/* ── the ladder of sizes: every rung is a thing you can picture, with the
+   power of ten that goes with it ─────────────────────────────────────── */
+var SIZEOBJ = [
+  { k: 'hand', nm: 'your hand', lg: -1, sz: '≈ 10 cm', pw: -1,
+    note: 'the everyday end of the scale — a metre rule reads this straight off' },
+  { k: 'sand', nm: 'a grain of sand', shortNm: 'sand grain', lg: -3.2, sz: '≈ 0.5 mm', pw: -3,
+    note: 'still visible, just: about the smallest thing the naked eye can pick out' },
+  { k: 'hair', nm: 'a human hair', shortNm: 'hair', lg: -4.2, sz: '≈ 70 µm wide', pw: -4,
+    note: 'the usual bridge between the everyday world and the microscope' },
+  { k: 'cell', nm: 'a living cell', shortNm: 'cell', lg: -5, sz: '≈ 10 µm', pw: -5,
+    note: 'an optical microscope reaches this easily — Brown saw pollen at this size' },
+  { k: 'virus', nm: 'a virus', lg: -7, sz: '≈ 100 nm', pw: -7,
+    note: 'too small for light: this is where the electron microscope takes over' },
+  { k: 'mol', nm: 'a water molecule', shortNm: 'molecule', lg: -9.55, sz: '≈ 0.28 nm', pw: -9,
+    note: 'two hydrogen atoms bonded to one oxygen — an AFM can feel one' },
+  { k: 'atom', nm: 'an atom', lg: -10, sz: '≈ 0.1 nm', pw: -10,
+    note: 'a nucleus with a cloud of electrons around it — the end of the ladder' }
+];
+function sizeObjAt(k) { for (var i = 0; i < SIZEOBJ.length; i++) if (SIZEOBJ[i].k === k) return SIZEOBJ[i]; return SIZEOBJ[0]; }
+/* a small picture of each rung, drawn in a box w × h                      */
+function sizePic(k, x, y, w, h) {
+  var cx = x + w / 2, cy = y + h / 2, i;
+  CX.save(); fillRR(x, y, w, h, 8, withA('#0a1018', .9), withA(C.border, .8), 1.2);
+  CX.beginPath(); rr(x, y, w, h, 8); CX.clip();
+  if (k === 'hand') {
+    CX.save(); CX.translate(cx, cy + 12); CX.scale(w / 110, w / 110);
+    CX.beginPath();
+    CX.moveTo(-22, 20); CX.quadraticCurveTo(-30, -6, -24, -16);
+    CX.quadraticCurveTo(-16, -22, -12, -8);
+    CX.lineTo(-12, -30); CX.quadraticCurveTo(-6, -38, -1, -30);
+    CX.lineTo(-1, -38); CX.quadraticCurveTo(5, -46, 10, -38);
+    CX.lineTo(10, -30); CX.quadraticCurveTo(16, -36, 21, -28);
+    CX.quadraticCurveTo(26, -10, 22, 6);
+    CX.quadraticCurveTo(18, 24, 0, 26);
+    CX.closePath();
+    CX.fillStyle = withA('#e8b48a', .9); CX.fill();
+    CX.strokeStyle = withA('#8a5a3a', .9); CX.lineWidth = 1.6; CX.stroke();
+    CX.restore();
+  } else if (k === 'sand') {
+    CX.save(); CX.translate(cx, cy);
+    CX.beginPath();
+    CX.moveTo(-26, 6); CX.lineTo(-14, -18); CX.lineTo(10, -22); CX.lineTo(26, -2);
+    CX.lineTo(18, 18); CX.lineTo(-8, 22); CX.closePath();
+    CX.fillStyle = lgrad(-26, -22, 26, 22, [[0, '#d9b98a'], [.45, '#f0dcb8'], [1, '#a8824f']]);
+    CX.fill(); CX.strokeStyle = withA('#6b4f2a', .9); CX.lineWidth = 1.4; CX.stroke();
+    CX.beginPath(); CX.moveTo(-14, -18); CX.lineTo(4, 4); CX.lineTo(18, 18);
+    CX.strokeStyle = withA('#ffffff', .35); CX.lineWidth = 1.2; CX.stroke();
+    CX.restore();
+  } else if (k === 'hair') {
+    CX.save(); CX.strokeStyle = lgrad(x, 0, x + w, 0, [[0, '#6b4a2a'], [.4, '#c99a62'], [1, '#5a3c22']]);
+    CX.lineWidth = 11; CX.lineCap = 'round'; CX.beginPath();
+    for (i = 0; i <= 30; i++) {
+      var t = i / 30, px2 = x + 10 + t * (w - 20), py2 = cy + Math.sin(t * 5) * 12;
+      if (i) CX.lineTo(px2, py2); else CX.moveTo(px2, py2);
+    }
+    CX.stroke(); CX.restore();
+    line(x + 10, cy - 20, x + 10, cy + 20, withA(C.accent, .6), 1, [3, 3]);
+  } else if (k === 'cell') {
+    dot(cx, cy, Math.min(w, h) * .36, withA('#7ec8ff', .20), withA('#7ec8ff', .8), 1.8);
+    dot(cx + 5, cy - 4, Math.min(w, h) * .14, withA('#c084fc', .8));
+    for (i = 0; i < 7; i++) dot(cx + Math.cos(i * 1.7) * w * .2, cy + Math.sin(i * 2.3) * h * .2, 2.6, withA('#86efac', .85));
+  } else if (k === 'virus') {
+    dot(cx, cy, 16, withA('#f472b6', .35), withA('#f472b6', .9), 1.8);
+    for (i = 0; i < 12; i++) {
+      var a = i * 0.5236;
+      line(cx + Math.cos(a) * 16, cy + Math.sin(a) * 16, cx + Math.cos(a) * 24, cy + Math.sin(a) * 24, withA('#f472b6', .9), 1.6);
+      dot(cx + Math.cos(a) * 25, cy + Math.sin(a) * 25, 2.4, withA('#f9a8d4', .95));
+    }
+  } else if (k === 'mol') {
+    ballStick(cx, cy - 6, .62);
+  } else {
+    CX.save();
+    for (i = 0; i < 3; i++) {
+      CX.beginPath(); CX.ellipse(cx, cy, 30 - i * 2, 13 - i, i * 1.05, 0, 7);
+      CX.strokeStyle = withA(C.sky, .45); CX.lineWidth = 1.2; CX.stroke();
+    }
+    for (i = 0; i < 3; i++) {
+      var ae = S.t * 1.6 + i * 2.1;
+      dot(cx + Math.cos(ae) * 28 * Math.cos(i * 1.05) - Math.sin(ae) * 12 * Math.sin(i * 1.05),
+        cy + Math.cos(ae) * 28 * Math.sin(i * 1.05) + Math.sin(ae) * 12 * Math.cos(i * 1.05),
+        3, withA(C.sky, .95));
+    }
+    CX.restore();
+    dot(cx, cy, 8, withA(C.rose, .9), withA(C.ink, .5), 1.4);
+    dot(cx - 2, cy - 2, 3, withA('#ffffff', .4));
+  }
+  CX.restore();
+}
+
 scene(1, 'instr', {
   label: '🔬 Seeing Molecules',
   title: 'Seeing the molecular world',
   sub: 'light, then electrons, then a tip that feels single atoms — how we came to picture a molecule',
-  hint: 'click an instrument · drag a card to move it',
+  hint: 'click an instrument, or a name on the size scale · drag a card to move it',
   ctrl: [
     { type: 'pills', key: 'inst', label: 'Instrument', def: 'opt', opts: [['opt', '🔬 Optical'], ['em', '⚡ Electron'], ['afm', '🧷 AFM']] },
     { type: 'toggle', key: 'ruler', label: 'Size scale', def: true }
@@ -1981,38 +2089,57 @@ scene(1, 'instr', {
       iplate(ins.best, x + 10, y + hgt - 32, 10, on ? ONDARK_HI : CREAM, 'left');
       iplate(ins.sees, x + 10, y + hgt - 10, 9.5, CREAM, 'left');
     });
-    /* ── the size ruler every reach bracket drops onto ── */
+    /* ── the size ruler: big on the left, small on the right ── */
+    var objK = V('obj') || 'mol', OB = sizeObjAt(objK);
     if (V('ruler')) {
-      var rx = 70, ry = 468, rw = 600;
+      var rx = 76, ry = 456, rw = 596;
       line(rx, ry, rx + rw, ry, withA(C['text-muted'], .7), 2);
       for (var lg = SCALE_LO; lg <= SCALE_HI; lg++) {
         var tx = sx10(lg, rx, rw);
         line(tx, ry - 5, tx, ry + 5, withA(C['text-muted'], .8), 1.4);
-        mtxt('10' + supers(lg), tx, ry + 20, 9.5, C['text-muted'], 'center', 600);
+        powTxt(lg, tx, ry + 18, 9.5, C['text-muted'], 'center');
       }
-      mtxt('size / m', rx + rw + 10, ry + 4, 10, C['text-dim'], 'left', 700);
-      var marks = [[0, 'hand'], [-3, 'grain of sand'], [-6, 'cell'], [-9, 'molecule'], [-10, 'atom']];
-      marks.forEach(function (m) {
-        var mxp = sx10(m[0], rx, rw);
-        line(mxp, ry - 5, mxp, ry - 16, withA(C.accent, .5), 1, [2, 2]);
-        txt(m[1], mxp, ry - 20, 9.5, C['text-muted'], 'center', 600);
+      mtxt('size / m', rx - 10, ry + 4, 10, C['text-dim'], 'right', 700);
+      arrow(rx + 36, ry - 68, rx + 2, ry - 68, withA(C['text-muted'], .7), 1.4, { head: 6 });
+      txt('bigger', rx + 42, ry - 64, 9, C['text-muted'], 'left', 600);
+      arrow(rx + rw - 36, ry - 68, rx + rw - 2, ry - 68, withA(C['text-muted'], .7), 1.4, { head: 6 });
+      txt('smaller', rx + rw - 42, ry - 64, 9, C['text-muted'], 'right', 600);
+      /* every rung is a button                                           */
+      /* the names sit on two staggered rows, so neighbours never collide */
+      SIZEOBJ.forEach(function (o, oi) {
+        var mxp = sx10(o.lg, rx, rw), on = o.k === objK, row = oi % 2;
+        var ly2 = ry - 22 - row * 24;
+        line(mxp, ry - 5, mxp, ly2 + 5, withA(on ? C.accent : C['text-muted'], on ? .9 : .4), on ? 1.6 : 1, [2, 2]);
+        var lab = o.shortNm || o.nm.replace(/^(a |an |your )/, '');
+        var lw = textW(lab, 9.5, on ? 700 : 600) + 12;
+        if (on) fillRR(mxp - lw / 2, ly2 - 12, lw, 16, 5, withA(C.accent, .14), C.accent, 1.2);
+        txt(lab, mxp, ly2, 9.5, on ? C.accent : C['text-muted'], 'center', on ? 700 : 600);
+        GAL2.push({ x: mxp - lw / 2 - 3, y: ly2 - 13, w: lw + 6, h: 19, k: 'obj:' + o.k });
       });
       INSTR.forEach(function (ins, i) {
         var a = sx10(ins.lo, rx, rw), b = sx10(ins.hi, rx, rw), on = ins.k === pick;
-        var yb = ry + 34 + i * 20, col = on ? C.accent : C['text-muted'];
-        fillRR(a, yb, b - a, 11, 4, withA(col, on ? .5 : .18), col, on ? 1.5 : 1);
-        txt(ins.nm.split(' ')[0], b + 8, yb + 9, 9.5, col, 'left', on ? 700 : 500);
+        var x0 = Math.min(a, b), yb = ry + 30 + i * 19, col = on ? C.accent : C['text-muted'];
+        fillRR(x0, yb, Math.abs(b - a), 11, 4, withA(col, on ? .5 : .18), col, on ? 1.5 : 1);
+        txt(ins.nm.split(' ')[0], x0 - 8, yb + 9, 9.5, col, 'right', on ? 700 : 500);
       });
     }
-    /* ── the answer to "what does a molecule look like?" ── */
-    ballStick(130, 600, 1.0);
-    plate('a water molecule, ball-and-stick', 196, 580, 10.5, C['text-dim'], 'left');
-    plate('this is what those images add up to', 196, 606, 10, C['text-muted'], 'left');
+    /* ── the rung you picked, drawn and sized ── */
+    var oy2 = 546;
+    fillRR(66, oy2, 608, 104, 10, withA(C.card2, .55), withA(C.border, .8), 1.2);
+    sizePic(OB.k, 80, oy2 + 12, 108, 80);
+    txt(OB.nm, 204, oy2 + 30, 13, C.accent, 'left', 800);
+    mtxt(OB.sz, 204, oy2 + 52, 11.5, C.text, 'left', 700);
+    wrap(OB.note, 204, oy2 + 74, 268, 10, C['text-muted'], 12);
+    /* the order of magnitude, large enough to remember                   */
+    fillRR(492, oy2 + 14, 170, 76, 9, withA(C.accent, .10), C.accent, 1.4);
+    txt('ORDER OF MAGNITUDE', 577, oy2 + 32, 8.5, C['text-muted'], 'center', 700);
+    powTxt(OB.pw, 577, oy2 + 64, 22, C.accent, 'center', ' m');
+    plate('click a name on the scale to see it', 66, oy2 - 8, 10, C['text-muted'], 'left');
     /* ── cards ── */
     dcard('ins', M1.cx, M1.y1, M1.cw, M1.ch, 'WHAT THIS INSTRUMENT CAN SEE', function () {
       txt(sel.nm, M1.cx + 16, M1.y1 + 48, 14, C.accent, 'left', 800);
       var rows = [['best detail', sel.best], ['it resolves', sel.sees],
-        ['range on the scale', '10' + supers(Math.round(sel.lo)) + ' m → 10' + supers(Math.round(sel.hi)) + ' m']];
+        ['range on the scale', 'see the bar on the size scale']];
       rows.forEach(function (r, i) {
         var yr = M1.y1 + 76 + i * 24;
         txt(r[0], M1.cx + 16, yr, 10.5, C['text-muted'], 'left', 600);
@@ -2036,7 +2163,11 @@ scene(1, 'instr', {
   click: function (p) {
     for (var i = 0; i < GAL2.length; i++) {
       var b = GAL2[i];
-      if (p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) { setV('inst', b.k); return true; }
+      if (p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) {
+        if (String(b.k).indexOf('obj:') === 0) setV('obj', b.k.slice(4));
+        else setV('inst', b.k);
+        return true;
+      }
     }
     return false;
   },
@@ -3019,6 +3150,11 @@ function lgrad(x0, y0, x1, y1, stops) {
   for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], stops[i][1]);
   return g;
 }
+function rgrad(x0, y0, r0, x1, y1, r1, stops) {
+  var g = CX.createRadialGradient(x0, y0, r0, x1, y1, r1);
+  for (var i = 0; i < stops.length; i++) g.addColorStop(stops[i][0], stops[i][1]);
+  return g;
+}
 /* a cylinder of glass or metal, lit from the left                        */
 function tube(x, y, w, h, r, base, hi, edge) {
   CX.save();
@@ -3150,40 +3286,72 @@ function drawGalilean(x, y, w, h, theta) {
 function drawLiquidGlass(x, y, w, h, theta) {
   var tx = x + 96, ty = y + 40, th = h - 110, lo = -20, hi = 120;
   var Y = function (c) { return ty + th - th * (clamp(c, lo, hi) - lo) / (hi - lo); };
-  var hot = pcol(heatU(theta)), bulbY = ty + th + 22;
-  /* the glass stem, drawn as a lit cylinder with a printed scale         */
-  tube(tx - 16, ty - 14, 32, th + 34, 15, C.glass, '#ffffff', C['glass-edge']);
-  /* the bore, visible as a fine dark line the whole way up               */
-  CX.save(); CX.beginPath(); rr(tx - 2.6, ty - 6, 5.2, th + 26, 2.6);
-  CX.fillStyle = withA(C.ink, .35); CX.fill(); CX.restore();
-  /* the liquid thread and the bulb                                        */
-  var fy = Y(theta);
+  var LIQ = '#d92b2b', LIQ_LT = '#ff6b6b';       /* the familiar red thread */
+  var bulbY = ty + th + 30, BR = 21, HW = 15, topY = ty - 16, NA = .95;
+  var cx0 = tx, i2;
+  /* ── ONE piece of glass: stem and bulb blown as a single envelope ──── */
+  function glassPath() {
+    CX.beginPath();
+    CX.moveTo(cx0 - HW, topY + HW);
+    CX.arc(cx0, topY + HW, HW, Math.PI, Math.PI * 2);           /* domed top */
+    CX.lineTo(cx0 + HW, bulbY - BR * 1.6);
+    CX.quadraticCurveTo(cx0 + HW, bulbY - BR * .95,             /* the neck  */
+      cx0 + BR * Math.sin(NA), bulbY - BR * Math.cos(NA));
+    CX.arc(cx0, bulbY, BR, NA - Math.PI / 2, Math.PI * 1.5 - NA);
+    CX.quadraticCurveTo(cx0 - HW, bulbY - BR * .95, cx0 - HW, bulbY - BR * 1.6);
+    CX.closePath();
+  }
   CX.save();
-  CX.beginPath(); rr(tx - 2.4, fy, 4.8, bulbY - fy, 2.4); CX.fillStyle = hot; CX.fill();
-  CX.beginPath(); CX.arc(tx, bulbY, 14, 0, 7);
-  CX.fillStyle = lgrad(tx - 14, bulbY - 14, tx + 14, bulbY + 14,
-    [[0, withA(hot, .75)], [.35, withA('#ffffff', .35)], [1, hot]]);
-  CX.fill(); CX.strokeStyle = withA(C['glass-edge'], .95); CX.lineWidth = 1.8; CX.stroke();
-  CX.restore();
+  glassPath();
+  CX.fillStyle = lgrad(cx0 - BR, 0, cx0 + BR, 0, [
+    [0, withA(C['glass-edge'], .55)], [.16, withA(C.glass, .95)],
+    [.40, withA('#ffffff', .30)], [.62, withA(C.glass, .92)],
+    [1, withA(C['glass-edge'], .6)]]);
+  CX.fill();
+  CX.clip();                                   /* everything below stays inside */
+  /* the bore, a fine dark line the whole way up                          */
+  CX.beginPath(); rr(cx0 - 2.4, topY, 4.8, bulbY - topY, 2.4);
+  CX.fillStyle = withA(C.ink, .3); CX.fill();
+  /* the red liquid: bulb and thread, drawn as one body                   */
+  var fy = Y(theta);
+  CX.beginPath(); rr(cx0 - 2.4, fy, 4.8, bulbY - fy, 2.4);
+  CX.fillStyle = lgrad(cx0 - 2.4, 0, cx0 + 2.4, 0,
+    [[0, withA(LIQ, .9)], [.35, withA(LIQ_LT, .95)], [1, withA(LIQ, .95)]]);
+  CX.fill();
+  CX.beginPath(); CX.arc(cx0, bulbY, BR - 3.4, 0, 7);
+  CX.fillStyle = rgrad(cx0 - 6, bulbY - 8, 2, cx0, bulbY, BR,
+    [[0, withA(LIQ_LT, .95)], [.55, withA(LIQ, .92)], [1, withA('#9b1c1c', .95)]]);
+  CX.fill();
   /* the scale, printed on the stem                                        */
   for (var c = lo; c <= hi; c += 5) {
     var yy = Y(c), big = c % 20 === 0, mid = c % 10 === 0;
-    line(tx - 15, yy, tx - 15 + (big ? 13 : mid ? 9 : 5), yy, withA(C['text-muted'], big ? .95 : .6), big ? 1.3 : 1);
-    if (big) mtxt(String(c), tx + 15, yy + 4, 9, C['text-dim'], 'left', 600);
+    line(cx0 - 14, yy, cx0 - 14 + (big ? 12 : mid ? 8 : 5), yy,
+      withA(C['text-muted'], big ? .95 : .55), big ? 1.3 : 1);
   }
-  txt('°C', tx, ty - 24, 11, C.accent, 'center', 800);
-  /* the long glass highlight                                              */
-  CX.save(); CX.beginPath(); rr(tx - 11, ty - 6, 4, th + 18, 2);
-  CX.fillStyle = withA('#ffffff', .18); CX.fill(); CX.restore();
-  plate(fmt(theta, 0) + ' °C', tx - 20, fy + 6, 10.5, hot, 'right', true);
+  /* the long glass highlight and a soft shadow down the right            */
+  CX.beginPath(); rr(cx0 - 10.5, topY + 6, 3.6, bulbY - topY - 20, 1.8);
+  CX.fillStyle = withA('#ffffff', .22); CX.fill();
+  CX.beginPath(); CX.arc(cx0 - 7, bulbY - 7, 5.5, 0, 7);
+  CX.fillStyle = withA('#ffffff', .30); CX.fill();
+  CX.beginPath(); rr(cx0 + 9, topY + 6, 5, bulbY - topY - 20, 2.5);
+  CX.fillStyle = withA(C.ink, .14); CX.fill();
+  CX.restore();
+  /* the single outline of the whole envelope                              */
+  CX.save(); glassPath();
+  CX.strokeStyle = withA(C['glass-edge'], .95); CX.lineWidth = 1.8; CX.stroke(); CX.restore();
+  for (i2 = lo; i2 <= hi; i2 += 20) mtxt(String(i2), cx0 + 20, Y(i2) + 4, 9, C['text-dim'], 'left', 600);
+  txt('°C', tx, ty - 26, 11, C.accent, 'center', 800);
+  plate(fmt(theta, 0) + ' °C', tx - 24, fy + 6, 10.5, LIQ_LT, 'right', true);
   /* a magnified cut-away: the wide bulb feeding the narrow bore          */
   var mx = x + 186, my = y + 44;
   txt('WHY IT IS SENSITIVE', mx, my - 12, 9.5, C['text-muted'], 'left', 700);
   fillRR(mx, my, 166, 96, 8, withA(C.card2, .8), withA(C.border, .8), 1.2);
   CX.save();
-  CX.beginPath(); CX.arc(mx + 40, my + 62, 22, 0, 7); CX.fillStyle = withA(hot, .85); CX.fill();
+  CX.beginPath(); CX.arc(mx + 40, my + 62, 22, 0, 7);
+  CX.fillStyle = rgrad(mx + 33, my + 54, 2, mx + 40, my + 62, 24,
+    [[0, withA(LIQ_LT, .95)], [.6, withA(LIQ, .9)], [1, withA('#9b1c1c', .95)]]); CX.fill();
   CX.strokeStyle = withA(C['glass-edge'], .9); CX.lineWidth = 1.6; CX.stroke();
-  CX.beginPath(); rr(mx + 37, my + 14, 6, 30, 3); CX.fillStyle = withA(hot, .85); CX.fill();
+  CX.beginPath(); rr(mx + 37, my + 14, 6, 30, 3); CX.fillStyle = withA(LIQ, .92); CX.fill();
   CX.strokeStyle = withA(C['glass-edge'], .8); CX.lineWidth = 1.2; CX.stroke();
   CX.restore();
   arrow(mx + 64, my + 62, mx + 64, my + 18, withA(C.accent, .9), 1.8, { head: 7 });
