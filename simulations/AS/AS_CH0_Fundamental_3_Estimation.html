@@ -332,7 +332,7 @@ table.dt tr.hl td{color:var(--accent);font-weight:700}
 <body>
 <div class="container">
   <div class="top-bar">
-    <h1>🔭 Estimation &amp; Order of Magnitude <span class="badge-top" id="badge">v1.0.1</span></h1>
+    <h1>🔭 Estimation &amp; Order of Magnitude <span class="badge-top" id="badge">v1.0.2</span></h1>
     <div class="top-right">
       <select class="theme-select" id="themeSel" aria-label="Theme">
         <option value="dark">Classic Dark</option>
@@ -1153,9 +1153,11 @@ function icon(k, x, y, s, o = {}){
   ctx.save(); ctx.translate(x, y); ctx.scale(s/100, s/100);
   if (o.alpha != null) ctx.globalAlpha *= o.alpha;
   ctx.lineJoin = 'round'; ctx.lineCap = 'round';
+  const prev = ICT; ICT = o.anim ? S.t*(S.speed || 1) + (o.ph || 0) : null;
   try { f(); } catch(e){ console.error(e); }
-  ctx.restore();
+  ICT = prev; ctx.restore();
 }
+let ICT = null;                                         // animation clock for the icon being drawn (null = still picture)
 const _ln = (w = 3, c) => { ctx.lineWidth = w; ctx.strokeStyle = c || COL.ink; };
 const _fs = (fill, w = 3, c) => { if (fill){ ctx.fillStyle = fill; ctx.fill(); } if (w){ _ln(w, c); ctx.stroke(); } };
 const _c = (x, y, r, fill, w = 3, c) => { ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2); _fs(fill, w, c); };
@@ -1251,6 +1253,66 @@ IC.rocket = () => { ctx.beginPath(); ctx.moveTo(0, -48); ctx.bezierCurveTo(18, -
 IC.room = () => { _p([[-44, -10], [0, -40], [44, -10], [44, 40], [-44, 40]], true, rgba(COL.len, .15), 3); _r(-12, 10, 24, 30, 2, '#b45309', 2.5); _r(18, -2, 16, 14, 1, '#bae6fd', 2); _r(-34, -2, 16, 14, 1, '#bae6fd', 2); };
 IC.bath = () => { _p([[-48, -6], [48, -6], [40, 26], [-40, 26]], true, '#f8fafc', 3); _p([[-44, 0], [44, 0], [38, 22], [-38, 22]], true, COL.water, 0);
   _l(-30, 26, -34, 38, 4); _l(30, 26, 34, 38, 4); _p([[34, -6], [34, -30], [24, -30]], false, null, 4); };
+
+/* ═══ walking and running: a real gait (knees only ever bend backwards, elbows forwards) ═══ */
+function gaitPose(ph, run){
+  const A = run ? 40 : 22, leg = p => { const th = A*Math.sin(p), k = run ? 18 + 80*Math.max(0, Math.cos(p)) : 5 + 42*Math.max(0, Math.cos(p)); return [th, th - k]; };
+  const arm = p => { const u = -(run ? 48 : 22)*Math.sin(p); return [u, u + (run ? 88 : 20)]; };
+  return {legNear: leg(ph), legFar: leg(ph + Math.PI), armNear: arm(ph), armFar: arm(ph + Math.PI), lean: run ? 12 : 3};
+}
+Object.assign(FIG_POSE, {walk: gaitPose(1.1), run: gaitPose(1.1, true)});
+const PCOL = () => COL.assume;
+function gaitFig(x, y, h, run, t, o = {}){ FIG_POSE._g = gaitPose(t*(run ? 11 : 6.5), run);
+  const g = figure(x, y, h, Object.assign({style:'shaded', pose:'_g', col:PCOL(), shadow:false}, o)); cuteFace(g.head, 1); return g; }
+const ICS = Object.assign({}, IC);                      // the still versions
+IC.person = () => { const g = figure(0, 48, 96, {style:'shaded', pose:'stand', col:PCOL(), shadow:false}); cuteFace(g.head, 1); };
+IC.walk = () => { gaitFig(0, 48, 96, false, ICT == null ? 0.17 : ICT); if (ICT != null) for (let k = 0; k < 3; k++){ const x = 50 - ((ICT*40 + k*34) % 100); _l(x, 50, x - 12, 50, 2.5, rgba(COL.ladder, .6)); } };
+IC.run = () => { gaitFig(0, 48, 96, true, ICT == null ? 0.1 : ICT); if (ICT != null) for (let k = 0; k < 3; k++){ const y = -20 + k*16, x = -30 - ((ICT*90 + k*13) % 22); _l(x, y, x - 14, y, 2.5, rgba(COL.ladder, .7)); } };
+IC.stairs = () => { _p([[-48, 46], [-48, 26], [-24, 26], [-24, 6], [0, 6], [0, -14], [24, -14], [24, -34], [48, -34], [48, 46]], true, rgba(COL.wood, .5), 2.5);
+  const u = ICT == null ? 0.45 : (ICT*0.32) % 1, x = -44 + u*84, k = clamp(Math.floor((x + 48)/24), 0, 3), y = 26 - k*20;
+  ctx.globalAlpha *= ICT == null ? 1 : clamp(Math.min(u, 1 - u)*12, 0, 1);
+  gaitFig(x, y, 54, false, ICT == null ? 0.17 : ICT*1.3); };
+IC.mouse = () => { const t = ICT, b = t == null ? 0 : Math.abs(Math.sin(t*14))*3;
+  if (t != null) for (let k = 0; k < 4; k++){ const ph = t*14 + k*Math.PI/2, lx = -16 + k*12; _l(lx, 22, lx + 7*Math.sin(ph), 30, 3, '#6b7280'); }
+  ctx.save(); ctx.translate(0, -b);
+  ctx.beginPath(); ctx.moveTo(34, 10); ctx.bezierCurveTo(50, 0, 44, 30 + (t == null ? 0 : 6*Math.sin(t*9)), 52, 32); _ln(3, '#9ca3af'); ctx.stroke();
+  _e(4, 8, 30, 18, 0, '#9ca3af', 3); _c(-26, -2, 12, '#9ca3af', 3); _c(-26, -16, 8, '#f9a8d4', 2.5); _c(-33, -2, 2.5, '#1f2937', 0); _c(-38, 2, 2.5, '#f472b6', 0); ctx.restore();
+  if (t != null) for (let k = 0; k < 3; k++){ const x = 60 - ((t*120 + k*40) % 120); _l(x, 36, x - 10, 36, 2.5, rgba(COL.ladder, .6)); } };
+IC.car = () => { const t = ICT, roll = t == null ? 0 : t*9, bob = t == null ? 0 : Math.sin(t*18)*1.2;
+  if (t != null){ _l(-50, 32, 50, 32, 2, rgba(COL.ladder, .6)); for (let k = 0; k < 3; k++){ const x = 50 - ((t*90 + k*36) % 108); _l(x, 38, x - 14, 38, 3, rgba(COL.ladder, .6)); } }
+  ctx.save(); ctx.translate(0, bob);
+  _p([[-46, 18], [-46, 0], [-30, -4], [-16, -24], [18, -24], [32, -4], [46, 0], [46, 18]], true, '#dc2626', 3);
+  _p([[-12, -20], [-2, -20], [-2, -6], [-24, -6]], true, '#bae6fd', 2); _p([[4, -20], [16, -20], [26, -6], [4, -6]], true, '#bae6fd', 2); ctx.restore();
+  for (const wx of [-26, 26]){ _c(wx, 20, 11, '#1f2937', 3); _c(wx, 20, 5, '#cbd5e1', 0); for (let k = 0; k < 3; k++){ const a = roll + k*2.094; _l(wx, 20, wx + 5*Math.cos(a), 20 + 5*Math.sin(a), 2, '#6b7280'); } } };
+IC.plane = () => { const t = ICT; if (t != null){ for (let k = 0; k < 2; k++){ const x = 60 - ((t*30 + k*60) % 120), y = k ? 30 : -34; _e(x, y, 14, 6, 0, rgba('#ffffff', .55), 0); _e(x + 8, y - 3, 9, 5, 0, rgba('#ffffff', .55), 0); } }
+  ctx.save(); ctx.translate(0, t == null ? 0 : Math.sin(t*2.2)*3); ctx.rotate(t == null ? 0 : Math.sin(t*2.2 + 1)*0.03); ICS.plane(); ctx.restore(); };
+IC.kettle = () => { const t = ICT; if (t == null){ ICS.kettle(); return; }
+  _p([[-30, 34], [-24, -16], [24, -16], [30, 34]], true, '#94a3b8', 3); _r(-12, -26, 24, 10, 4, '#64748b', 2.5);
+  ctx.beginPath(); ctx.arc(34, 8, 16, -1.4, 1.4); _ln(5); ctx.stroke(); _p([[-28, -4], [-46, -18], [-44, -24]], false, null, 5);
+  for (let k = 0; k < 3; k++){ const u = (t*0.6 + k/3) % 1, y = -28 - u*24, x = -44 + Math.sin(u*8 + k)*5; ctx.globalAlpha *= 1; _c(x, y, 4 + u*7, rgba('#e2e8f0', .55*(1 - u)), 0); } };
+IC.drop = () => { const t = ICT; if (t == null){ ICS.drop(); return; }
+  const u = (t*0.7) % 1, y = -40 + 70*u*u, sq = u > 0.92 ? 1 - (u - 0.92)*6 : 1;
+  ctx.save(); ctx.translate(0, y); ctx.scale(0.55/sq**0.3, 0.55*sq); ICS.drop(); ctx.restore();
+  if (u > 0.8){ const r = (u - 0.8)*120; _e(0, 44, r, r*0.25, 0, null, 2, rgba(COL.water, 1 - (u - 0.8)*5)); } _l(-40, 44, 40, 44, 2, rgba(COL.ladder, .5)); };
+IC.rice = () => { const t = ICT; if (t == null){ ICS.rice(); return; }
+  _e(0, 30, 40, 12, 0, rgba(COL.wood, .5), 2);
+  for (let k = 0; k < 7; k++){ const u = (t*0.8 + k/7) % 1, x = -16 + (k % 4)*10, y = -44 + u*70; _e(x, y, 8, 3.5, k + t*2, '#f8f5ec', 1.5); }
+  for (const [x, y, a] of [[-18, 26, -0.5], [12, 24, 0.4], [-2, 30, 0.1], [22, 30, -0.7], [-26, 32, 0.9]]) _e(x, y, 8, 3.5, a, '#f8f5ec', 1.5); };
+IC.cell = () => { const t = ICT, k = t == null ? 1 : 1 + 0.05*Math.sin(t*3);
+  ctx.save(); ctx.scale(k, 1/k); ICS.cell(); ctx.restore();
+  if (t != null) for (let i = 0; i < 3; i++){ const u = (t*0.25 + i/3) % 1; _c(-40 + u*80, -38 + 6*Math.sin(u*9), 3, rgba('#ef4444', .5*(1 - Math.abs(u - .5)*2)), 0); } };
+IC.room = () => { ICS.room(); const t = ICT; if (t == null) return;
+  for (let k = 0; k < 9; k++){ const a = k*1.7 + t*(0.9 + k*0.13), x = 32*Math.sin(a*1.3 + k), y = 10 + 22*Math.sin(a + k*2.1); _c(x, y, 2.6, k % 3 ? '#38bdf8' : '#f97316', 0); } };
+IC.galaxy = () => { ctx.save(); ctx.rotate(ICT == null ? 0 : ICT*0.35); ICS.galaxy(); ctx.restore(); };
+IC.ball = () => { const t = ICT; if (t == null){ ICS.ball(); return; } const b = Math.abs(Math.sin(t*3)); _e(0, 46, 26*(1 - b*0.4), 5, 0, rgba('#000000', .2), 0);
+  ctx.save(); ctx.translate(0, 6 - b*26); ctx.rotate(t*2); ctx.scale(0.78, 0.78); ICS.ball(); ctx.restore(); };
+IC.window = () => { ICS.window(); const t = ICT; if (t == null) return;
+  for (let k = 0; k < 3; k++){ const y = -26 + k*26, u = (t*0.9 + k*0.3) % 1, x = -58 + u*14; ctx.globalAlpha *= 1; _l(x - 10, y, x, y, 3, rgba(COL.force, 0.9 - u*0.6)); _p([[x, y - 4], [x + 6, y], [x, y + 4]], true, rgba(COL.force, 0.9 - u*0.6), 0); } };
+IC.bath = () => { const t = ICT; if (t == null){ ICS.bath(); return; }
+  _p([[-48, -6], [48, -6], [40, 26], [-40, 26]], true, '#f8fafc', 3);
+  ctx.beginPath(); ctx.moveTo(-44, 0); for (let x = -44; x <= 44; x += 4) ctx.lineTo(x, 0 + 2*Math.sin(x*0.25 + t*4)); ctx.lineTo(38, 22); ctx.lineTo(-38, 22); ctx.closePath(); ctx.fillStyle = COL.water; ctx.fill();
+  _l(-30, 26, -34, 38, 4); _l(30, 26, 34, 38, 4); _p([[34, -6], [34, -30], [24, -30]], false, null, 4);
+  const u = (t*1.2) % 1; _c(24, -26 + u*28, 2.5, rgba(COL.water, 1 - u), 0); };
 
 /* ═══════════════════════════════════════════════════════════════
    MODE 1 — Order of Magnitude: the 10ⁿ ladders and reading the order of a number
@@ -1621,9 +1683,9 @@ function scenePower(o, A, R, X0, Y0, W0, H0){
   hLine(X0 + 20, base, X0 + W0 - 20, base, COL.ladder, 2);
   // the climber
   const u = ease(s2), fx = u < 1 ? lerp(sx0 - 40, sx1 + 30, u) : sx1 + 30, fy = fx < sx0 ? base : fx > sx1 ? base - hp : base - hp*Math.ceil((fx - sx0)/(sx1 - sx0)*nst)/nst;
-  const fh = 96, fig = figure(fx, fy, fh, {style:'pictogram', pose: s2 > 0 && s2 < 1 ? 'walk' : 'stand', col:COL.ink});
+  const fh = 104; if (s2 > 0 && s2 < 1) gaitFig(fx, fy, fh, false, S.t); else { const g = figure(fx, fy, fh, {style:'shaded', pose:'stand', col:COL.assume, shadow:false}); cuteFace(g.head, 1); }
   // weight arrow
-  if (s1 > 0){ ctx.globalAlpha = s1; hArrow(fx, fy - fh*0.5, fx, fy - fh*0.5 + 60*s1 + 20, COL.force, 3, 10); rich('W = mg', fx - 12, fy - fh*0.5 + 74, 18, COL.force, 'right'); ctx.globalAlpha = 1; }
+  if (s1 > 0){ ctx.globalAlpha = s1; const ax = fx - 34, ay = fy - fh*0.62; hArrow(ax, ay, ax, ay + 18 + 44*s1, COL.force, 3, 10); rich('W = mg', ax - 8, ay + 26, 18, COL.force, 'right'); ctx.globalAlpha = 1; }
   // height arrow
   const hx = sx1 + 92; hArrow(hx, base, hx, base - hp, COL.assume, 2, 8); hArrow(hx, base - hp, hx, base, COL.assume, 2, 8);
   hLine(sx1 + 70, base - hp, hx + 6, base - hp, rgba(COL.assume, .45), 1, [4, 4]);
@@ -1752,7 +1814,7 @@ function drawPractice(){
   const M = S.m3, Q = PROBS[M.q], pt = Q.parts[M.part], key = M.q + ':' + M.part, res = M.res[key];
   // ── left: the problem sheet ──
   card(24, 20, 560, 636, {fill: COL.cardc});
-  icon(Q.ic, 62, 58, 46);
+  icon(Q.ic, 62, 58, 46, {anim:true});
   text('P' + Q.id + ' · ' + Q.title, 98, 66, F_UI(24, 700), COL.text);
   let y = 112; wrap(Q.text, F_UI(17, 500), 520).forEach(l => { text(l, 44, y, F_UI(17, 500), COL['text-dim']); y += 21; });
   y += 10;
@@ -1761,7 +1823,7 @@ function drawPractice(){
     rrect(40, y, 528, h, 10); ctx.fillStyle = cur ? rgba(COL.accent, .10) : 'transparent'; ctx.fill(); ctx.strokeStyle = cur ? COL.accent : COL.border; ctx.lineWidth = cur ? 2 : 1; ctx.stroke();
     text(p.lbl, 56, y + 27, F_UI(16, 800), COL.accent);
     lines.forEach((l, k) => text(l, 96, y + 27 + k*22, F_UI(16, cur ? 600 : 500), COL.text));
-    icon(p.ic, 536, y + 28, 32);
+    icon(p.ic, 536, y + 28, 34, {anim:true, ph:i*0.37});
     const a = M.ans[M.q + ':' + i];
     if (a){ text('you: ' + a + (p.unit ? ' ' + p.unit : ''), 96, y + 27 + lines.length*22, F_MO(13, 600), r ? VCOL(r.lvl) : COL['text-dim']);
       if (r && r.lvl !== 'empty') text({ok:'✓', near:'~', bad:'✗'}[r.lvl], 536, y + 27 + lines.length*22, F_UI(18, 800), VCOL(r.lvl), 'center'); }
@@ -1771,7 +1833,7 @@ function drawPractice(){
   // ── right top: the current part ──
   card(604, 20, 572, 220, {fill: COL.cardc});
   hCirc(700, 130, 74, rgba(COL.accent, .10), rgba(COL.accent, .5), 1.5);
-  icon(pt.ic, 700, 130, 112);
+  icon(pt.ic, 700, 130, 112, {anim:true});
   text('PART ' + pt.lbl + ' · ' + Q.title.toUpperCase(), 800, 56, F_UI(14, 800), COL.accent);
   let yy = 88; wrap(cap(pt.ask), F_UI(19, 600), 350).slice(0, 4).forEach(l => { text(l, 800, yy, F_UI(19, 600), COL.text); yy += 26; });
   if (pt.unit){ const ay = Math.max(yy + 8, 186); text('answer in', 800, ay, F_UI(16, 500), COL['text-dim']); rich(uRt(pt.unit).trim(), 806 + tw('answer in', F_UI(16, 500)), ay, 18, COL.text); }
