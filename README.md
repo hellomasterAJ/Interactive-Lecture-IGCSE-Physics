@@ -32,6 +32,7 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── CH1_Mechanics_6_Energy_Lab.html               ← Energy ⚡
 │   ├── CH2_Thermal_1_Molecular_Models_Lab.html       ← Molecular Models ⚛️ (states + history + gas laws)
 │   ├── CH2_Thermal_2_Thermal_Properties_Lab.html     ← Thermal Properties 🌡️
+│   ├── CH2_Thermal_2_Thermal_Properties_Lab_v2.html  ← Thermal Properties v2 🛠️ (heating/cooling curves · specific heat & latent heat · evaporation/boiling · expansion)
 │   ├── CH2_Thermal_3_Heat_Transfer_Lab.html          ← Heat Transfer 🌡️ (Conduction · Convection · Radiation · Application)
 │   ├── CH3_Wave_1_Introduction_to_Waves_v1.html      ← Introduction to Waves 🌊
 │   ├── CH3_Wave_2_Refraction_of_Light.html           ← Refraction of Light 🔦
@@ -100,7 +101,7 @@ python3 -m playwright install chromium
 | 1.7 | Energy, Work & Power | ❌ | ❌ |
 | 1.8 | Energy Resources | ❌ | ❌ |
 
-> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี 24 labs: CH0 (Vernier Caliper 📏, Micrometer 🔧, Balance ⚖️, Vector Addition ➕, Density 📦), CH1 (Motion Graphs 🚗, Newton's Laws 🍎, Moments & Equilibrium ⚖️, Energy ⚡), CH2 (Molecular Models ⚛️, Thermal Properties 🌡️, Heat Transfer 🌡️), CH3 (Waves 🌊), CH4 (Electricity ⚡, Magnetism 🧲), CH5 (Nuclear ☢️)
+> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี 25 labs: CH0 (Vernier Caliper 📏, Micrometer 🔧, Balance ⚖️, Vector Addition ➕, Density 📦), CH1 (Motion Graphs 🚗, Newton's Laws 🍎, Moments & Equilibrium ⚖️, Energy ⚡), CH2 (Molecular Models ⚛️, Thermal Properties 🌡️, Thermal Properties v2 🛠️, Heat Transfer 🌡️), CH3 (Waves 🌊), CH4 (Electricity ⚡, Magnetism 🧲), CH5 (Nuclear ☢️)
 
 ## 🎯 Features
 
