@@ -46,6 +46,7 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── CH5_Nuclear_1_Atomic_Models.html              ← Atomic Models ⚛️
 │   ├── CH5_Nuclear_2_Nuclear_Symbols_Reactions.html  ← Nuclear Symbols & Reactions ☢️
 │   ├── CH5_Nuclear_3_Radioactive_Lab.html            ← Radioactive Lab ☢️
+│   ├── CH6_Space_1_Solar_System_Lab.html             ← Solar System 🌌
 │   └── AS/                                            ← A-Level 9702 sims
 │       ├── AS_CH0_Fundamental_1_SI_Units_and_Homogeneity.html ← SI Units & Homogeneity 🧱
 │       ├── AS_CH0_Fundamental_2_Uncertainty_and_Significant_Figures.html ← Uncertainty & Sig Figs ⚠️📏
@@ -101,7 +102,7 @@ python3 -m playwright install chromium
 | 1.7 | Energy, Work & Power | ❌ | ❌ |
 | 1.8 | Energy Resources | ❌ | ❌ |
 
-> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี 25 labs: CH0 (Vernier Caliper 📏, Micrometer 🔧, Balance ⚖️, Vector Addition ➕, Density 📦), CH1 (Motion Graphs 🚗, Newton's Laws 🍎, Moments & Equilibrium ⚖️, Energy ⚡), CH2 (Molecular Models ⚛️, Thermal Properties 🌡️, Thermal Properties v2 🛠️, Heat Transfer 🌡️), CH3 (Waves 🌊), CH4 (Electricity ⚡, Magnetism 🧲), CH5 (Nuclear ☢️)
+> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี 26 labs: CH0 (Vernier Caliper 📏, Micrometer 🔧, Balance ⚖️, Vector Addition ➕, Density 📦), CH1 (Motion Graphs 🚗, Newton's Laws 🍎, Moments & Equilibrium ⚖️, Energy ⚡), CH2 (Molecular Models ⚛️, Thermal Properties 🌡️, Thermal Properties v2 🛠️, Heat Transfer 🌡️), CH3 (Waves 🌊), CH4 (Electricity ⚡, Magnetism 🧲), CH5 (Nuclear ☢️), CH6 (Solar System 🌌)
 
 ## 🎯 Features
 
@@ -139,6 +140,15 @@ python3 -m playwright install chromium
 Educational use — HAUS Academy
 
 ## 📋 Changelog
+
+### 19 Oct 2026 — CH6 Space Physics 1 / Solar System `v1.0.4` (`simulations/CH6_Space_1_Solar_System_Lab.html`) · IGCSE 0625 Topic 6
+
+| # | การเปลี่ยนแปลง | รายละเอียด |
+|---|---------------|-----------|
+| 1 | **3 โหมดย่อย** | ① Our Solar System (⭐ Star · 🪐 Planets · ☄️ Asteroids · 🌠 Comet · 🛰️ Tour) ② Earth and Moons (Day & Night · Seasons · Moon Phases · Eclipses) ③ Orbits (Accretion Model · Gravity & Orbits · Elliptical Orbits · Planetary Data) |
+| 2 | **ข้อมูลจริง** | 8 ดวง + Pluto/Ceres คลิกได้ → การ์ดข้อมูล Ø / ระยะ / คาบ / ดวงจันทร์ / บรรยากาศ / วงแหวน · scale 2 โหมด (`Sizes to scale` + `True ⋆ distances` / `Compact`) · หาง comet ชี้ออกห่างดวงอาทิตย์เสมอ (ion ตรง + dust โค้ง) · 2 มุมมองคู่ (อวกาศ + ผู้สังเกตบนโลก) |
+| 3 | **Interaction** | zoom ×2 ด้วย double-click + กดค้างลากเลื่อนอิสระ · side panel 4 tabs + ย่อ/ขยายทุกหัวข้อ · equal-areas sweep + energy bar (KE/PE/total) · log-log `T² ∝ r³` · Practical 6 ข้อ · Quiz 15 ข้อ (5/โหมดย่อย) |
+| 4 | **มาตรฐาน** | 6 themes / KaTeX offline / badge v1.0.4 / window.S |
 
 ### 11 Oct 2026 — AS/Estimation & Order of Magnitude `v1.0.1` (`simulations/AS/AS_CH0_Fundamental_3_Estimation.html`) · A-Level 9702 Chapter 0
 
