@@ -316,7 +316,7 @@ table.res th{color:var(--text-muted);font-weight:600}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span>🪐 Solar System</span> <span class="badge-top" id="badge">v1.0.4</span></h1>
+    <h1><span>🪐 Solar System</span> <span class="badge-top" id="badge">v1.0.7</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="mTabs">
         <button class="mode-tab active" data-mode="sim">Simulate</button>
@@ -430,7 +430,7 @@ function tickTxt(v, step) {
 
 /* ── state ─────────────────────────────────────────────────────────── */
 var S = {
-  md: 1, mode: 'sim', theme: 'dark',
+  md: 1, mode: 'sim', theme: 'dark', hoverK: null, mouseL: null, hovBig: null, hovLab: null,
   ex: { 1: 'planets', 2: 'day', 3: 'gravity' },
   play: true, speed: 1,
   days: 0,                 /* THE orbital-time variable, in days          */
@@ -654,6 +654,12 @@ function plate(s, x, y, size, col, align, box) {
   for (k = 0; k < 8 && boxHits(x0, y0, b.w, b.h, PLATES); k++) y0 -= b.h + 3;
   return plateAt(s, x0, y0, size, col, box);
 }
+/* plate() for a label that names part of the picture: it grows under the pointer */
+function plateL(s, x, y, size, col, align) {
+  var b = plateBox(s, size), x0 = align === 'right' ? x - b.w : align === 'center' ? x - b.w / 2 : x, y0 = y - b.h + 3;
+  for (var k = 0; k < 8 && boxHits(x0, y0, b.w, b.h, PLATES); k++) y0 -= b.h + 3;
+  return leadPlate(s, x0, y0, size, col);
+}
 /* a caption that must not sit on the thing it describes: the first clear
    candidate offset wins; a thin leader joins it to its anchor           */
 function callout(s, ax, ay, cands, size, col, lim, avoid) {
@@ -671,9 +677,47 @@ function callout(s, ax, ay, cands, size, col, lim, avoid) {
     var xx = c0[2] === 'right' ? ax + c0[0] - b.w : c0[2] === 'center' ? ax + c0[0] - b.w / 2 : ax + c0[0];
     pick = { x: clamp(xx, lim.x, lim.x + lim.w - b.w), y: clamp(ay + c0[1] - b.h / 2, lim.y, lim.y + lim.h - b.h) };
   }
-  var ex = clamp(ax, pick.x, pick.x + b.w), ey = clamp(ay, pick.y, pick.y + b.h);
-  if (Math.hypot(ax - ex, ay - ey) > 4) line(ex, ey, ax, ay, withA(col || C.cvtext, .55), 1);
-  return plateAt(s, pick.x, pick.y, size, col);
+  return leadPlate(s, pick.x, pick.y, size, col, ax, ay);
+}
+/* ── captions that point at the picture grow under the pointer ─────────
+   leadPlate draws a caption (with its leader to ax, ay when it sits away
+   from the anchor).  If the pointer is over it, it is held back and drawn
+   enlarged on top of everything by drawHoverLabel() at the end of the frame. */
+var HOVLAB = [], HOVPEND = null;
+function inBox(p, b) { return p && b && p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h; }
+function leadPlate(s, x0, y0, size, col, ax, ay) {
+  var b = plateBox(s, size), box = { x: x0, y: y0, w: b.w, h: b.h, s: s };
+  HOVLAB.push(box);
+  var m = S.mouseL, hb = S.hovBig;
+  if (!HOVPEND && m && (inBox(m, box) || (hb && hb.s === s && inBox(m, hb)))) {
+    HOVPEND = { s: s, x: x0, y: y0, w: b.w, h: b.h, size: size, col: col, ax: ax, ay: ay };
+    PLATES.push(box); return box;
+  }
+  if (ax !== undefined && ax !== null) {
+    var ex = clamp(ax, x0, x0 + b.w), ey = clamp(ay, y0, y0 + b.h);
+    if (Math.hypot(ax - ex, ay - ey) > 4) line(ex, ey, ax, ay, withA(col || C.cvtext, .55), 1);
+  }
+  return plateAt(s, x0, y0, size, col);
+}
+function drawHoverLabel() {
+  var h = HOVPEND; S.hovBig = null; if (!h) return;
+  var sz = Math.max(17, h.size * 1.6), b = plateBox(h.s, sz);
+  var x = clamp(h.x + h.w / 2 - b.w / 2, 4, W - 4 - b.w), y = clamp(h.y + h.h / 2 - b.h / 2, 4, H - 4 - b.h), col = h.col || C.cvtext;
+  if (h.ax !== undefined && h.ax !== null) {
+    var ex = clamp(h.ax, x, x + b.w), ey = clamp(h.ay, y, y + b.h);
+    if (Math.hypot(h.ax - ex, h.ay - ey) > 4) line(ex, ey, h.ax, h.ay, withA(C.gold, .95), 2);
+    dot(h.ax, h.ay, 4, C.gold, '#ffffff', 1.2);
+  }
+  CX.save(); CX.shadowColor = withA(C.gold, .6); CX.shadowBlur = 16;
+  fillRR(x, y, b.w, b.h, 8, withA(C.cplate, .97), C.gold, 2); CX.restore();
+  txt(h.s, x + 7, y + b.h - 7.5, sz, mix(col, '#ffffff', .25), 'left', 800);
+  S.hovBig = { x: x, y: y, w: b.w, h: b.h, s: h.s };
+}
+/* is the pointer over a caption drawn in the last frame? (returns its text) */
+function hoverLabelAt(p) {
+  if (S.hovBig && inBox(p, S.hovBig)) return S.hovBig.s;
+  for (var i = 0; i < HOVLAB.length; i++) if (inBox(p, HOVLAB[i])) return HOVLAB[i].s;
+  return null;
 }
 /* a caption for something that MOVES: try 16 directions round the anchor
    (preferred direction first) at three distances, and take the first spot
@@ -695,9 +739,7 @@ function autoCallout(s, ax, ay, size, col, o) {
     }
   }
   if (!pick) pick = { x: clamp(ax - b.w / 2, lim.x, lim.x + lim.w - b.w), y: clamp(ay - 30 - b.h, lim.y, lim.y + lim.h - b.h) };
-  var ex = clamp(ax, pick.x, pick.x + b.w), ey = clamp(ay, pick.y, pick.y + b.h);
-  if (Math.hypot(ax - ex, ay - ey) > 4) line(ex, ey, ax, ay, withA(col || C.cvtext, .55), 1);
-  return plateAt(s, pick.x, pick.y, size, col);
+  return leadPlate(s, pick.x, pick.y, size, col, ax, ay);
 }
 /* a draggable card: title + 3×3 grip, no "drag me" caption             */
 var DCARDS = [];
@@ -1527,77 +1569,192 @@ var SUNL = [
   { nm: 'Chromosphere', f0: 1.0, f1: 1.035, t: '≈ 4 000 → 20 000 °C', col: '#ff5a4a' },
   { nm: 'Corona', f0: 1.035, f1: 1.45, t: '≈ 1 000 000 – 3 000 000 °C', col: '#ffe9c4' }
 ];
+/* ── the Sun's surface: granules (Worley cells) on a sphere, limb-darkened.
+   Two seeds are cross-faded so the granulation slowly "boils".           */
+var SUNSURF = {};
+function sunSurf(seed) {
+  if (SUNSURF[seed]) return SUNSURF[seed];
+  var N = 440, cv = document.createElement('canvas'); cv.width = cv.height = N;
+  var g = cv.getContext('2d'), img = g.createImageData(N, N), d = img.data, CS = .03;
+  var c0 = [255, 238, 178], c1 = [255, 176, 64], c2 = [214, 86, 18];
+  for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
+    var x = 2 * (i + .5) / N - 1, y = 2 * (j + .5) / N - 1, r2 = x * x + y * y, p = (j * N + i) * 4;
+    if (r2 > 1) { d[p + 3] = 0; continue; }
+    var z = Math.sqrt(1 - r2), lon = Math.atan2(x, z), lat = Math.asin(y);
+    var u = lon * Math.cos(lat) / CS, v = lat / CS, iu = Math.floor(u), iv = Math.floor(v), d1 = 9, d2 = 9;
+    for (var a = -1; a <= 1; a++) for (var b = -1; b <= 1; b++) {
+      var cu = iu + a, cvv = iv + b, px = cu + hash(cu * 3 + seed, cvv * 7), py = cvv + hash(cu * 5, cvv * 11 + seed);
+      var dd = (u - px) * (u - px) + (v - py) * (v - py);
+      if (dd < d1) { d2 = d1; d1 = dd; } else if (dd < d2) d2 = dd;
+    }
+    var gr = Math.pow(clamp((Math.sqrt(d2) - Math.sqrt(d1)) * 2.6, 0, 1), .6);              /* bright granule, dark lane */
+    var t = 1 - z, A = t < .5 ? c0 : c1, B = t < .5 ? c1 : c2, w = t < .5 ? t / .5 : (t - .5) / .5;
+    var fac = t > .55 ? Math.max(0, vnoise(lon * 9 + seed, lat * 9) - .62) * 1.6 * (t - .55) : 0;  /* bright faculae near the limb */
+    var k = (.84 + .19 * gr + fac + .08 * (vnoise(lon * 3 + seed, lat * 3) - .5)) * (.52 + .48 * Math.pow(z, .5));
+    for (var c = 0; c < 3; c++) d[p + c] = Math.min(255, (A[c] + (B[c] - A[c]) * w) * k);
+    d[p + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  SUNSURF[seed] = cv; return cv;
+}
+/* a sunspot at (lon, lat) on a sphere of radius R: dark umbra in a streaky penumbra, foreshortened */
+function sunspot(cx, cy, R, lon, lat, r) {
+  var z = Math.cos(lon) * Math.cos(lat); if (z < .08) return;
+  var x = cx + R * Math.sin(lon) * Math.cos(lat), y = cy - R * Math.sin(lat), ang = Math.atan2(y - cy, x - cx);
+  CX.save(); CX.translate(x, y); CX.rotate(ang); CX.scale(Math.max(.2, z), 1);
+  CX.fillStyle = rgrad(0, 0, r * .3, 0, 0, r, [[0, 'rgba(120,48,10,.85)'], [.75, 'rgba(150,62,14,.6)'], [1, 'rgba(150,62,14,0)']]);
+  CX.beginPath(); CX.arc(0, 0, r, 0, TAU); CX.fill();
+  CX.strokeStyle = 'rgba(90,30,6,.35)'; CX.lineWidth = .8;
+  for (var k = 0; k < 18; k++) { var a = k / 18 * TAU; CX.beginPath(); CX.moveTo(Math.cos(a) * r * .42, Math.sin(a) * r * .42); CX.lineTo(Math.cos(a) * r * .85, Math.sin(a) * r * .85); CX.stroke(); }
+  CX.fillStyle = rgrad(0, 0, 0, 0, 0, r * .45, [[0, 'rgba(30,8,2,.95)'], [1, 'rgba(60,18,4,.85)']]);
+  CX.beginPath(); CX.arc(0, 0, r * .42, 0, TAU); CX.fill();
+  CX.restore();
+}
+/* a prominence: a glowing arch of gas standing on the limb at angle a */
+function prominence(cx, cy, R, a, span, hgt, t, k) {
+  var a0 = a - span, a1 = a + span, h = R * hgt * (1 + .06 * Math.sin(t * .9 + k));
+  var p0 = { x: cx + R * Math.cos(a0), y: cy + R * Math.sin(a0) }, p1 = { x: cx + R * Math.cos(a1), y: cy + R * Math.sin(a1) };
+  CX.save(); CX.globalCompositeOperation = 'lighter'; CX.lineCap = 'round';
+  var mx = cx + (R + h * .9) * Math.cos(a), my = cy + (R + h * .9) * Math.sin(a);
+  CX.fillStyle = rgrad(mx, my, 0, mx, my, h * 1.3, [[0, 'rgba(255,90,70,.22)'], [1, 'rgba(255,90,70,0)']]);
+  CX.beginPath(); CX.arc(mx, my, h * 1.3, 0, TAU); CX.fill();
+  for (var st = 0; st < 3; st++) {          /* a few twisted strands */
+    var dz = (st - 1) * span * .25, hh = h * (1 - .12 * Math.abs(st - 1)) * (1 + .05 * Math.sin(t * 1.3 + st + k));
+    var q0 = { x: cx + (R + hh * 1.3) * Math.cos(a0 - span * .1 + dz), y: cy + (R + hh * 1.3) * Math.sin(a0 - span * .1 + dz) };
+    var q1 = { x: cx + (R + hh * 1.3) * Math.cos(a1 + span * .1 + dz), y: cy + (R + hh * 1.3) * Math.sin(a1 + span * .1 + dz) };
+    [[10, .07], [5, .16], [2.2, .42]].forEach(function (s) {
+      CX.strokeStyle = 'rgba(255,95,72,' + s[1] + ')'; CX.lineWidth = s[0];
+      CX.beginPath(); CX.moveTo(p0.x, p0.y); CX.bezierCurveTo(q0.x, q0.y, q1.x, q1.y, p1.x, p1.y); CX.stroke();
+    });
+  }
+  CX.restore();
+}
+/* which layer label is under the pointer (the enlarged one wins) */
+var STARLAB = { boxes: [], big: null };
+function starHover(sc, p) {
+  var B = STARLAB.big;
+  if (B && p.x >= B.x && p.x <= B.x + B.w && p.y >= B.y && p.y <= B.y + B.h) return B.j;
+  for (var i = 0; i < STARLAB.boxes.length; i++) {
+    var b = STARLAB.boxes[i];
+    if (p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h) return b.j;
+  }
+  return null;
+}
+/* highlight one layer on the drawing while its label is hovered */
+function starHighlight(cx, cy, R, j, cut) {
+  var Ly = SUNL[j], pulse = .55 + .45 * Math.sin(S.t * 5);
+  CX.save(); CX.lineCap = 'round';
+  if (j <= 2) {
+    if (!cut) { CX.restore(); return; }
+    CX.beginPath(); CX.arc(cx, cy, R * Ly.f1, -Math.PI / 2, 0); if (Ly.f0 > 0) CX.arc(cx, cy, R * Ly.f0, 0, -Math.PI / 2, true); else CX.lineTo(cx, cy); CX.closePath();
+    CX.fillStyle = withA('#ffffff', .22 + .18 * pulse); CX.fill();
+    CX.shadowColor = '#ffffff'; CX.shadowBlur = 14; CX.strokeStyle = '#ffffff'; CX.lineWidth = 3.5; CX.stroke();
+    CX.shadowBlur = 0; CX.strokeStyle = withA(C.gold, .95); CX.lineWidth = 2; CX.setLineDash([7, 5]); CX.lineDashOffset = -S.t * 20; CX.stroke();
+  } else {
+    var rr = j === 3 ? R : j === 4 ? R * 1.017 : R * 1.25;
+    CX.beginPath(); CX.arc(cx, cy, rr, 0, TAU);
+    CX.shadowColor = '#ffffff'; CX.shadowBlur = 12; CX.strokeStyle = withA('#ffffff', .6 + .4 * pulse); CX.lineWidth = j === 5 ? 2.5 : 4; if (j === 5) CX.setLineDash([8, 6]); CX.stroke();
+  }
+  CX.restore();
+}
 scene(1, 'star', {
   label: '⭐ Star', title: 'The Sun — the only star in the Solar System', rate: 2,
   ctrl: [{ t: 'tog', k: 'cut', nm: 'View', on: 'Cut-away', off: 'Cut-away', def: true }],
+  hover: starHover,
   draw: function (sc) {
     spaceBg(0, 0, W, H, 220, 3);
     var cx = 380, cy = 352, R = 250, t = S.t, cut = V('cut', sc);
-    /* corona streamers */
-    for (var i = 0; i < 18; i++) {
-      var a = i / 18 * TAU + Math.sin(t * .2 + i) * .05, L = R * (1.25 + .25 * hash(i, 2) + .05 * Math.sin(t * .7 + i * 2));
+    var i, hov = S.hoverK;
+    /* the outer corona: a pearly glow with soft streamers */
+    CX.fillStyle = rgrad(cx, cy, R * .95, cx, cy, R * 1.7, [[0, withA('#ffe9c4', .42)], [.35, withA('#ffe9c4', .12)], [1, withA('#ffe9c4', 0)]]);
+    CX.beginPath(); CX.arc(cx, cy, R * 1.7, 0, TAU); CX.fill();
+    CX.save(); CX.globalCompositeOperation = 'lighter';
+    for (i = 0; i < 36; i++) {
+      var a = i / 36 * TAU + .3 * hash(i, 6) + Math.sin(t * .2 + i) * .03, L = R * (1.2 + .35 * hash(i, 2) + .05 * Math.sin(t * .7 + i * 2)), wd = R * (.04 + .06 * hash(i, 8));
       CX.save(); CX.translate(cx, cy); CX.rotate(a);
-      CX.fillStyle = lgrad(R * .95, 0, L, 0, [[0, withA('#ffe9c4', .22)], [1, withA('#ffe9c4', 0)]]);
-      CX.beginPath(); CX.moveTo(R * .95, -R * .06); CX.quadraticCurveTo(L * .8, 0, L, 0); CX.quadraticCurveTo(L * .8, 0, R * .95, R * .06); CX.fill();
+      CX.fillStyle = lgrad(R * .95, 0, L, 0, [[0, withA('#fff1d6', .16)], [1, withA('#fff1d6', 0)]]);
+      CX.beginPath(); CX.moveTo(R * .95, -wd); CX.quadraticCurveTo(L * .82, 0, L, 0); CX.quadraticCurveTo(L * .82, 0, R * .95, wd); CX.fill();
       CX.restore();
     }
-    CX.fillStyle = rgrad(cx, cy, R * .95, cx, cy, R * 1.45, [[0, withA('#ffe9c4', .35)], [1, withA('#ffe9c4', 0)]]);
-    CX.beginPath(); CX.arc(cx, cy, R * 1.45, 0, TAU); CX.fill();
-    /* chromosphere rim */
-    ring(cx, cy, R * 1.017, withA('#ff5a4a', .85), R * .03);
-    /* photosphere with limb darkening + granulation + sunspots */
-    CX.fillStyle = rgrad(cx, cy, 0, cx, cy, R, [[0, '#fff1c2'], [.7, '#ffc65a'], [1, '#e8781e']]);
-    CX.beginPath(); CX.arc(cx, cy, R, 0, TAU); CX.fill();
-    CX.save(); CX.beginPath(); CX.arc(cx, cy, R, 0, TAU); CX.clip();
-    for (i = 0; i < 700; i++) {
-      var gx = cx + (hash(i, 1) * 2 - 1) * R, gy = cy + (hash(i, 9) * 2 - 1) * R;
-      var fl = .5 + .5 * Math.sin(t * 1.3 + i);
-      dot(gx, gy, 3 + 3 * hash(i, 4), withA(fl > .5 ? '#fff4c8' : '#c8641a', .12));
-    }
-    var rot = t * .03;
-    [[.35, .2], [.45, .26], [-.2, .5], [.1, -.55]].forEach(function (sp, j) {
-      var sx = cx + R * Math.sin(sp[0] + rot) * Math.cos(sp[1]), sy = cy + R * sp[1] * .9;
-      if (Math.cos(sp[0] + rot) > 0) { dot(sx, sy, 7 + j, withA('#5a2408', .55)); dot(sx, sy, 4 + j * .5, withA('#2a0e02', .7)); }
-    });
     CX.restore();
+    /* the chromosphere: a thin red glow, fringed with spicules */
+    CX.fillStyle = rgrad(cx, cy, R * .99, cx, cy, R * 1.045, [[0, 'rgba(255,80,60,.95)'], [.5, 'rgba(255,70,55,.55)'], [1, 'rgba(255,70,55,0)']]);
+    CX.beginPath(); CX.arc(cx, cy, R * 1.045, 0, TAU); CX.fill();
+    CX.save(); CX.strokeStyle = 'rgba(255,110,90,.5)'; CX.lineWidth = 1;
+    for (i = 0; i < 260; i++) {
+      var sa = i / 260 * TAU + hash(i, 31) * .02, sl = R * (.012 + .022 * hash(i, 33)) * (1 + .25 * Math.sin(t * 2 + i));
+      CX.beginPath(); CX.moveTo(cx + R * Math.cos(sa), cy + R * Math.sin(sa)); CX.lineTo(cx + (R + sl) * Math.cos(sa + .004), cy + (R + sl) * Math.sin(sa + .004)); CX.stroke();
+    }
+    CX.restore();
+    /* prominences on the limb (away from the cut-away) */
+    prominence(cx, cy, R, 2.35, .15, .1, t, 0); prominence(cx, cy, R, 3.7, .11, .12, t, 2); prominence(cx, cy, R, 1.25, .1, .07, t, 4);
+    /* the photosphere: granulated, limb-darkened, gently boiling */
+    CX.imageSmoothingEnabled = true;
+    CX.drawImage(sunSurf(1), cx - R, cy - R, 2 * R, 2 * R);
+    CX.globalAlpha = .5 + .5 * Math.sin(t * .6); CX.drawImage(sunSurf(2), cx - R, cy - R, 2 * R, 2 * R); CX.globalAlpha = 1;
+    var rot = t * .03;
+    [[-.75, -.3, 13], [-.62, -.34, 8], [-.25, .28, 11], [.35, .4, 9], [-1.05, .18, 7], [.2, -.48, 10]].forEach(function (sp) { sunspot(cx, cy, R, sp[0] + rot, sp[1], sp[2]); });
     /* the cut-away wedge: the layers inside */
     if (cut) {
-      CX.save(); CX.beginPath(); CX.moveTo(cx, cy); CX.arc(cx, cy, R * 1.05, -Math.PI / 2, 0); CX.closePath(); CX.clip();
-      var LCOL = ['#fffbe6', '#ffd66b', '#f08a2e', '#ffb347'];
-      for (i = 3; i >= 0; i--) {
-        var Ly = SUNL[i];
-        CX.fillStyle = rgrad(cx, cy, R * Ly.f0, cx, cy, R * Ly.f1, [[0, LCOL[i]], [1, mix(LCOL[i], '#a8400c', i === 0 ? .15 : .3)]]);
-        CX.beginPath(); CX.arc(cx, cy, R * Ly.f1, 0, TAU); CX.fill();
-      }
-      [.25, .70, .985].forEach(function (f) { CX.beginPath(); CX.arc(cx, cy, R * f, -Math.PI / 2, 0); CX.strokeStyle = withA('#5a1c04', .7); CX.lineWidth = 1.6; CX.stroke(); });
-      /* fusion sparkles in the core */
-      for (i = 0; i < 26; i++) {
-        var ph = (t * .8 + hash(i, 3)) % 1, rr3 = R * .22 * Math.sqrt(hash(i, 5)), aa = -Math.PI / 2 * hash(i, 8);
-        dot(cx + rr3 * Math.cos(aa), cy + rr3 * Math.sin(aa), 1.5 + 3 * (1 - ph), withA('#ffffff', (1 - ph) * .9));
-      }
-      /* a photon's random walk out through the radiative zone */
-      CX.save(); CX.strokeStyle = withA('#fffbe8', .85); CX.lineWidth = 1.4; CX.beginPath();
-      var px = R * .26, py = 0, steps = 60, prog = (t * 6) % steps;
-      CX.moveTo(cx + px * Math.cos(-.75), cy + px * Math.sin(-.75));
-      for (i = 0; i < prog; i++) {
-        var aa2 = -.75 + (hash(i, 17) - .5) * 1.2, rnow = R * (.26 + .44 * i / steps) + (hash(i, 19) - .5) * 12;
-        CX.lineTo(cx + rnow * Math.cos(aa2), cy + rnow * Math.sin(aa2));
-      }
-      CX.stroke(); CX.restore();
-      /* convection loops */
-      for (i = 0; i < 5; i++) {
-        var a0 = -Math.PI / 2 + (i + .5) / 5 * Math.PI / 2, rc = R * .84, rw = R * .11;
-        var lx2 = cx + rc * Math.cos(a0), ly2 = cy + rc * Math.sin(a0);
+      CX.save(); CX.beginPath(); CX.moveTo(cx, cy); CX.arc(cx, cy, R * 1.0, -Math.PI / 2, 0); CX.closePath(); CX.clip();
+      /* convective zone */
+      CX.fillStyle = rgrad(cx, cy, R * .7, cx, cy, R, [[0, '#f8a446'], [1, '#d4601c']]); CX.fillRect(cx, cy - R, R, R);
+      /* convection cells: hot gas rises (light), cools at the top and sinks (dark) */
+      for (i = 0; i < 6; i++) {
+        var a0 = -Math.PI / 2 + (i + .5) / 6 * Math.PI / 2, rc = R * .842, rw = R * .125, lx2 = cx + rc * Math.cos(a0), ly2 = cy + rc * Math.sin(a0);
         CX.save(); CX.translate(lx2, ly2); CX.rotate(a0);
-        CX.strokeStyle = withA('#7a2a06', .55); CX.lineWidth = 1.6;
-        CX.beginPath(); CX.ellipse(0, 0, rw, rw * .55, 0, 0, TAU); CX.stroke();
-        var ph2 = t * 1.5 + i;
-        dot(rw * Math.cos(ph2), rw * .55 * Math.sin(ph2), 3, withA('#ffe2a0', .95));
+        var dir = i % 2 ? 1 : -1;
+        CX.fillStyle = lgrad(0, -rw * .55 * dir, 0, rw * .55 * dir, [[0, 'rgba(255,236,170,.42)'], [1, 'rgba(120,36,4,.35)']]);
+        CX.beginPath(); CX.ellipse(0, 0, rw, rw * .5, 0, 0, TAU); CX.fill();
+        CX.strokeStyle = 'rgba(110,34,4,.55)'; CX.lineWidth = 1.3; CX.stroke();
+        for (var k = 0; k < 3; k++) {
+          var ph2 = dir * (t * 1.2 + k * TAU / 3) + i, ex2 = rw * Math.cos(ph2), ey2 = rw * .5 * Math.sin(ph2);
+          var hot = Math.sin(ph2) * dir < 0;
+          dot(ex2, ey2, 3.2, hot ? 'rgba(255,248,215,.98)' : 'rgba(150,50,8,.9)');
+        }
+        arrow(-rw * .25 * dir, -rw * .5, rw * .25 * dir, -rw * .5, 'rgba(110,34,4,.7)', 1.3, { head: 5 });
         CX.restore();
       }
+      /* radiative zone, with faint shells */
+      CX.fillStyle = rgrad(cx, cy, R * .25, cx, cy, R * .7, [[0, '#ffeaa0'], [1, '#ffbf52']]);
+      CX.beginPath(); CX.moveTo(cx, cy); CX.arc(cx, cy, R * .7, -Math.PI / 2, 0); CX.closePath(); CX.fill();
+      CX.strokeStyle = 'rgba(160,80,10,.13)'; CX.lineWidth = 1;
+      for (var f = .28; f < .7; f += .028) { CX.beginPath(); CX.arc(cx, cy, R * f, -Math.PI / 2, 0); CX.stroke(); }
+      /* the core: white-hot and pulsing */
+      var pul = .5 + .5 * Math.sin(t * 2.2);
+      CX.fillStyle = rgrad(cx, cy, 0, cx, cy, R * .25, [[0, '#ffffff'], [.6, '#fff6d0'], [1, '#ffe08a']]);
+      CX.beginPath(); CX.moveTo(cx, cy); CX.arc(cx, cy, R * .25, -Math.PI / 2, 0); CX.closePath(); CX.fill();
+      CX.fillStyle = rgrad(cx, cy, 0, cx, cy, R * .34, [[0, 'rgba(255,255,255,' + (.35 + .3 * pul) + ')'], [1, 'rgba(255,255,255,0)']]);
+      CX.beginPath(); CX.arc(cx, cy, R * .34, 0, TAU); CX.fill();
+      for (i = 0; i < 34; i++) {     /* fusion flashes */
+        var ph = (t * .8 + hash(i, 3)) % 1, rr3 = R * .22 * Math.sqrt(hash(i, 5)), aa = -Math.PI / 2 * hash(i, 8);
+        var fx = cx + rr3 * Math.cos(aa), fy = cy + rr3 * Math.sin(aa);
+        CX.fillStyle = rgrad(fx, fy, 0, fx, fy, 2 + 6 * (1 - ph), [[0, 'rgba(255,255,255,' + (1 - ph) + ')'], [1, 'rgba(255,240,180,0)']]);
+        CX.beginPath(); CX.arc(fx, fy, 2 + 6 * (1 - ph), 0, TAU); CX.fill();
+      }
+      /* a photon's random walk out through the radiative zone, with a glowing head */
+      var steps = 60, prog = Math.floor((t * 6) % steps), pts = [];
+      for (i = 0; i <= prog; i++) {
+        var aa2 = -.75 + (hash(i, 17) - .5) * 1.2, rnow = i ? R * (.26 + .44 * i / steps) + (hash(i, 19) - .5) * 12 : R * .26;
+        pts.push({ x: cx + rnow * Math.cos(i ? aa2 : -.75), y: cy + rnow * Math.sin(i ? aa2 : -.75) });
+      }
+      CX.save(); CX.lineCap = 'round'; CX.lineJoin = 'round';
+      for (i = 1; i < pts.length; i++) {
+        CX.strokeStyle = 'rgba(255,255,255,' + (.25 + .7 * i / pts.length) + ')'; CX.lineWidth = 1.5;
+        CX.beginPath(); CX.moveTo(pts[i - 1].x, pts[i - 1].y); CX.lineTo(pts[i].x, pts[i].y); CX.stroke();
+      }
+      var hd = pts[pts.length - 1];
+      CX.fillStyle = rgrad(hd.x, hd.y, 0, hd.x, hd.y, 9, [[0, 'rgba(255,255,255,1)'], [1, 'rgba(255,255,220,0)']]); CX.beginPath(); CX.arc(hd.x, hd.y, 9, 0, TAU); CX.fill();
       CX.restore();
-      line(cx, cy, cx, cy - R * 1.05, withA('#000', .35), 1.2); line(cx, cy, cx + R * 1.05, cy, withA('#000', .35), 1.2);
+      /* boundaries, the bright photosphere skin, and shading along the cut faces */
+      [.25, .70].forEach(function (f) { CX.beginPath(); CX.arc(cx, cy, R * f, -Math.PI / 2, 0); CX.strokeStyle = 'rgba(110,40,6,.55)'; CX.lineWidth = 1.6; CX.stroke(); });
+      CX.beginPath(); CX.arc(cx, cy, R * .99, -Math.PI / 2, 0); CX.strokeStyle = '#ffd77a'; CX.lineWidth = R * .02; CX.stroke();
+      CX.fillStyle = lgrad(cx, 0, cx + 16, 0, [[0, 'rgba(60,18,2,.35)'], [1, 'rgba(60,18,2,0)']]); CX.fillRect(cx, cy - R, 16, R);
+      CX.fillStyle = lgrad(0, cy, 0, cy - 16, [[0, 'rgba(60,18,2,.35)'], [1, 'rgba(60,18,2,0)']]); CX.fillRect(cx, cy - 16, R, 16);
+      CX.restore();
+      line(cx, cy, cx, cy - R, 'rgba(255,240,200,.85)', 1.6); line(cx, cy, cx + R, cy, 'rgba(255,240,200,.85)', 1.6);
     }
+    if (hov !== null && hov !== undefined) starHighlight(cx, cy, R, hov, cut);
     /* layer labels: a column on the right, one leader each */
     if (S.show.labels) {
       var LX = 690, ys = [440, 378, 314, 250, 186, 122];
@@ -1609,9 +1766,13 @@ scene(1, 'star', {
         [cx + R * 1.02 * Math.cos(-.85), cy + R * 1.02 * Math.sin(-.85)],
         [cx + R * 1.25 * Math.cos(-1.05), cy + R * 1.25 * Math.sin(-1.05)]];
       if (!cut) anchors[0] = anchors[1] = anchors[2] = null;
+      STARLAB.boxes = []; STARLAB.big = null;
       SUNL.forEach(function (Ly, j) {
         if (!anchors[j]) return;
-        var b = plateAt(Ly.nm + ':  ' + Ly.t, LX, ys[j] - 12, 12, mix(Ly.col, '#ffffff', .2));
+        var s0 = Ly.nm + ':  ' + Ly.t, col = mix(Ly.col, '#ffffff', .2), b0 = plateBox(s0, 12);
+        STARLAB.boxes.push({ x: LX, y: ys[j] - 12, w: b0.w, h: b0.h, j: j });
+        if (hov === j) return;                      /* drawn last, enlarged */
+        var b = plateAt(s0, LX, ys[j] - 12, 12, col);
         line(b.x, b.y + b.h / 2, anchors[j][0], anchors[j][1], withA('#ffffff', .5), 1);
         dot(anchors[j][0], anchors[j][1], 2.5, '#ffffff');
       });
@@ -1621,6 +1782,17 @@ scene(1, 'star', {
       var ex = cx - R * .62, ey = cy + R * 1.04;
       dot(ex, ey, 500 / 109 / 2, C['earth-sea']);
       callout('Earth, drawn to the same scale (the Sun is ≈ 109 Earth diameters across)', ex, ey, [[24, 0, 'left'], [24, -26, 'left']], 11, C.label);
+    }
+    /* the hovered label: bigger, on top, with a bold gold leader */
+    if (S.show.labels && hov !== null && hov !== undefined && STARLAB.boxes.some(function (q) { return q.j === hov; })) {
+      var HL = SUNL[hov], hs = HL.nm + ':  ' + HL.t, hb = plateBox(hs, 19), b1 = STARLAB.boxes.filter(function (q) { return q.j === hov; })[0];
+      var hx = Math.min(b1.x, W - 8 - hb.w), hy = clamp(b1.y + b1.h / 2 - hb.h / 2, 4, H - hb.h - 4);
+      line(hx, hy + hb.h / 2, anchors[hov][0], anchors[hov][1], withA(C.gold, .95), 2);
+      dot(anchors[hov][0], anchors[hov][1], 4.5, C.gold, '#ffffff', 1.2);
+      CX.save(); CX.shadowColor = withA(C.gold, .6); CX.shadowBlur = 16;
+      fillRR(hx, hy, hb.w, hb.h, 8, withA(C.cplate, .97), C.gold, 2); CX.restore();
+      txt(hs, hx + 7, hy + hb.h - 7.5, 19, mix(HL.col, '#ffffff', .35), 'left', 800);
+      STARLAB.big = { x: hx, y: hy, w: hb.w, h: hb.h, j: hov };
     }
     /* facts card */
     dcard('sunfacts', 720, 486, 465, 136, 'THE SUN — FACTS', function (x0, y0, w) {
@@ -2503,9 +2675,9 @@ scene(2, 'seasons', {
       SEASHIT.push({ D: st[0], x: p.x, y: p.y, r: 16 });
       if (S.show.labels) {
         var lab = st[1] + ' · ' + st[2], ly = j === 0 ? p.y - 40 : p.y + 46;
-        plateAt(lab, clamp(p.x - plateBox(lab, 11).w / 2, 6, VIEW2.x - 20 - plateBox(lab, 11).w), ly, 11, C.cvtext);
+        leadPlate(lab, clamp(p.x - plateBox(lab, 11).w / 2, 6, VIEW2.x - 20 - plateBox(lab, 11).w), ly, 11, C.cvtext);
         var sn = seasonName(j);
-        plateAt(sn, clamp(p.x - plateBox(sn, 10).w / 2, 6, VIEW2.x - 20 - plateBox(sn, 10).w), ly + 22, 10, j === 1 ? C.rocky : j === 3 ? C.gaseous : C.cvdim);
+        leadPlate(sn, clamp(p.x - plateBox(sn, 10).w / 2, 6, VIEW2.x - 20 - plateBox(sn, 10).w), ly + 22, 10, j === 1 ? C.rocky : j === 3 ? C.gaseous : C.cvdim);
       }
     });
     /* the Earth now */
@@ -2894,6 +3066,151 @@ function nextEclipse(sc) {
   }
   return d0;
 }
+/* ── the eclipse space view, drawn richly ─────────────────────────────── */
+var SUNTEX = { key: '', cv: null };
+function sunTex() {
+  var key = C.sun + C['sun-core'] + C['sun-glow'];
+  if (SUNTEX.key === key) return SUNTEX.cv;
+  var N = 256, cv = document.createElement('canvas'); cv.width = cv.height = N;
+  var g = cv.getContext('2d'), img = g.createImageData(N, N), d = img.data;
+  var c0 = rgbOf(C['sun-core']), c1 = rgbOf(C.sun), c2 = rgbOf(C['sun-glow']);
+  var SPOTS = [[.42, -.18, .026], [.47, -.13, .016], [.28, .34, .02]];
+  for (var j = 0; j < N; j++) for (var i = 0; i < N; i++) {
+    var x = 2 * (i + .5) / N - 1, y = 2 * (j + .5) / N - 1, r2 = x * x + y * y, p = (j * N + i) * 4;
+    if (r2 > 1) { d[p + 3] = 0; continue; }
+    var mu = Math.sqrt(1 - r2), t = 1 - mu, A = t < .55 ? c0 : c1, B = t < .55 ? c1 : c2, u = t < .55 ? t / .55 : (t - .55) / .45;
+    var gr = .55 * vnoise(x * 34, y * 34) + .45 * vnoise(x * 85 + 7, y * 85 + 3);
+    var b = (.86 + .26 * gr) * (.62 + .38 * mu);
+    for (var k = 0; k < SPOTS.length; k++) {
+      var q = Math.hypot(x - SPOTS[k][0], y - SPOTS[k][1]) / SPOTS[k][2];
+      if (q < 1.8) b *= q < 1 ? .5 + .2 * q : .7 + .3 * (q - 1) / .8;
+    }
+    d[p] = Math.min(255, (A[0] + (B[0] - A[0]) * u) * b); d[p + 1] = Math.min(255, (A[1] + (B[1] - A[1]) * u) * b);
+    d[p + 2] = Math.min(255, (A[2] + (B[2] - A[2]) * u) * b); d[p + 3] = 255;
+  }
+  g.putImageData(img, 0, 0);
+  SUNTEX.key = key; SUNTEX.cv = cv; return cv;
+}
+/* the Sun: soft glow, slowly breathing corona streamers, granulated disc */
+function eclSun(x, y, r) {
+  CX.fillStyle = rgrad(x, y, r * .9, x, y, r * 3, [[0, withA(C['sun-glow'], .5)], [.3, withA(C['sun-glow'], .14)], [1, withA(C['sun-glow'], 0)]]);
+  CX.beginPath(); CX.arc(x, y, r * 3, 0, TAU); CX.fill();
+  CX.save(); CX.globalCompositeOperation = 'lighter';
+  for (var k = 0; k < 44; k++) {
+    var a = k / 44 * TAU + .25 * hash(k, 71), w = .09 + .1 * hash(k, 75);
+    var L = r * (1.2 + .55 * hash(k, 73) + .05 * Math.sin(S.t * .8 + k * 1.7));
+    CX.fillStyle = rgrad(x, y, r * .95, x, y, L, [[0, withA(C['sun-glow'], .13)], [.5, withA(C['sun-glow'], .04)], [1, withA(C['sun-glow'], 0)]]);
+    CX.beginPath(); CX.moveTo(x + Math.cos(a - w) * r * .95, y + Math.sin(a - w) * r * .95);
+    CX.lineTo(x + Math.cos(a) * L, y + Math.sin(a) * L); CX.lineTo(x + Math.cos(a + w) * r * .95, y + Math.sin(a + w) * r * .95); CX.closePath(); CX.fill();
+  }
+  CX.restore();
+  CX.imageSmoothingEnabled = true; CX.drawImage(sunTex(), x - r, y - r, 2 * r, 2 * r);
+  ring(x, y, r, withA(C['sun-core'], .45), 1.5);
+}
+/* sunlight: a warm wash plus moving rays that stop where they hit the Earth or the Moon */
+function eclLight(mx, my) {
+  var sx = ECL.sx, sy = ECL.sy, sR = ECL.sR, x1 = VIEW2.x - 10;
+  CX.fillStyle = rgrad(sx, sy, sR, sx, sy, 820, [[0, withA(C['sun-glow'], .16)], [.6, withA(C['sun-glow'], .05)], [1, withA(C['sun-glow'], 0)]]);
+  CX.fillRect(0, 0, x1, H);
+  CX.save(); CX.setLineDash([3, 15]); CX.lineDashOffset = -S.t * 70; CX.lineWidth = 1.3; CX.lineCap = 'round';
+  for (var y = sy - 168; y <= sy + 168; y += 21) {
+    var x0 = sx + Math.sqrt(Math.max(0, sR * sR - (y - sy) * (y - sy))) + 4, xe = x1;
+    if (Math.abs(y - ECL.ey) < ECL.eR) xe = Math.min(xe, ECL.ex - Math.sqrt(ECL.eR * ECL.eR - (y - ECL.ey) * (y - ECL.ey)));
+    if (Math.abs(y - my) < ECL.mR) xe = Math.min(xe, mx - Math.sqrt(ECL.mR * ECL.mR - (y - my) * (y - my)));
+    var a = .38 * (1 - Math.abs(y - sy) / 200);
+    CX.strokeStyle = lgrad(x0, 0, x1, 0, [[0, withA(C['sun-core'], a)], [1, withA(C['sun-core'], a * .35)]]);
+    CX.beginPath(); CX.moveTo(x0, y); CX.lineTo(xe, y); CX.stroke();
+  }
+  CX.restore();
+}
+/* the Earth: the real globe, axis upright on screen, lit from the left;
+   turned so the observer sits at local noon (solar) or midnight (lunar)  */
+function eclEarth(kind) {
+  var x = ECL.ex, y = ECL.ey, R = ECL.eR, s = sunDirE(S.days), c = vnorm(vcross(EAX.e3, s));
+  CX.fillStyle = rgrad(x, y, R * .96, x, y, R * 1.4, [[0, 'rgba(110,170,255,.34)'], [1, 'rgba(110,170,255,0)']]);
+  CX.beginPath(); CX.arc(x, y, R * 1.4, 0, TAU); CX.fill();
+  drawGlobe(x, y, R, { cam: c, up: EAX.e3, sun: s, theta: earthTheta(S.days, kind === 'solar' ? 12 : 0, obsLon()) });
+}
+/* the Moon's orbit seen almost edge-on: back half behind the Earth (dashed), front half in front */
+function eclOrbit(tilt0, front) {
+  var eta = TAU * S.days / ECL.EY + 2.2, n = 144, pen = false;
+  CX.save(); CX.lineWidth = front ? 1.7 : 1.1; CX.strokeStyle = withA(C.moon, front ? .6 : .28); if (!front) CX.setLineDash([4, 5]);
+  CX.beginPath();
+  for (var i = 0; i <= n; i++) {
+    var e = i / n * TAU, isFront = Math.sin(e) <= 0;
+    if (isFront !== front) { pen = false; continue; }
+    var x = ECL.ex - ECL.dm * Math.cos(e), y = ECL.ey - (tilt0 ? 0 : Math.sin(e + eta)) * ECL.yex;
+    if (pen) CX.lineTo(x, y); else { CX.moveTo(x, y); pen = true; }
+  }
+  CX.stroke(); CX.restore();
+  if (!tilt0) [-eta, Math.PI - eta].forEach(function (e) {
+    if ((Math.sin(e) <= 0) !== front) return;
+    var x = ECL.ex - ECL.dm * Math.cos(e), y = ECL.ey;
+    CX.save(); CX.translate(x, y); CX.rotate(Math.PI / 4); CX.fillStyle = withA(C.gold, front ? .95 : .5); CX.fillRect(-3.5, -3.5, 7, 7); CX.restore();
+  });
+}
+/* shadows: grey penumbra fading with distance, a deep umbra; in a lunar
+   eclipse sunlight bent through the Earth's air reddens the umbra's edge  */
+function eclShadows(vd, kind, fade) {
+  var pen = vd.cones.pen, um = vd.cones.um, ox = kind === 'solar' ? vd.st.mx : ECL.ex;
+  CX.save(); CX.beginPath();
+  if (kind === 'solar') { CX.rect(0, 0, ECL.ex + ECL.eR * .1, H); CX.clip(); }
+  else { CX.rect(ECL.ex - ECL.eR - 2, 0, VIEW2.x - 8 - ECL.ex + ECL.eR, H); CX.arc(ECL.ex, ECL.ey, ECL.eR, 0, TAU); CX.clip('evenodd'); }   /* the shadow starts behind the Earth, not on it */
+  CX.globalAlpha = fade;
+  polyFill(pen, lgrad(ox, 0, ox + 420, 0, [[0, withA('#c8d0e0', .24)], [1, withA('#c8d0e0', .07)]]));
+  polyFill(um, lgrad(ox, 0, ox + 420, 0, [[0, withA(C.umbra, .92)], [1, withA(C.umbra, .7)]]));
+  if (kind === 'lunar') {
+    CX.save(); polyFill(um, 'rgba(0,0,0,0)'); CX.clip();
+    CX.lineWidth = 16; CX.strokeStyle = withA(C.blood, .3);
+    CX.beginPath(); CX.moveTo(um[0].x, um[0].y); CX.lineTo(um[1].x, um[1].y); CX.moveTo(um[um.length - 1].x, um[um.length - 1].y); CX.lineTo(um[um.length - 2].x, um[um.length - 2].y); CX.stroke();
+    CX.restore();
+  }
+  CX.setLineDash([5, 4]); CX.strokeStyle = withA('#dfe5f2', .7); CX.lineWidth = 1.2;
+  CX.beginPath(); CX.moveTo(pen[0].x, pen[0].y); CX.lineTo(pen[1].x, pen[1].y); CX.moveTo(pen[3].x, pen[3].y); CX.lineTo(pen[2].x, pen[2].y); CX.stroke();
+  CX.setLineDash([]); CX.strokeStyle = withA('#f0f3ff', .9); CX.lineWidth = 1.4;
+  CX.beginPath(); CX.moveTo(um[0].x, um[0].y); CX.lineTo(um[1].x, um[1].y); CX.moveTo(um[um.length - 1].x, um[um.length - 1].y); CX.lineTo(um[um.length - 2].x, um[um.length - 2].y); CX.stroke();
+  CX.restore();
+}
+/* a small map from above: where the Moon is in its tilted orbit and where the line of nodes points */
+function eclTopView(st, tilt0) {
+  dcard('ecltop', 16, 446, 286, 172, 'SEEN FROM ABOVE', function (x0, y0, w, h) {
+    var cx = x0 + 170, cy = y0 + h / 2 - 4, r = 54, eta = TAU * S.days / ECL.EY + 2.2, i;
+    for (i = 0; i < 3; i++) arrow(x0 + 12, y0 + 28 + i * 20, x0 + 56, y0 + 28 + i * 20, withA('#ffe9a0', .75), 1.4, { head: 6 });
+    txt('Sunlight', x0 + 34, y0 + 14, 9.5, '#ffe9a0', 'center', 700);
+    var seg = function (up) {
+      CX.save(); CX.lineWidth = 1.8; CX.strokeStyle = up ? withA(C.gold, .9) : withA(C.orbithi, .8); if (!up) CX.setLineDash([4, 4]);
+      CX.beginPath(); var pen = false;
+      for (var k = 0; k <= 144; k++) {
+        var e = k / 144 * TAU, a = tilt0 ? 1 : Math.sin(e + eta);
+        if ((a >= 0) !== up) { pen = false; continue; }
+        var px = cx - r * Math.cos(e), py = cy - r * Math.sin(e);
+        if (pen) CX.lineTo(px, py); else { CX.moveTo(px, py); pen = true; }
+      }
+      CX.stroke(); CX.restore();
+    };
+    seg(true); if (!tilt0) seg(false);
+    if (!tilt0) {
+      var nx = Math.cos(-eta), ny = Math.sin(-eta);
+      line(cx - nx * (r + 12), cy - ny * (r + 12), cx + nx * (r + 12), cy + ny * (r + 12), withA(C.gold, .55), 1, [2, 3]);
+      [[1, 1], [-1, 1]].forEach(function (s) { var px = cx - s[0] * nx * r, py = cy - s[0] * ny * r; CX.save(); CX.translate(px, py); CX.rotate(Math.PI / 4); CX.fillStyle = C.gold; CX.fillRect(-3, -3, 6, 6); CX.restore(); });
+    }
+    dot(cx, cy, 8, C['earth-sea']);
+    CX.save(); CX.beginPath(); CX.arc(cx, cy, 8, 0, TAU); CX.clip(); CX.fillStyle = withA('#000', .6); CX.fillRect(cx, cy - 8, 8, 16); CX.restore();
+    var mpx = cx - r * Math.cos(st.el), mpy = cy - r * Math.sin(st.el);
+    dot(mpx, mpy, 5.5, C.moon, '#ffffff', 1);
+    CX.save(); CX.beginPath(); CX.arc(mpx, mpy, 5.5, 0, TAU); CX.clip(); CX.fillStyle = withA('#000', .55); CX.fillRect(mpx, mpy - 6, 6, 12); CX.restore();
+    txt('Earth', cx, cy + 20, 9, C.cvdim, 'center', 700);
+    arrow(cx, y0 + h - 4, cx, y0 + h - 18, withA(C.cvmuted, .9), 1.2, { head: 5 });
+    txt('side view looks from here', cx + 8, y0 + h - 6, 8.5, C.cvmuted, 'left', 600);
+    if (!tilt0) {
+      line(x0 + 10, y0 + h - 34, x0 + 30, y0 + h - 34, C.gold, 1.8);
+      txt('above the plane', x0 + 34, y0 + h - 31, 9, C.cvdim, 'left', 600);
+      line(x0 + 10, y0 + h - 18, x0 + 30, y0 + h - 18, C.orbithi, 1.8, [4, 4]);
+      txt('below', x0 + 34, y0 + h - 15, 9, C.cvdim, 'left', 600);
+      txt('◆ nodes', x0 + 10, y0 + h - 50, 9, C.gold, 'left', 700);
+    }
+  });
+}
 scene(2, 'eclipses', {
   label: '🌑 Eclipses', title: 'Solar and lunar eclipses', rate: 1,
   startDays: 0,
@@ -2906,36 +3223,26 @@ scene(2, 'eclipses', {
     CALLLIM = { x: 4, y: 4, w: VIEW2.x - 18, h: H - 52 };
     spaceBg(0, 0, VIEW2.x - 8, H, 220, 23);
     var kind = V('kind', sc), vd = eclVerdict(sc), st = vd.st;
-    var mx = st.mx, my = st.my, mR = ECL.mR;
+    var mx = st.mx, my = st.my, mR = ECL.mR, tilt0 = V('tilt', sc) === '0';
+    eclLight(mx, my);
     /* plane of the Earth's orbit */
-    line(0, ECL.ey, VIEW2.x - 10, ECL.ey, withA(C.cvmuted, .5), 1, [6, 6]);
-    sunGlow(ECL.sx, ECL.sy, ECL.sR, .55);
+    line(0, ECL.ey, VIEW2.x - 10, ECL.ey, withA(C.cvmuted, .55), 1, [6, 6]);
+    if (S.show.labels) txt('plane of the Earth’s orbit', ECL.sx + ECL.sR + 16, ECL.ey + 16, 9.5, C.cvmuted, 'left', 600);
+    eclSun(ECL.sx, ECL.sy, ECL.sR);
     var drawMoon = function () {
       var red = kind === 'lunar' && vd.ins > 0 ? vd.ins : 0;
+      if (!red) { CX.fillStyle = rgrad(mx, my, mR * .9, mx, my, mR * 1.9, [[0, withA('#f4f2ea', .16)], [1, withA('#f4f2ea', 0)]]); CX.beginPath(); CX.arc(mx, my, mR * 1.9, 0, TAU); CX.fill(); }
       moonBall(mx, my, mR, mx - 100, my, { tint: C.blood, tintK: red });   /* sunlight from the left */
     };
-    var drawEarth = function () {
-      dot(ECL.ex, ECL.ey, ECL.eR, C['earth-sea']);
-      CX.save(); CX.beginPath(); CX.arc(ECL.ex, ECL.ey, ECL.eR, 0, TAU); CX.clip();
-      dot(ECL.ex - 12, ECL.ey - 18, 22, C['earth-land']); dot(ECL.ex + 18, ECL.ey + 20, 16, C['earth-land']);
-      CX.fillStyle = withA('#000', .6); CX.fillRect(ECL.ex, ECL.ey - ECL.eR, ECL.eR, 2 * ECL.eR); CX.restore();
-    };
-    if (st.behind) { drawMoon(); drawEarth(); } else { drawEarth(); }
+    eclOrbit(tilt0, false);
+    var moonFirst = st.behind && kind === 'solar';   /* in a lunar eclipse the Moon sits INSIDE the shadow: draw it on top, reddened */
+    if (moonFirst) { drawMoon(); eclEarth(kind); } else { eclEarth(kind); }
     /* shadow cones, stopping inside the Earth (solar) */
     var fade = kind === 'solar' ? clamp(1 - Math.abs(vd.depth) / (4 * ECL.mR), .15, 1) : clamp(1 - Math.abs(vd.depth) / (4 * ECL.eR), .15, 1);
-    CX.save(); CX.beginPath();
-    if (kind === 'solar') CX.rect(0, 0, ECL.ex + ECL.eR * .1, H); else CX.rect(ECL.ex, 0, VIEW2.x - 10 - ECL.ex, H);
-    CX.clip(); CX.globalAlpha = fade;
-    polyFill(vd.cones.pen, withA('#c8d0e0', .13));
-    polyFill(vd.cones.um, withA(C.umbra, .78));
-    CX.setLineDash([5, 4]); CX.strokeStyle = withA('#c8d0e0', .7); CX.lineWidth = 1.2;
-    CX.beginPath(); CX.moveTo(vd.cones.pen[0].x, vd.cones.pen[0].y); CX.lineTo(vd.cones.pen[1].x, vd.cones.pen[1].y);
-    CX.moveTo(vd.cones.pen[3].x, vd.cones.pen[3].y); CX.lineTo(vd.cones.pen[2].x, vd.cones.pen[2].y); CX.stroke();
-    CX.setLineDash([]); CX.strokeStyle = withA('#e8edff', .85);
-    CX.beginPath(); CX.moveTo(vd.cones.um[0].x, vd.cones.um[0].y); CX.lineTo(vd.cones.um[1].x, vd.cones.um[1].y);
-    CX.moveTo(vd.cones.um[vd.cones.um.length - 1].x, vd.cones.um[vd.cones.um.length - 1].y); CX.lineTo(vd.cones.um[vd.cones.um.length - 2].x, vd.cones.um[vd.cones.um.length - 2].y); CX.stroke();
-    CX.globalAlpha = 1; CX.restore();
-    if (!st.behind) drawMoon();
+    eclShadows(vd, kind, fade);
+    eclOrbit(tilt0, true);
+    if (!moonFirst) drawMoon();
+    eclTopView(st, tilt0);
     /* the observer */
     dot(vd.obs.x, vd.obs.y, 4.5, C.red, '#ffffff', 1.4);
     if (S.show.labels) {
@@ -2943,13 +3250,12 @@ scene(2, 'eclipses', {
       var uc = { x: (um[0].x + um[1].x) / 2 + 6, y: (um[0].y + um[1].y) / 2 };
       if (kind === 'lunar') uc = { x: ECL.ex + 200, y: ECL.ey };
       callout('Umbra (full shadow)', uc.x, uc.y, [[0, -86, 'center'], [0, 96, 'center']], 11, C.cvtext);
-      var pc = kind === 'solar' ? { x: (pe[1].x + pe[0].x) / 2 - 30, y: pe[0].y + 30 } : { x: ECL.ex + 140, y: (pe[1].y + ECL.ey) / 2 + 30 };
-      callout('Penumbra (partial shadow)', pc.x, pc.y, [[0, 90, 'center'], [0, -90, 'center']], 11, C.cvdim);
+      if (kind === 'solar') callout('Penumbra (partial shadow)', (pe[1].x + pe[0].x) / 2 - 30, pe[0].y + 30, [[0, 90, 'center'], [0, -90, 'center']], 11, C.cvdim);
+      else { var lo = pe[2].y > pe[1].y ? [pe[3], pe[2]] : [pe[0], pe[1]], tx = ECL.ex + 185, ty = lo[0].y + (lo[1].y - lo[0].y) * (tx - lo[0].x) / (lo[1].x - lo[0].x); callout('Penumbra (partial shadow)', tx, ty - 6, [[0, 34, 'center'], [0, 60, 'center']], 11, C.cvdim); }
       txt('Sun', 40, ECL.sy - ECL.sR - 10, 12, C.cvtext, 'left', 700);
       txt('Earth', ECL.ex, ECL.ey + ECL.eR + 18, 12, C.cvtext, 'center', 700);
       callout('Moon', mx, my, [[0, -34, 'center'], [0, 36, 'center']], 11, C.moon);
       callout('You (' + placeName() + ')', vd.obs.x, vd.obs.y, [[-20, -40, 'right'], [-20, 40, 'right']], 10.5, C.red);
-      var tilt0 = V('tilt', sc) === '0';
       var why = tilt0 ? 'Orbit tilt 0°: the Moon stays on the Sun–Earth line, so there would be an eclipse every month'
         : Math.abs(st.beta) < 1.4 ? 'The Moon is close to the plane of the Earth’s orbit — an eclipse is possible'
           : 'The Moon passes ' + (st.beta > 0 ? 'above' : 'below') + ' the Sun–Earth line this time — the shadow misses';
@@ -3083,7 +3389,7 @@ scene(3, 'accretion', {
         var aa = i / 8 * TAU, r1 = 300 * shrink + 30, r2 = 300 * shrink - 20;
         arrow(cx + r1 * Math.cos(aa), cy + r1 * Math.sin(aa), cx + r2 * Math.cos(aa), cy + r2 * Math.sin(aa), C.force, 2.4, { head: 10 });
       }
-      if (S.show.labels) plate('gravitational attraction', cx + 300 * shrink + 40, cy - 120, 12, C.force, 'left');
+      if (S.show.labels) plateL('gravitational attraction', cx + 300 * shrink + 40, cy - 120, 12, C.force, 'left');
     }
     if (st === 2 || st === 3) {
       CX.save(); CX.strokeStyle = C.vel; CX.lineWidth = 2.2;
@@ -3091,7 +3397,7 @@ scene(3, 'accretion', {
       CX.beginPath(); CX.ellipse(cx, cy, 250, 250 * flat, 0, .3 + Math.PI, 1.4 + Math.PI); CX.stroke(); CX.restore();
       arrow(cx + 250 * Math.cos(1.35), cy + 250 * flat * Math.sin(1.35), cx + 250 * Math.cos(1.5), cy + 250 * flat * Math.sin(1.5), C.vel, 2.2, { head: 10 });
       arrow(cx + 250 * Math.cos(1.35 + Math.PI), cy + 250 * flat * Math.sin(1.35 + Math.PI), cx + 250 * Math.cos(1.5 + Math.PI), cy + 250 * flat * Math.sin(1.5 + Math.PI), C.vel, 2.2, { head: 10 });
-      if (S.show.labels) plate('rotation of the material', cx + 260, cy - 250 * flat - 14, 12, C.vel, 'left');
+      if (S.show.labels) plateL('rotation of the material', cx + 260, cy - 250 * flat - 14, 12, C.vel, 'left');
     }
     if (st === 3 && S.show.labels) {
       callout('protostar', cx, cy, [[0, -70, 'center']], 12, C.sun);
@@ -3122,10 +3428,10 @@ scene(3, 'accretion', {
         if (st === 5 && split > .6 && S.show.labels) txt(PL[j].nm, pxx, pyy - pr - 6, 10, C.label, 'center', 600);
       }
       sunGlow(cx, cy, 18);
-      if (st === 4 && S.show.labels) plate('collisions: small bodies stick and grow', cx + 120, cy + 150, 12, C.cvtext, 'left');
+      if (st === 4 && S.show.labels) plateL('collisions: small bodies stick and grow', cx + 120, cy + 150, 12, C.cvtext, 'left');
       if (st === 5 && S.show.labels) {
-        plateAt('Inner: rocky, small, dense', cx - 300, cy + 140, 13, C.rocky);
-        plateAt('Outer: gaseous, large, low density', cx + 130, cy + 140, 13, C.gaseous);
+        leadPlate('Inner: rocky, small, dense', cx - 300, cy + 140, 13, C.rocky);
+        leadPlate('Outer: gaseous, large, low density', cx + 130, cy + 140, 13, C.gaseous);
       }
     }
     /* stage strip */
@@ -4422,7 +4728,7 @@ function chipPlate(html, x, y, align) {
 /* ── the drawing entry point ───────────────────────────────────────── */
 function draw(dt) {
   if (!CX) return;
-  PLATES = []; DCARDS = []; CHIP.BL = ''; CHIP.BR = ''; CALLLIM = null;
+  PLATES = []; DCARDS = []; CHIP.BL = ''; CHIP.BR = ''; CALLLIM = null; HOVLAB = []; HOVPEND = null;
   CX.setTransform(DPR, 0, 0, DPR, 0, 0);
   CX.clearRect(0, 0, CV.width, CV.height);
   /* the band outside the letterbox is space too, never an empty box      */
@@ -4436,7 +4742,7 @@ function draw(dt) {
   applyView();
   CX.save(); CX.beginPath(); CX.rect(0, 0, W, H); CX.clip();
   var sc = cur();
-  try { sc.draw(sc, dt || 0); } catch (e) { console.error(e); txt('draw error: ' + e.message, 40, 300, 14, C.red); }
+  try { sc.draw(sc, dt || 0); drawHoverLabel(); } catch (e) { console.error(e); txt('draw error: ' + e.message, 40, 300, 14, C.red); }
   CX.restore();
   /* chips live outside the magnifier, fixed to the letterboxed frame */
   CX.setTransform(DPR, 0, 0, DPR, 0, 0); CX.translate(VT.ox, VT.oy); CX.scale(VT.s, VT.s);
@@ -4571,6 +4877,14 @@ function bind() {
     var p = toLogical(e.clientX, e.clientY);
     if (drag) { S.cardPos[drag.id] = { x: clamp(p.x - drag.dx, 2, W - drag.w - 2), y: clamp(p.y - drag.dy, 2, H - drag.h - 2) }; draw(); return; }
     if (sceneDrag) { var sc = cur(); if (sc.drag && sc.drag(sc, p)) { syncCtrls(true); draw(); } return; }
+    if (!S.panning) {             /* hover feedback: captions that point at the picture grow under the pointer */
+      var hs = cur(), hk = hs.hover && S.mode === 'sim' ? hs.hover(hs, p) : null;
+      if (hk === undefined) hk = null;
+      S.mouseL = p;
+      var hl = hk === null ? hoverLabelAt(p) : null;
+      if (hk !== S.hoverK || hl !== S.hovLab) { S.hoverK = hk; S.hovLab = hl; draw(); }
+      CV.style.cursor = hk !== null || hl !== null ? 'pointer' : '';
+    }
     if (S.panning) {
       S.panX += (e.clientX - S.px) / VT.s; S.panY += (e.clientY - S.py) / VT.s;
       S.px = e.clientX; S.py = e.clientY; S.moved += Math.abs(e.movementX || 0) + Math.abs(e.movementY || 0); clampPan(); draw();
@@ -4585,6 +4899,7 @@ function bind() {
     }
     down = null;
   });
+  CV.addEventListener('pointerleave', function () { S.mouseL = null; S.hovBig = null; S.hovLab = null; S.hoverK = null; CV.style.cursor = ''; draw(); });
   CV.addEventListener('auxclick', function (e) { if (e.button === 1) e.preventDefault(); });
   CV.addEventListener('dblclick', function (e) {
     var p = toLogical(e.clientX, e.clientY);

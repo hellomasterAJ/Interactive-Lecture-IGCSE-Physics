@@ -47,6 +47,7 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── CH5_Nuclear_2_Nuclear_Symbols_Reactions.html  ← Nuclear Symbols & Reactions ☢️
 │   ├── CH5_Nuclear_3_Radioactive_Lab.html            ← Radioactive Lab ☢️
 │   ├── CH6_Space_1_Solar_System_Lab.html             ← Solar System 🌌
+│   ├── CH6_Space_2_Star_Life_Cycle_Lab.html          ← Star Life Cycle ⭐
 │   └── AS/                                            ← A-Level 9702 sims
 │       ├── AS_CH0_Fundamental_1_SI_Units_and_Homogeneity.html ← SI Units & Homogeneity 🧱
 │       ├── AS_CH0_Fundamental_2_Uncertainty_and_Significant_Figures.html ← Uncertainty & Sig Figs ⚠️📏
@@ -102,7 +103,7 @@ python3 -m playwright install chromium
 | 1.7 | Energy, Work & Power | ❌ | ❌ |
 | 1.8 | Energy Resources | ❌ | ❌ |
 
-> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี 26 labs: CH0 (Vernier Caliper 📏, Micrometer 🔧, Balance ⚖️, Vector Addition ➕, Density 📦), CH1 (Motion Graphs 🚗, Newton's Laws 🍎, Moments & Equilibrium ⚖️, Energy ⚡), CH2 (Molecular Models ⚛️, Thermal Properties 🌡️, Thermal Properties v2 🛠️, Heat Transfer 🌡️), CH3 (Waves 🌊), CH4 (Electricity ⚡, Magnetism 🧲), CH5 (Nuclear ☢️), CH6 (Solar System 🌌)
+> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี 27 labs: CH0 (Vernier Caliper 📏, Micrometer 🔧, Balance ⚖️, Vector Addition ➕, Density 📦), CH1 (Motion Graphs 🚗, Newton's Laws 🍎, Moments & Equilibrium ⚖️, Energy ⚡), CH2 (Molecular Models ⚛️, Thermal Properties 🌡️, Thermal Properties v2 🛠️, Heat Transfer 🌡️), CH3 (Waves 🌊), CH4 (Electricity ⚡, Magnetism 🧲), CH5 (Nuclear ☢️), CH6 (Solar System 🌌, Star Life Cycle ⭐)
 
 ## 🎯 Features
 
@@ -140,6 +141,23 @@ python3 -m playwright install chromium
 Educational use — HAUS Academy
 
 ## 📋 Changelog
+
+### 20 Oct 2026 — CH6 Space Physics 2 / Star Life Cycle `v1.0.9` (`simulations/CH6_Space_2_Star_Life_Cycle_Lab.html`) · IGCSE 0625 Topic 6
+
+| # | การเปลี่ยนแปลง | รายละเอียด |
+|---|---------------|-----------|
+| 1 | **4 โหมดย่อย** | ① Radiation (🌈 Spectrum · 🎨 Colour & temperature · 💡 Fusion · ⚖ Stability · 🌟 Cepheid variable) ② Low mass (🌱 Birth · ☀ Stable star · 🔴 Red giant · 🌫 Planetary nebula + white dwarf · ⏱ Timeline) ③ Massive (🌱 Shared trunk · 🔴 Red supergiant · 💥 Supernova · ⚫ Remnant · ♻ New stars) ④ H-R Diagram (📈 The diagram · ☀ Where the Sun sits · ➡ Evolution tracks · 📊 Star data) |
+| 2 | **เนื้อหาหลัก** | รังสี IR 50 % / visible 43 % / UV 7 % · fusion 4 H → He + mass defect `E = mc²` · สมดุล gravity ⇄ radiation pressure · trunk เดียวแยก 2 สาขาที่ ≈ 8 M☉ · iron problem · supernova 99 % neutrino · planetary nebula name trap (Herschel) · วัฏจักรกลับเป็นดาวใหม่ |
+| 3 | **H-R diagram** | แกนอุณหภูมิกลับด้าน `hotter ← → cooler` · 4 regions · ดาวจริง ≥10 ดวง · 2 evolution tracks (1 M☉ / 15 M☉) · absolute magnitude + spectral classes |
+| 4 | **มาตรฐาน** | 6 themes / KaTeX offline / zoom ×2 + hold-drag pan / side panel 4 tabs พับได้ / Practical 8 · Quiz 20 (5/โหมดย่อย) / badge v1.0.9 / window.S |
+
+### 20 Oct 2026 — CH6 Space Physics 1 / Solar System `v1.0.7` (อัปเดตในที่)
+
+| # | การเปลี่ยนแปลง | รายละเอียด |
+|---|---------------|-----------|
+| 1 | **Eclipse ลึกขึ้น** | มุมมองจากด้านบน (`SEEN FROM ABOVE`) + umbra/penumbra + ระยะยกของวงโคจรดวงจันทร์เหนือระนาบ (`height above the orbit plane` → อธิบายว่าทำไมคราสไม่เกิดทุกเดือน) |
+| 2 | **ผิวดวงอาทิตย์** | sunspot + prominence + ผิวแบบมีเทกซ์เจอร์ (เดิมเป็นวงกลมเรียบ) |
+| 3 | **Hover labels** | ชี้ที่วัตถุบน canvas แล้วขึ้นป้ายชื่อ/ค่า (เดิมต้องคลิก) |
 
 ### 19 Oct 2026 — CH6 Space Physics 1 / Solar System `v1.0.4` (`simulations/CH6_Space_1_Solar_System_Lab.html`) · IGCSE 0625 Topic 6
 
