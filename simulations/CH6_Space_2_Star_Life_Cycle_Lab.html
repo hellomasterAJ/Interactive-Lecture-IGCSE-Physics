@@ -315,7 +315,7 @@ textarea.wa:focus{border-color:var(--accent)}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span>✨ Star Life Cycle</span> <span class="badge-top" id="badge">v1.0.9</span></h1>
+    <h1><span>✨ Star Life Cycle</span> <span class="badge-top" id="badge">v1.1.1</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="mTabs">
         <button class="mode-tab active" data-mode="sim">Simulate</button>
@@ -3664,11 +3664,11 @@ scene(4, 'data', {
     fillRR(G.x - 64, G.y - 14, G.w + 80, G.h + 100, 12, withA(C.cplate, .9), withA(C.orbithi, .45), 1);
     var Mlo = -.5, Mhi = 1.6, ylo = g === 't' ? 6 : -2, yhi = g === 't' ? 11.5 : 5.5;
     var X = function (m) { return gx0 + (Math.log10(m) - Mlo) / (Mhi - Mlo) * gw; }, Y = function (v) { return gy0 + gh - (Math.log10(v) - ylo) / (yhi - ylo) * gh; };
-    for (var e = Math.ceil(ylo); e <= yhi; e++) { var y = gy0 + gh - (e - ylo) / (yhi - ylo) * gh; line(gx0, y, gx0 + gw, y, withA(C.grid, .95), 1); txt(g === 't' ? (e >= 9 ? Math.pow(10, e - 9) + ' billion' : Math.pow(10, e - 6) + ' million') : LSUP[String(e)] || ('10' + supNum(e)), gx0 - 6, y + 4, 11, C.cvdim, 'right', 600); }
+    for (var e = Math.ceil(ylo); e <= yhi; e++) { var y = gy0 + gh - (e - ylo) / (yhi - ylo) * gh; line(gx0, y, gx0 + gw, y, withA(C.grid, .95), 1); txt(g === 't' ? (e >= 9 ? Math.pow(10, e - 9) + ' B' : Math.pow(10, e - 6) + ' M') : LSUP[String(e)] || ('10' + supNum(e)), gx0 - 8, y + 4, 11.5, C.cvdim, 'right', 700); }
     [0.5, 1, 2, 5, 10, 20, 30].forEach(function (m) { line(X(m), gy0, X(m), gy0 + gh, withA(C.grid, .95), 1); txt(String(m), X(m), gy0 + gh + 18, 11.5, C.cvdim, 'center', 600); });
     line(gx0, gy0 + gh, gx0 + gw, gy0 + gh, C.cvdim, 1.2); line(gx0, gy0, gx0, gy0 + gh, C.cvdim, 1.2);
     txt('Mass (× the Sun)', gx0 + gw / 2, gy0 + gh + 38, 13, C.cvtext, 'center', 700);
-    CX.save(); CX.translate(gx0 - 54, gy0 + gh / 2); CX.rotate(-Math.PI / 2); txt(g === 't' ? 'Main-sequence lifetime / years' : 'Luminosity (× the Sun)', 0, 0, 13, C.cvtext, 'center', 700); CX.restore();
+    CX.save(); CX.translate(gx0 - (g === 't' ? 46 : 50), gy0 + gh / 2); CX.rotate(-Math.PI / 2); txt(g === 't' ? 'Main-sequence lifetime / years   (M = million, B = billion)' : 'Luminosity (× the Sun)', 0, 0, 13, C.cvtext, 'center', 700); CX.restore();
     CX.save(); CX.beginPath(); CX.rect(gx0, gy0, gw, gh); CX.clip();
     CX.beginPath();
     for (var m = .3; m <= 40; m *= 1.05) { var v = g === 't' ? 1e10 * Math.pow(m, -2.5) : Math.pow(m, 3.5); if (m === .3) CX.moveTo(X(m), Y(v)); else CX.lineTo(X(m), Y(v)); }
@@ -4151,7 +4151,7 @@ function bindKeypad() {
 /* ══════════════════════════════════════════════════════════════════════
    UI — tabs, pills, toolbar, side panel, chips, events, main loop
    ══════════════════════════════════════════════════════════════════ */
-var MDNAME = { 1: '1 Radiation', 2: '2 Low mass', 3: '3 Massive', 4: '4 H-R Diagram' };
+var MDNAME = { 1: '1 Radiation', 2: '2 Low-mass Star', 3: '3 Massive Star', 4: '4 H-R Diagram' };
 function K(tex, el, display) {
   try {
     if (window.katex) katex.render(tex, el, { throwOnError: false, displayMode: !!display, fleqn: true });

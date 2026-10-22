@@ -31,8 +31,7 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── CH1_Mechanics_5_Moments_Equilibrium_Lab.html  ← Moments & Equilibrium ⚖️ (v2: 3-force scenes, choose-any-pivot, slope topple)
 │   ├── CH1_Mechanics_6_Energy_Lab.html               ← Energy ⚡
 │   ├── CH2_Thermal_1_Molecular_Models_Lab.html       ← Molecular Models ⚛️ (states + history + gas laws)
-│   ├── CH2_Thermal_2_Thermal_Properties_Lab.html     ← Thermal Properties 🌡️
-│   ├── CH2_Thermal_2_Thermal_Properties_Lab_v2.html  ← Thermal Properties v2 🛠️ (heating/cooling curves · specific heat & latent heat · evaporation/boiling · expansion)
+│   ├── CH2_Thermal_2_Thermal_Properties_Lab.html     ← Thermal Properties 🌡️ (heating/cooling curves · specific heat & latent heat · evaporation/boiling · expansion)
 │   ├── CH2_Thermal_3_Heat_Transfer_Lab.html          ← Heat Transfer 🌡️ (Conduction · Convection · Radiation · Application)
 │   ├── CH3_Wave_1_Introduction_to_Waves_v1.html      ← Introduction to Waves 🌊
 │   ├── CH3_Wave_2_Refraction_of_Light.html           ← Refraction of Light 🔦
@@ -103,7 +102,7 @@ python3 -m playwright install chromium
 | 1.7 | Energy, Work & Power | ❌ | ❌ |
 | 1.8 | Energy Resources | ❌ | ❌ |
 
-> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี 27 labs: CH0 (Vernier Caliper 📏, Micrometer 🔧, Balance ⚖️, Vector Addition ➕, Density 📦), CH1 (Motion Graphs 🚗, Newton's Laws 🍎, Moments & Equilibrium ⚖️, Energy ⚡), CH2 (Molecular Models ⚛️, Thermal Properties 🌡️, Thermal Properties v2 🛠️, Heat Transfer 🌡️), CH3 (Waves 🌊), CH4 (Electricity ⚡, Magnetism 🧲), CH5 (Nuclear ☢️), CH6 (Solar System 🌌, Star Life Cycle ⭐)
+> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี 26 labs: CH0 (Vernier Caliper 📏, Micrometer 🔧, Balance ⚖️, Vector Addition ➕, Density 📦), CH1 (Motion Graphs 🚗, Newton's Laws 🍎, Moments & Equilibrium ⚖️, Energy ⚡), CH2 (Molecular Models ⚛️, Thermal Properties 🌡️, Heat Transfer 🌡️), CH3 (Waves 🌊), CH4 (Electricity ⚡, Magnetism 🧲), CH5 (Nuclear ☢️), CH6 (Solar System 🌌, Star Life Cycle ⭐)
 
 ## 🎯 Features
 
@@ -141,6 +140,14 @@ python3 -m playwright install chromium
 Educational use — HAUS Academy
 
 ## 📋 Changelog
+
+### 22 Oct 2026 — CH2 Thermal Properties รวมเป็นไฟล์เดียว `v1.1.7` · CH6 Star Life Cycle `v1.1.1`
+
+| # | การเปลี่ยนแปลง | รายละเอียด |
+|---|---------------|-----------|
+| 1 | **Thermal Properties: v2 กลายเป็นไฟล์หลัก** | `CH2_Thermal_2_Thermal_Properties_Lab.html` = เนื้อหา `v1.1.7` (heating/cooling curves · specific heat & latent heat · evaporation/boiling · expansion) — ลบไฟล์คู่ `_v2.html` ออก และเก็บฉบับ `v1.0.3` เดิมไว้ใน Junkyard |
+| 2 | **Star Life Cycle `v1.1.1`** | กราฟ star data: ป้ายแกนอ่านง่ายขึ้น (`M = million` / `B = billion`) + ตัวอักษร tick ใหญ่ขึ้น |
+| 3 | **จำนวน labs** | 27 → 26 (Thermal Properties เหลือไฟล์เดียว) |
 
 ### 20 Oct 2026 — CH6 Space Physics 2 / Star Life Cycle `v1.0.9` (`simulations/CH6_Space_2_Star_Life_Cycle_Lab.html`) · IGCSE 0625 Topic 6
 
