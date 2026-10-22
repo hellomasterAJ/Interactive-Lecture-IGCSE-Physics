@@ -256,7 +256,7 @@ table.res th{color:var(--text-muted);font-weight:600}
 <div class="container">
 
   <div class="top-bar">
-    <h1><span>🌡️ Thermal Properties</span> <span class="badge-top" id="badge">v1.1.7</span></h1>
+    <h1><span>🌡️ Thermal Properties</span> <span class="badge-top" id="badge">v1.1.9</span></h1>
     <div class="top-right">
       <div class="mode-tabs" id="mTabs">
         <button class="mode-tab active" data-mode="sim">Simulate</button>
@@ -956,27 +956,47 @@ function m1Contents(st, box) {
   /* ── ice: the number of cubes follows the mass, every cube melts at
      its own rate, and their total area is always the solid's own
      volume — so the water rises by exactly what the ice loses ── */
-  M1.cubes = [];
+  M1.cubes = []; M1.surf = surf; M1.base = base;
   if (blocks && vSol > .5) {
     var s0 = Math.sqrt(.74 * box.w * FULL * 1.09 / NC);   /* a cube when new */
-    var floatY = vLiq > 2, xC = box.x + 7, rowY = floatY ? surf : base, rowH = 0;
+    /* ice floats with about 9/10 of it UNDER the water, so the cubes are
+       packed into a raft that hangs below the surface, not a tower that
+       stands on top of it.  Only when there is not enough water yet to
+       hold them does the heap stick up above the surface.              */
+    var rows = [], row = [], rw = 0, rh = 0, j2, r2;
     for (i = 0; i < NC; i++) {
       var sz2 = s0 * Math.sqrt(rem[i]);                   /* only shrinks    */
       if (sz2 < 3.5) continue;                            /* this one has gone */
-      if (xC + sz2 > box.x + box.w - 7) { xC = box.x + 7; rowY -= rowH + 3; rowH = 0; }
-      var cy3 = rowY - sz2 * (floatY && rowH === 0 && rowY === surf ? .20 : .5);
-      if (floatY) cy3 += Math.sin(S.t * 1.3 + i * 1.7) * 1.4;
-      var round2 = sz2 * (.18 + .34 * (1 - rem[i]));      /* melting rounds it */
-      CX.save(); CX.translate(xC + sz2 / 2, cy3); CX.rotate((hash(i, 3) - .5) * .5);
-      CX.beginPath(); rr(-sz2 / 2, -sz2 / 2, sz2, sz2, round2);
-      CX.fillStyle = lgrad(-sz2 / 2, -sz2 / 2, sz2 / 2, sz2 / 2,
-        [[0, withA('#ffffff', .92)], [.45, withA(sub.cs, .96)], [1, withA(sub.cs, .72)]]);
-      CX.fill(); CX.strokeStyle = withA('#ffffff', .8); CX.lineWidth = 1; CX.stroke();
-      CX.beginPath(); rr(-sz2 / 2 + sz2 * .16, -sz2 / 2 + sz2 * .16, sz2 * .3, sz2 * .2, 2);
-      CX.fillStyle = withA('#ffffff', .6); CX.fill();
-      CX.restore();
-      M1.cubes.push({ id: i, x: xC + sz2 / 2, y: cy3, s: sz2 });
-      xC += sz2 + 4; rowH = Math.max(rowH, sz2);
+      if (row.length && rw + sz2 > box.w - 14) { rows.push({ c: row, h: rh }); row = []; rw = 0; rh = 0; }
+      row.push({ id: i, s: sz2, x0: box.x + 7 + rw });
+      rw += sz2 + 4; rh = Math.max(rh, sz2);
+    }
+    if (row.length) rows.push({ c: row, h: rh });
+    var RH = 0;
+    for (r2 = 0; r2 < rows.length; r2++) RH += rows[r2].h + (r2 ? 3 : 0);
+    /* the top of the raft: just proud of the surface while it floats,
+       and no lower than the floor of the beaker                        */
+    var yFloat = surf - .085 * (rows.length ? rows[0].h : s0);
+    var afloat = vLiq > 2 && yFloat <= base - RH;   /* enough water to hold it */
+    var yTop = Math.min(yFloat, base - RH);
+    var bob = afloat ? 1.3 : 0;
+    M1.floatIce = afloat;
+    for (r2 = 0; r2 < rows.length; r2++) {
+      for (j2 = 0; j2 < rows[r2].c.length; j2++) {
+        var cb3 = rows[r2].c[j2], sz3 = cb3.s;
+        var cy3 = yTop + rows[r2].h / 2 + Math.sin(S.t * 1.3 + cb3.id * 1.7) * bob;
+        var round2 = sz3 * (.18 + .34 * (1 - rem[cb3.id]));   /* melting rounds it */
+        CX.save(); CX.translate(cb3.x0 + sz3 / 2, cy3); CX.rotate((hash(cb3.id, 3) - .5) * .5);
+        CX.beginPath(); rr(-sz3 / 2, -sz3 / 2, sz3, sz3, round2);
+        CX.fillStyle = lgrad(-sz3 / 2, -sz3 / 2, sz3 / 2, sz3 / 2,
+          [[0, withA('#ffffff', .92)], [.45, withA(sub.cs, .96)], [1, withA(sub.cs, .72)]]);
+        CX.fill(); CX.strokeStyle = withA('#ffffff', .8); CX.lineWidth = 1; CX.stroke();
+        CX.beginPath(); rr(-sz3 / 2 + sz3 * .16, -sz3 / 2 + sz3 * .16, sz3 * .3, sz3 * .2, 2);
+        CX.fillStyle = withA('#ffffff', .6); CX.fill();
+        CX.restore();
+        M1.cubes.push({ id: cb3.id, x: cb3.x0 + sz3 / 2, y: cy3, s: sz3 });
+      }
+      yTop += rows[r2].h + 3;
     }
     /* the part of a floating cube that is under the surface is seen
        through the water, so a thin veil goes over it                    */
@@ -1820,8 +1840,8 @@ function m2Vessel(x, y, w, h, surfY) {
 }
 /* the macroscopic picture: a body of liquid, its bubbles and its steam.
    Never mixed with the molecular view in the same panel.               */
-function m2Liquid(box, col, u, boiling, bubs, dt, steamOn) {
-  var i;
+function m2Liquid(box, col, u, boiling, bubs, dt, steamOn, aMul) {
+  var i, AM = aMul === undefined ? 1 : aMul;
   CX.save(); CX.beginPath();
   CX.moveTo(box.x, box.y + box.h); CX.lineTo(box.x, box.y);
   for (i = 0; i <= 22; i++) {
@@ -1829,9 +1849,9 @@ function m2Liquid(box, col, u, boiling, bubs, dt, steamOn) {
     CX.lineTo(wx, box.y + (boiling ? 2.4 : 1) * Math.sin(S.t * (boiling ? 5 : 1.6) + i * .7));
   }
   CX.lineTo(box.x + box.w, box.y + box.h); CX.closePath();
-  CX.fillStyle = lgrad(0, box.y, 0, box.y + box.h, [[0, withA(col, .55)], [1, withA(col, .88)]]);
+  CX.fillStyle = lgrad(0, box.y, 0, box.y + box.h, [[0, withA(col, .55 * AM)], [1, withA(col, .88 * AM)]]);
   CX.fill(); CX.restore();
-  line(box.x, box.y, box.x + box.w, box.y, withA('#ffffff', .45), 1.6);
+  line(box.x, box.y, box.x + box.w, box.y, withA('#ffffff', .45 * (.5 + .5 * AM)), 1.6);
   /* the same bubble density whatever the vessel is wide                */
   if (boiling && Math.random() < Math.min(1, .6 * box.w / 196)) bubs.push({
     x: box.x + 10 + Math.random() * (box.w - 20), y: box.y + box.h - 6,
@@ -1923,16 +1943,21 @@ function m2Evap(sc, dt, X0, WD, solo) {
   /* vessel, thermometer, molecules */
   M2.geo = { k: 'evap', x: bx, y: by, w: bw, h: bh };
   m2Vessel(bx, by, bw, bh, box.y);
+  /* the same body of water as the boiling pot, drawn lighter so the
+     molecules on top of it stay easy to read                          */
+  CX.save(); CX.beginPath(); rr(bx + 3, by + 3, bw - 6, bh - 6, 8); CX.clip();
+  m2Liquid({ x: bx + 4, y: box.y, w: bw - 8, h: by + bh - 4 - box.y }, C.water, u, false, [], 0, false, .82);
+  CX.restore();
   m2Thermo(bx + bw - 36, by - 26, bh + 6, M2.th, 100, u);
   pStep(M2.P, box, 'liquid', .25 + .6 * u, Math.min(dt, .033), 0);
   var escE0 = ESC * (1 - .11 * air), SURF = box.y + 26;
   /* the surface layer: the only place a molecule can leave from          */
   CX.save();
-  CX.fillStyle = lgrad(0, box.y, 0, SURF, [[0, withA(C.red, .13)], [1, withA(C.red, 0)]]);
+  CX.fillStyle = lgrad(0, box.y, 0, SURF, [[0, withA(C.red, .22)], [1, withA(C.red, 0)]]);
   CX.fillRect(box.x, box.y, box.w, SURF - box.y);
   CX.restore();
-  line(box.x, SURF, box.x + box.w, SURF, withA(C.red, .35), 1, [5, 4]);
-  txt('surface layer', box.x + 6, SURF - 7, 9, withA(C.red, .75), 'left', 700);
+  line(box.x, SURF, box.x + box.w, SURF, withA(C.red, .6), 1.2, [5, 4]);
+  txt('surface layer', box.x + 6, SURF - 7, 9.5, withA(C.red, .95), 'left', 700);
   for (i = 0; i < M2.P.length; i++) {
     var q = M2.P[i];
     if (q.ce === undefined) q.ce = q.sf;
@@ -2045,7 +2070,9 @@ function m2Boil(sc, dt, X0, WD, solo) {
   /* the same vessel as the evaporation scene at its default area, so the
      two pictures are drawn to one scale                                */
   var bw = 190 + 70 * 2.1, bx = X0 + WD / 2 - bw / 2, by = 214, bh = 242;
-  var box = { x: bx + 11, y: by + 88, w: bw - 80, h: bh - 100 };
+  /* the water fills the whole inside of the pot, exactly over the tint
+     that m2Vessel lays down — not a narrow block floating inside it    */
+  var box = { x: bx + 4, y: by + 88, w: bw - 8, h: bh - 92 };
   if (M2.key !== key) { M2.key = key; M2.bth = 20; M2.bub = []; M2.hist = []; M2.ht = 0; }
   var boiling = M2.bth >= bp - .01;
   if (!boiling) M2.bth = clamp(M2.bth + P * dt * .02, 20, bp); /* heats up, then holds */
@@ -2055,7 +2082,10 @@ function m2Boil(sc, dt, X0, WD, solo) {
   M2.geo = { k: 'boil', x: bx, y: by, w: bw, h: bh };
   m2Vessel(bx, by, bw, bh, box.y);
   m2Thermo(bx + bw - 38, by - 26, bh + 6, M2.bth, 110, u);
+  M2.liqBox = box;
+  CX.save(); CX.beginPath(); rr(bx + 3, by + 3, bw - 6, bh - 6, 8); CX.clip();
   m2Liquid(box, C.water, u, boiling, M2.bub, Math.min(dt, .033), boiling);
+  CX.restore();
   /* burner */
   var hy = by + bh + 10;
   fillRR(bx + bw / 2 - 48, hy, 96, 11, 5, withA(C['metal-dk'], .95), C.wall, 1.2);
@@ -2335,17 +2365,46 @@ function m3Solids(sc, dt) {
   line(ringX, 161, ringX, ballY - R + 2, withA(C['metal-lt'], .9), 2.6);
   /* the back half of the ring, then the ball, then the front half, so
      the ball really passes THROUGH the hole                           */
+  /* the ring is a round tube seen almost edge-on: the near (front) half
+     catches the light, the far (back) half sits in shade, and the hole
+     carries a dark inner wall — that is what gives it depth           */
   function ringArc(front) {
-    CX.save(); CX.beginPath();
-    CX.ellipse(ringX, ringY, (RX + RX + 16) / 2 + 8, (RY + RY + 6) / 2 + 3,
-      0, front ? 0 : Math.PI, front ? Math.PI : Math.PI * 2);
-    CX.lineWidth = 15;
-    CX.strokeStyle = lgrad(ringX - RX, 0, ringX + RX, 0,
-      [[0, withA(C['metal-dk'], .98)], [.4, withA(C['metal-lt'], .98)], [1, withA(C['metal-dk'], .98)]]);
+    var a0 = front ? 0 : Math.PI, a1 = front ? Math.PI : Math.PI * 2;
+    var rx = RX + 8, ry = RY + 3, lw = front ? 15 : 14;
+    CX.save(); CX.lineCap = 'round';
+    CX.beginPath(); CX.ellipse(ringX, ringY, rx, ry, 0, a0, a1);
+    CX.lineWidth = lw;
+    CX.strokeStyle = front
+      ? lgrad(0, ringY + ry - lw * .6, 0, ringY + ry + lw * .6,
+        [[0, withA(C['metal-lt'], .99)], [.38, withA(C['metal-lt'], .96)],
+        [.72, withA(C['metal-dk'], .98)], [1, withA(C.ink, .9)]])
+      : lgrad(0, ringY - ry - lw * .6, 0, ringY - ry + lw * .6,
+        [[0, withA(C.ink, .82)], [.5, withA(C['metal-dk'], .96)], [1, withA(C['metal-dk'], .8)]]);
+    CX.stroke();
+    /* the two sides of the ring curve away from the eye, so they darken */
+    CX.strokeStyle = lgrad(ringX - rx, 0, ringX + rx, 0,
+      [[0, withA(C.ink, .5)], [.26, withA(C.ink, 0)], [.74, withA(C.ink, 0)], [1, withA(C.ink, .45)]]);
+    CX.stroke();
+    /* the specular line running along the top of the tube              */
+    CX.beginPath(); CX.ellipse(ringX, ringY - lw * .28, rx, ry, 0, a0, a1);
+    CX.lineWidth = front ? 3.6 : 2;
+    CX.strokeStyle = withA('#ffffff', front ? .34 : .12);
     CX.stroke();
     CX.restore();
   }
+  /* the inside wall of the hole, seen through the opening              */
+  function ringHole() {
+    CX.save();
+    CX.beginPath(); CX.ellipse(ringX, ringY + 2.5, RX + 1, Math.max(2, RY - 3), 0, 0, 7);
+    CX.fillStyle = lgrad(0, ringY - RY, 0, ringY + RY,
+      [[0, withA(C.ink, .55)], [1, withA(C.ink, .12)]]);
+    CX.fill();
+    CX.beginPath(); CX.ellipse(ringX, ringY - 1, RX + 1, Math.max(2, RY - 3), 0, Math.PI, Math.PI * 2);
+    CX.strokeStyle = withA(C.ink, .6); CX.lineWidth = 3; CX.stroke();
+    CX.restore();
+  }
   ringArc(false);
+  ringHole();
   burner3(ringX, 528, u * .8);
   if (u > .02) {
     CX.save(); CX.beginPath(); CX.arc(ringX, ballY, R * 1.9, 0, 7);
@@ -2497,18 +2556,53 @@ function m3Liquids(sc, dt) {
 function m3Gases(sc, dt) {
   var dth = V('dth', sc), u = clamp(dth / 100, 0, 1);
   var fx = 300, fy = 330, R = 86;
-  /* round flask of air, sealed by a drop of liquid in a capillary */
+  var capY = 150, capX1 = 1120, WO = 11.5, WI = 7.8;
+  M3.glass = { fx: fx, fy: fy, R: R, capY: capY, capX1: capX1, WO: WO };
+  /* ── the glassware is ONE piece: a round-bottomed flask whose neck
+     bends over into a long capillary.  Both the outer wall and the
+     bore are traced as single continuous paths, so there is no seam
+     where the neck meets the bulb or where the tube turns.          ── */
+  function glassPath(w, rad, tipX) {
+    var yA = fy - Math.sqrt(Math.max(1, rad * rad - w * w));
+    var aA = Math.atan2(yA - fy, -w), aB = Math.atan2(yA - fy, w), cr = Math.min(13, w + 4);
+    CX.beginPath();
+    CX.moveTo(fx - w, yA);
+    CX.arc(fx, fy, rad, aA, aB, true);                 /* all the way round  */
+    CX.lineTo(fx + w, capY + w + cr);                  /* up the neck        */
+    CX.arcTo(fx + w, capY + w, fx + w + cr, capY + w, cr);
+    CX.lineTo(tipX - 6, capY + w);                     /* along the bottom   */
+    CX.quadraticCurveTo(tipX + 4, capY + w, tipX + 4, capY);   /* the tip    */
+    CX.quadraticCurveTo(tipX + 4, capY - w, tipX - 6, capY - w);
+    CX.lineTo(fx - w + cr, capY - w);                  /* back along the top */
+    CX.arcTo(fx - w, capY - w, fx - w, capY - w + cr, cr);
+    CX.closePath();
+  }
   CX.save();
-  CX.beginPath(); CX.arc(fx, fy, R, 0, 7);
-  CX.fillStyle = rgrad(fx - R * .4, fy - R * .4, 4, fx, fy, R, [[0, withA(C.gas, .22 + .2 * u)], [1, withA(C.gas, .1)]]);
-  CX.fill(); CX.strokeStyle = withA(C['glass-edge'], .95); CX.lineWidth = 2.4; CX.stroke(); CX.restore();
-  /* the capillary runs to the right */
-  var capY = 150, capX1 = 1120;
+  /* the glass wall */
+  glassPath(WO, R, capX1);
+  CX.fillStyle = lgrad(fx - R, 0, fx + R, 0,
+    [[0, withA(C['glass-edge'], .34)], [.22, withA('#ffffff', .16)],
+    [.55, withA(C.glass, .10)], [1, withA(C['glass-edge'], .30)]]);
+  CX.fill();
+  CX.strokeStyle = withA(C['glass-edge'], .95); CX.lineWidth = 2.3; CX.stroke();
+  /* the air inside — the same body of gas in the bulb and in the bore */
+  glassPath(WI, R - 3.4, capX1 - 3);
+  CX.fillStyle = rgrad(fx - R * .4, fy - R * .4, 4, fx, fy, R,
+    [[0, withA(C.gas, .26 + .22 * u)], [1, withA(C.gas, .10)]]);
+  CX.fill();
+  CX.strokeStyle = withA(C['glass-edge'], .45); CX.lineWidth = 1; CX.stroke();
+  CX.restore();
+  /* the highlight that makes it read as blown glass */
   CX.save();
-  CX.beginPath(); rr(fx - 9, capY, 18, fy - R - capY + 10, 5);
-  CX.fillStyle = withA(C.glass, .16); CX.fill(); CX.strokeStyle = withA(C['glass-edge'], .9); CX.lineWidth = 1.8; CX.stroke();
-  CX.beginPath(); rr(fx - 4, capY - 9, capX1 - fx + 14, 18, 7);
-  CX.fillStyle = withA(C.glass, .16); CX.fill(); CX.strokeStyle = withA(C['glass-edge'], .9); CX.lineWidth = 1.8; CX.stroke();
+  CX.beginPath();
+  CX.ellipse(fx - R * .42, fy - R * .34, R * .17, R * .33, -.5, 0, 7);
+  CX.fillStyle = withA('#ffffff', .18); CX.fill();
+  CX.beginPath();
+  CX.moveTo(fx - WO + 3.5, capY - WO + 14); CX.lineTo(fx - WO + 3.5, fy - R * .72);
+  CX.strokeStyle = withA('#ffffff', .22); CX.lineWidth = 2.4; CX.stroke();
+  CX.beginPath();
+  CX.moveTo(fx + 22, capY - WO + 3.6); CX.lineTo(capX1 - 14, capY - WO + 3.6);
+  CX.strokeStyle = withA('#ffffff', .20); CX.lineWidth = 2.2; CX.stroke();
   CX.restore();
   /* the index drop is pushed along by the expanding gas */
   var frac = clamp(GASB * dth, 0, .4), x0 = fx + 90;
@@ -2534,7 +2628,13 @@ function m3Gases(sc, dt) {
   metalBar(fx - 78, hy, 156, 7, C['metal-lt'], 0);
   for (var tl2 = 0; tl2 < 3; tl2++) metalBar(fx - 68 + tl2 * 68, hy + 6, 7, 54, C['metal-dk'], 0);
   burner3(fx, hy + 42, u);
-  stand3(fx - 186, hy + 64, 430, capY + 26, 100);
+  /* the clamp really holds the neck of the flask                       */
+  stand3(fx - 186, hy + 64, 430, capY + 56, 166);
+  var clY = capY + 56;
+  fillRR(fx - WO - 11, clY - 15, 2 * WO + 22, 30, 7, lgrad(0, clY - 15, 0, clY + 15,
+    [[0, withA(C['metal-lt'], .96)], [.5, withA(C['metal-dk'], .98)], [1, withA(C.ink, .92)]]),
+    withA(C.ink, .65), 1.3);
+  line(fx - WO - 6, clY - 8, fx + WO + 6, clY - 8, withA('#ffffff', .22), 1.4);
   plate(sy('dth') + ' = ' + fmt(dth, 0) + ' °C  →  the gas expands by ' + (GASB * dth * 100).toFixed(1) + ' %',
     fx, hy + 136, 11.5, C.accent, 'center');
   dcard('m3g', 640, 296, 420, 196, 'GASES EXPAND FAR MORE', function (x, y, w) {
@@ -2598,14 +2698,19 @@ function m3Bimetal(sc, dt) {
   /* one clean circuit: clamp → cell → lamp → fixed contact, no crossings */
   var wy = 600, lampX = 1000, cellX = 700, ly = 430;
   CX.save(); CX.strokeStyle = withA(C.amber, .9); CX.lineWidth = 2.6; CX.lineCap = 'round';
-  CX.beginPath(); CX.moveTo(x0 - 19, y0 + 34); CX.lineTo(x0 - 19, wy); CX.lineTo(cellX - 26, wy); CX.stroke();
-  CX.beginPath(); CX.moveTo(cellX + 26, wy); CX.lineTo(lampX, wy); CX.lineTo(lampX, ly + 22); CX.stroke();
+  /* the wires run right up to the plates of the cell — the only break
+     anywhere in the circuit is the one between + and −                 */
+  CX.beginPath(); CX.moveTo(x0 - 19, y0 + 34); CX.lineTo(x0 - 19, wy); CX.lineTo(cellX - 8, wy); CX.stroke();
+  CX.beginPath(); CX.moveTo(cellX + 8, wy); CX.lineTo(lampX, wy); CX.lineTo(lampX, ly + 22); CX.stroke();
   CX.beginPath(); CX.moveTo(lampX, ly - 22); CX.lineTo(lampX, 344); CX.lineTo(tip.x + 44, 344);
   CX.lineTo(tip.x + 44, cFix + 5); CX.lineTo(tip.x + 16, cFix + 5); CX.stroke();
   CX.restore();
+  M3.wire = { lEnd: cellX - 8, rStart: cellX + 8, cellX: cellX, plateL: cellX - 8, plateR: cellX + 8, wy: wy };
   /* cell */
   line(cellX - 8, wy - 18, cellX - 8, wy + 18, withA(C['metal-lt'], .95), 3);
   line(cellX + 8, wy - 10, cellX + 8, wy + 10, withA(C['metal-lt'], .95), 6);
+  txt('+', cellX - 16, wy - 24, 11, C['text-muted'], 'center', 700);
+  txt('−', cellX + 18, wy - 24, 11, C['text-muted'], 'center', 700);
   plate('cell', cellX, wy + 42, 10, C['text-muted'], 'center', false);
   /* lamp */
   dot(lampX, ly, 22, open ? withA(C.card2, .95) : withA(C.gold, .9), withA(C['metal-lt'], .95), 2.2);
