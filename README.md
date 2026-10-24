@@ -47,6 +47,7 @@ lecture.md (Markdown + LaTeX) → build.py → interactive.html + lecture.pdf + 
 │   ├── CH5_Nuclear_3_Radioactive_Lab.html            ← Radioactive Lab ☢️
 │   ├── CH6_Space_1_Solar_System_Lab.html             ← Solar System 🌌
 │   ├── CH6_Space_2_Star_Life_Cycle_Lab.html          ← Star Life Cycle ⭐
+│   ├── CH6_Space_3_Universe_Lab.html                 ← Universe 🔭
 │   └── AS/                                            ← A-Level 9702 sims
 │       ├── AS_CH0_Fundamental_1_SI_Units_and_Homogeneity.html ← SI Units & Homogeneity 🧱
 │       ├── AS_CH0_Fundamental_2_Uncertainty_and_Significant_Figures.html ← Uncertainty & Sig Figs ⚠️📏
@@ -102,7 +103,7 @@ python3 -m playwright install chromium
 | 1.7 | Energy, Work & Power | ❌ | ❌ |
 | 1.8 | Energy Resources | ❌ | ❌ |
 
-> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี 26 labs: CH0 (Vernier Caliper 📏, Micrometer 🔧, Balance ⚖️, Vector Addition ➕, Density 📦), CH1 (Motion Graphs 🚗, Newton's Laws 🍎, Moments & Equilibrium ⚖️, Energy ⚡), CH2 (Molecular Models ⚛️, Thermal Properties 🌡️, Heat Transfer 🌡️), CH3 (Waves 🌊), CH4 (Electricity ⚡, Magnetism 🧲), CH5 (Nuclear ☢️), CH6 (Solar System 🌌, Star Life Cycle ⭐)
+> 💡 **Simulations** = virtual lab instruments / interactive phenomena (ไม่ใช่กราฟ). ปัจจุบันมี 27 labs: CH0 (Vernier Caliper 📏, Micrometer 🔧, Balance ⚖️, Vector Addition ➕, Density 📦), CH1 (Motion Graphs 🚗, Newton's Laws 🍎, Moments & Equilibrium ⚖️, Energy ⚡), CH2 (Molecular Models ⚛️, Thermal Properties 🌡️, Heat Transfer 🌡️), CH3 (Waves 🌊), CH4 (Electricity ⚡, Magnetism 🧲), CH5 (Nuclear ☢️), CH6 (Solar System 🌌, Star Life Cycle ⭐, Universe 🔭)
 
 ## 🎯 Features
 
@@ -140,6 +141,16 @@ python3 -m playwright install chromium
 Educational use — HAUS Academy
 
 ## 📋 Changelog
+
+### 24 Oct 2026 — CH6 Space Physics 3 / Universe `v1.1.0` (`simulations/CH6_Space_3_Universe_Lab.html`) · IGCSE 0625 Topic 6
+
+| # | การเปลี่ยนแปลง | รายละเอียด |
+|---|---------------|-----------|
+| 1 | **4 โหมดย่อย × 16 pills** | ① History (🌌 Now · 🔭 1920s Great Debate · 🌞 Copernicus→Galileo · 🏛️ Ptolemy & the fixed stars) ② Present Model (🏗️ Structure & scale · 🪜 Scale ladder · 💥 Big Bang model · ❓ What it does not say) ③ Evidence (🎵 Doppler → Redshift · 📡 CMB · 🧪 Light elements · 🌌 Distant galaxies look young · ⏳ Discovery timeline) ④ Hubble Law (📈 v–d graph · H₀ · 🕯️ Measuring d · ⏳ Age = 1/H₀) |
+| 2 | **History ย้อนยุค** | era scrubber 4 จุด (Now อยู่ซ้าย → อดีตอยู่ขวา) + mythology 3 เรื่อง (Helios · Atlas · นมที่หก → ที่มาคำว่า galaxy) → ปรัชญากรีก → Ptolemy |
+| 3 | **หลักฐาน** | Doppler 3 ขั้น (รถพยาบาล 700 Hz → 1171 Hz → สเปกตรัมเลื่อน → 4 galaxy เรียง z) · CMB 2.725 K ± 0.0002 K (1:100 000) ปล่อยที่ z ≈ 1100 · Steady State แพ้เพราะไม่มี CMB |
+| 4 | **Hubble** | dataset `Simple: 6` / `Full: 8` · v/d = 68.0 km/s per Mpc · H₀ = 2.2 × 10⁻¹⁸ s⁻¹ · 1/H₀ = 14.4 พันล้านปี + accepted age 13.8 |
+| 5 | **มาตรฐาน** | 6 themes / KaTeX offline / zoom ×2 + hold-drag pan / panel 4 tabs พับได้ / Practical 8 · Quiz 20 / badge v1.1.0 / window.S |
 
 ### 22 Oct 2026 — CH2 Thermal Properties `v1.1.9` (refinement pass)
 
